@@ -1,4 +1,4 @@
-% DataSet=UniExp.DataSet("\\Data-Server-1\个人数据\张天夫\202401\全钙大模型v3.mat");
+DataSet=TransferLearning.FullCalcium();
 QueryTable=UniExp.ReadQueryTable("\\Data-Server-1\个人数据\张天夫\202401\统一模型查询表.xlsx","皮层分开线图");
 
 GroupNtats=DataSet.QueryNTATS(QueryTable,UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
