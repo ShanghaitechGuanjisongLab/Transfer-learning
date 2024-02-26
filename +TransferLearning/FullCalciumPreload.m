@@ -1,5 +1,5 @@
 DataSet=TransferLearning.FullCalcium();
-QueryTable=UniExp.ReadQueryTable("\\Data-Server-1\个人数据\张天夫\202401\统一模型查询表.xlsx","皮层分开线图");
+QueryTable=UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),"统一模型");
 
 GroupNtats=DataSet.QueryNTATS(QueryTable,UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
 GroupNtats=UniExp.NtatsCellReplenish(GroupNtats);
