@@ -14,7 +14,7 @@ CB.Layout.Tile='east';
 CB.Label.String='ΔF/F_0';
 Axes=Axes';
 for A=Axes
-	xline(A,0,':',Color=Colors(3,:,:));
-	xline(A,1,'-',Color=Colors(3,:,:));
+	xline(A,0,':',Color=Colors(3,:));
+	xline(A,1,'-',Color=Colors(3,:));
 end
 CB.TickLabels=MATLAB.SignificantFixedpoint(2.^str2double(CB.TickLabels)-1,2);
