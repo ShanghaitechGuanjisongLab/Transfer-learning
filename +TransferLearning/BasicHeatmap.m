@@ -1,4 +1,12 @@
-function [Layout,Axes] = BasicHeatmap(SortedData,SubTitles,Colors,ScaleColor,CLim)
+function [Layout,Axes] = BasicHeatmap(SortedData,SubTitles,Colors,ScaleColor,options)
+arguments
+	SortedData
+	SubTitles
+	Colors
+	ScaleColor
+	options.CLim
+	options.WaterLine=true;
+end
 figure;
 Layout=tiledlayout(1,numel(SubTitles),TileSpacing='none',Padding='none');
 if ScaleColor
@@ -6,8 +14,8 @@ if ScaleColor
 else
 	ScaleColor={};
 end
-if exist('CLim','var')
-	CLim={'CLim',CLim};
+if isfield(options,'CLim')
+	CLim={'CLim',options.CLim};
 else
 	CLim={};
 end
@@ -20,5 +28,7 @@ CB.Label.String='ΔF/F_0';
 Axes=Axes';
 for A=Axes
 	xline(A,0,':',Color=Colors(3,:));
-	xline(A,1,'-',Color=Colors(3,:));
+	if options.WaterLine
+		xline(A,1,'-',Color=Colors(3,:));
+	end
 end
