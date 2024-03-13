@@ -1,9 +1,0 @@
-%选出前3个主成分系数大于平均值+标准差的细胞
-Logical=any(MOpCoeff(1:3,:)>mean2(MOpCoeff)+std2(MOpCoeff),1);
-Selected=table;
-Selected.NTATS=MOpNtats.NTATS(Logical,:,:);
-%计算峰值和时间
-[Selected.PeakValue,Selected.PeakTime]=max(Selected.NTATS,[],2);
-Selected.PeakTime=(Selected.PeakTime)./8-3;
-Selected.CellUID=MOpNtats.CellUID(Logical);
-Selected.ZLayer=MOpNtats.ZLayer(Logical);
