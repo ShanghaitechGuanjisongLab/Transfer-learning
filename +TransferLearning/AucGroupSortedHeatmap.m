@@ -11,9 +11,9 @@ NumSorted=0;
 for G=1:max(Group)
 	Unsorted=Data(Group==G,:,:);
 	Auc=sum(Unsorted(:,:,G),2);
-	[~,SortIndex]=sort(Auc);
+	[~,SortIndex]=sort(Auc,'descend');
 	NewNumSorted=NumSorted+numel(Auc);
 	SortedData(NumSorted+1:NewNumSorted,:,:)=Unsorted(SortIndex,:,:);
 	NumSorted=NewNumSorted;
 end
-Layout=TransferLearning.BasicHeatmap(SortedData,SubTitles,Colors,ScaleColor);
+Layout=TransferLearning.BasicHeatmap(SortedData,SubTitles,Colors,ScaleColor,CLim=[-2,2]);

@@ -1,8 +1,8 @@
-function CellUID = TemplateCellUID(TopRatio)
-persistent Rank
-if isempty(Rank)
-	PcaCalcium=UniExp.NtatsCellReplenish(TransferLearning.FullCalcium().QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),'统一PCA'),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median));
-	[~,SortIndex]=sort(min(UniExp.LinearPca(PcaCalcium.NTATS,4).Coeff(1:2,:),[],1),'descend');
-	Rank=PcaCalcium.CellUID(SortIndex);
+function CellUID = TemplateCellUID(TopRatio,PCs)
+persistent Coeff
+if isempty(Coeff)
+	Coeff=TransferLearning.UnifiedPcaModel(Paradigm="光声");
 end
+[~,SortIndex]=sort(min(abs(Coeff.Coeff(:,PCs)),[],2),'descend');
+Rank=Coeff.CellUID(SortIndex);
 CellUID=Rank(1:uint8(end*TopRatio));
