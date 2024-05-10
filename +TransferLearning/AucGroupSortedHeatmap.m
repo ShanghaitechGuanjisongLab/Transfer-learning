@@ -1,9 +1,10 @@
-function Layout=AucGroupSortedHeatmap(Data,SubTitles,Colors,ScaleColor)
+function Layout=AucGroupSortedHeatmap(Data,SubTitles,Colors,ScaleColor,CLim)
 arguments
 	Data
 	SubTitles
 	Colors
 	ScaleColor=true
+	CLim=[-2,2]
 end
 [~,~,Group]=MATLAB.DataFun.MaxSubs(Data,2:3);
 SortedData=zeros(size(Data));
@@ -16,4 +17,4 @@ for G=1:max(Group)
 	SortedData(NumSorted+1:NewNumSorted,:,:)=Unsorted(SortIndex,:,:);
 	NumSorted=NewNumSorted;
 end
-Layout=TransferLearning.BasicHeatmap(SortedData,SubTitles,Colors,ScaleColor,CLim=[-2,2]);
+Layout=TransferLearning.BasicHeatmap(SortedData,SubTitles,Colors,ScaleColor,CLim=CLim);
