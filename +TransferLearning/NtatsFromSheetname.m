@@ -3,27 +3,13 @@ arguments
 	SheetName
 	Update=false
 end
-persistent NtatsDictionary
-if isempty(NtatsDictionary)
-	NtatsDictionary=dictionary;
-end
+ImplMemoize=memoize(@Impl);
 if Update
-	GroupNtats=UncachedQuery(SheetName);
-	NtatsDictionary{SheetName}=GroupNtats;
-else
-	try
-		GroupNtats=NtatsDictionary{SheetName};
-	catch ME
-		if any(ME.identifier==["MATLAB:dictionary:UnconfiguredLookupNotSupported","MATLAB:dictionary:ScalarKeyNotFound"])
-			GroupNtats=UncachedQuery(SheetName);
-			NtatsDictionary{SheetName}=GroupNtats;
-		else
-			ME.rethrow;
-		end
-	end
+	ImplMemoize.clearCache;
 end
+GroupNtats=ImplMemoize(SheetName);
 end
-function GroupNtats=UncachedQuery(SheetName)
+function GroupNtats=Impl(SheetName)
 GroupNtats=TransferLearning.FullCalcium().QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),SheetName),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
 try
 	GroupNtats=UniExp.NtatsCellReplenish(GroupNtats);
