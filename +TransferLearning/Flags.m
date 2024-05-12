@@ -1,6 +1,6 @@
 classdef Flags<uint8
 	enumeration
-
+		%% 位旗帜
 		%范式
 
 		LightAudio(0b0)
@@ -21,6 +21,12 @@ classdef Flags<uint8
 		Paradigm(0b1)
 		Target(0b10)
 		BrainRegion(0b100)
+
+		%% 非位旗帜
+
+		Different_cells_not_handled(0)
+		Different_cells_replenished(1)
+		Different_cells_stripped(2)
 	end
 	methods
 		function obj=or(A,B)

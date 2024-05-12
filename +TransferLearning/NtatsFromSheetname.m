@@ -1,21 +1,27 @@
-function GroupNtats = NtatsFromSheetname(SheetName,Update)
+function GroupNtats = NtatsFromSheetname(SheetName,DifferentCells)
 arguments
 	SheetName
-	Update=false
+	DifferentCells=TransferLearning.Flags.Different_cells_replenished;
 end
 ImplMemoize=memoize(@Impl);
-if Update
-	ImplMemoize.clearCache;
+GroupNtats=ImplMemoize(SheetName,DifferentCells);
 end
-GroupNtats=ImplMemoize(SheetName);
-end
-function GroupNtats=Impl(SheetName)
-GroupNtats=TransferLearning.FullCalcium().QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),SheetName),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
-try
-	GroupNtats=UniExp.NtatsCellReplenish(GroupNtats);
-catch ME
-	if ME.identifier~="UniExp:Exceptions:No_need_to_replenish"
-		ME.rethrow;
-	end
+function GroupNtats=Impl(SheetName,DifferentCells)
+import TransferLearning.*
+GroupNtats=FullCalcium().QueryNTATS(UniExp.ReadQueryTable(ProjectPath('查询表.xlsx'),SheetName),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
+switch DifferentCells
+	case Flags.Different_cells_not_handled
+	case Flags.Different_cells_replenished
+		try
+			GroupNtats=UniExp.NtatsCellReplenish(GroupNtats);
+		catch ME
+			if ME.identifier~="UniExp:Exceptions:No_need_to_replenish"
+				ME.rethrow;
+			end
+		end
+	case Flags.Different_cells_stripped
+		GroupNtats=UniExp.NtatsCellStrip(GroupNtats);
+	otherwise
+		Exception.Different_cell_processing_strategies_unknown.Throw;
 end
 end
