@@ -1,15 +1,21 @@
-function [PcaLegend,NumMice]=TransferSimilarity(FigureFlag,PCs,varargin)
-PcaAx={};
-HeatmapScale=MATLAB.Flags.Narrow;
-for V=1:numel(varargin)
-	Arg=varargin{V};
-	if isa(Arg,'matlab.graphics.axis.Axes')
-		PcaAx={Arg};
-	else
-		HeatmapScale=Arg;
-	end
+function [PcaLegend,NumMice]=TransferSimilarity(FigureFlag,PCs,options)
+arguments
+	FigureFlag
+	PCs
+	options.PcaAx
+	options.CorrelationAx
+	options.HeatmapScale=MATLAB.Flags.Narrow
 end
-FullNewPca=isempty(PcaAx);
+if isfield(options,'PcaAx')
+	PcaAx={options.PcaAx};
+else
+	PcaAx={};
+end
+if isfield(options,'CorrelationAx')
+	CorrelationAx={options.CorrelationAx};
+else
+	CorrelationAx={};
+end
 import TransferLearning.*
 DataSet=FullCalcium;
 switch bitand(FigureFlag,Flags.Paradigm)
@@ -37,49 +43,38 @@ switch bitand(FigureFlag,Flags.Paradigm)
 	otherwise
 		Exception.Unsupported_paradigm.Throw;
 end
-persistent NtatsDictionary
-if isempty(NtatsDictionary)
-	NtatsDictionary=dictionary;
-end
-try
-	GroupNtats=NtatsDictionary{SheetName};
-catch ME
-	if any(ME.identifier==["MATLAB:dictionary:UnconfiguredLookupNotSupported","MATLAB:dictionary:ScalarKeyNotFound"])
-		GroupNtats=DataSet.QueryNTATS(UniExp.ReadQueryTable(ProjectPath('查询表.xlsx'),SheetName),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
-		try
-			GroupNtats=UniExp.NtatsCellReplenish(GroupNtats);
-		catch ME
-			if ME.identifier~="UniExp:Exceptions:No_need_to_replenish"
-				ME.rethrow;
-			end
-		end
-		NtatsDictionary{SheetName}=GroupNtats;
-	else
-		ME.rethrow;
-	end
-end
+GroupNtats=NtatsFromSheetname(SheetName);
 Layout=BasicHeatmap(2.^UniExp.HeatmapSort(GroupNtats,["Naive","Learned"]).NTATS{:,:,GroupOrder}-1,SubTitles,[0,0,1;1,0,0;0,0.681,0],false,CLim=[-2,2]);
 NumMice=numel(unique(DataSet.Cells.Mouse(ismember(DataSet.Cells.CellUID,GroupNtats.CellUID))));
 Target=Flags(bitand(FigureFlag,Flags.Target));
 switch Target
 	case Flags.Article
-		MATLAB.Graphics.FigureAspectRatio(1,2,HeatmapScale);
+		MATLAB.Graphics.FigureAspectRatio(1,2,options.HeatmapScale);
 	case Flags.PPT
 		title(Layout,Title);
-		MATLAB.Graphics.FigureAspectRatio(8,5,HeatmapScale);
+		MATLAB.Graphics.FigureAspectRatio(8,5,options.HeatmapScale);
 end
 print(ProjectPath(sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
 [~,PcaScore]=UnifiedPcaModel(GroupNtats);
 Explained=PcaScore.Explained(PCs);
-if FullNewPca
+FullNew=isempty(PcaAx);
+if FullNew
 	figure;
 end
 PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Naive","Learned","Transfer"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32;48],('os^')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),Legends,Interpreter='none');
 UniExp.PcAxLabels(table(PCs',Explained,'VariableNames',["Index","Explained"],'RowNames',["X";"Y";"Z"]),PcaAx{:});
 UniExp.PcaRotate(PcaAx{:},Explained);
-if FullNewPca
+if FullNew
 	title('●0s(cue) ■1s(water) ▲3s');
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 	print(ProjectPath(sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
 end
+FullNew=isempty(CorrelationAx);
+if FullNew
+	figure;
 end
+CorrelationData=sum(GroupNtats.NTATS,2);
+Learned=CorrelationData.Learned;
+CorrelationData=table(Learned-CorrelationData.Naive,Learned-CorrelationData.Transfer,'VariableNames',["Learned_naive","Learned_transfer"]);
+CompareGroup=table(["Learned_naive","Learned_transfer"],'VariableNames',"GroupPair");
+UniExp.BarScatterCompare(CorrelationData,CompareGroup);

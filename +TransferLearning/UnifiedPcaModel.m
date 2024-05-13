@@ -2,7 +2,7 @@ function [Coeff,Score]=UnifiedPcaModel(varargin)
 persistent DataSet GroupNtats PcaTable
 if isempty(GroupNtats)
 	DataSet=TransferLearning.FullCalcium;
-	GroupNtats=UniExp.NtatsCellStrip(DataSet.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),'统一PCA'),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median));
+	GroupNtats=UniExp.NtatsCellReplenish(DataSet.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),'统一PCA'),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median));
 	PcaTable=UniExp.LinearPca(GroupNtats.NTATS,12);
 end
 if nargin>1
