@@ -3,7 +3,6 @@ arguments
 	FigureFlag
 	PCs
 	options.PcaAx
-	options.CorrelationAx
 	options.HeatmapScale=MATLAB.Flags.Narrow
 end
 if isfield(options,'PcaAx')
@@ -61,20 +60,11 @@ FullNew=isempty(PcaAx);
 if FullNew
 	figure;
 end
-PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Naive","Learned","Transfer"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32;48],('os^')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),Legends,Interpreter='none');
+PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Naive","Learned","Transfer"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),Legends,Interpreter='none');
 UniExp.PcAxLabels(table(PCs',Explained,'VariableNames',["Index","Explained"],'RowNames',["X";"Y";"Z"]),PcaAx{:});
 UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNew
-	title('●0s(cue) ■1s(water) ▲3s');
+	title('●0s(cue) ■1s(water)');
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 	print(ProjectPath(sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
 end
-FullNew=isempty(CorrelationAx);
-if FullNew
-	figure;
-end
-CorrelationData=sum(GroupNtats.NTATS,2);
-Learned=CorrelationData.Learned;
-CorrelationData=table(Learned-CorrelationData.Naive,Learned-CorrelationData.Transfer,'VariableNames',["Learned_naive","Learned_transfer"]);
-CompareGroup=table(["Learned_naive","Learned_transfer"],'VariableNames',"GroupPair");
-UniExp.BarScatterCompare(CorrelationData,CompareGroup);

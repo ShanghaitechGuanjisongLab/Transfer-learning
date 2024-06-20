@@ -22,7 +22,11 @@ Coeff.Coeff=UntransposedCoeff';
 if nargout>1
 	Score=table;
 	Score.Explained=PcaTable.Explained;
-	Dimensions=NTATS.Dimensions;
-	Dimensions.DimensionName(1)="PC";
-	Score.Score=MATLAB.DataTypes.NDTable(pagemtimes(UntransposedCoeff,NTATS.Data),Dimensions);
+	if isa(NTATS,'MATLAB.DataTypes.NDTable')
+		Dimensions=NTATS.Dimensions;
+		Dimensions.DimensionName(1)="PC";
+		Score.Score=MATLAB.DataTypes.NDTable(pagemtimes(UntransposedCoeff,NTATS.Data),Dimensions);
+	else
+		Score.Score=pagemtimes(UntransposedCoeff,NTATS);
+	end
 end

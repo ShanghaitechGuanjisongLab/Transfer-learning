@@ -46,28 +46,28 @@ if FullNewPca
 else
 	PcaAx={PcaAx};
 end
-PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Learned","Transfer_hit","Transfer_miss"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32;48],('os^')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),SubTitles,Interpreter='none');
+PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Learned","Transfer_hit","Transfer_miss"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),SubTitles,Interpreter='none');
 UniExp.PcAxLabels(table(PCs',Explained,'VariableNames',["Index","Explained"],'RowNames',["X";"Y";"Z"]),PcaAx{:});
 UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNewPca
-	title('Transfer hit & miss ●0s(cue) ■1s(water) ▲3s');
+	title('Transfer hit & miss ●0s(cue) ■1s(water)');
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 	print(ProjectPath(sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
 end
 figure;
-[~,Index]=maxk(PcaCoeff.Coeff(:,2),uint8(height(PcaCoeff)/20));
+[~,Index]=maxk(PcaCoeff.Coeff(:,1),uint8(height(PcaCoeff)/20));
 [~,Index]=ismember(PcaCoeff.CellUID(Index),GroupNtats.CellUID);
 GroupNtats=GroupNtats(Index,:);
 NtatsData=UniExp.HeatmapSort(GroupNtats).NTATS{:,:,["Learned","Transfer_hit","Transfer_miss"]};
 Layout=BasicHeatmap(2.^NtatsData-1,SubTitles,[0,0,1;1,0,0;0,0.681,0],false,CLim=[-2,2]);
 Target=Flags(bitand(FigureFlag,Flags.Target));
 if Target==Flags.PPT
-	title(Layout,'Top 5% cells of PC2 coeff');
+	title(Layout,'Top 5% cells of PC1 coeff');
 end
 MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 print(ProjectPath(sprintf('%s.Top5.%s.svg',SheetName,Target)),'-dsvg');
 [Mean,Sem]=MATLAB.DataFun.MeanSem(NtatsData,1);
-Xs=linspace(-3,12,size(Mean,2))';
+Xs=linspace(-3,2,size(Mean,2))';
 figure;
 CurveLayout=tiledlayout(2,2,TileSpacing='tight',Padding='tight');
 Axes=gobjects(3,1);
@@ -80,7 +80,7 @@ for A=1:3
 end
 L=legend([CueLine,WaterLine],["Cue","Water"]);
 L.Layout.Tile=4;
-title(CurveLayout,'Top 5% cells of PC2 coeff');
+title(CurveLayout,'Top 5% cells of PC1 coeff');
 ylabel(CurveLayout,'ΔF/F_0 ±SEM');
 xlabel(CurveLayout,'Time (s) from cue');
 MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);

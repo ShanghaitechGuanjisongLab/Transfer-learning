@@ -6,9 +6,10 @@ arguments
 	ScaleColor
 	options.CLim
 	options.WaterLine=true;
+	options.Flags=[UniExp.Flags.HideYAxis,UniExp.Flags.SymmetricColormap]
 end
 figure;
-Layout=tiledlayout(1,numel(SubTitles),TileSpacing='none',Padding='none');
+Layout=tiledlayout(1,numel(SubTitles),TileSpacing='tight',Padding='tight');
 if ScaleColor
 	ScaleColor={UniExp.Flags.ScaleColor};
 else
@@ -19,7 +20,8 @@ if isfield(options,'CLim')
 else
 	CLim={};
 end
-[~,Axes]=UniExp.LanearHeatmap(SortedData,UniExp.Flags.HideYAxis,UniExp.Flags.SymmetricColormap,ScaleColor{:},CLim{:},Layout=Layout,ImagescStyle={'XData',[-3,12]},SubTitles=SubTitles,LMHColor=[Colors(1,:);1,1,1;Colors(2,:)]);
+[~,Axes]=UniExp.LanearHeatmap(SortedData,ScaleColor{:},CLim{:},Flags=options.Flags,Layout=Layout,ImagescStyle={'XData',[-3,2]},SubTitles=SubTitles,LMHColor=[Colors(1,:);1,1,1;Colors(2,:)]);
+Axes(1).YAxis.Visible='on';
 xlabel(Layout,'Time(s) from cue(:) water(|)');
 ylabel(Layout,'Cell');
 CB=colorbar;
