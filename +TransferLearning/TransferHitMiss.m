@@ -6,40 +6,21 @@ arguments
 end
 FullNewPca=isempty(PcaAx);
 import TransferLearning.*
-DataSet=FullCalcium;
+DataSet=TransferLearning.FullCalcium;
 switch bitand(FigureFlag,Flags.Paradigm)
 	case Flags.LightAudio
-		SheetName='光声迁移命中错失';
+		Paradigm='光声';
 		SubTitles=["Learned light-water","Transfer audio-water hit","Transfer audio-water miss"];
 	case Flags.AudioLight
-		SheetName='声光迁移命中错失';
+		Paradigm='声光';
 		SubTitles=["Learned audio-water","Transfer light-water hit","Transfer light-water miss"];
 		%Naive10放在最后保证前三种颜色一致
 	otherwise
 		Exception.Unsupported_paradigm.Throw;
 end
-persistent NtatsDictionary
-if isempty(NtatsDictionary)
-	NtatsDictionary=dictionary;
-end
-try
-	GroupNtats=NtatsDictionary{SheetName};
-catch ME
-	if any(ME.identifier==["MATLAB:dictionary:UnconfiguredLookupNotSupported","MATLAB:dictionary:ScalarKeyNotFound"])
-		GroupNtats=DataSet.QueryNTATS(UniExp.ReadQueryTable(ProjectPath('查询表.xlsx'),SheetName),UniExp.Flags.log2FdF0,1:24,UniExp.Flags.Median);
-		try
-			GroupNtats=UniExp.NtatsCellReplenish(GroupNtats);
-		catch ME
-			if ME.identifier~="UniExp:Exceptions:No_need_to_replenish"
-				ME.rethrow;
-			end
-		end
-		NtatsDictionary{SheetName}=GroupNtats;
-	else
-		ME.rethrow;
-	end
-end
-[PcaCoeff,PcaScore]=UnifiedPcaModel(GroupNtats);
+SheetName=[Paradigm,'迁移命中错失'];
+GroupNtats=TransferLearning.QueryNTATS(SheetName);
+[PcaCoeff,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 if FullNewPca
 	figure;
@@ -73,7 +54,7 @@ CurveLayout=tiledlayout(2,2,TileSpacing='tight',Padding='tight');
 Axes=gobjects(3,1);
 for A=1:3
 	Axes(A)=nexttile;
-	MATLAB.Graphics.MultiShadowedLines(2.^Mean(:,:,A)'-1,2.^Sem(:,:,A)'-1,X=Xs);
+	MATLAB.Graphics.MultiShadowedLines(2.^Mean(:,:,A)'-1,2.^Sem(:,:,A)'-1,X=Xs,EdgeColors=[0,0,0]);
 	CueLine=xline(0,':k');
 	WaterLine=xline(1,'-k');
 	title(SubTitles(A));
@@ -84,6 +65,6 @@ title(CurveLayout,'Top 5% cells of PC1 coeff');
 ylabel(CurveLayout,'ΔF/F_0 ±SEM');
 xlabel(CurveLayout,'Time (s) from cue');
 MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-MATLAB.UnifyYLims(Axes);
+MATLAB.Graphics.UnifyAxesLims(Axes,@ylim);
 print(TransferLearning.ProjectPath(sprintf('%s.线图.%s.svg',SheetName,Target)),'-dsvg');
 end
