@@ -6,18 +6,19 @@ arguments
 end
 FullNewPca=isempty(PcaAx);
 import TransferLearning.*
-DataSet=FullCalcium;
+DataSet=TransferLearning.FullCalcium;
 switch bitand(FigureFlag,Flags.Paradigm)
 	case Flags.LightAudio
-		SheetName='光声最终MOp';
+		Paradigm='光声';
 		SubTitles=["Learned light-water","Transfer audio-water","Final audio-water"];
 	case Flags.AudioLight
-		SheetName='声光最终MOp';
+		Paradigm='声光';
 		SubTitles=["Learned audio-water","Transfer light-water","Final light-water"];
 	otherwise
 		Exception.Unsupported_paradigm.Throw;
 end
-GroupNtats=TransferLearning.NtatsFromSheetname(SheetName);
+SheetName=[Paradigm,'最终MOp'];
+GroupNtats=TransferLearning.QueryNTATS(SheetName);
 Layout=BasicHeatmap(2.^UniExp.HeatmapSort(GroupNtats,["Transfer","Final"]).NTATS{:,:,["Learned","Transfer","Final"]}-1,SubTitles,[0,0,1;1,0,0;0,0.681,0],false,CLim=[-2,2]);
 NumMice=numel(unique(DataSet.Cells.Mouse(ismember(DataSet.Cells.CellUID,GroupNtats.CellUID))));
 Target=Flags(bitand(FigureFlag,Flags.Target));
@@ -29,7 +30,7 @@ switch Target
 		MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 end
 print(ProjectPath(sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
-[~,PcaScore]=UnifiedPcaModel(GroupNtats);
+[~,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 if FullNewPca
 	figure;

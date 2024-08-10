@@ -14,14 +14,14 @@ import TransferLearning.*
 DataSet=TransferLearning.FullCalcium;
 switch bitand(FigureFlag,Flags.Paradigm)
 	case Flags.LightAudio
+		Paradigm='光声';
 		SheetName='光声迁移MOp';
-		PcaSheet='光声PCA';
 		Title='Similar activity in MOp learned & transfer';
 		SubTitles=["Naive light-water","Learned light-water","Transfer audio-water"];
 		Legends=SubTitles;
 		GroupOrder=["Naive","Learned","Transfer"];
 	case Flags.AudioLight
-		PcaSheet='声光PCA';
+		Paradigm='声光';
 		switch bitand(FigureFlag,Flags.BrainRegion)
 			case Flags.MOp
 				SheetName='声光迁移MOp';
@@ -51,7 +51,7 @@ switch Target
 		MATLAB.Graphics.FigureAspectRatio(8,5,options.HeatmapScale);
 end
 print(ProjectPath(sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
-[~,PcaScore]=UnifiedPcaModel(PcaSheet,GroupNtats);
+[~,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 FullNew=isempty(PcaAx);
 if FullNew

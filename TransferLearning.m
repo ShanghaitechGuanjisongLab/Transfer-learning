@@ -5,6 +5,12 @@ classdef(Abstract)TransferLearning
 		QueryNTATS=memoize(@TransferLearning.iQueryNTATS);
 		PcaTable=memoize(@TransferLearning.iPcaTable);
 	end
+	methods(Static)
+		function Clear()
+			clearAllMemoizedCaches;
+			clear TransferLearning;
+		end
+	end
 	methods(Access=private,Static)
 		function GroupNtats=iQueryNTATS(Sheetname,DifferentCells)
 			arguments
