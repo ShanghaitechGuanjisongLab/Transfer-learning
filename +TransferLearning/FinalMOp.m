@@ -19,7 +19,7 @@ switch bitand(FigureFlag,Flags.Paradigm)
 end
 SheetName=[Paradigm,'最终MOp'];
 GroupNtats=TransferLearning.QueryNTATS(SheetName);
-Layout=BasicHeatmap(2.^UniExp.HeatmapSort(GroupNtats,["Transfer","Final"]).NTATS{:,:,["Learned","Transfer","Final"]}-1,SubTitles,[0,0,1;1,0,0;0,0.681,0],false,CLim=[-2,2]);
+Layout=BasicHeatmap(UniExp.HeatmapSort(GroupNtats,["Transfer","Final"]).NTATS{:,:,["Learned","Transfer","Final"]},SubTitles,[0,0,1;1,0,0;0,0.681,0],false,CLim=[-2,2]);
 NumMice=numel(unique(DataSet.Cells.Mouse(ismember(DataSet.Cells.CellUID,GroupNtats.CellUID))));
 Target=Flags(bitand(FigureFlag,Flags.Target));
 switch Target
@@ -37,7 +37,7 @@ if FullNewPca
 else
 	PcaAx={PcaAx};
 end
-PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Learned","Transfer","Final"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),SubTitles,Interpreter='none');
+PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Learned","Transfer","Final"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([30;40],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),SubTitles,Interpreter='none');
 UniExp.PcAxLabels(table(PCs',Explained,'VariableNames',["Index","Explained"],'RowNames',["X";"Y";"Z"]),PcaAx{:});
 UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNewPca

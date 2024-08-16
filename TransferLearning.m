@@ -1,7 +1,7 @@
 classdef(Abstract)TransferLearning
 	%全局常量
 	properties(Constant)
-		FullCalcium=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202407\全钙大模型v5.mat")
+		FullCalcium=TransferLearning.iFullCalcium
 		QueryNTATS=memoize(@TransferLearning.iQueryNTATS);
 		PcaTable=memoize(@TransferLearning.iPcaTable);
 	end
@@ -12,12 +12,16 @@ classdef(Abstract)TransferLearning
 		end
 	end
 	methods(Access=private,Static)
+		function FC=iFullCalcium
+			FC=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202408\全钙大模型v6.mat");
+			FC.TrialSignals.ResampledSignal(:,41:end)=[];
+		end
 		function GroupNtats=iQueryNTATS(Sheetname,DifferentCells)
 			arguments
 				Sheetname
 				DifferentCells=TransferLearning.Flags.Different_cells_replenished;
 			end
-			GroupNtats=TransferLearning.FullCalcium.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),Sheetname),UniExp.Flags.dFdF0,1:24,UniExp.Flags.Median);
+			GroupNtats=TransferLearning.FullCalcium.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),Sheetname),UniExp.Flags.dFdF0,1:30,UniExp.Flags.Median);
 			switch DifferentCells
 				case TransferLearning.Flags.Different_cells_not_handled
 				case TransferLearning.Flags.Different_cells_replenished

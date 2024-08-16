@@ -8,7 +8,7 @@ if isscalar(varargin)
 	UntransposedCoeff=PcaTable.Coeff(:,CoeffIndex);
 	NTATS=QueryNtats.NTATS(QueryIndex,:,:);
 else
-	CellUID=TransferLearning.FullCalcium.TableQuery("CellUID",varargin{:},Paradigm=Paradigm).CellUID;
+	CellUID=TransferLearning.FullCalcium.TableQuery("CellUID",varargin{:},Paradigm=Paradigm,ZLayer=["MOp2/3","MOp5"]).CellUID;
 	Coeff=table(CellUID);
 	Logical=ismember(GroupNtats.CellUID,CellUID);
 	UntransposedCoeff=PcaTable.Coeff(:,Logical);
