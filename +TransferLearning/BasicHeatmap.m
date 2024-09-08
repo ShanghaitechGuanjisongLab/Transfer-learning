@@ -9,7 +9,7 @@ arguments
 	options.Flags=[UniExp.Flags.HideYAxis,UniExp.Flags.SymmetricColormap]
 end
 figure;
-Layout=tiledlayout(1,numel(SubTitles),TileSpacing='none',Padding='tight');
+Layout=tiledlayout(1,size(SortedData,3),TileSpacing='none',Padding='tight');%SubTitles可能为空
 if ScaleColor
 	ScaleColor={UniExp.Flags.ScaleColor};
 else
@@ -20,7 +20,12 @@ if isfield(options,'CLim')
 else
 	CLim={};
 end
-[~,Axes]=UniExp.LanearHeatmap(SortedData,ScaleColor{:},CLim{:},Flags=options.Flags,Layout=Layout,ImagescStyle={'XData',seconds([-3,2])},SubTitles=SubTitles,LMHColor=[Colors(1,:);1,1,1;Colors(2,:)]);
+if isempty(SubTitles)
+	SubTitles={};
+else
+	SubTitles={'SubTitles',SubTitles};
+end
+[~,Axes]=UniExp.LanearHeatmap(SortedData,ScaleColor{:},CLim{:},SubTitles{:},Flags=options.Flags,Layout=Layout,ImagescStyle={'XData',seconds([-3,2])},LMHColor=[Colors(1,:);1,1,1;Colors(2,:)],CLim=[-2,2]);
 Axes(1).YAxis.Visible='on';
 xlabel(Layout,'Time from cue(:) water(|)');
 ylabel(Layout,'Cell');
