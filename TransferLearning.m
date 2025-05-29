@@ -10,6 +10,19 @@ classdef(Abstract)TransferLearning
 			clearAllMemoizedCaches;
 			clear TransferLearning;
 		end
+		function MB=MOpBaseline
+			MB=UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202505\MOp全钙.v2.mat');
+			MB.TagSplitTrial(seconds([-3,3]));
+			%由于行为和水混用CD2通道导致多拆出了一个假回合
+			MB.RemoveTrials(MB.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00',TimeZone='local'),TrialIndex=31).TrialUID);
+
+			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
+			MB.RemoveDateTimes(datetime('2023-01-13 09:39:00',TimeZone='local'));
+			TrialDuration=seconds(6);
+			LLP=MB.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			MB.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			MB.ResampleTrials(milliseconds(125),TrialDuration);
+		end
 	end
 	methods(Access=private,Static)
 		function FC=iFullCalcium
