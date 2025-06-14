@@ -11,7 +11,7 @@ classdef(Abstract)TransferLearning
 			clear TransferLearning;
 		end
 		function MB=MOpBaseline
-			MB=UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202505\MOp全钙.v2.mat');
+			MB=UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202506\MOp全钙.v3.mat');
 			MB.TagSplitTrial(seconds([-3,3]));
 			%由于行为和水混用CD2通道导致多拆出了一个假回合
 			MB.RemoveTrials(MB.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00',TimeZone='local'),TrialIndex=31).TrialUID);
