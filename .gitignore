@@ -34,3 +34,6 @@ codegen/
 
 # vscode专用
 .vscode
+
+# Excel临时文件
+~$*
