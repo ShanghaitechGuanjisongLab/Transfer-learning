@@ -47,6 +47,10 @@ classdef(Abstract)TransferLearning
 			LA.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			LA.ResampleTrials(milliseconds(125),TrialDuration);
 		end
+		function MS=MeanSem1(Data)
+			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,1);
+			MS=cat(3,Mean,Sem);
+		end
 	end
 	methods(Access=private,Static)
 		function FC=iFullCalcium
