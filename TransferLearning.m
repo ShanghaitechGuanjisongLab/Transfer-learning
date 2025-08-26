@@ -22,6 +22,8 @@ classdef(Abstract)TransferLearning
 			LLP=MB.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			MB.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			MB.ResampleTrials(milliseconds(125),TrialDuration);
+			MB.DateTimes.DateTime.TimeZone='';
+			MB.Blocks.DateTime.TimeZone='';
 		end
 		function AL=AudioLightBaseline
 			AL=UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202506\声光迁移MOp成像（含学会后三次）.v3.mat');
@@ -50,6 +52,36 @@ classdef(Abstract)TransferLearning
 		function MS=MeanSem1(Data)
 			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,1);
 			MS=cat(3,Mean,Sem);
+		end
+		function RSP=RSPd
+			RSP=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202508\RSP-G6f观察RSP 声水转光水（含学会后三次和红参）.v2.mat');
+			RSP.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=RSP.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			RSP.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			RSP.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function Inhibit=THInhibit
+			Inhibit=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202507\PO抑制MOp成像.v3.mat');
+			Inhibit.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function V7Inhibit=Vacation7
+			V7Inhibit=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202508\yqn0400\yqn0400.mat");
+			V7Inhibit.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=V7Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			V7Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+			V7Inhibit.Mice=unique(V7Inhibit.DateTimes(:,"Mouse"));
+			V7Inhibit.Mice.Paradigm(:)=categorical("声光无穿插");
+			QueryTable=V7Inhibit.TableQuery(["BlockUID","Phase","Design"]);
+			QueryTable.Manipulation(QueryTable.Design=="LightWater"|QueryTable.Phase=="Learned")=categorical("V7Inhibit");
+			[~,Index]=ismember(QueryTable.BlockUID,V7Inhibit.Blocks.BlockUID);
+			V7Inhibit.Blocks.Manipulation(Index)=QueryTable.Manipulation;
 		end
 	end
 	methods(Access=private,Static)
