@@ -60,6 +60,8 @@ classdef(Abstract)TransferLearning
 			LLP=RSP.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			RSP.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			RSP.ResampleTrials(milliseconds(125),TrialDuration);
+			RSP.Mice=unique(RSP.DateTimes(:,"Mouse"));
+			RSP.Mice.Paradigm(:)="声光无穿插";
 		end
 		function Inhibit=THInhibit
 			Inhibit=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202507\PO抑制MOp成像.v3.mat');
@@ -70,18 +72,12 @@ classdef(Abstract)TransferLearning
 			Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
 		end
 		function V7Inhibit=Vacation7
-			V7Inhibit=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202508\yqn0400\yqn0400.mat");
+			V7Inhibit=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202509\WT声光等待7天后迁移.v1.mat");
 			V7Inhibit.TagSplitTrial(seconds([-3,3]));
 			TrialDuration=seconds(6);
 			LLP=V7Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			V7Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
-			V7Inhibit.Mice=unique(V7Inhibit.DateTimes(:,"Mouse"));
-			V7Inhibit.Mice.Paradigm(:)=categorical("声光无穿插");
-			QueryTable=V7Inhibit.TableQuery(["BlockUID","Phase","Design"]);
-			QueryTable.Manipulation(QueryTable.Design=="LightWater"|QueryTable.Phase=="Learned")=categorical("V7Inhibit");
-			[~,Index]=ismember(QueryTable.BlockUID,V7Inhibit.Blocks.BlockUID);
-			V7Inhibit.Blocks.Manipulation(Index)=QueryTable.Manipulation;
 		end
 	end
 	methods(Access=private,Static)
