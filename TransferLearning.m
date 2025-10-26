@@ -49,9 +49,9 @@ classdef(Abstract)TransferLearning
 			LA.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			LA.ResampleTrials(milliseconds(125),TrialDuration);
 		end
-		function MS=MeanSem1(Data)
-			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,1);
-			MS=cat(3,Mean,Sem);
+		function MS=MeanSem(Data,ReduceDimension,ConcatDimension)
+			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,ReduceDimension);
+			MS=cat(ConcatDimension,Mean,Sem);
 		end
 		function RSP=RSPd
 			RSP=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202508\RSP-G6f观察RSP 声水转光水（含学会后三次和红参）.v2.mat');

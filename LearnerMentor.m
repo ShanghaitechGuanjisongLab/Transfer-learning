@@ -30,6 +30,8 @@ GroupNtats(:,["ZLayer","Mouse"])=MB.Cells(Index,["ZLayer","Mouse"]);
 %%
 [TransferLearnedActiveMeanLine,TransferLearnedRate,TransferLearnedActive]=ActiveSplit(GroupNtats,"TransferLight","LearnedAudio","CueResponsor");
 %%
+
+%%
 TransferPerformance=MB.TableQuery(["Mouse","Performance"],Design="LightWater",Phase="Transfer",Paradigm="声光无穿插");
 %%
 NaivePerformance=MB.TableQuery(["Mouse","Performance","Design"],Phase="Naive",Paradigm="光声无穿插");
