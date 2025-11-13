@@ -80,7 +80,7 @@ classdef(Abstract)TransferLearning
 			V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
 		end
 		function I=Interspersed
-			I=UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202510\merge\声水转穿插声光v1.UniExp.mat");
+			I=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202511\声光穿插迁移MOp成像v3.mat");
 			I.TagSplitTrial(seconds([-3,3]));
 			TrialDuration=seconds(6);
 			LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
