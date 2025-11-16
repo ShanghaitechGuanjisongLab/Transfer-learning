@@ -4,6 +4,7 @@ classdef(Abstract)TransferLearning
 		FullCalcium=TransferLearning.iFullCalcium
 		QueryNTATS=memoize(@TransferLearning.iQueryNTATS);
 		PcaTable=memoize(@TransferLearning.iPcaTable);
+		Xs=seconds(linspace(-3,3,48)).';
 	end
 	methods(Static)
 		function Clear()
@@ -86,6 +87,10 @@ classdef(Abstract)TransferLearning
 			LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			I.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			I.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function DrawCueWaterLines
+			xline(0,':');
+			xline(1,'-');
 		end
 	end
 	methods(Access=private,Static)
