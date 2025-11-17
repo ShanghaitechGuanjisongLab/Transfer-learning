@@ -87,10 +87,16 @@ classdef(Abstract)TransferLearning
 			LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			I.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			I.ResampleTrials(milliseconds(125),TrialDuration);
+			I.AddRepeatIndex;
 		end
-		function DrawCueWaterLines
-			xline(0,':');
-			xline(1,'-');
+		function DrawCueWaterLines(Ax)
+			if nargin
+				Ax={Ax};
+			else
+				Ax={};
+			end
+			xline(Ax{:},0,':');
+			xline(Ax{:},1,'-');
 		end
 	end
 	methods(Access=private,Static)
