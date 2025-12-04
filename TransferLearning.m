@@ -12,7 +12,7 @@ classdef(Abstract)TransferLearning
 			clear TransferLearning;
 		end
 		function MB=MOpBaseline
-			MB=UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202506\MOp全钙.v3.mat');
+			MB=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\MOp全钙.v4.mat");
 			MB.TagSplitTrial(seconds([-3,3]));
 			%由于行为和水混用CD2通道导致多拆出了一个假回合
 			MB.RemoveTrials(MB.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00',TimeZone='local'),TrialIndex=31).TrialUID);
@@ -27,7 +27,7 @@ classdef(Abstract)TransferLearning
 			MB.Blocks.DateTime.TimeZone='';
 		end
 		function AL=AudioLightBaseline
-			AL=UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202506\声光迁移MOp成像（含学会后三次）.v3.mat');
+			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v4.mat");
 			AL.TagSplitTrial(seconds([-3,3]));
 
 			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
@@ -38,7 +38,7 @@ classdef(Abstract)TransferLearning
 			AL.ResampleTrials(milliseconds(125),TrialDuration);
 		end
 		function LA=LightAudioBaseline
-			LA=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202505\散射光矫正\光声迁移无穿插MOp成像（含学会后三次）.v2.mat");
+			LA=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat");
 			LA.TagSplitTrial(seconds([-3,3]));
 			%由于行为和水混用CD2通道导致多拆出了一个假回合
 			LA.RemoveTrials(LA.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00',TimeZone='local'),TrialIndex=31).TrialUID);
