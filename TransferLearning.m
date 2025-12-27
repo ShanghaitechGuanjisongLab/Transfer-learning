@@ -89,6 +89,14 @@ classdef(Abstract)TransferLearning
 			I.ResampleTrials(milliseconds(125),TrialDuration);
 			I.AddRepeatIndex;
 		end
+		function F=scFLARE
+			F=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\vtf0451\vtf0451.UniExp.mat");
+			F.TagSplitTrial(seconds([-3,3]));
+			LLP=F.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			F.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			F.ResampleTrials(milliseconds(125),seconds(6));
+			F.AddRepeatIndex;
+		end
 		function DrawCueWaterLines(Ax)
 			if nargin
 				Ax={Ax};
