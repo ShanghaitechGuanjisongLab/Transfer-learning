@@ -6,96 +6,48 @@ classdef(Abstract)TransferLearning
 		PcaTable=memoize(@TransferLearning.iPcaTable);
 		Xs=seconds(linspace(-3,3,48)).';
 	end
+	properties(Constant,Access=private)
+		MemoMOpBaseline=memoize(@TransferLearning.iMOpBaseline);
+		MemoAudioLightBaseline=memoize(@TransferLearning.iAudioLightBaseline);
+		MemoLightAudioBaseline=memoize(@TransferLearning.iLightAudioBaseline);
+		MemoRSPd=memoize(@TransferLearning.iRSPd);
+		MemoTHInhibit=memoize(@TransferLearning.iTHInhibit);
+		MemoVacation7=memoize(@TransferLearning.iVacation7);
+		MemoInterspersed=memoize(@TransferLearning.iInterspersed);
+		MemoscFLARE=memoize(@TransferLearning.iscFLARE);
+	end
 	methods(Static)
 		function Clear()
 			clearAllMemoizedCaches;
 			clear TransferLearning;
 		end
 		function MB=MOpBaseline
-			MB=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\MOp全钙.v4.mat");
-			MB.TagSplitTrial(seconds([-3,3]));
-			%由于行为和水混用CD2通道导致多拆出了一个假回合
-			MB.RemoveTrials(MB.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00'),TrialIndex=31).TrialUID);
-
-			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
-			MB.RemoveDateTimes(datetime('2023-01-13 09:39:00'));
-			TrialDuration=seconds(6);
-			LLP=MB.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			MB.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			MB.ResampleTrials(milliseconds(125),TrialDuration);
-			MB.DateTimes.DateTime.TimeZone='';
-			MB.Blocks.DateTime.TimeZone='';
+			MB=TransferLearning.MemoMOpBaseline();
 		end
 		function AL=AudioLightBaseline
-			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v4.mat");
-			AL.TagSplitTrial(seconds([-3,3]));
-
-			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
-			AL.RemoveDateTimes(datetime('2023-01-13 09:39:00'));
-			TrialDuration=seconds(6);
-			LLP=AL.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			AL.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			AL.ResampleTrials(milliseconds(125),TrialDuration);
+			AL=TransferLearning.MemoAudioLightBaseline();
 		end
 		function LA=LightAudioBaseline
-			LA=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat");
-			LA.TagSplitTrial(seconds([-3,3]));
-			%由于行为和水混用CD2通道导致多拆出了一个假回合
-			LA.RemoveTrials(LA.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00'),TrialIndex=31).TrialUID);
-
-			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
-			LA.RemoveDateTimes(datetime('2023-01-13 09:39:00'));
-			TrialDuration=seconds(6);
-			LLP=LA.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			LA.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			LA.ResampleTrials(milliseconds(125),TrialDuration);
+			LA=TransferLearning.MemoLightAudioBaseline();
 		end
 		function MS=MeanSem(Data,ReduceDimension,ConcatDimension)
 			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,ReduceDimension);
 			MS=cat(ConcatDimension,Mean,Sem);
 		end
 		function RSP=RSPd
-			RSP=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202508\RSP-G6f观察RSP 声水转光水（含学会后三次和红参）.v2.mat');
-			RSP.TagSplitTrial(seconds([-3,3]));
-			TrialDuration=seconds(6);
-			LLP=RSP.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			RSP.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			RSP.ResampleTrials(milliseconds(125),TrialDuration);
-			RSP.Mice=unique(RSP.DateTimes(:,"Mouse"));
-			RSP.Mice.Paradigm(:)="声光无穿插";
+			RSP=TransferLearning.MemoRSPd();
 		end
 		function Inhibit=THInhibit
-			Inhibit=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202507\PO抑制MOp成像.v3.mat');
-			Inhibit.TagSplitTrial(seconds([-3,3]));
-			TrialDuration=seconds(6);
-			LLP=Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+			Inhibit=TransferLearning.MemoTHInhibit();
 		end
 		function V7Inhibit=Vacation7
-			V7Inhibit=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202509\WT声光等待7天后迁移.v1.mat");
-			V7Inhibit.TagSplitTrial(seconds([-3,3]));
-			TrialDuration=seconds(6);
-			LLP=V7Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			V7Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+			V7Inhibit=TransferLearning.MemoVacation7();
 		end
 		function I=Interspersed
-			I=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202511\声光穿插迁移MOp成像v3.mat");
-			I.TagSplitTrial(seconds([-3,3]));
-			TrialDuration=seconds(6);
-			LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			I.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			I.ResampleTrials(milliseconds(125),TrialDuration);
-			I.AddRepeatIndex;
+			I=TransferLearning.MemoInterspersed();
 		end
 		function F=scFLARE
-			F=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\vtf0451\vtf0451.UniExp.mat");
-			F.TagSplitTrial(seconds([-3,3]));
-			LLP=F.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
-			F.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			F.ResampleTrials(milliseconds(125),seconds(6));
-			F.AddRepeatIndex;
+			F=TransferLearning.MemoscFLARE();
 		end
 		function DrawCueWaterLines(Ax)
 			if nargin
@@ -136,6 +88,88 @@ classdef(Abstract)TransferLearning
 		end
 		function PT=iPcaTable(Sheetname)
 			PT=UniExp.LinearPca(TransferLearning.QueryNTATS(Sheetname,TransferLearning.Flags.Different_cells_replenished).NTATS,12);
+		end
+		function MB=iMOpBaseline
+			MB=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\MOp全钙.v4.mat");
+			MB.TagSplitTrial(seconds([-3,3]));
+			%由于行为和水混用CD2通道导致多拆出了一个假回合
+			MB.RemoveTrials(MB.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00'),TrialIndex=31).TrialUID);
+
+			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
+			MB.RemoveDateTimes(datetime('2023-01-13 09:39:00'));
+			TrialDuration=seconds(6);
+			LLP=MB.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			MB.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			MB.ResampleTrials(milliseconds(125),TrialDuration);
+			MB.DateTimes.DateTime.TimeZone='';
+			MB.Blocks.DateTime.TimeZone='';
+		end
+		function AL=iAudioLightBaseline
+			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v4.mat");
+			AL.TagSplitTrial(seconds([-3,3]));
+
+			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
+			AL.RemoveDateTimes(datetime('2023-01-13 09:39:00'));
+			TrialDuration=seconds(6);
+			LLP=AL.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			AL.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			AL.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function LA=iLightAudioBaseline
+			LA=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat");
+			LA.TagSplitTrial(seconds([-3,3]));
+			%由于行为和水混用CD2通道导致多拆出了一个假回合
+			LA.RemoveTrials(LA.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00'),TrialIndex=31).TrialUID);
+
+			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
+			LA.RemoveDateTimes(datetime('2023-01-13 09:39:00'));
+			TrialDuration=seconds(6);
+			LLP=LA.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			LA.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			LA.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function RSP=iRSPd
+			RSP=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202508\RSP-G6f观察RSP 声水转光水（含学会后三次和红参）.v2.mat');
+			RSP.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=RSP.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			RSP.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			RSP.ResampleTrials(milliseconds(125),TrialDuration);
+			RSP.Mice=unique(RSP.DateTimes(:,"Mouse"));
+			RSP.Mice.Paradigm(:)="声光无穿插";
+		end
+		function Inhibit=iTHInhibit
+			Inhibit=UniExp.DataSet('\\data-server-2\个人数据\张天夫\202507\PO抑制MOp成像.v3.mat');
+			Inhibit.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function V7Inhibit=iVacation7
+			V7Inhibit=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202509\WT声光等待7天后迁移.v1.mat");
+			V7Inhibit.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=V7Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			V7Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+		end
+		function I=iInterspersed
+			I=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202511\声光穿插迁移MOp成像v3.mat");
+			I.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			I.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			I.ResampleTrials(milliseconds(125),TrialDuration);
+			I.AddRepeatIndex;
+		end
+		function F=iscFLARE
+			F=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\vtf0451\vtf0451.UniExp.mat");
+			F.TagSplitTrial(seconds([-3,3]));
+			LLP=F.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			F.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			F.ResampleTrials(milliseconds(125),seconds(6));
+			F.AddRepeatIndex;
 		end
 	end
 end
