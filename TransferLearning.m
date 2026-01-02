@@ -164,11 +164,10 @@ classdef(Abstract)TransferLearning
 			I.AddRepeatIndex;
 		end
 		function F=iscFLARE
-			F=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\vtf0451\vtf0451.UniExp.mat");
+			F=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\MOp+RSP scFLARE 化学抑制钙成像.v1.mat");
 			F.TagSplitTrial(seconds([-3,3]));
 			LLP=F.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			F.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
-			F.ResampleTrials(milliseconds(125),seconds(6));
 			F.AddRepeatIndex;
 		end
 	end
