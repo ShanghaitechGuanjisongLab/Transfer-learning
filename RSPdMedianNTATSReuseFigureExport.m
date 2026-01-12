@@ -43,8 +43,8 @@ kSigma = 3;
 % --- 2) 取 Learned/Transfer 的“所有回合中位数”轨迹（每 cell 一条 48 点）
 % RSPd 数据没有 Phase 字段：这里用 Design/Stimulus 来定义 Learned/Transfer
 % 注意：不要用 dFdF0（当 F0 可能为负时会崩）；统一用 z-score。
-GLearn = RSP.QueryNTATS(struct('Stimulus','AudioWater','Design','AudioWater'), UniExp.Flags.ZScore, 1:30, UniExp.Flags.Median);
-GTran  = RSP.QueryNTATS(struct('Stimulus','LightWater','Design','LightWater'), UniExp.Flags.ZScore, 1:30, UniExp.Flags.Median);
+GLearn = RSP.QueryNTATS(struct('Stimulus','AudioWater','Design','AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+GTran  = RSP.QueryNTATS(struct('Stimulus','LightWater','Design','LightWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 XLearn = iNtatsData(GLearn.NTATS);
 XTran  = iNtatsData(GTran.NTATS);
@@ -55,7 +55,7 @@ XTran  = iNtatsData(GTran.NTATS);
 QT_HM = table(categorical({'Hit';'Miss'}), categorical({'LightWater';'LightWater'}), categorical({'LightWater';'LightWater'}), {1;0}, ...
     'VariableNames', {'GroupName','Design','Stimulus','Behavior'});
 try
-    GTranHM = RSP.QueryNTATS(QT_HM, UniExp.Flags.ZScore, 1:30, UniExp.Flags.Median);
+    GTranHM = RSP.QueryNTATS(QT_HM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 catch ME
     if ME.identifier == "UniExp:Exception:Empty_group"
         warning(ME.identifier, 'QueryNTATS Hit/Miss 为空：%s', ME.message);
@@ -249,7 +249,7 @@ fprintf("[RSPd5  signrank hit>miss] p=%.4g (n=%d)\n", p5.p,  p5.n);
 
 % --- 4) 画图并导出 SVG
 figure('Name','RSPd Median-NTATS threshold reuse vs Performance (by layer)');
-tiledlayout(2,1,'TileSpacing','compact','Padding','compact');
+tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 sgtitle(sprintf('RSPd median NTATS threshold: max(0~1s)>mean(base)+%g*std(base)', kSigma));
 
 nexttile;
@@ -290,30 +290,34 @@ fprintf("\nSVG exported: %s\n", outFile);
 
 % --- 5) Hit vs Miss：用 UniExp.BarScatterCompare 作图示意（按 layer）
 figure('Name','RSPd Hit vs Miss reuse (BarScatterCompare)');
-tiledlayout(2,1,'TileSpacing','compact','Padding','compact');
-sgtitle(sprintf('RSPd Hit vs Miss forward reuse: P(TransferActive | LearnedActive), k=%g', kSigma));
+tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
+sgtitle(sprintf('RSPd Hit vs Miss forward reuse (2D groups): P(TransferActive | LearnedActive), k=%g', kSigma));
 
 nexttile;
-hit = Summary.ReuseRate_LearnedMedianActive_Hit(rows23);
-miss = Summary.ReuseRate_LearnedMedianActive_Miss(rows23);
-mask = isfinite(hit) & isfinite(miss);
-T = table(hit(mask), miss(mask), 'VariableNames', ["Hit","Miss"]);
-UniExp.BarScatterCompare(T, false, table(["Hit","Miss"], 'VariableNames', "GroupPair"));
-ylabel('Reuse');
-title(sprintf('RSPd2/3: signrank hit>miss p=%.3g (n=%d)', p23.p, p23.n));
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
-end
+hit23 = Summary.ReuseRate_LearnedMedianActive_Hit(rows23);
+miss23 = Summary.ReuseRate_LearnedMedianActive_Miss(rows23);
+mask23 = isfinite(hit23) & isfinite(miss23);
 
-nexttile;
-hit = Summary.ReuseRate_LearnedMedianActive_Hit(rows5);
-miss = Summary.ReuseRate_LearnedMedianActive_Miss(rows5);
-mask = isfinite(hit) & isfinite(miss);
-T = table(hit(mask), miss(mask), 'VariableNames', ["Hit","Miss"]);
-UniExp.BarScatterCompare(T, false, table(["Hit","Miss"], 'VariableNames', "GroupPair"));
+hit5 = Summary.ReuseRate_LearnedMedianActive_Hit(rows5);
+miss5 = Summary.ReuseRate_LearnedMedianActive_Miss(rows5);
+mask5 = isfinite(hit5) & isfinite(miss5);
+
+colHit = {hit23(mask23); hit5(mask5)};
+colMiss = {miss23(mask23); miss5(mask5)};
+Groups = table(colHit, colMiss, ...
+    'VariableNames', {'Hit','Miss'}, ...
+    'RowNames', {'RSPd2/3','RSPd5'});
+Groups.Properties.DimensionNames = {'Layer','Outcome'};
+
+layerNames = string(Groups.Properties.RowNames);
+layerPairs = [layerNames, layerNames];
+outcomePairs = repmat(["Hit","Miss"], numel(layerNames), 1);
+groupPair2D = table(layerPairs, outcomePairs, 'VariableNames', Groups.Properties.DimensionNames);
+CompareGroup = table(groupPair2D, 'VariableNames', {'GroupPair'});
+
+UniExp.BarScatterCompare(Groups, false, CompareGroup);
 ylabel('Reuse');
-title(sprintf('RSPd5: signrank hit>miss p=%.3g (n=%d)', p5.p, p5.n));
+title('Forward reuse (Hit vs Miss)');
 ax = gca;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
     ax.Toolbar.Visible = 'off';

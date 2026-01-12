@@ -22,6 +22,7 @@ classdef(Abstract)TransferLearning
 			clear TransferLearning;
 		end
 		function MB=MOpBaseline
+			TransferLearning.Exception.DataSet_deprecated.Warn("除非你想分析光声有穿插数据，否则请分别用AudioLightBaseline和LightAudioBaseline");
 			MB=TransferLearning.MemoMOpBaseline();
 		end
 		function AL=AudioLightBaseline
@@ -69,7 +70,7 @@ classdef(Abstract)TransferLearning
 				Sheetname
 				DifferentCells=TransferLearning.Flags.Different_cells_replenished;
 			end
-			GroupNtats=TransferLearning.FullCalcium.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),Sheetname),UniExp.Flags.dFdF0,1:30,UniExp.Flags.Median);
+			GroupNtats=TransferLearning.FullCalcium.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('查询表.xlsx'),Sheetname),UniExp.Flags.dFdF0,1:24,UniExp.Flags.Median);
 			switch DifferentCells
 				case TransferLearning.Flags.Different_cells_not_handled
 				case TransferLearning.Flags.Different_cells_replenished
@@ -105,7 +106,7 @@ classdef(Abstract)TransferLearning
 			MB.Blocks.DateTime.TimeZone='';
 		end
 		function AL=iAudioLightBaseline
-			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v4.mat");
+			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\声光迁移MOp成像（含学会后三次）.v5.mat");
 			AL.TagSplitTrial(seconds([-3,3]));
 
 			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上

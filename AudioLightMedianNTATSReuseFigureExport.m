@@ -11,7 +11,6 @@ defaultCfg = struct(...
     'RecomputeOverlays', true, ...      % 重新计算 scFLARE/Vacation7/THInhibit summary
     'ExportAllOverlayScatter', true, ...% 导出“全叠加散点图”（Ctrl + 所有 overlay）
     'ExportCtrlOnlyAnd3Compare', true, ... % 导出 Ctrl-only 与 3 张 Ctrl-vs-单组散点图
-    'ExportDatasetCompareBar4', true, ...  % 导出 BarScatterCompare 4组二维分组对比图
     'ExportReverse', true, ...
     'ExportHitMiss', true, ...
     'ExportHeatmap', true);
@@ -77,8 +76,8 @@ end
 if cfg.RecomputeCtrl || ~haveCtrlSummary
     % --- 2) 取 Learned/Transfer 的“所有回合中位数”轨迹（每 cell 一条 48 点）
     % 注意：不要用 dFdF0（当 F0 可能为负时会崩）；统一用 z-score。
-    GLearn = AL.QueryNTATS(struct('Stimulus','AudioWater','Phase','Learned'), UniExp.Flags.ZScore, 1:30, UniExp.Flags.Median);
-    GTran  = AL.QueryNTATS(struct('Stimulus','LightWater','Phase','Transfer'), UniExp.Flags.ZScore, 1:30, UniExp.Flags.Median);
+    GLearn = AL.QueryNTATS(struct('Stimulus','AudioWater','Phase','Learned'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+    GTran  = AL.QueryNTATS(struct('Stimulus','LightWater','Phase','Transfer'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
     XLearn = iNtatsData(GLearn.NTATS);
     XTran  = iNtatsData(GTran.NTATS);
@@ -88,7 +87,7 @@ if cfg.RecomputeCtrl || ~haveCtrlSummary
 % 这里用 QueryTable 方式一次性查询 Hit/Miss 两组。
 QT_HM = table(categorical({'Hit';'Miss'}), categorical({'Transfer';'Transfer'}), categorical({'LightWater';'LightWater'}), {1;0}, 'VariableNames', {'GroupName','Phase','Stimulus','Behavior'});
 try
-    GTranHM = AL.QueryNTATS(QT_HM, UniExp.Flags.ZScore, 1:30, UniExp.Flags.Median);
+    GTranHM = AL.QueryNTATS(QT_HM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 catch ME
     if ME.identifier == "UniExp:Exception:Empty_group"
         warning(ME.identifier, 'QueryNTATS Hit/Miss 为空：%s', ME.message);
@@ -197,6 +196,8 @@ sumTransferRate = nan(maxRows,1);
 sumReuseRev = nan(maxRows,1);
 sumReuseHit = nan(maxRows,1);
 sumReuseMiss = nan(maxRows,1);
+sumReuseRevHit = nan(maxRows,1);
+sumReuseRevMiss = nan(maxRows,1);
 rowN = 0;
 
 for i = 1:height(mouseZ)
@@ -244,6 +245,25 @@ for i = 1:height(mouseZ)
         end
     end
 
+    % 复用率（按行为拆分，反向）：Hit/Miss 回合下的 TransferActive → LearnedActive
+    reuseRevHit = NaN;
+    if ismember('TransferActiveMedHit', medLT.Properties.VariableNames)
+        taHit = medLT.TransferActiveMedHit(rows);
+        denom = (taHit == 1);
+        if nnz(denom) >= 5
+            reuseRevHit = mean(double(LA(denom)), 'omitnan');
+        end
+    end
+
+    reuseRevMiss = NaN;
+    if ismember('TransferActiveMedMiss', medLT.Properties.VariableNames)
+        taMiss = medLT.TransferActiveMedMiss(rows);
+        denom = (taMiss == 1);
+        if nnz(denom) >= 5
+            reuseRevMiss = mean(double(LA(denom)), 'omitnan');
+        end
+    end
+
     perf = perfByMouse.TransferPerformance(perfByMouse.Mouse==m);
     if isempty(perf)
         perf = NaN;
@@ -262,11 +282,13 @@ for i = 1:height(mouseZ)
     sumReuseRev(rowN) = reuseRev;
     sumReuseHit(rowN) = reuseHit;
     sumReuseMiss(rowN) = reuseMiss;
+    sumReuseRevHit(rowN) = reuseRevHit;
+    sumReuseRevMiss(rowN) = reuseRevMiss;
 end
 
     Summary = table(sumMouse(1:rowN), sumZKey(1:rowN), sumPerf(1:rowN), sumNCells(1:rowN), sumLearnedRate(1:rowN), sumTransferRate(1:rowN), sumReuse(1:rowN), sumReuseRev(1:rowN), ...
-        sumReuseHit(1:rowN), sumReuseMiss(1:rowN), ...
-        'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','LearnedMedianActiveRate','TransferMedianActiveRate','ReuseRate_LearnedMedianActive','ReuseRate_TransferMedianActive','ReuseRate_LearnedMedianActive_Hit','ReuseRate_LearnedMedianActive_Miss'});
+        sumReuseHit(1:rowN), sumReuseMiss(1:rowN), sumReuseRevHit(1:rowN), sumReuseRevMiss(1:rowN), ...
+        'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','LearnedMedianActiveRate','TransferMedianActiveRate','ReuseRate_LearnedMedianActive','ReuseRate_TransferMedianActive','ReuseRate_LearnedMedianActive_Hit','ReuseRate_LearnedMedianActive_Miss','ReuseRate_TransferMedianActive_Hit','ReuseRate_TransferMedianActive_Miss'});
 
     Summary = sortrows(Summary, {'ZKey','TransferPerformance'}, {'ascend','descend'});
 
@@ -343,7 +365,7 @@ TAW_FL.Mouse = string(TAW_FL.Mouse);
 
 % 49 点时间轴（由 QueryNTS 返回的 TrialSignal 列数决定）；默认覆盖 [-3,3] 秒
 % 先用任意一个 mouse 的 LightWater QueryNTS 取到 nT
-tmpNTS = FL.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse', TLW_FL.Mouse(1)), UniExp.Flags.ZScore, 1:30);
+tmpNTS = FL.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse', TLW_FL.Mouse(1)), UniExp.Flags.ZScore, 1:24);
 tmpT = tmpNTS{1};
 nT_FL = size(tmpT.TrialSignal, 2);
 xsSecFL = linspace(-3, 3, nT_FL);
@@ -399,7 +421,7 @@ for iM = 1:numel(miceFL)
     end
 
     % Learned trial-level NTS → block-filter → per-cell median trace
-    ntsLearnCell = FL.QueryNTS(struct('Stimulus','AudioWater','Design','AudioWater','Mouse',m), UniExp.Flags.ZScore, 1:30);
+    ntsLearnCell = FL.QueryNTS(struct('Stimulus','AudioWater','Design','AudioWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
     ntsLearn = ntsLearnCell{1};
     inLearn = ismember(uint64(ntsLearn.TrialUID), trialUIDLearn);
     ntsLearn = ntsLearn(inLearn, :);
@@ -415,7 +437,7 @@ for iM = 1:numel(miceFL)
     learnedActive = learnedWinMxFL > (learnedBaseMuFL + kSigma .* learnedBaseSdFL);
 
     % Transfer trial-level NTS → block-filter → per-cell median trace
-    ntsTranCell = FL.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:30);
+    ntsTranCell = FL.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
     ntsTran = ntsTranCell{1};
     inTran = ismember(uint64(ntsTran.TrialUID), trialUIDTran);
     ntsTran = ntsTran(inTran, :);
@@ -487,148 +509,140 @@ end
 Vacation7Summary = table(strings(0,1), strings(0,1), nan(0,1), nan(0,1), nan(0,1), ...
     'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','ReuseRate_LearnedMedianActive'});
 
-try
-    if ~(cfg.RecomputeOverlays || ~haveV7Summary)
-        Vacation7Summary = evalin('base','Vacation7_MedianNTATSReuse_Summary');
-    else
-    if evalin('base', "exist('Vacation7DS','var')")
-        V7 = evalin('base', 'Vacation7DS');
-    else
-        V7 = TransferLearning.Vacation7;
-        assignin('base', 'Vacation7DS', V7);
-    end
-
-    TLW_V7 = V7.TableQuery(["Mouse","DateTime","Performance","BlockUID","Phase"], Design="LightWater", Phase="Transfer");
-    TLW_V7.Mouse = string(TLW_V7.Mouse);
-    TAW_V7 = V7.TableQuery(["Mouse","DateTime","BlockUID","Phase"], Design="AudioWater", Phase="Learned");
-    TAW_V7.Mouse = string(TAW_V7.Mouse);
-
-    if ~isempty(TLW_V7) && ~isempty(TAW_V7)
-        % 取时间轴长度（Vacation7 可能与主库不同）
-        tmpNTS = V7.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse', TLW_V7.Mouse(1)), UniExp.Flags.ZScore, 1:30);
-        tmpT = tmpNTS{1};
-        nT_V7 = size(tmpT.TrialSignal, 2);
-        xsSecV7 = linspace(-3, 3, nT_V7);
-        baseMaskV7 = (xsSecV7 >= -3) & (xsSecV7 < 0);
-        winMaskV7  = (xsSecV7 >= 0) & (xsSecV7 <= 1);
-
-        C_V7 = V7.Cells;
-        Tr_V7 = V7.Trials;
-        miceV7 = intersect(unique(TLW_V7.Mouse), unique(TAW_V7.Mouse));
-
-        sumMouse_V7 = strings(0,1);
-        sumZKey_V7 = strings(0,1);
-        sumPerf_V7 = nan(0,1);
-        sumNCells_V7 = nan(0,1);
-        sumReuse_V7 = nan(0,1);
-
-        for iM = 1:numel(miceV7)
-            m = miceV7(iM);
-
-            % Transfer：若同鼠有多个 Transfer block，选最新 DateTime 的一个
-            rowsLW = TLW_V7.Mouse == m;
-            if ~any(rowsLW)
-                continue;
-            end
-            tlwM = TLW_V7(rowsLW, :);
-            [~, idxMax] = max(tlwM.DateTime);
-            transRow = tlwM(idxMax, :);
-            transBlockUID = uint64(transRow.BlockUID);
-            transPerf = double(transRow.Performance);
-
-            % Learned：若同鼠有多个 Learned block，选最新 DateTime 的一个
-            rowsAW = TAW_V7.Mouse == m;
-            if ~any(rowsAW)
-                continue;
-            end
-            tawM = TAW_V7(rowsAW, :);
-            [~, idxMax] = max(tawM.DateTime);
-            learnRow = tawM(idxMax, :);
-            learnBlockUID = uint64(learnRow.BlockUID);
-
-            trLearn = (uint64(Tr_V7.BlockUID) == learnBlockUID) & (string(Tr_V7.Stimulus) == "AudioWater");
-            trTran  = (uint64(Tr_V7.BlockUID) == transBlockUID) & (string(Tr_V7.Stimulus) == "LightWater");
-            trialUIDLearn = uint64(Tr_V7.TrialUID(trLearn));
-            trialUIDTran  = uint64(Tr_V7.TrialUID(trTran));
-            if isempty(trialUIDLearn) || isempty(trialUIDTran)
-                continue;
-            end
-
-            ntsLearnCell = V7.QueryNTS(struct('Stimulus','AudioWater','Design','AudioWater','Mouse',m), UniExp.Flags.ZScore, 1:30);
-            ntsLearn = ntsLearnCell{1};
-            inLearn = ismember(uint64(ntsLearn.TrialUID), trialUIDLearn);
-            ntsLearn = ntsLearn(inLearn, :);
-            if isempty(ntsLearn)
-                continue;
-            end
-            [gL, cellL] = findgroups(uint64(ntsLearn.CellUID));
-            medLearn = splitapply(@(x) median(x, 1, 'omitnan'), ntsLearn.TrialSignal, gL);
-
-            learnedBaseMuV7 = mean(medLearn(:, baseMaskV7), 2, 'omitnan');
-            learnedBaseSdV7 = std(medLearn(:, baseMaskV7), 0, 2, 'omitnan');
-            learnedWinMxV7  = max(medLearn(:, winMaskV7), [], 2, 'omitnan');
-            learnedActiveV7 = learnedWinMxV7 > (learnedBaseMuV7 + kSigma .* learnedBaseSdV7);
-
-            ntsTranCell = V7.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:30);
-            ntsTran = ntsTranCell{1};
-            inTran = ismember(uint64(ntsTran.TrialUID), trialUIDTran);
-            ntsTran = ntsTran(inTran, :);
-            if isempty(ntsTran)
-                continue;
-            end
-            [gT, cellT] = findgroups(uint64(ntsTran.CellUID));
-            medTran = splitapply(@(x) median(x, 1, 'omitnan'), ntsTran.TrialSignal, gT);
-
-            tranBaseMuV7 = mean(medTran(:, baseMaskV7), 2, 'omitnan');
-            tranBaseSdV7 = std(medTran(:, baseMaskV7), 0, 2, 'omitnan');
-            tranWinMxV7  = max(medTran(:, winMaskV7), [], 2, 'omitnan');
-            tranActiveV7 = tranWinMxV7 > (tranBaseMuV7 + kSigma .* tranBaseSdV7);
-
-            learnedCellV7 = table(cellL, double(learnedActiveV7), 'VariableNames', {'CellUID','LearnedActiveMed'});
-            transferCellV7 = table(cellT, double(tranActiveV7), 'VariableNames', {'CellUID','TransferActiveMed'});
-            medLT_V7 = innerjoin(learnedCellV7, transferCellV7, 'Keys', 'CellUID');
-            if isempty(medLT_V7)
-                continue;
-            end
-
-            medLT_V7 = innerjoin(medLT_V7, C_V7(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
-            medLT_V7.ZKey = iZKey(medLT_V7.ZLayer);
-            medLT_V7.ZKey = string(medLT_V7.ZKey);
-
-            for z = ["MOp23","MOp5"]
-                rowsZ = medLT_V7.ZKey == z;
-                if nnz(rowsZ) < 10
-                    continue;
-                end
-                LA = logical(medLT_V7.LearnedActiveMed(rowsZ));
-                TA = logical(medLT_V7.TransferActiveMed(rowsZ));
-                reuse = NaN;
-                if nnz(LA) >= 5
-                    reuse = mean(double(TA(LA)));
-                end
-
-                sumMouse_V7(end+1,1) = m;
-                sumZKey_V7(end+1,1) = z;
-                sumPerf_V7(end+1,1) = transPerf;
-                sumNCells_V7(end+1,1) = nnz(rowsZ);
-                sumReuse_V7(end+1,1) = reuse;
-            end
+if cfg.RecomputeOverlays || ~haveV7Summary
+    try
+        if evalin('base', "exist('Vacation7DS','var')")
+            V7 = evalin('base', 'Vacation7DS');
+        else
+            V7 = TransferLearning.Vacation7;
+            assignin('base', 'Vacation7DS', V7);
         end
 
-        Vacation7Summary = table(sumMouse_V7, sumZKey_V7, sumPerf_V7, sumNCells_V7, sumReuse_V7, ...
-            'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','ReuseRate_LearnedMedianActive'});
+        TLW_V7 = V7.TableQuery(["Mouse","DateTime","Performance","BlockUID","Phase"], Design="LightWater", Phase="Transfer");
+        TLW_V7.Mouse = string(TLW_V7.Mouse);
+        TAW_V7 = V7.TableQuery(["Mouse","DateTime","BlockUID","Phase"], Design="AudioWater", Phase="Learned");
+        TAW_V7.Mouse = string(TAW_V7.Mouse);
+
+        if ~isempty(TLW_V7) && ~isempty(TAW_V7)
+            tmpNTS = V7.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse', TLW_V7.Mouse(1)), UniExp.Flags.ZScore, 1:24);
+            tmpT = tmpNTS{1};
+            nT_V7 = size(tmpT.TrialSignal, 2);
+            xsSecV7 = linspace(-3, 3, nT_V7);
+            baseMaskV7 = (xsSecV7 >= -3) & (xsSecV7 < 0);
+            winMaskV7  = (xsSecV7 >= 0) & (xsSecV7 <= 1);
+
+            C_V7 = V7.Cells;
+            Tr_V7 = V7.Trials;
+            miceV7 = intersect(unique(TLW_V7.Mouse), unique(TAW_V7.Mouse));
+
+            sumMouse_V7 = strings(0,1);
+            sumZKey_V7 = strings(0,1);
+            sumPerf_V7 = nan(0,1);
+            sumNCells_V7 = nan(0,1);
+            sumReuse_V7 = nan(0,1);
+
+            for iM = 1:numel(miceV7)
+                m = miceV7(iM);
+
+                rowsLW = TLW_V7.Mouse == m;
+                if ~any(rowsLW)
+                    continue;
+                end
+                tlwM = TLW_V7(rowsLW, :);
+                [~, idxMax] = max(tlwM.DateTime);
+                transRow = tlwM(idxMax, :);
+                transBlockUID = uint64(transRow.BlockUID);
+                transPerf = double(transRow.Performance);
+
+                rowsAW = TAW_V7.Mouse == m;
+                if ~any(rowsAW)
+                    continue;
+                end
+                tawM = TAW_V7(rowsAW, :);
+                [~, idxMax] = max(tawM.DateTime);
+                learnRow = tawM(idxMax, :);
+                learnBlockUID = uint64(learnRow.BlockUID);
+
+                trLearn = (uint64(Tr_V7.BlockUID) == learnBlockUID) & (string(Tr_V7.Stimulus) == "AudioWater");
+                trTran  = (uint64(Tr_V7.BlockUID) == transBlockUID) & (string(Tr_V7.Stimulus) == "LightWater");
+                trialUIDLearn = uint64(Tr_V7.TrialUID(trLearn));
+                trialUIDTran  = uint64(Tr_V7.TrialUID(trTran));
+                if isempty(trialUIDLearn) || isempty(trialUIDTran)
+                    continue;
+                end
+
+                ntsLearnCell = V7.QueryNTS(struct('Stimulus','AudioWater','Design','AudioWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
+                ntsLearn = ntsLearnCell{1};
+                inLearn = ismember(uint64(ntsLearn.TrialUID), trialUIDLearn);
+                ntsLearn = ntsLearn(inLearn, :);
+                if isempty(ntsLearn)
+                    continue;
+                end
+                [gL, cellL] = findgroups(uint64(ntsLearn.CellUID));
+                medLearn = splitapply(@(x) median(x, 1, 'omitnan'), ntsLearn.TrialSignal, gL);
+
+                learnedBaseMuV7 = mean(medLearn(:, baseMaskV7), 2, 'omitnan');
+                learnedBaseSdV7 = std(medLearn(:, baseMaskV7), 0, 2, 'omitnan');
+                learnedWinMxV7  = max(medLearn(:, winMaskV7), [], 2, 'omitnan');
+                learnedActiveV7 = learnedWinMxV7 > (learnedBaseMuV7 + kSigma .* learnedBaseSdV7);
+
+                ntsTranCell = V7.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
+                ntsTran = ntsTranCell{1};
+                inTran = ismember(uint64(ntsTran.TrialUID), trialUIDTran);
+                ntsTran = ntsTran(inTran, :);
+                if isempty(ntsTran)
+                    continue;
+                end
+                [gT, cellT] = findgroups(uint64(ntsTran.CellUID));
+                medTran = splitapply(@(x) median(x, 1, 'omitnan'), ntsTran.TrialSignal, gT);
+
+                tranBaseMuV7 = mean(medTran(:, baseMaskV7), 2, 'omitnan');
+                tranBaseSdV7 = std(medTran(:, baseMaskV7), 0, 2, 'omitnan');
+                tranWinMxV7  = max(medTran(:, winMaskV7), [], 2, 'omitnan');
+                tranActiveV7 = tranWinMxV7 > (tranBaseMuV7 + kSigma .* tranBaseSdV7);
+
+                learnedCellV7 = table(cellL, double(learnedActiveV7), 'VariableNames', {'CellUID','LearnedActiveMed'});
+                transferCellV7 = table(cellT, double(tranActiveV7), 'VariableNames', {'CellUID','TransferActiveMed'});
+                medLT_V7 = innerjoin(learnedCellV7, transferCellV7, 'Keys', 'CellUID');
+                if isempty(medLT_V7)
+                    continue;
+                end
+
+                medLT_V7 = innerjoin(medLT_V7, C_V7(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
+                medLT_V7.ZKey = iZKey(medLT_V7.ZLayer);
+                medLT_V7.ZKey = string(medLT_V7.ZKey);
+
+                for z = ["MOp23","MOp5"]
+                    rowsZ = medLT_V7.ZKey == z;
+                    if nnz(rowsZ) < 10
+                        continue;
+                    end
+                    LA = logical(medLT_V7.LearnedActiveMed(rowsZ));
+                    TA = logical(medLT_V7.TransferActiveMed(rowsZ));
+                    reuse = NaN;
+                    if nnz(LA) >= 5
+                        reuse = mean(double(TA(LA)));
+                    end
+
+                    sumMouse_V7(end+1,1) = m;
+                    sumZKey_V7(end+1,1) = z;
+                    sumPerf_V7(end+1,1) = transPerf;
+                    sumNCells_V7(end+1,1) = nnz(rowsZ);
+                    sumReuse_V7(end+1,1) = reuse;
+                end
+            end
+
+            Vacation7Summary = table(sumMouse_V7, sumZKey_V7, sumPerf_V7, sumNCells_V7, sumReuse_V7, ...
+                'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','ReuseRate_LearnedMedianActive'});
+        end
+    catch ME
+        warning(ME.identifier, '%s', ME.message);
     end
-catch ME
-    warning(ME.identifier, '%s', ME.message);
-end
 
     assignin('base','Vacation7_MedianNTATSReuse_Summary',Vacation7Summary);
-    end
-catch ME
-    warning(ME.identifier, '%s', ME.message);
+else
+    Vacation7Summary = evalin('base','Vacation7_MedianNTATSReuse_Summary');
 end
-
-assignin('base','Vacation7_MedianNTATSReuse_Summary',Vacation7Summary);
 
 %% --- 3.7) 叠加 THInhibit 数据库的鼠：作在“基本声光迁移相关性图”上
 % 目标：与 Vacation7 同样的 session 语义与算法
@@ -644,149 +658,147 @@ end
 THInhibitSummary = table(strings(0,1), strings(0,1), nan(0,1), nan(0,1), nan(0,1), ...
     'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','ReuseRate_LearnedMedianActive'});
 
-try
-    if ~(cfg.RecomputeOverlays || ~haveTHSummary)
-        THInhibitSummary = evalin('base','THInhibit_MedianNTATSReuse_Summary');
-    else
-    if evalin('base', "exist('THInhibitDS','var')")
-        TH = evalin('base', 'THInhibitDS');
-    else
-        TH = TransferLearning.THInhibit;
-        assignin('base', 'THInhibitDS', TH);
-    end
-
-    TLW_TH = TH.TableQuery(["Mouse","DateTime","Performance","BlockUID","Phase","Stimulus"], Design="LightWater", Phase="Transfer", Stimulus="LightWater");
-    TLW_TH.Mouse = string(TLW_TH.Mouse);
-    TAW_TH = TH.TableQuery(["Mouse","DateTime","BlockUID","Phase","Stimulus"], Design="AudioWater", Phase="Learned", Stimulus="AudioWater");
-    TAW_TH.Mouse = string(TAW_TH.Mouse);
-
-    if ~isempty(TLW_TH) && ~isempty(TAW_TH)
-        % 取时间轴长度（THInhibit 可能与主库不同）
-        tmpNTS = TH.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse', TLW_TH.Mouse(1)), UniExp.Flags.ZScore, 1:30);
-        tmpT = tmpNTS{1};
-        nT_TH = size(tmpT.TrialSignal, 2);
-        xsSecTH = linspace(-3, 3, nT_TH);
-        baseMaskTH = (xsSecTH >= -3) & (xsSecTH < 0);
-        winMaskTH  = (xsSecTH >= 0) & (xsSecTH <= 1);
-
-        C_TH = TH.Cells;
-        Tr_TH = TH.Trials;
-        miceTH = intersect(unique(TLW_TH.Mouse), unique(TAW_TH.Mouse));
-
-        sumMouse_TH = strings(0,1);
-        sumZKey_TH = strings(0,1);
-        sumPerf_TH = nan(0,1);
-        sumNCells_TH = nan(0,1);
-        sumReuse_TH = nan(0,1);
-
-        for iM = 1:numel(miceTH)
-            m = miceTH(iM);
-
-            rowsLW = TLW_TH.Mouse == m;
-            if ~any(rowsLW)
-                continue;
-            end
-            tlwM = TLW_TH(rowsLW, :);
-            [~, idxMax] = max(tlwM.DateTime);
-            transRow = tlwM(idxMax, :);
-            transBlockUID = uint64(transRow.BlockUID);
-            transPerf = double(transRow.Performance);
-
-            rowsAW = TAW_TH.Mouse == m;
-            if ~any(rowsAW)
-                continue;
-            end
-            tawM = TAW_TH(rowsAW, :);
-            [~, idxMax] = max(tawM.DateTime);
-            learnRow = tawM(idxMax, :);
-            learnBlockUID = uint64(learnRow.BlockUID);
-
-            trLearn = (uint64(Tr_TH.BlockUID) == learnBlockUID) & (string(Tr_TH.Stimulus) == "AudioWater");
-            trTran  = (uint64(Tr_TH.BlockUID) == transBlockUID) & (string(Tr_TH.Stimulus) == "LightWater");
-            trialUIDLearn = uint64(Tr_TH.TrialUID(trLearn));
-            trialUIDTran  = uint64(Tr_TH.TrialUID(trTran));
-            if isempty(trialUIDLearn) || isempty(trialUIDTran)
-                continue;
-            end
-
-            ntsLearnCell = TH.QueryNTS(struct('Stimulus','AudioWater','Design','AudioWater','Mouse',m), UniExp.Flags.ZScore, 1:30);
-            ntsLearn = ntsLearnCell{1};
-            inLearn = ismember(uint64(ntsLearn.TrialUID), trialUIDLearn);
-            ntsLearn = ntsLearn(inLearn, :);
-            if isempty(ntsLearn)
-                continue;
-            end
-            [gL, cellL] = findgroups(uint64(ntsLearn.CellUID));
-            medLearn = splitapply(@(x) median(x, 1, 'omitnan'), ntsLearn.TrialSignal, gL);
-
-            learnedBaseMuTH = mean(medLearn(:, baseMaskTH), 2, 'omitnan');
-            learnedBaseSdTH = std(medLearn(:, baseMaskTH), 0, 2, 'omitnan');
-            learnedWinMxTH  = max(medLearn(:, winMaskTH), [], 2, 'omitnan');
-            learnedActiveTH = learnedWinMxTH > (learnedBaseMuTH + kSigma .* learnedBaseSdTH);
-
-            ntsTranCell = TH.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:30);
-            ntsTran = ntsTranCell{1};
-            inTran = ismember(uint64(ntsTran.TrialUID), trialUIDTran);
-            ntsTran = ntsTran(inTran, :);
-            if isempty(ntsTran)
-                continue;
-            end
-            [gT, cellT] = findgroups(uint64(ntsTran.CellUID));
-            medTran = splitapply(@(x) median(x, 1, 'omitnan'), ntsTran.TrialSignal, gT);
-
-            tranBaseMuTH = mean(medTran(:, baseMaskTH), 2, 'omitnan');
-            tranBaseSdTH = std(medTran(:, baseMaskTH), 0, 2, 'omitnan');
-            tranWinMxTH  = max(medTran(:, winMaskTH), [], 2, 'omitnan');
-            tranActiveTH = tranWinMxTH > (tranBaseMuTH + kSigma .* tranBaseSdTH);
-
-            learnedCellTH = table(cellL, double(learnedActiveTH), 'VariableNames', {'CellUID','LearnedActiveMed'});
-            transferCellTH = table(cellT, double(tranActiveTH), 'VariableNames', {'CellUID','TransferActiveMed'});
-            medLT_TH = innerjoin(learnedCellTH, transferCellTH, 'Keys', 'CellUID');
-            if isempty(medLT_TH)
-                continue;
-            end
-
-            medLT_TH = innerjoin(medLT_TH, C_TH(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
-            medLT_TH.ZKey = iZKey(medLT_TH.ZLayer);
-            medLT_TH.ZKey = string(medLT_TH.ZKey);
-
-            for z = ["MOp23","MOp5"]
-                rowsZ = medLT_TH.ZKey == z;
-                if nnz(rowsZ) < 10
-                    continue;
-                end
-                LA = logical(medLT_TH.LearnedActiveMed(rowsZ));
-                TA = logical(medLT_TH.TransferActiveMed(rowsZ));
-                reuse = NaN;
-                if nnz(LA) >= 5
-                    reuse = mean(double(TA(LA)));
-                end
-
-                sumMouse_TH(end+1,1) = m;
-                sumZKey_TH(end+1,1) = z;
-                sumPerf_TH(end+1,1) = transPerf;
-                sumNCells_TH(end+1,1) = nnz(rowsZ);
-                sumReuse_TH(end+1,1) = reuse;
-            end
+if cfg.RecomputeOverlays || ~haveTHSummary
+    try
+        if evalin('base', "exist('THInhibitDS','var')")
+            TH = evalin('base', 'THInhibitDS');
+        else
+            TH = TransferLearning.THInhibit;
+            assignin('base', 'THInhibitDS', TH);
         end
 
-        THInhibitSummary = table(sumMouse_TH, sumZKey_TH, sumPerf_TH, sumNCells_TH, sumReuse_TH, ...
-            'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','ReuseRate_LearnedMedianActive'});
-    end
-    assignin('base','THInhibit_MedianNTATSReuse_Summary',THInhibitSummary);
-    end
-catch ME
-    warning(ME.identifier, '%s', ME.message);
-end
+        TLW_TH = TH.TableQuery(["Mouse","DateTime","Performance","BlockUID","Phase","Stimulus"], Design="LightWater", Phase="Transfer", Stimulus="LightWater");
+        TLW_TH.Mouse = string(TLW_TH.Mouse);
+        TAW_TH = TH.TableQuery(["Mouse","DateTime","BlockUID","Phase","Stimulus"], Design="AudioWater", Phase="Learned", Stimulus="AudioWater");
+        TAW_TH.Mouse = string(TAW_TH.Mouse);
 
-assignin('base','THInhibit_MedianNTATSReuse_Summary',THInhibitSummary);
+        if ~isempty(TLW_TH) && ~isempty(TAW_TH)
+            tmpNTS = TH.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse', TLW_TH.Mouse(1)), UniExp.Flags.ZScore, 1:24);
+            tmpT = tmpNTS{1};
+            nT_TH = size(tmpT.TrialSignal, 2);
+            xsSecTH = linspace(-3, 3, nT_TH);
+            baseMaskTH = (xsSecTH >= -3) & (xsSecTH < 0);
+            winMaskTH  = (xsSecTH >= 0) & (xsSecTH <= 1);
+
+            C_TH = TH.Cells;
+            Tr_TH = TH.Trials;
+            miceTH = intersect(unique(TLW_TH.Mouse), unique(TAW_TH.Mouse));
+
+            sumMouse_TH = strings(0,1);
+            sumZKey_TH = strings(0,1);
+            sumPerf_TH = nan(0,1);
+            sumNCells_TH = nan(0,1);
+            sumReuse_TH = nan(0,1);
+
+            for iM = 1:numel(miceTH)
+                m = miceTH(iM);
+
+                rowsLW = TLW_TH.Mouse == m;
+                if ~any(rowsLW)
+                    continue;
+                end
+                tlwM = TLW_TH(rowsLW, :);
+                [~, idxMax] = max(tlwM.DateTime);
+                transRow = tlwM(idxMax, :);
+                transBlockUID = uint64(transRow.BlockUID);
+                transPerf = double(transRow.Performance);
+
+                rowsAW = TAW_TH.Mouse == m;
+                if ~any(rowsAW)
+                    continue;
+                end
+                tawM = TAW_TH(rowsAW, :);
+                [~, idxMax] = max(tawM.DateTime);
+                learnRow = tawM(idxMax, :);
+                learnBlockUID = uint64(learnRow.BlockUID);
+
+                trLearn = (uint64(Tr_TH.BlockUID) == learnBlockUID) & (string(Tr_TH.Stimulus) == "AudioWater");
+                trTran  = (uint64(Tr_TH.BlockUID) == transBlockUID) & (string(Tr_TH.Stimulus) == "LightWater");
+                trialUIDLearn = uint64(Tr_TH.TrialUID(trLearn));
+                trialUIDTran  = uint64(Tr_TH.TrialUID(trTran));
+                if isempty(trialUIDLearn) || isempty(trialUIDTran)
+                    continue;
+                end
+
+                ntsLearnCell = TH.QueryNTS(struct('Stimulus','AudioWater','Design','AudioWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
+                ntsLearn = ntsLearnCell{1};
+                inLearn = ismember(uint64(ntsLearn.TrialUID), trialUIDLearn);
+                ntsLearn = ntsLearn(inLearn, :);
+                if isempty(ntsLearn)
+                    continue;
+                end
+                [gL, cellL] = findgroups(uint64(ntsLearn.CellUID));
+                medLearn = splitapply(@(x) median(x, 1, 'omitnan'), ntsLearn.TrialSignal, gL);
+
+                learnedBaseMuTH = mean(medLearn(:, baseMaskTH), 2, 'omitnan');
+                learnedBaseSdTH = std(medLearn(:, baseMaskTH), 0, 2, 'omitnan');
+                learnedWinMxTH  = max(medLearn(:, winMaskTH), [], 2, 'omitnan');
+                learnedActiveTH = learnedWinMxTH > (learnedBaseMuTH + kSigma .* learnedBaseSdTH);
+
+                ntsTranCell = TH.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
+                ntsTran = ntsTranCell{1};
+                inTran = ismember(uint64(ntsTran.TrialUID), trialUIDTran);
+                ntsTran = ntsTran(inTran, :);
+                if isempty(ntsTran)
+                    continue;
+                end
+                [gT, cellT] = findgroups(uint64(ntsTran.CellUID));
+                medTran = splitapply(@(x) median(x, 1, 'omitnan'), ntsTran.TrialSignal, gT);
+
+                tranBaseMuTH = mean(medTran(:, baseMaskTH), 2, 'omitnan');
+                tranBaseSdTH = std(medTran(:, baseMaskTH), 0, 2, 'omitnan');
+                tranWinMxTH  = max(medTran(:, winMaskTH), [], 2, 'omitnan');
+                tranActiveTH = tranWinMxTH > (tranBaseMuTH + kSigma .* tranBaseSdTH);
+
+                learnedCellTH = table(cellL, double(learnedActiveTH), 'VariableNames', {'CellUID','LearnedActiveMed'});
+                transferCellTH = table(cellT, double(tranActiveTH), 'VariableNames', {'CellUID','TransferActiveMed'});
+                medLT_TH = innerjoin(learnedCellTH, transferCellTH, 'Keys', 'CellUID');
+                if isempty(medLT_TH)
+                    continue;
+                end
+
+                medLT_TH = innerjoin(medLT_TH, C_TH(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
+                medLT_TH.ZKey = iZKey(medLT_TH.ZLayer);
+                medLT_TH.ZKey = string(medLT_TH.ZKey);
+
+                for z = ["MOp23","MOp5"]
+                    rowsZ = medLT_TH.ZKey == z;
+                    if nnz(rowsZ) < 10
+                        continue;
+                    end
+                    LA = logical(medLT_TH.LearnedActiveMed(rowsZ));
+                    TA = logical(medLT_TH.TransferActiveMed(rowsZ));
+                    reuse = NaN;
+                    if nnz(LA) >= 5
+                        reuse = mean(double(TA(LA)));
+                    end
+
+                    sumMouse_TH(end+1,1) = m;
+                    sumZKey_TH(end+1,1) = z;
+                    sumPerf_TH(end+1,1) = transPerf;
+                    sumNCells_TH(end+1,1) = nnz(rowsZ);
+                    sumReuse_TH(end+1,1) = reuse;
+                end
+            end
+
+            THInhibitSummary = table(sumMouse_TH, sumZKey_TH, sumPerf_TH, sumNCells_TH, sumReuse_TH, ...
+                'VariableNames', {'Mouse','ZKey','TransferPerformance','NCells','ReuseRate_LearnedMedianActive'});
+        end
+    catch ME
+        warning(ME.identifier, '%s', ME.message);
+    end
+
+    assignin('base','THInhibit_MedianNTATSReuse_Summary',THInhibitSummary);
+else
+    THInhibitSummary = evalin('base','THInhibit_MedianNTATSReuse_Summary');
+end
 
 outDirUNC = "\\\\Data-Server-2\\个人数据\\张天夫\\202601";
 
 % --- 4) 画图并导出 SVG（全叠加散点图）
 if cfg.ExportAllOverlayScatter
     figure('Name','AudioLight Median-NTATS threshold reuse vs Performance (by layer)');
-    tiledlayout(2,1,'TileSpacing','compact','Padding','compact');
+    tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
     sgtitle(sprintf('Median NTATS threshold: max(0~1s)>mean(base)+%g*std(base)', kSigma));
 
 nexttile;
@@ -966,89 +978,136 @@ if cfg.ExportCtrlOnlyAnd3Compare
     end
 end
 
-% --- 4.3) BarScatterCompare 二维分组：四组放一个图（Ctrl/scFLARE/Vacation7/THInhibit）
-if cfg.ExportDatasetCompareBar4
-    iExportDatasetCompareBar4(outDirUNC, kSigma, Summary, FlareSummary, Vacation7Summary, THInhibitSummary);
-end
-
 % --- 5) 反向复用率：同款图（TransferActive → LearnedActive）
-figure('Name','AudioLight Reverse reuse vs Performance (by layer)');
-tiledlayout(2,1,'TileSpacing','compact','Padding','compact');
-sgtitle(sprintf('Reverse reuse: P(LearnedActive | TransferActive), k=%g', kSigma));
+if cfg.ExportReverse
+    figure('Name','AudioLight Reverse reuse vs Performance (by layer)');
+    tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
+    sgtitle(sprintf('Reverse reuse: P(LearnedActive | TransferActive), k=%g', kSigma));
 
-nexttile;
-x = Summary.ReuseRate_TransferMedianActive(rows23);
-y = Summary.TransferPerformance(rows23);
-miceLbl = Summary.Mouse(rows23);
-scatter(x, y, 50, 'filled');
-grid on; box off;
-xlabel('Reuse: TransferMedianActive → LearnedMedianActive');
-ylabel('Perf');
-title(sprintf('MOp2/3: \\rho=%.3f, p=%.3g (n=%d)', r23Rev.rho, r23Rev.p, r23Rev.n));
-hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
+    nexttile;
+    x = Summary.ReuseRate_TransferMedianActive(rows23);
+    y = Summary.TransferPerformance(rows23);
+    miceLbl = Summary.Mouse(rows23);
+    scatter(x, y, 50, 'filled');
+    grid on; box off;
+    xlabel('Reuse: TransferMedianActive → LearnedMedianActive');
+    ylabel('Perf');
+    title(sprintf('MOp2/3: \\rho=%.3f, p=%.3g (n=%d)', r23Rev.rho, r23Rev.p, r23Rev.n));
+    hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
+    ax = gca;
+    if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+        ax.Toolbar.Visible = 'off';
+    end
+
+    nexttile;
+    x = Summary.ReuseRate_TransferMedianActive(rows5);
+    y = Summary.TransferPerformance(rows5);
+    miceLbl = Summary.Mouse(rows5);
+    scatter(x, y, 50, 'filled');
+    grid on; box off;
+    xlabel('Reuse: TransferMedianActive → LearnedMedianActive');
+    ylabel('Perf');
+    title(sprintf('MOp5: \\rho=%.3f, p=%.3g (n=%d)', r5Rev.rho, r5Rev.p, r5Rev.n));
+    hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
+    ax = gca;
+    if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+        ax.Toolbar.Visible = 'off';
+    end
+
+    fileNameRev = sprintf('AudioLight_MedianNTATS_Reuse_TransferActive_to_LearnedActive_k%g.svg', kSigma);
+    outFileRev = fullfile(outDirUNC, fileNameRev);
+    exportgraphics(gcf, outFileRev, 'ContentType','vector');
+    fprintf("\nSVG exported (reverse): %s\n", outFileRev);
 end
-
-nexttile;
-x = Summary.ReuseRate_TransferMedianActive(rows5);
-y = Summary.TransferPerformance(rows5);
-miceLbl = Summary.Mouse(rows5);
-scatter(x, y, 50, 'filled');
-grid on; box off;
-xlabel('Reuse: TransferMedianActive → LearnedMedianActive');
-ylabel('Perf');
-title(sprintf('MOp5: \\rho=%.3f, p=%.3g (n=%d)', r5Rev.rho, r5Rev.p, r5Rev.n));
-hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
-end
-
-fileNameRev = sprintf('AudioLight_MedianNTATS_Reuse_TransferActive_to_LearnedActive_k%g.svg', kSigma);
-outFileRev = fullfile(outDirUNC, fileNameRev);
-exportgraphics(gcf, outFileRev, 'ContentType','vector');
-fprintf("\nSVG exported (reverse): %s\n", outFileRev);
 
 % --- 6) Hit vs Miss：用 UniExp.BarScatterCompare 作图示意（按 layer）
-figure('Name','AudioLight Hit vs Miss reuse (BarScatterCompare)');
-tiledlayout(2,1,'TileSpacing','compact','Padding','compact');
-sgtitle(sprintf('Hit vs Miss forward reuse: P(TransferActive | LearnedActive), k=%g', kSigma));
+if cfg.ExportHitMiss
+    figure('Name','AudioLight Hit vs Miss reuse (BarScatterCompare)');
+    tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
+    sgtitle(sprintf('Hit vs Miss forward reuse (2D groups): P(TransferActive | LearnedActive), k=%g', kSigma));
 
-nexttile;
-hit = Summary.ReuseRate_LearnedMedianActive_Hit(rows23);
-miss = Summary.ReuseRate_LearnedMedianActive_Miss(rows23);
-mask = isfinite(hit) & isfinite(miss);
-T = table(hit(mask), miss(mask), 'VariableNames', ["Hit","Miss"]);
-UniExp.BarScatterCompare(T, false, table(["Hit","Miss"], 'VariableNames', "GroupPair"));
-ylabel('Reuse');
-title(sprintf('MOp2/3: signrank hit>miss p=%.3g (n=%d)', p23.p, p23.n));
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
+    nexttile;
+    hit23 = Summary.ReuseRate_LearnedMedianActive_Hit(rows23);
+    miss23 = Summary.ReuseRate_LearnedMedianActive_Miss(rows23);
+    mask23 = isfinite(hit23) & isfinite(miss23);
+
+    hit5 = Summary.ReuseRate_LearnedMedianActive_Hit(rows5);
+    miss5 = Summary.ReuseRate_LearnedMedianActive_Miss(rows5);
+    mask5 = isfinite(hit5) & isfinite(miss5);
+
+    colHit = {hit23(mask23); hit5(mask5)};
+    colMiss = {miss23(mask23); miss5(mask5)};
+    Groups = table(colHit, colMiss, ...
+        'VariableNames', {'Hit','Miss'}, ...
+        'RowNames', {'MOp2/3','MOp5'});
+    Groups.Properties.DimensionNames = {'Layer','Outcome'};
+
+    layerNames = string(Groups.Properties.RowNames);
+    layerPairs = [layerNames, layerNames];
+    outcomePairs = repmat(["Hit","Miss"], numel(layerNames), 1);
+    groupPair2D = table(layerPairs, outcomePairs, 'VariableNames', Groups.Properties.DimensionNames);
+    CompareGroup = table(groupPair2D, 'VariableNames', {'GroupPair'});
+
+    UniExp.BarScatterCompare(Groups, false, CompareGroup);
+    ylabel('Reuse');
+    title('Forward reuse (Hit vs Miss)');
+    ax = gca;
+    if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+        ax.Toolbar.Visible = 'off';
+    end
+
+    fileNameHM = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_HitMiss_2D_k%g.svg', kSigma);
+    outFileHM = fullfile(outDirUNC, fileNameHM);
+    exportgraphics(gcf, outFileHM, 'ContentType','vector');
+    fprintf("\nSVG exported (hit-miss 2D): %s\n", outFileHM);
+
+    % ---- Reverse reuse Hit/Miss（同一张子图 4 条）----
+    if all(ismember({'ReuseRate_TransferMedianActive_Hit','ReuseRate_TransferMedianActive_Miss'}, Summary.Properties.VariableNames))
+        figure('Name','AudioLight Reverse Hit vs Miss reuse (BarScatterCompare)');
+        tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
+        sgtitle(sprintf('Reverse reuse (2D groups): P(LearnedActive | TransferActive), k=%g', kSigma));
+
+        nexttile;
+        hit23r = Summary.ReuseRate_TransferMedianActive_Hit(rows23);
+        miss23r = Summary.ReuseRate_TransferMedianActive_Miss(rows23);
+        mask23r = isfinite(hit23r) & isfinite(miss23r);
+
+        hit5r = Summary.ReuseRate_TransferMedianActive_Hit(rows5);
+        miss5r = Summary.ReuseRate_TransferMedianActive_Miss(rows5);
+        mask5r = isfinite(hit5r) & isfinite(miss5r);
+
+        colHitR = {hit23r(mask23r); hit5r(mask5r)};
+        colMissR = {miss23r(mask23r); miss5r(mask5r)};
+        GroupsR = table(colHitR, colMissR, ...
+            'VariableNames', {'Hit','Miss'}, ...
+            'RowNames', {'MOp2/3','MOp5'});
+        GroupsR.Properties.DimensionNames = {'Layer','Outcome'};
+
+        layerNamesR = string(GroupsR.Properties.RowNames);
+        layerPairsR = [layerNamesR, layerNamesR];
+        outcomePairsR = repmat(["Hit","Miss"], numel(layerNamesR), 1);
+        groupPair2DR = table(layerPairsR, outcomePairsR, 'VariableNames', GroupsR.Properties.DimensionNames);
+        CompareGroupR = table(groupPair2DR, 'VariableNames', {'GroupPair'});
+
+        UniExp.BarScatterCompare(GroupsR, false, CompareGroupR);
+        ylabel('Reuse');
+        title('Reverse reuse (Hit vs Miss)');
+        ax = gca;
+        if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+            ax.Toolbar.Visible = 'off';
+        end
+
+        fileNameHMR = sprintf('AudioLight_MedianNTATS_Reuse_TransferActive_to_LearnedActive_HitMiss_2D_k%g.svg', kSigma);
+        outFileHMR = fullfile(outDirUNC, fileNameHMR);
+        exportgraphics(gcf, outFileHMR, 'ContentType','vector');
+        fprintf("\nSVG exported (reverse hit-miss 2D): %s\n", outFileHMR);
+    else
+        warning('Reverse Hit/Miss reuse columns missing; skip reverse bar export. Set RecomputeCtrl=true once to regenerate Summary.');
+    end
 end
-
-nexttile;
-hit = Summary.ReuseRate_LearnedMedianActive_Hit(rows5);
-miss = Summary.ReuseRate_LearnedMedianActive_Miss(rows5);
-mask = isfinite(hit) & isfinite(miss);
-T = table(hit(mask), miss(mask), 'VariableNames', ["Hit","Miss"]);
-UniExp.BarScatterCompare(T, false, table(["Hit","Miss"], 'VariableNames', "GroupPair"));
-ylabel('Reuse');
-title(sprintf('MOp5: signrank hit>miss p=%.3g (n=%d)', p5.p, p5.n));
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
-end
-
-fileNameHM = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_HitMiss_k%g.svg', kSigma);
-outFileHM = fullfile(outDirUNC, fileNameHM);
-exportgraphics(gcf, outFileHM, 'ContentType','vector');
-fprintf("\nSVG exported (hit-miss): %s\n", outFileHM);
 
 % --- 7) 三泳道热图：Learned 声水 / TransferHit 光水 / TransferMiss 光水（仅 -1~1s）
-if ~isempty(cellUIDTranHM)
+if cfg.ExportHeatmap && exist('cellUIDTranHM','var') && ~isempty(cellUIDTranHM) && exist('GLearn','var') && exist('XLearn','var') && exist('XTranHit','var') && exist('XTranMiss','var')
     [cellUIDCommon, idxLearn, idxTran] = intersect(uint64(GLearn.CellUID), cellUIDTranHM, 'stable');
     if numel(cellUIDCommon) >= 10
         xMask = (xsSec >= -1) & (xsSec <= 1);
@@ -1116,6 +1175,10 @@ if ~isempty(cellUIDTranHM)
     end
 end
 
+if cfg.ExportHeatmap && (~exist('cellUIDTranHM','var') || isempty(cellUIDTranHM) || ~exist('XLearn','var'))
+    warning('Skip heatmap: requires RecomputeCtrl=true (need trial-level Hit/Miss traces).');
+end
+
 % 同步把 Summary 留到 base，方便你后续直接用
 assignin('base','AudioLight_MedianNTATSReuse_Summary',Summary);
 
@@ -1131,7 +1194,7 @@ figTitle = sprintf('Median NTATS threshold reuse vs Performance (Ctrl%s)', ...
     ternary(strlength(string(overlayName))>0, " + " + string(overlayName), " only"));
 
 figure('Name', figTitle);
-tiledlayout(2,1,'TileSpacing','compact','Padding','compact');
+tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 if strlength(string(overlayName))>0
     sgtitle(sprintf('Median NTATS threshold (k=%g): Ctrl vs %s', kSigma, string(overlayName)));
 else
@@ -1252,5 +1315,16 @@ if isa(NT, 'MATLAB.DataTypes.NDTable')
     X = NT.Data;
 else
     X = NT;
+end
+end
+
+function out = iMergeStruct(base, override)
+out = base;
+if ~isstruct(override)
+    return;
+end
+f = fieldnames(override);
+for i = 1:numel(f)
+    out.(f{i}) = override.(f{i});
 end
 end

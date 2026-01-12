@@ -337,8 +337,8 @@ fprintf("[MOp5  Activity Spearman] Perf vs ActRateCorr(L,T)  : rho=%.3f, p=%.4g 
 % - 这里“所有回合的中位数”由 AL.QueryNTATS(..., UniExp.Flags.Median) 完成
 % - Learned 也可使用同样阈值法定义“LearnedActive”（与 Transfer 同口径）
 try
-    GLearn = AL.QueryNTATS(struct('Stimulus','AudioWater','Phase','Learned'), UniExp.Flags.dFdF0, 1:30, UniExp.Flags.Median);
-    GTran  = AL.QueryNTATS(struct('Stimulus','LightWater','Phase','Transfer'), UniExp.Flags.dFdF0, 1:30, UniExp.Flags.Median);
+    GLearn = AL.QueryNTATS(struct('Stimulus','AudioWater','Phase','Learned'), UniExp.Flags.dFdF0, 1:24, UniExp.Flags.Median);
+    GTran  = AL.QueryNTATS(struct('Stimulus','LightWater','Phase','Transfer'), UniExp.Flags.dFdF0, 1:24, UniExp.Flags.Median);
 
     XLearn = iNtatsData(GLearn.NTATS); % nCell x nTime
     XTran  = iNtatsData(GTran.NTATS);
@@ -574,7 +574,7 @@ try
         rMed_5  = iCorrReport(MouseLayerMedianActivitySummary.TransferPerformance(rows5M),  MouseLayerMedianActivitySummary.ReuseRate_LearnedMedianActive(rows5M));
 
         f3 = figure('Name','AudioLight Median-NTATS threshold reuse vs Performance (by layer)'); %#ok<NASGU>
-        tl3 = tiledlayout(2,1,'TileSpacing','compact','Padding','compact'); %#ok<NASGU>
+        tl3 = tiledlayout(1,2,'TileSpacing','compact','Padding','compact'); %#ok<NASGU>
         sgtitle(sprintf('Median NTATS threshold: max(0~1s)>mean(base)+%g*std(base)', kSigma));
 
         nexttile;
