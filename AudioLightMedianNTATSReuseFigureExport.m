@@ -9,11 +9,12 @@
 defaultCfg = struct(...
     'RecomputeCtrl', true, ...          % 重新 QueryNTATS + 计算 Ctrl Summary
     'RecomputeOverlays', true, ...      % 重新计算 scFLARE/Vacation7/THInhibit summary
-    'ExportAllOverlayScatter', true, ...% 导出“全叠加散点图”（Ctrl + 所有 overlay）
+    'ExportAllOverlayScatter', true, ...% 导出 Ctrl 相关性散点图（不做多重叠加）
     'ExportCtrlOnlyAnd3Compare', true, ... % 导出 Ctrl-only 与 3 张 Ctrl-vs-单组散点图
     'ExportReverse', true, ...
     'ExportHitMiss', true, ...
-    'ExportHeatmap', true);
+    'ExportHeatmap', true, ...
+    'ExcludeMice', "vtf0353");
 
 cfg = defaultCfg;
 try
@@ -292,6 +293,9 @@ end
 
     Summary = sortrows(Summary, {'ZKey','TransferPerformance'}, {'ascend','descend'});
 
+    % 排除指定鼠（例如 vtf0353 原始视频亮度异常）
+    Summary = iExcludeMice(Summary, cfg.ExcludeMice);
+
     rows23 = Summary.ZKey=="MOp23";
     rows5  = Summary.ZKey=="MOp5";
 
@@ -318,6 +322,10 @@ fprintf("[MOp5  Spearman] rho=%.3f, p=%.4g (n=%d)\n", r5Rev.rho,  r5Rev.p,  r5Re
     assignin('base','AudioLight_MedianNTATSReuse_Summary',Summary);
 else
     Summary = evalin('base','AudioLight_MedianNTATSReuse_Summary');
+
+    % 排除指定鼠（例如 vtf0353 原始视频亮度异常）
+    Summary = iExcludeMice(Summary, cfg.ExcludeMice);
+
     rows23 = Summary.ZKey=="MOp23";
     rows5  = Summary.ZKey=="MOp5";
     r23 = iCorrReport(Summary.TransferPerformance(rows23), Summary.ReuseRate_LearnedMedianActive(rows23));
@@ -795,184 +803,85 @@ end
 
 outDirUNC = "\\\\Data-Server-2\\个人数据\\张天夫\\202601";
 
-% --- 4) 画图并导出 SVG（全叠加散点图）
+% --- 4) 画图并导出 SVG（Ctrl 相关性散点图；不做多重叠加）
 if cfg.ExportAllOverlayScatter
-    figure('Name','AudioLight Median-NTATS threshold reuse vs Performance (by layer)');
+    figure('Name','AudioLight reuse vs Performance (by layer)');
     tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
-    sgtitle(sprintf('Median NTATS threshold: max(0~1s)>mean(base)+%g*std(base)', kSigma));
+    sgtitle('Reuse vs Performance');
 
-nexttile;
-x = Summary.ReuseRate_LearnedMedianActive(rows23);
-y = Summary.TransferPerformance(rows23);
-miceLbl = Summary.Mouse(rows23);
-scatter(x, y, 50, 'filled');
-grid on; box off;
-xlabel('Reuse: LearnedMedianActive → TransferMedianActive');
-ylabel('Perf');
-title(sprintf('MOp2/3: \\rho=%.3f, p=%.3g (n=%d)', r23.rho, r23.p, r23.n));
-hold on;
-text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
-% overlay scFLARE points
-rows23FL = FlareSummary.ZKey=="MOp23";
-rows23V7 = Vacation7Summary.ZKey=="MOp23";
-rows23TH = THInhibitSummary.ZKey=="MOp23";
-if any(rows23FL)
-    xFL = FlareSummary.ReuseRate_LearnedMedianActive(rows23FL);
-    yFL = FlareSummary.TransferPerformance(rows23FL);
-    lblFL = "FL-" + FlareSummary.Mouse(rows23FL);
-    scatter(xFL, yFL, 70, '^', 'MarkerEdgeColor', 'k', 'LineWidth', 1.2);
-    text(xFL, yFL, lblFL, 'FontSize', 8, 'VerticalAlignment','top', 'HorizontalAlignment','left', 'Interpreter','none');
-end
-% overlay Vacation7 points
-if any(rows23V7)
-    xV7 = Vacation7Summary.ReuseRate_LearnedMedianActive(rows23V7);
-    yV7 = Vacation7Summary.TransferPerformance(rows23V7);
-    lblV7 = "V7-" + Vacation7Summary.Mouse(rows23V7);
-    scatter(xV7, yV7, 70, 'v', 'MarkerEdgeColor', 'k', 'LineWidth', 1.2);
-    text(xV7, yV7, lblV7, 'FontSize', 8, 'VerticalAlignment','top', 'HorizontalAlignment','left', 'Interpreter','none');
-end
-% overlay THInhibit points
-if any(rows23TH)
-    xTH = THInhibitSummary.ReuseRate_LearnedMedianActive(rows23TH);
-    yTH = THInhibitSummary.TransferPerformance(rows23TH);
-    lblTH = "TH-" + THInhibitSummary.Mouse(rows23TH);
-    scatter(xTH, yTH, 70, 's', 'MarkerEdgeColor', 'k', 'LineWidth', 1.2);
-    text(xTH, yTH, lblTH, 'FontSize', 8, 'VerticalAlignment','top', 'HorizontalAlignment','left', 'Interpreter','none');
-end
+    ax23 = nexttile;
+    x = Summary.ReuseRate_LearnedMedianActive(rows23);
+    y = Summary.TransferPerformance(rows23);
+    miceLbl = Summary.Mouse(rows23);
+    scatter(x, y, 50, 'filled');
+    grid on; box off;
+    xlabel('Reuse: LearnedActive → TransferActive');
+    ylabel('Performance');
+    ylim([0,1]);
+    title(sprintf('MOp2/3: \\rho=%.3f, p=%.3g (n=%d)', r23.rho, r23.p, r23.n));
+    hold on;
+    text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+    iAddTrendLine(ax23, x, y);
+    hold off;
+    ax23 = gca;
+    if isprop(ax23, 'Toolbar') && ~isempty(ax23.Toolbar)
+        ax23.Toolbar.Visible = 'off';
+    end
 
-labels = {"Ctrl"};
-if any(rows23FL)
-    labels{end+1} = "scFLARE";
-end
-if any(rows23V7)
-    labels{end+1} = "Vacation7";
-end
-if any(rows23TH)
-    labels{end+1} = "THInhibit";
-end
-if numel(labels) > 1
-    legend(labels, 'Location','best');
-end
-hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
-end
+    ax5 = nexttile;
+    x = Summary.ReuseRate_LearnedMedianActive(rows5);
+    y = Summary.TransferPerformance(rows5);
+    miceLbl = Summary.Mouse(rows5);
+    scatter(x, y, 50, 'filled');
+    grid on; box off;
+    xlabel('Reuse: LearnedActive → TransferActive');
+    ylabel('Performance');
+    ylim([0,1]);
+    title(sprintf('MOp5: \\rho=%.3f, p=%.3g (n=%d)', r5.rho, r5.p, r5.n));
+    hold on;
+    text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+    iAddTrendLine(ax5, x, y);
+    hold off;
+    ax5 = gca;
+    if isprop(ax5, 'Toolbar') && ~isempty(ax5.Toolbar)
+        ax5.Toolbar.Visible = 'off';
+    end
 
-nexttile;
-x = Summary.ReuseRate_LearnedMedianActive(rows5);
-y = Summary.TransferPerformance(rows5);
-miceLbl = Summary.Mouse(rows5);
-scatter(x, y, 50, 'filled');
-grid on; box off;
-xlabel('Reuse: LearnedMedianActive → TransferMedianActive');
-ylabel('Perf');
-title(sprintf('MOp5: \\rho=%.3f, p=%.3g (n=%d)', r5.rho, r5.p, r5.n));
-hold on;
-text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
-% overlay scFLARE points
-rows5FL = FlareSummary.ZKey=="MOp5";
-rows5V7 = Vacation7Summary.ZKey=="MOp5";
-rows5TH = THInhibitSummary.ZKey=="MOp5";
-if any(rows5FL)
-    xFL = FlareSummary.ReuseRate_LearnedMedianActive(rows5FL);
-    yFL = FlareSummary.TransferPerformance(rows5FL);
-    lblFL = "FL-" + FlareSummary.Mouse(rows5FL);
-    scatter(xFL, yFL, 70, '^', 'MarkerEdgeColor', 'k', 'LineWidth', 1.2);
-    text(xFL, yFL, lblFL, 'FontSize', 8, 'VerticalAlignment','top', 'HorizontalAlignment','left', 'Interpreter','none');
-end
-% overlay Vacation7 points
-if any(rows5V7)
-    xV7 = Vacation7Summary.ReuseRate_LearnedMedianActive(rows5V7);
-    yV7 = Vacation7Summary.TransferPerformance(rows5V7);
-    lblV7 = "V7-" + Vacation7Summary.Mouse(rows5V7);
-    scatter(xV7, yV7, 70, 'v', 'MarkerEdgeColor', 'k', 'LineWidth', 1.2);
-    text(xV7, yV7, lblV7, 'FontSize', 8, 'VerticalAlignment','top', 'HorizontalAlignment','left', 'Interpreter','none');
-end
-% overlay THInhibit points
-if any(rows5TH)
-    xTH = THInhibitSummary.ReuseRate_LearnedMedianActive(rows5TH);
-    yTH = THInhibitSummary.TransferPerformance(rows5TH);
-    lblTH = "TH-" + THInhibitSummary.Mouse(rows5TH);
-    scatter(xTH, yTH, 70, 's', 'MarkerEdgeColor', 'k', 'LineWidth', 1.2);
-    text(xTH, yTH, lblTH, 'FontSize', 8, 'VerticalAlignment','top', 'HorizontalAlignment','left', 'Interpreter','none');
-end
+    MATLAB.Graphics.UnifyAxesLims([ax23, ax5], @xlim);
 
-labels = {"Ctrl"};
-if any(rows5FL)
-    labels{end+1} = "scFLARE";
-end
-if any(rows5V7)
-    labels{end+1} = "Vacation7";
-end
-if any(rows5TH)
-    labels{end+1} = "THInhibit";
-end
-if numel(labels) > 1
-    legend(labels, 'Location','best');
-end
-hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
-end
-
-    fileName = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_k%g.svg', kSigma);
-
+    fileName = 'AudioLight_Reuse_LearnedActive_to_TransferActive.svg';
     outFile = fullfile(outDirUNC, fileName);
     exportgraphics(gcf, outFile, 'ContentType','vector');
     fprintf("\nSVG exported: %s\n", outFile);
-
-% 同图另存一份：包含 scFLARE 叠加点
-    fileNameWithFlare = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_WITH_scFLARE_k%g.svg', kSigma);
-    outFileWithFlare = fullfile(outDirUNC, fileNameWithFlare);
-    exportgraphics(gcf, outFileWithFlare, 'ContentType','vector');
-    fprintf("\nSVG exported (with scFLARE overlay): %s\n", outFileWithFlare);
-
-% 同图另存一份：包含 Vacation7 叠加点（若有）
-    if ~isempty(Vacation7Summary) && height(Vacation7Summary) > 0
-        fileNameWithV7 = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_WITH_Vacation7_k%g.svg', kSigma);
-        outFileWithV7 = fullfile(outDirUNC, fileNameWithV7);
-        exportgraphics(gcf, outFileWithV7, 'ContentType','vector');
-        fprintf("\nSVG exported (with Vacation7 overlay): %s\n", outFileWithV7);
-    end
-
-% 同图另存一份：包含 THInhibit 叠加点（若有）
-    if ~isempty(THInhibitSummary) && height(THInhibitSummary) > 0
-        fileNameWithTH = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_WITH_THInhibit_k%g.svg', kSigma);
-        outFileWithTH = fullfile(outDirUNC, fileNameWithTH);
-        exportgraphics(gcf, outFileWithTH, 'ContentType','vector');
-        fprintf("\nSVG exported (with THInhibit overlay): %s\n", outFileWithTH);
-    end
 end
 
 % --- 4.2) 额外导出：Ctrl-only + 三张对比图（Ctrl vs scFLARE/Vacation7/THInhibit）
 % 说明：单独开新 figure 导出，避免复用当前图导致 legend/标注混杂。
 if cfg.ExportCtrlOnlyAnd3Compare
     % Ctrl only
-    iExportCtrlOverlay(outDirUNC, sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_CTRLONLY_k%g.svg', kSigma), ...
-        Summary, rows23, rows5, r23, r5, kSigma, table(), "", '', "");
+    iExportCtrlOverlay(outDirUNC, 'AudioLight_Reuse_LearnedActive_to_TransferActive_CTRLONLY.svg', ...
+        Summary, rows23, rows5, r23, r5, table(), "", '', "");
 
     % Ctrl vs scFLARE
     if ~isempty(FlareSummary) && height(FlareSummary) > 0
-        iExportCtrlOverlay(outDirUNC, sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_Ctrl_vs_scFLARE_k%g.svg', kSigma), ...
-            Summary, rows23, rows5, r23, r5, kSigma, FlareSummary, "scFLARE", '^', "FL-");
+        iExportCtrlOverlay(outDirUNC, 'AudioLight_Reuse_LearnedActive_to_TransferActive_Ctrl_vs_scFLARE.svg', ...
+            Summary, rows23, rows5, r23, r5, FlareSummary, "scFLARE", '^', "FL-");
     else
         warning('scFLARE summary empty; skip Ctrl vs scFLARE export.');
     end
 
     % Ctrl vs Vacation7
     if ~isempty(Vacation7Summary) && height(Vacation7Summary) > 0
-        iExportCtrlOverlay(outDirUNC, sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_Ctrl_vs_Vacation7_k%g.svg', kSigma), ...
-            Summary, rows23, rows5, r23, r5, kSigma, Vacation7Summary, "Vacation7", 'v', "V7-");
+        iExportCtrlOverlay(outDirUNC, 'AudioLight_Reuse_LearnedActive_to_TransferActive_Ctrl_vs_Vacation7.svg', ...
+            Summary, rows23, rows5, r23, r5, Vacation7Summary, "Vacation7", 'v', "V7-");
     else
         warning('Vacation7 summary empty; skip Ctrl vs Vacation7 export.');
     end
 
     % Ctrl vs THInhibit
     if ~isempty(THInhibitSummary) && height(THInhibitSummary) > 0
-        iExportCtrlOverlay(outDirUNC, sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_Ctrl_vs_THInhibit_k%g.svg', kSigma), ...
-            Summary, rows23, rows5, r23, r5, kSigma, THInhibitSummary, "THInhibit", 's', "TH-");
+        iExportCtrlOverlay(outDirUNC, 'AudioLight_Reuse_LearnedActive_to_TransferActive_Ctrl_vs_THInhibit.svg', ...
+            Summary, rows23, rows5, r23, r5, THInhibitSummary, "THInhibit", 's', "TH-");
     else
         warning('THInhibit summary empty; skip Ctrl vs THInhibit export.');
     end
@@ -982,39 +891,49 @@ end
 if cfg.ExportReverse
     figure('Name','AudioLight Reverse reuse vs Performance (by layer)');
     tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
-    sgtitle(sprintf('Reverse reuse: P(LearnedActive | TransferActive), k=%g', kSigma));
+    sgtitle('Reverse reuse vs Performance');
 
-    nexttile;
+    ax23r = nexttile;
     x = Summary.ReuseRate_TransferMedianActive(rows23);
     y = Summary.TransferPerformance(rows23);
     miceLbl = Summary.Mouse(rows23);
     scatter(x, y, 50, 'filled');
     grid on; box off;
-    xlabel('Reuse: TransferMedianActive → LearnedMedianActive');
-    ylabel('Perf');
+    xlabel('Reuse: TransferActive → LearnedActive');
+    ylabel('Performance');
+    ylim([0,1]);
     title(sprintf('MOp2/3: \\rho=%.3f, p=%.3g (n=%d)', r23Rev.rho, r23Rev.p, r23Rev.n));
-    hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
-    ax = gca;
-    if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-        ax.Toolbar.Visible = 'off';
+    hold on;
+    text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+    iAddTrendLine(ax23r, x, y);
+    hold off;
+    ax23r = gca;
+    if isprop(ax23r, 'Toolbar') && ~isempty(ax23r.Toolbar)
+        ax23r.Toolbar.Visible = 'off';
     end
 
-    nexttile;
+    ax5r = nexttile;
     x = Summary.ReuseRate_TransferMedianActive(rows5);
     y = Summary.TransferPerformance(rows5);
     miceLbl = Summary.Mouse(rows5);
     scatter(x, y, 50, 'filled');
     grid on; box off;
-    xlabel('Reuse: TransferMedianActive → LearnedMedianActive');
-    ylabel('Perf');
+    xlabel('Reuse: TransferActive → LearnedActive');
+    ylabel('Performance');
+    ylim([0,1]);
     title(sprintf('MOp5: \\rho=%.3f, p=%.3g (n=%d)', r5Rev.rho, r5Rev.p, r5Rev.n));
-    hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
-    ax = gca;
-    if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-        ax.Toolbar.Visible = 'off';
+    hold on;
+    text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+    iAddTrendLine(ax5r, x, y);
+    hold off;
+    ax5r = gca;
+    if isprop(ax5r, 'Toolbar') && ~isempty(ax5r.Toolbar)
+        ax5r.Toolbar.Visible = 'off';
     end
 
-    fileNameRev = sprintf('AudioLight_MedianNTATS_Reuse_TransferActive_to_LearnedActive_k%g.svg', kSigma);
+    MATLAB.Graphics.UnifyAxesLims([ax23r, ax5r], @xlim);
+
+    fileNameRev = 'AudioLight_Reuse_TransferActive_to_LearnedActive.svg';
     outFileRev = fullfile(outDirUNC, fileNameRev);
     exportgraphics(gcf, outFileRev, 'ContentType','vector');
     fprintf("\nSVG exported (reverse): %s\n", outFileRev);
@@ -1024,7 +943,7 @@ end
 if cfg.ExportHitMiss
     figure('Name','AudioLight Hit vs Miss reuse (BarScatterCompare)');
     tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
-    sgtitle(sprintf('Hit vs Miss forward reuse (2D groups): P(TransferActive | LearnedActive), k=%g', kSigma));
+    sgtitle('Hit vs Miss forward reuse (2D groups)');
 
     nexttile;
     hit23 = Summary.ReuseRate_LearnedMedianActive_Hit(rows23);
@@ -1056,7 +975,7 @@ if cfg.ExportHitMiss
         ax.Toolbar.Visible = 'off';
     end
 
-    fileNameHM = sprintf('AudioLight_MedianNTATS_Reuse_LearnedActive_to_TransferActive_HitMiss_2D_k%g.svg', kSigma);
+    fileNameHM = 'AudioLight_Reuse_LearnedActive_to_TransferActive_HitMiss_2D.svg';
     outFileHM = fullfile(outDirUNC, fileNameHM);
     exportgraphics(gcf, outFileHM, 'ContentType','vector');
     fprintf("\nSVG exported (hit-miss 2D): %s\n", outFileHM);
@@ -1065,7 +984,7 @@ if cfg.ExportHitMiss
     if all(ismember({'ReuseRate_TransferMedianActive_Hit','ReuseRate_TransferMedianActive_Miss'}, Summary.Properties.VariableNames))
         figure('Name','AudioLight Reverse Hit vs Miss reuse (BarScatterCompare)');
         tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
-        sgtitle(sprintf('Reverse reuse (2D groups): P(LearnedActive | TransferActive), k=%g', kSigma));
+        sgtitle('Reverse Hit vs Miss reuse (2D groups)');
 
         nexttile;
         hit23r = Summary.ReuseRate_TransferMedianActive_Hit(rows23);
@@ -1097,7 +1016,7 @@ if cfg.ExportHitMiss
             ax.Toolbar.Visible = 'off';
         end
 
-        fileNameHMR = sprintf('AudioLight_MedianNTATS_Reuse_TransferActive_to_LearnedActive_HitMiss_2D_k%g.svg', kSigma);
+        fileNameHMR = 'AudioLight_Reuse_TransferActive_to_LearnedActive_HitMiss_2D.svg';
         outFileHMR = fullfile(outDirUNC, fileNameHMR);
         exportgraphics(gcf, outFileHMR, 'ContentType','vector');
         fprintf("\nSVG exported (reverse hit-miss 2D): %s\n", outFileHMR);
@@ -1166,7 +1085,7 @@ if cfg.ExportHeatmap && exist('cellUIDTranHM','var') && ~isempty(cellUIDTranHM) 
             end
         end
 
-        fileNameLane = sprintf('AudioLight_MedianNTATS_LanearHeatmap_Learned_TransferHit_TransferMiss_-1to1_k%g.svg', kSigma);
+        fileNameLane = 'AudioLight_LanearHeatmap_Learned_TransferHit_TransferMiss_-1to1.svg';
         outFileLane = fullfile(outDirUNC, fileNameLane);
         exportgraphics(gcf, outFileLane, 'ContentType','vector');
         fprintf("\nSVG exported (lanes heatmap): %s\n", outFileLane);
@@ -1183,36 +1102,38 @@ end
 assignin('base','AudioLight_MedianNTATSReuse_Summary',Summary);
 
 %% ---- local functions ----
-function iExportCtrlOverlay(outDirUNC, fileName, Summary, rows23, rows5, r23, r5, kSigma, OverlaySummary, overlayName, overlayMarker, overlayPrefix)
+function iExportCtrlOverlay(outDirUNC, fileName, Summary, rows23, rows5, r23, r5, OverlaySummary, overlayName, overlayMarker, overlayPrefix)
 % 导出：Ctrl-only 或 Ctrl vs 单一 overlay 的两层散点图
 
 if nargin < 11
     overlayName = "";
 end
 
-figTitle = sprintf('Median NTATS threshold reuse vs Performance (Ctrl%s)', ...
+figTitle = sprintf('Reuse vs Performance (Ctrl%s)', ...
     ternary(strlength(string(overlayName))>0, " + " + string(overlayName), " only"));
 
 figure('Name', figTitle);
 tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 if strlength(string(overlayName))>0
-    sgtitle(sprintf('Median NTATS threshold (k=%g): Ctrl vs %s', kSigma, string(overlayName)));
+    sgtitle(sprintf('Ctrl vs %s', string(overlayName)));
 else
-    sgtitle(sprintf('Median NTATS threshold (k=%g): Ctrl only', kSigma));
+    sgtitle('Ctrl only');
 end
 
 % ---- MOp2/3 ----
-nexttile;
+ax23c = nexttile;
 x = Summary.ReuseRate_LearnedMedianActive(rows23);
 y = Summary.TransferPerformance(rows23);
 miceLbl = Summary.Mouse(rows23);
 scatter(x, y, 50, 'filled');
 grid on; box off;
-xlabel('Reuse: LearnedMedianActive → TransferMedianActive');
-ylabel('Perf');
+xlabel('Reuse: LearnedActive → TransferActive');
+ylabel('Performance');
+ylim([0,1]);
 title(sprintf('MOp2/3: \\rho=%.3f, p=%.3g (n=%d)', r23.rho, r23.p, r23.n));
 hold on;
 text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+iAddTrendLine(ax23c, x, y);
 
 if ~isempty(OverlaySummary) && height(OverlaySummary) > 0 && strlength(string(overlayName))>0
     rowsO = OverlaySummary.ZKey=="MOp23";
@@ -1226,23 +1147,25 @@ if ~isempty(OverlaySummary) && height(OverlaySummary) > 0 && strlength(string(ov
     end
 end
 hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
+ax23c = gca;
+if isprop(ax23c, 'Toolbar') && ~isempty(ax23c.Toolbar)
+    ax23c.Toolbar.Visible = 'off';
 end
 
 % ---- MOp5 ----
-nexttile;
+ax5c = nexttile;
 x = Summary.ReuseRate_LearnedMedianActive(rows5);
 y = Summary.TransferPerformance(rows5);
 miceLbl = Summary.Mouse(rows5);
 scatter(x, y, 50, 'filled');
 grid on; box off;
-xlabel('Reuse: LearnedMedianActive → TransferMedianActive');
-ylabel('Perf');
+xlabel('Reuse: LearnedActive → TransferActive');
+ylabel('Performance');
+ylim([0,1]);
 title(sprintf('MOp5: \\rho=%.3f, p=%.3g (n=%d)', r5.rho, r5.p, r5.n));
 hold on;
 text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+iAddTrendLine(ax5c, x, y);
 
 if ~isempty(OverlaySummary) && height(OverlaySummary) > 0 && strlength(string(overlayName))>0
     rowsO = OverlaySummary.ZKey=="MOp5";
@@ -1256,14 +1179,57 @@ if ~isempty(OverlaySummary) && height(OverlaySummary) > 0 && strlength(string(ov
     end
 end
 hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
+ax5c = gca;
+if isprop(ax5c, 'Toolbar') && ~isempty(ax5c.Toolbar)
+    ax5c.Toolbar.Visible = 'off';
 end
+
+MATLAB.Graphics.UnifyAxesLims([ax23c, ax5c], @xlim);
 
 outFile = fullfile(outDirUNC, fileName);
 exportgraphics(gcf, outFile, 'ContentType','vector');
 fprintf("\nSVG exported (Ctrl compare): %s\n", outFile);
+end
+
+function T = iExcludeMice(T, excludeMice)
+if isempty(T) || ~istable(T)
+    return;
+end
+if nargin < 2
+    return;
+end
+if ~ismember('Mouse', T.Properties.VariableNames)
+    return;
+end
+ex = string(excludeMice);
+ex = ex(strlength(ex) > 0);
+if isempty(ex)
+    return;
+end
+T = T(~ismember(string(T.Mouse), ex), :);
+end
+
+function h = iAddTrendLine(ax, x, y)
+% 在相关性散点图上添加一条线性趋势线段（仅基于输入点拟合）
+h = gobjects(0);
+if nargin < 3 || isempty(ax) || ~isgraphics(ax)
+    return;
+end
+x = x(:); y = y(:);
+mask = isfinite(x) & isfinite(y);
+x = x(mask); y = y(mask);
+if numel(x) < 2
+    return;
+end
+if std(x) == 0
+    return;
+end
+p = polyfit(double(x), double(y), 1);
+xl = xlim(ax);
+xFit = double(xl(:))';
+yFit = polyval(p, xFit);
+hold(ax, 'on');
+h = plot(ax, xFit, yFit, '-', 'Color', 'k', 'LineWidth', 1.2);
 end
 
 function y = ternary(cond, a, b)

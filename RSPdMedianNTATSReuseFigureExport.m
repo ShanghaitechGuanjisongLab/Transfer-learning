@@ -40,29 +40,27 @@ baseMask = (xsSec >= -3) & (xsSec < 0);
 winMask  = (xsSec >= 0) & (xsSec <= 1);
 kSigma = 3;
 
-% --- 2) 取 Learned/Transfer 的“所有回合中位数”轨迹（每 cell 一条 48 点）
-% RSPd 数据没有 Phase 字段：这里用 Design/Stimulus 来定义 Learned/Transfer
-% 注意：不要用 dFdF0（当 F0 可能为负时会崩）；统一用 z-score。
-GLearn = RSP.QueryNTATS(struct('Stimulus','AudioWater','Design','AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-GTran  = RSP.QueryNTATS(struct('Stimulus','LightWater','Design','LightWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+% 排除指定鼠（例如 vtf0353 原始视频亮度异常）
+excludeMice = string(["vtf0353"]);
 
+% --- 2) 取 Learned/Transfer 的“所有回合中位数”轨迹（每 cell 一条 48 点）
+% 必须用 Phase 明确确认 Learned/Transfer（不允许用 Design/Stimulus 推断）。
+% 注意：不要用 dFdF0（当 F0 可能为负时会崩）；统一用 z-score。
+GLearn = RSP.QueryNTATS(struct('Phase','Learned','Stimulus','AudioWater','Design','AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+GTran  = RSP.QueryNTATS(struct('Phase','Transfer','Stimulus','LightWater','Design','LightWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 XLearn = iNtatsData(GLearn.NTATS);
 XTran  = iNtatsData(GTran.NTATS);
 
 % Transfer：按行为拆分（Behavior=1 命中，Behavior=0 错失）
 % 注意：直接在 struct 里加 Behavior 可能触发 Empty_group；
 % 这里用 QueryTable 方式一次性查询 Hit/Miss 两组。
-QT_HM = table(categorical({'Hit';'Miss'}), categorical({'LightWater';'LightWater'}), categorical({'LightWater';'LightWater'}), {1;0}, ...
-    'VariableNames', {'GroupName','Design','Stimulus','Behavior'});
+QT_HM = table(categorical({'Hit';'Miss'}), categorical({'Transfer';'Transfer'}), categorical({'LightWater';'LightWater'}), categorical({'LightWater';'LightWater'}), {1;0}, ...
+    'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior'});
 try
     GTranHM = RSP.QueryNTATS(QT_HM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 catch ME
-    if ME.identifier == "UniExp:Exception:Empty_group"
-        warning(ME.identifier, 'QueryNTATS Hit/Miss 为空：%s', ME.message);
-        GTranHM = [];
-    else
-        rethrow(ME);
-    end
+    warning(ME.identifier, 'QueryNTATS Hit/Miss 为空：%s', ME.message);
+    GTranHM = [];
 end
 
 XTranHit = nan(size(XTran));
@@ -105,8 +103,8 @@ tranActiveMedMiss = tranMissWinMx > (tranMissBaseMu + kSigma .* tranMissBaseSd);
 % --- 3) per mouse × layer 的复用率，并关联 Transfer performance
 C = RSP.Cells;
 
-% Performance：统一用 UniExp.DataSet.TableQuery
-PerfT = RSP.TableQuery(["Mouse","Performance"], Design="LightWater");
+% Performance：统一用 UniExp.DataSet.TableQuery（同样强制 Phase=Transfer）
+PerfT = RSP.TableQuery(["Mouse","Performance"], Phase="Transfer", Design="LightWater");
 PerfT.Mouse = string(PerfT.Mouse);
 [gM, mKeys] = findgroups(PerfT.Mouse);
 perfByMouse = table(mKeys, splitapply(@(p) mean(p, 'omitnan'), PerfT.Performance, gM), ...
@@ -228,6 +226,10 @@ Summary = table(sumMouse(1:rowN), sumZKey(1:rowN), sumPerf(1:rowN), sumNCells(1:
 
 Summary = sortrows(Summary, {'ZKey','TransferPerformance'}, {'ascend','descend'});
 
+if ~isempty(excludeMice)
+    Summary = Summary(~ismember(string(Summary.Mouse), excludeMice), :);
+end
+
 rows23 = Summary.ZKey=="RSPd23";
 rows5  = Summary.ZKey=="RSPd5";
 
@@ -248,42 +250,52 @@ fprintf("[RSPd2/3 signrank hit>miss] p=%.4g (n=%d)\n", p23.p, p23.n);
 fprintf("[RSPd5  signrank hit>miss] p=%.4g (n=%d)\n", p5.p,  p5.n);
 
 % --- 4) 画图并导出 SVG
-figure('Name','RSPd Median-NTATS threshold reuse vs Performance (by layer)');
+figure('Name','RSPd reuse vs Performance (by layer)');
 tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
-sgtitle(sprintf('RSPd median NTATS threshold: max(0~1s)>mean(base)+%g*std(base)', kSigma));
+sgtitle('Reuse vs Performance');
 
-nexttile;
+ax23 = nexttile;
 x = Summary.ReuseRate_LearnedMedianActive(rows23);
 y = Summary.TransferPerformance(rows23);
 miceLbl = Summary.Mouse(rows23);
 scatter(x, y, 50, 'filled');
 grid on; box off;
-xlabel('Reuse: AudioWaterMedianActive \rightarrow LightWaterMedianActive');
-ylabel('Perf (LightWater)');
+xlabel('Reuse: AudioWaterActive \rightarrow LightWaterActive');
+ylabel('Performance (LightWater)');
+ylim([0,1]);
 title(sprintf('RSPd2/3: \\rho=%.3f, p=%.3g (n=%d)', r23.rho, r23.p, r23.n));
-hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
+hold on;
+text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+iAddTrendLine(ax23, x, y);
+hold off;
+ax23 = gca;
+if isprop(ax23, 'Toolbar') && ~isempty(ax23.Toolbar)
+    ax23.Toolbar.Visible = 'off';
 end
 
-nexttile;
+ax5 = nexttile;
 x = Summary.ReuseRate_LearnedMedianActive(rows5);
 y = Summary.TransferPerformance(rows5);
 miceLbl = Summary.Mouse(rows5);
 scatter(x, y, 50, 'filled');
 grid on; box off;
-xlabel('Reuse: AudioWaterMedianActive \rightarrow LightWaterMedianActive');
-ylabel('Perf (LightWater)');
+xlabel('Reuse: AudioWaterActive \rightarrow LightWaterActive');
+ylabel('Performance (LightWater)');
+ylim([0,1]);
 title(sprintf('RSPd5: \\rho=%.3f, p=%.3g (n=%d)', r5.rho, r5.p, r5.n));
-hold on; text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left'); hold off;
-ax = gca;
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-    ax.Toolbar.Visible = 'off';
+hold on;
+text(x, y, miceLbl, 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
+iAddTrendLine(ax5, x, y);
+hold off;
+ax5 = gca;
+if isprop(ax5, 'Toolbar') && ~isempty(ax5.Toolbar)
+    ax5.Toolbar.Visible = 'off';
 end
 
+MATLAB.Graphics.UnifyAxesLims([ax23, ax5], @xlim);
+
 outDirUNC = "\\\\Data-Server-2\\个人数据\\张天夫\\202601";
-fileName = sprintf('RSPd_MedianNTATS_Reuse_AudioWaterActive_to_LightWaterActive_k%g.svg', kSigma);
+fileName = 'RSPd_Reuse_AudioWaterActive_to_LightWaterActive.svg';
 outFile = fullfile(outDirUNC, fileName);
 exportgraphics(gcf, outFile, 'ContentType','vector');
 fprintf("\nSVG exported: %s\n", outFile);
@@ -291,7 +303,7 @@ fprintf("\nSVG exported: %s\n", outFile);
 % --- 5) Hit vs Miss：用 UniExp.BarScatterCompare 作图示意（按 layer）
 figure('Name','RSPd Hit vs Miss reuse (BarScatterCompare)');
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
-sgtitle(sprintf('RSPd Hit vs Miss forward reuse (2D groups): P(TransferActive | LearnedActive), k=%g', kSigma));
+sgtitle('RSPd Hit vs Miss forward reuse (2D groups)');
 
 nexttile;
 hit23 = Summary.ReuseRate_LearnedMedianActive_Hit(rows23);
@@ -323,7 +335,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
     ax.Toolbar.Visible = 'off';
 end
 
-fileNameHM = sprintf('RSPd_MedianNTATS_Reuse_AudioWaterActive_to_LightWaterActive_HitMiss_k%g.svg', kSigma);
+fileNameHM = 'RSPd_Reuse_AudioWaterActive_to_LightWaterActive_HitMiss.svg';
 outFileHM = fullfile(outDirUNC, fileNameHM);
 exportgraphics(gcf, outFileHM, 'ContentType','vector');
 fprintf("\nSVG exported (hit-miss): %s\n", outFileHM);
@@ -374,4 +386,27 @@ if isa(NT, 'MATLAB.DataTypes.NDTable')
 else
     X = NT;
 end
+end
+
+function h = iAddTrendLine(ax, x, y)
+% 在相关性散点图上添加一条线性趋势线段（仅基于输入点拟合）
+h = gobjects(0);
+if nargin < 3 || isempty(ax) || ~isgraphics(ax)
+    return;
+end
+x = x(:); y = y(:);
+mask = isfinite(x) & isfinite(y);
+x = x(mask); y = y(mask);
+if numel(x) < 2
+    return;
+end
+if std(x) == 0
+    return;
+end
+p = polyfit(double(x), double(y), 1);
+xl = xlim(ax);
+xFit = double(xl(:))';
+yFit = polyval(p, xFit);
+hold(ax, 'on');
+h = plot(ax, xFit, yFit, '-', 'Color', 'k', 'LineWidth', 1.2);
 end
