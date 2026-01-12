@@ -147,7 +147,7 @@ classdef(Abstract)TransferLearning
 			Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
 		end
 		function V7Inhibit=iVacation7
-			V7Inhibit=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202509\WT声光等待7天后迁移.v1.mat");
+			V7Inhibit=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\WT声光等待7天后迁移.v3.mat");
 			V7Inhibit.TagSplitTrial(seconds([-3,3]));
 			TrialDuration=seconds(6);
 			LLP=V7Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
