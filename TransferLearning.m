@@ -5,50 +5,26 @@ classdef(Abstract)TransferLearning
 		QueryNTATS=memoize(@TransferLearning.iQueryNTATS);
 		PcaTable=memoize(@TransferLearning.iPcaTable);
 		Xs=seconds(linspace(-3,3,48)).';
-	end
-	properties(Constant,Access=private)
-		MemoMOpBaseline=memoize(@TransferLearning.iMOpBaseline);
-		MemoAudioLightBaseline=memoize(@TransferLearning.iAudioLightBaseline);
-		MemoLightAudioBaseline=memoize(@TransferLearning.iLightAudioBaseline);
-		MemoRSPd=memoize(@TransferLearning.iRSPd);
-		MemoTHInhibit=memoize(@TransferLearning.iTHInhibit);
-		MemoVacation7=memoize(@TransferLearning.iVacation7);
-		MemoInterspersed=memoize(@TransferLearning.iInterspersed);
-		MemoscFLARE=memoize(@TransferLearning.iscFLARE);
+		MOpBaseline=memoize(@TransferLearning.iMOpBaseline);
+		AudioLightBaseline=memoize(@TransferLearning.iAudioLightBaseline);
+		LightAudioBaseline=memoize(@TransferLearning.iLightAudioBaseline);
+		RSPd=memoize(@TransferLearning.iRSPd);
+		THInhibit=memoize(@TransferLearning.iTHInhibit);
+		Vacation7=memoize(@TransferLearning.iVacation7);
+		ALInterspersed=memoize(@TransferLearning.iALInterspersed);
+		LAInterspersed=memoize(@TransferLearning.iLAInterspersed);
+		scFLARE=memoize(@TransferLearning.iscFLARE);
+		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
+		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
 	end
 	methods(Static)
 		function Clear()
 			clearAllMemoizedCaches;
 			clear TransferLearning;
 		end
-		function MB=MOpBaseline
-			TransferLearning.Exception.DataSet_deprecated.Warn("除非你想分析光声有穿插数据，否则请分别用AudioLightBaseline和LightAudioBaseline");
-			MB=TransferLearning.MemoMOpBaseline();
-		end
-		function AL=AudioLightBaseline
-			AL=TransferLearning.MemoAudioLightBaseline();
-		end
-		function LA=LightAudioBaseline
-			LA=TransferLearning.MemoLightAudioBaseline();
-		end
 		function MS=MeanSem(Data,ReduceDimension,ConcatDimension)
 			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,ReduceDimension);
 			MS=cat(ConcatDimension,Mean,Sem);
-		end
-		function RSP=RSPd
-			RSP=TransferLearning.MemoRSPd();
-		end
-		function Inhibit=THInhibit
-			Inhibit=TransferLearning.MemoTHInhibit();
-		end
-		function V7Inhibit=Vacation7
-			V7Inhibit=TransferLearning.MemoVacation7();
-		end
-		function I=Interspersed
-			I=TransferLearning.MemoInterspersed();
-		end
-		function F=scFLARE
-			F=TransferLearning.MemoscFLARE();
 		end
 		function DrawCueWaterLines(Ax)
 			if nargin
@@ -106,7 +82,7 @@ classdef(Abstract)TransferLearning
 			MB.Blocks.DateTime.TimeZone='';
 		end
 		function AL=iAudioLightBaseline
-			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\声光迁移MOp成像（含学会后三次）.v5.mat");
+			AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v5.mat");
 			AL.TagSplitTrial(seconds([-3,3]));
 
 			%该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
@@ -155,7 +131,7 @@ classdef(Abstract)TransferLearning
 			V7Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
 		end
-		function I=iInterspersed
+		function I=iALInterspersed
 			I=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202511\声光穿插迁移MOp成像v3.mat");
 			I.TagSplitTrial(seconds([-3,3]));
 			TrialDuration=seconds(6);
@@ -163,6 +139,17 @@ classdef(Abstract)TransferLearning
 			I.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			I.ResampleTrials(milliseconds(125),TrialDuration);
 			I.AddRepeatIndex;
+		end
+		function I=iLAInterspersed
+			I=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v5.mat");
+			I.TagSplitTrial(seconds([-3,3]));
+			TrialDuration=seconds(6);
+			LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
+			I.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
+			I.ResampleTrials(milliseconds(125),TrialDuration);
+			I.AddRepeatIndex;
+			I.Mice=unique(I.DateTimes(:,"Mouse"));
+			I.Mice.Paradigm(:)="光声有穿插";
 		end
 		function F=iscFLARE
 			F=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\MOp+RSP scFLARE 化学抑制钙成像.v1.mat");

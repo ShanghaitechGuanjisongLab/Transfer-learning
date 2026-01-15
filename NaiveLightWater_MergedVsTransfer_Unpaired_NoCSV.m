@@ -18,20 +18,13 @@ try
 catch
 end
 
-outDirUNC = "\\\\Data-Server-2\\个人数据\\张天夫\\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 excludeMice = string(["vtf0353"]);
 
 %% --- 1) Load datasets
 LAB = TransferLearning.LightAudioBaseline();
+LAI = TransferLearning.LAInterspersed();
 ALB = TransferLearning.AudioLightBaseline();
-
-% LAInterspersed must be v5 (do not depend on factory pointing to v4)
-v5Path = "\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v5.mat";
-if ~isfile(v5Path)
-    error("Missing LAInterspersed v5: %s", v5Path);
-end
-S = load(v5Path, 'Interspersed');
-LAI = S.Interspersed;
 
 %% --- 2) Find pure Naive LightWater mice (no AudioWater in same block)
 labPure = iFindPureNaiveLightWaterMice(LAB, excludeMice);
@@ -298,9 +291,13 @@ if nCell < 2 || nTrial < 2
     return;
 end
 
-d = pdist(Z', 'euclidean');
-stdDist = std(d, 0, 'omitnan');
-centroid = mean(Z', 1, 'omitnan');
+% New definition:
+% numerator = sqrt(mean over cells of variance over trials)
+% denominator = norm(centroid) where centroid is mean(point) in cell-space
+cellVar = var(Z, 0, 2, 'omitnan');
+stdDist = sqrt(mean(cellVar, 'omitnan'));
+
+centroid = mean(Z, 2, 'omitnan');
 dist0 = norm(centroid, 2);
 if dist0 <= 0 || ~isfinite(dist0)
     div = NaN;

@@ -55,6 +55,11 @@ f = figure('Color','w');
 ax = axes(f);
 hold(ax,'on');
 
+try
+    ax.Toolbar.Visible = 'off';
+catch
+end
+
 x1 = ones(size(xNaive));
 x2 = 2*ones(size(xTransfer));
 
@@ -171,12 +176,11 @@ for iM = 1:numel(mice)
         continue;
     end
 
-    [activeUID, nCellsTotal, nCellsActive] = iFindActiveCellsByNTATS(DS, trialUID, baseIdx, respIdx);
+    [activeUID, nCellsTotal, nCellsActive] = iFindActiveCellsByNTATS(DS, "Naive", "", m, bu, baseIdx, respIdx);
 
-    ntsCell = DS.QueryNTS(struct('Stimulus','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
+    ntsCell = DS.QueryNTS(struct('Phase','Naive','Stimulus','LightWater','Mouse',m,'BlockUID',bu), UniExp.Flags.ZScore, 1:24);
     nts = ntsCell{1};
-    inTrials = ismember(uint64(nts.TrialUID), trialUID);
-    nts = nts(inTrials, :);
+    nts = nts(ismember(uint64(nts.TrialUID), trialUID), :);
     if isempty(nts)
         continue;
     end
@@ -248,12 +252,11 @@ for iM = 1:numel(allMice)
         continue;
     end
 
-    [activeUID, nCellsTotal, nCellsActive] = iFindActiveCellsByNTATS(DS, trialUID, baseIdx, respIdx);
+    [activeUID, nCellsTotal, nCellsActive] = iFindActiveCellsByNTATS(DS, "Transfer", "LightWater", m, b, baseIdx, respIdx);
 
-    ntsCell = DS.QueryNTS(struct('Stimulus','LightWater','Design','LightWater','Mouse',m), UniExp.Flags.ZScore, 1:24);
+    ntsCell = DS.QueryNTS(struct('Phase','Transfer','Design','LightWater','Stimulus','LightWater','Mouse',m,'BlockUID',b), UniExp.Flags.ZScore, 1:24);
     nts = ntsCell{1};
-    inTrials = ismember(uint64(nts.TrialUID), trialUID);
-    nts = nts(inTrials, :);
+    nts = nts(ismember(uint64(nts.TrialUID), trialUID), :);
     if isempty(nts)
         continue;
     end
@@ -290,8 +293,12 @@ for iM = 1:numel(allMice)
 end
 end
 
-function [activeUID, nCellsTotal, nCellsActive] = iFindActiveCellsByNTATS(DS, trialUID, baseIdx, respIdx)
-G = DS.QueryNTATS(struct('TrialUID', uint64(trialUID)), UniExp.Flags.ZScore, uint16(1:24), UniExp.Flags.Median);
+function [activeUID, nCellsTotal, nCellsActive] = iFindActiveCellsByNTATS(DS, phase, design, mouse, blockUID, baseIdx, respIdx)
+q = struct('Phase',string(phase),'Stimulus','LightWater','Mouse',string(mouse),'BlockUID',blockUID);
+if strlength(string(design))>0
+    q.Design = string(design);
+end
+G = DS.QueryNTATS(q, UniExp.Flags.ZScore, uint16(1:24), UniExp.Flags.Median);
 nt = G.NTATS;
 if isa(nt, 'MATLAB.DataTypes.NDTable')
     A = nt.Data;
@@ -300,9 +307,24 @@ else
 end
 
 nCellsTotal = height(G);
+
+nTime = size(A, 2);
+if nTime < double(max(baseIdx))
+    error('ActiveCells:NTATSLengthTooShort', 'NTATS length %d is shorter than baseline index max %d.', nTime, double(max(baseIdx)));
+end
+
+xs = linspace(-3, 3, nTime);
+respMask = (xs >= 0) & (xs <= 1);
+respIdx2 = find(respMask);
+if isempty(respIdx2)
+    [~, i0] = min(abs(xs - 0));
+    [~, i1] = min(abs(xs - 1));
+    respIdx2 = min(i0,i1):max(i0,i1);
+end
+
 baseMean = mean(A(:, double(baseIdx)), 2, 'omitnan');
 baseStd = std(A(:, double(baseIdx)), 0, 2, 'omitnan');
-respMax = max(A(:, double(respIdx)), [], 2, 'omitnan');
+respMax = max(A(:, respIdx2), [], 2, 'omitnan');
 
 activeMask = respMax > (baseMean + 3*baseStd);
 activeUID = uint64(G.CellUID(activeMask));
@@ -321,10 +343,10 @@ if nCell < 2 || nTrial < 2
     return;
 end
 
-P = Z';
-centroid = mean(P, 1, 'omitnan');
-distToCentroid = vecnorm(P - centroid, 2, 2);
-stdDist = std(distToCentroid, 0, 'omitnan');
+cellVar = var(Z, 0, 2, 'omitnan');
+stdDist = sqrt(mean(cellVar, 'omitnan'));
+
+centroid = mean(Z, 2, 'omitnan');
 dist0 = norm(centroid, 2);
 if dist0 <= 0 || ~isfinite(dist0)
     div = NaN;

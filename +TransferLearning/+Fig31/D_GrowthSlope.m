@@ -19,11 +19,10 @@
 % - No duplicate mouse IDs across sources; no mouse appears in both groups.
 % - Export SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
-% Execution:
-% - This file is a SCRIPT with local functions.
-% - Call it from command window as:
-%     TransferLearning.Fig31.D_GrowthSlope()
-%   (parentheses are allowed; no output arguments).
+% Execution (hard requirements):
+% - This file MUST remain a SCRIPT (do not convert to function).
+% - Do NOT use run.
+% - Open in MATLAB Editor and Run/F5.
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -162,9 +161,11 @@ end
 
 statsOut.SlopeP = pSwarm;
 statsOut.SlopeAdjP = pSwarmAdj;
+%% 
 
 % --- 5) Plot
 f = figure('Color','w', 'Name', 'Fig3.1d Growth slope');
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 ax = axes('Parent', f);
 hold(ax,'on');
 
@@ -182,14 +183,14 @@ swarmchart(ax, 2*ones(size(xTranAdj)),  xTranAdj,  24, 'filled');
 ax.XLim = [0.5 2.5];
 ax.XTick = [1 2];
 ax.XTickLabel = {sprintf('Naive (n=%d)', numel(xNaive)), sprintf('Transfer (n=%d)', numel(xTran))};
-ylabel(ax, 'Baseline-adjusted per-mouse slope (robust residual)');
+ylabel(ax, 'Baseline-adjusted per-mouse slope');
 title(ax, 'Growth slope (LightWater, baseline-adjusted)');
 box(ax,'on');
 
 
 % LME as supplementary info on the same figure
 text(ax, 1.5, min([xNaiveAdj; xTranAdj; 0]) - 0.02, sprintf('LME %s = %.3g [%.3g, %.3g], p=%.2g', coefName, beta, ci(1), ci(2), pval), ...
-	'HorizontalAlignment','center', 'VerticalAlignment','top', 'Interpreter','none');
+	'HorizontalAlignment','center', 'VerticalAlignment','bottom', 'Interpreter','none');
 
 % --- 5) Export (SVG only)
 try

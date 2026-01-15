@@ -283,11 +283,10 @@ if nCell < 2 || nTrial < 2
     return;
 end
 
-% Points are trials in cell-dimensional space (trial × cell).
-P = Z';
-centroid = mean(P, 1, 'omitnan');
-distToCentroid = vecnorm(P - centroid, 2, 2);
-stdDist = std(distToCentroid, 0, 'omitnan');
+cellVar = var(Z, 0, 2, 'omitnan');
+stdDist = sqrt(mean(cellVar, 'omitnan'));
+
+centroid = mean(Z, 2, 'omitnan');
 dist0 = norm(centroid, 2);
 if dist0 <= 0 || ~isfinite(dist0)
     div = NaN;

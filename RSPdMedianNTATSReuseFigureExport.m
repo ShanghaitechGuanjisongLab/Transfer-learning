@@ -178,15 +178,13 @@ for i = 1:height(mouseZ)
     transferRate = mean(double(TA));
 
     reuse = NaN;
-    if nnz(LA) >= 5
-        reuse = mean(double(TA(LA)));
-    end
+    reuse = mean(double(TA(LA)), 'omitnan');
 
     reuseHit = NaN;
     if ismember('TransferActiveMedHit', medLT.Properties.VariableNames)
         taHit = medLT.TransferActiveMedHit(rows);
         denom = LA & isfinite(taHit);
-        if nnz(denom) >= 5
+        if nnz(denom) > 0
             reuseHit = mean(taHit(denom), 'omitnan');
         end
     end
@@ -195,7 +193,7 @@ for i = 1:height(mouseZ)
     if ismember('TransferActiveMedMiss', medLT.Properties.VariableNames)
         taMiss = medLT.TransferActiveMedMiss(rows);
         denom = LA & isfinite(taMiss);
-        if nnz(denom) >= 5
+        if nnz(denom) > 0
             reuseMiss = mean(taMiss(denom), 'omitnan');
         end
     end

@@ -15,10 +15,11 @@
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-% - This file is a SCRIPT with local functions.
-% - Call from command window as:
-%     TransferLearning.Fig32.A_RepresentativeCellReuse()
-%   (parentheses are allowed; no output arguments)
+% - IMPORTANT: MUST REMAIN A SCRIPT (do not convert to a function again).
+% - Do NOT use run.
+% - Invoke from command window (no parentheses):
+%     TransferLearning.Fig32.A_RepresentativeCellReuse
+% - Or run from the MATLAB editor (Run/F5).
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 svgName = "Fig3_2a_RepresentativeCellReuse.svg";
@@ -46,11 +47,16 @@ xs = TransferLearning.Xs; % duration(48x1): -3~3s
 xsSec = seconds(xs);
 baseMask = (xsSec >= -3) & (xsSec < 0);
 winMask = (xsSec >= 0) & (xsSec <= 1);
+plotMask = (xsSec >= -2) & (xsSec <= 2);
+xsPlot = xsSec(plotMask);
 if ~any(baseMask)
 	error('Fig3_2a:NoBaselineSamples', 'baseline window -3~0s has no samples in TransferLearning.Xs');
 end
 if ~any(winMask)
 	error('Fig3_2a:NoWindowSamples', 'response window 0~1s has no samples in TransferLearning.Xs');
+end
+if ~any(plotMask)
+	error('Fig3_2a:NoPlotSamples', 'plot window -2~2s has no samples in TransferLearning.Xs');
 end
 
 kSigma = 3;
@@ -116,6 +122,84 @@ score(~cand) = -inf;
 [~, order] = sort(score, 'descend', 'MissingPlacement', 'last');
 cellUIDOrdered = cellUID(order);
 
+% --- 2.5) Precompute per-mouse representative sessions & trial lists (vectorized)
+% Goal: avoid per-cell TableQuery inside the candidate loop.
+
+Tnaive = AL.TableQuery(["Mouse","DateTime","TrialUID"], Phase="Naive", Stimulus="AudioWater");
+Tlearn = AL.TableQuery(["Mouse","DateTime","TrialUID"], Phase="Learned", Stimulus="AudioWater");
+Ttran  = AL.TableQuery(["Mouse","DateTime","TrialUID","Behavior"], Phase="Transfer", Stimulus="LightWater");
+
+Tnaive.Mouse = string(Tnaive.Mouse);
+Tlearn.Mouse = string(Tlearn.Mouse);
+Ttran.Mouse  = string(Ttran.Mouse);
+
+Tnaive.DateTime = iNormalizeDateTime(Tnaive.DateTime);
+Tlearn.DateTime = iNormalizeDateTime(Tlearn.DateTime);
+Ttran.DateTime  = iNormalizeDateTime(Ttran.DateTime);
+
+% pick representative DateTime per mouse: Naive earliest; Learned latest; Transfer earliest
+dtNaiveT = groupsummary(Tnaive, "Mouse", "min", "DateTime");
+dtNaiveT.Properties.VariableNames{end} = 'DateTimeNaive';
+dtLearnT = groupsummary(Tlearn, "Mouse", "max", "DateTime");
+dtLearnT.Properties.VariableNames{end} = 'DateTimeLearned';
+dtTranT  = groupsummary(Ttran,  "Mouse", "min", "DateTime");
+dtTranT.Properties.VariableNames{end} = 'DateTimeTransfer';
+
+% Restrict to mice having all three stages
+Sess = innerjoin(dtNaiveT(:, ["Mouse","DateTimeNaive"]), dtLearnT(:, ["Mouse","DateTimeLearned"]), 'Keys', 'Mouse');
+Sess = innerjoin(Sess, dtTranT(:, ["Mouse","DateTimeTransfer"]), 'Keys', 'Mouse');
+
+% Collect trial lists for the selected DateTimes
+naiveJoin = innerjoin(Tnaive, Sess(:, ["Mouse","DateTimeNaive"]), 'Keys', 'Mouse');
+naiveJoin = naiveJoin(naiveJoin.DateTime == naiveJoin.DateTimeNaive, :);
+[gN, mkN] = findgroups(naiveJoin.Mouse);
+trialNaive = splitapply(@(x){uint64(x)}, uint64(naiveJoin.TrialUID), gN);
+naiveTrialsT = table(mkN, trialNaive, 'VariableNames', ["Mouse","TrialUIDNaive"]);
+
+learnJoin = innerjoin(Tlearn, Sess(:, ["Mouse","DateTimeLearned"]), 'Keys', 'Mouse');
+learnJoin = learnJoin(learnJoin.DateTime == learnJoin.DateTimeLearned, :);
+[gL, mkL] = findgroups(learnJoin.Mouse);
+trialLearn = splitapply(@(x){uint64(x)}, uint64(learnJoin.TrialUID), gL);
+learnTrialsT = table(mkL, trialLearn, 'VariableNames', ["Mouse","TrialUIDLearned"]);
+
+tranJoin = innerjoin(Ttran, Sess(:, ["Mouse","DateTimeTransfer"]), 'Keys', 'Mouse');
+tranJoin = tranJoin(tranJoin.DateTime == tranJoin.DateTimeTransfer, :);
+[gT, mkT] = findgroups(tranJoin.Mouse);
+[trialHit, trialMiss] = splitapply(@(uid,bh) iSplitHitMiss(uid,bh), uint64(tranJoin.TrialUID), double(tranJoin.Behavior), gT);
+tranTrialsT = table(mkT, trialHit, trialMiss, 'VariableNames', ["Mouse","TrialUIDHit","TrialUIDMiss"]);
+
+Sess = innerjoin(Sess, naiveTrialsT, 'Keys', 'Mouse');
+Sess = innerjoin(Sess, learnTrialsT, 'Keys', 'Mouse');
+Sess = innerjoin(Sess, tranTrialsT,  'Keys', 'Mouse');
+
+% Pre-map candidate CellUID -> Mouse/ZLayer (vectorized)
+Cmeta = AL.Cells(:, ["CellUID","Mouse","ZLayer"]);
+cellUIDAll = uint64(Cmeta.CellUID);
+[tfMeta, locMeta] = ismember(uint64(cellUIDOrdered), cellUIDAll);
+mouseOf = strings(numel(cellUIDOrdered), 1);
+zOf = strings(numel(cellUIDOrdered), 1);
+mouseOf(tfMeta) = string(Cmeta.Mouse(locMeta(tfMeta)));
+zOf(tfMeta) = string(Cmeta.ZLayer(locMeta(tfMeta)));
+
+% Build one best candidate per mouse (highest score; already ordered by score)
+scoreOrdered = score(order);
+candT = table(uint64(cellUIDOrdered(:)), double(scoreOrdered(:)), mouseOf(:), zOf(:), ...
+	'VariableNames', ["CellUID","Score","Mouse","ZLayer"]);
+candT = candT(candT.Mouse ~= "", :);
+
+% Keep only mice that have all required sessions
+candT = candT(ismember(candT.Mouse, Sess.Mouse), :);
+if isempty(candT)
+	error('Fig3_2a:NoCandidateMice', 'No candidate cells belong to mice that have Naive/Learned/Transfer sessions.');
+end
+
+% pick top-1 per mouse
+candT = sortrows(candT, ["Mouse","Score"], ["ascend","descend"]);
+[~, firstIdx] = unique(candT.Mouse, 'stable');
+candTop = candT(firstIdx, :);
+% search order: best overall score first
+candTop = sortrows(candTop, 'Score', 'descend');
+
 % --- 3) Choose a plottable candidate (must have enough trials per condition in selected sessions)
 Ts = AL.TrialSignals;
 Tr = AL.Trials;
@@ -123,38 +207,38 @@ Tr = AL.Trials;
 picked = struct('CellUID', uint64(0), 'Mouse', "", 'ZLayer', "", 'DateTimeNaive', NaT, 'DateTimeLearned', NaT, 'DateTimeTransfer', NaT);
 plotSets = struct();
 
-for iC = 1:numel(cellUIDOrdered)
-	cid = uint64(cellUIDOrdered(iC));
-	[m, z] = iCellMeta(AL, cid);
-	if m == ""
+minTrials = 4; % user request: 3~4 trials per condition is enough
+nPick = 4;
+
+for iRow = 1:height(candTop)
+	cid = uint64(candTop.CellUID(iRow));
+	m = string(candTop.Mouse(iRow));
+	z = string(candTop.ZLayer(iRow));
+
+	idxSess = find(string(Sess.Mouse) == m, 1, 'first');
+	if isempty(idxSess)
 		continue;
 	end
 
-	% pick representative sessions (one DateTime each)
-	[dtNaive, tuNaive] = iPickOneSessionTrialUID(AL, m, "Naive", "AudioWater", []);
-	[dtLearn, tuLearn] = iPickOneSessionTrialUID(AL, m, "Learned", "AudioWater", []);
-	[dtTran, tuTran] = iPickOneSessionTrialUID(AL, m, "Transfer", "LightWater", []);
-	if isempty(tuNaive) || isempty(tuLearn) || isempty(tuTran)
+	dtNaive = Sess.DateTimeNaive(idxSess);
+	dtLearn = Sess.DateTimeLearned(idxSess);
+	dtTran  = Sess.DateTimeTransfer(idxSess);
+
+	tuNaiveAll = uint64(Sess.TrialUIDNaive{idxSess});
+	tuLearnAll = uint64(Sess.TrialUIDLearned{idxSess});
+	truHitAll  = uint64(Sess.TrialUIDHit{idxSess});
+	truMissAll = uint64(Sess.TrialUIDMiss{idxSess});
+
+	if numel(tuNaiveAll) < minTrials || numel(tuLearnAll) < minTrials || numel(truHitAll) < minTrials || numel(truMissAll) < minTrials
 		continue;
 	end
 
-	% Split transfer session trials by behavior
-	rowsTran = ismember(uint64(Tr.TrialUID), uint64(tuTran));
-	bh = double(Tr.Behavior(rowsTran));
-	tru = uint64(Tr.TrialUID(rowsTran));
-	truHit = tru(bh == 1);
-	truMiss = tru(bh == 0);
+	tuNaive = tuNaiveAll(randperm(numel(tuNaiveAll), nPick));
+	tuLearn = tuLearnAll(randperm(numel(tuLearnAll), nPick));
+	truHit  = truHitAll(randperm(numel(truHitAll), nPick));
+	truMiss = truMissAll(randperm(numel(truMissAll), nPick));
 
-	% Need enough trials in each condition
-	minTrials = 8;
-	if numel(truHit) < minTrials || numel(truMiss) < minTrials
-		continue;
-	end
-
-	S0 = iGetSignals(Ts, cid, uint64(tuNaive));
-	S1 = iGetSignals(Ts, cid, uint64(tuLearn));
-	S2 = iGetSignals(Ts, cid, uint64(truHit));
-	S3 = iGetSignals(Ts, cid, uint64(truMiss));
+	[S0, S1, S2, S3] = iGetSignals4Cond(Ts, cid, tuNaive, tuLearn, truHit, truMiss);
 	if isempty(S0) || isempty(S1) || isempty(S2) || isempty(S3)
 		continue;
 	end
@@ -174,7 +258,6 @@ for iC = 1:numel(cellUIDOrdered)
 		continue;
 	end
 	if ~(okNaive && okMiss)
-		% allow a little relaxation for session display, but keep searching for a cleaner cell
 		continue;
 	end
 
@@ -224,30 +307,47 @@ for i = 1:4
 	end
 
 	Z = dataCells{i};
+	Z = Z(:, plotMask);
 	% keep at most N trials for display
-	Nshow = min(12, size(Z,1));
+	Nshow = min(4, size(Z,1));
 	idx = 1:size(Z,1);
 	idx = idx(randperm(numel(idx), Nshow));
 
 	for k = 1:numel(idx)
-		plot(ax, xsSec, Z(idx(k),:), 'Color', [0.7 0.7 0.7], 'LineWidth', 0.75);
+		plot(ax, xsPlot, Z(idx(k),:), 'Color', [0.7 0.7 0.7], 'LineWidth', 0.75);
 	end
 	med = median(Z, 1, 'omitnan');
-	plot(ax, xsSec, med, 'k-', 'LineWidth', 2);
+	plot(ax, xsPlot, med, 'k-', 'LineWidth', 2);
 
 	TransferLearning.DrawCueWaterLines(ax);
 	grid(ax,'on');
-	xlim(ax, [min(xsSec) max(xsSec)]);
+	xlim(ax, [-2 2]);
 	title(ax, titles(i), 'Interpreter','none');
-	ylabel(ax, 'ZScore (baseline -3~0s)');
-	xlabel(ax, 'Time from cue (s)');
 	box(ax,'on');
 end
 
-sgtitle(TL, sprintf('Mouse=%s, CellUID=%d, %s | Sessions: Naive=%s, Learned=%s, Transfer=%s', ...
-	picked.Mouse, picked.CellUID, picked.ZLayer, ...
-	string(picked.DateTimeNaive,'yyyy-MM-dd HH:mm'), string(picked.DateTimeLearned,'yyyy-MM-dd HH:mm'), string(picked.DateTimeTransfer,'yyyy-MM-dd HH:mm')),
-	'Interpreter','none');
+% Unify limits across panels
+try
+	MATLAB.Graphics.UnifyAxesLims(axesList, @xlim);
+	MATLAB.Graphics.UnifyAxesLims(axesList, @ylim);
+catch
+end
+
+% One shared axis label set on tiledlayout
+xlabel(TL, 'Time from cue (s)');
+ylabel(TL, 'ZScore (baseline -3~0s)');
+
+% Hide top-row X axes; hide right-column Y axes
+try
+	axesList(1).XAxis.Visible = 'off';
+	axesList(2).XAxis.Visible = 'off';
+	axesList(2).YAxis.Visible = 'off';
+	axesList(4).YAxis.Visible = 'off';
+catch
+end
+
+sgtitle(TL, sprintf('Fig3.2a Representative Cell | Mouse=%s, CellUID=%d', ...
+	picked.Mouse, picked.CellUID), 'Interpreter','none');
 
 % --- 5) Export (SVG only)
 try
@@ -263,142 +363,4 @@ try
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
-end
-
-% Script outputs (in caller workspace): picked, plotSets
-
-%% --- local functions
-function G = iQueryNTATSOrEmpty(DS, query)
-	G = [];
-	try
-		G = DS.QueryNTATS(query, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	catch ME
-		warning(ME.identifier, 'QueryNTATS failed: %s', ME.message);
-		G = [];
-	end
-end
-
-function G = iQueryTransferHitMissOrEmpty(DS)
-	G = [];
-	QT = table(categorical({'Hit';'Miss'}), categorical({'Transfer';'Transfer'}), categorical({'LightWater';'LightWater'}), {1;0}, ...
-		'VariableNames', {'GroupName','Phase','Stimulus','Behavior'});
-	try
-		G = DS.QueryNTATS(QT, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	catch ME
-		warning(ME.identifier, 'QueryNTATS Transfer Hit/Miss failed: %s', ME.message);
-		G = [];
-	end
-end
-
-function X = iNtatsData(NT)
-	if isa(NT, 'MATLAB.DataTypes.NDTable')
-		X = NT.Data;
-	else
-		X = NT;
-	end
-	X = squeeze(X);
-end
-
-function act = iMedianActive(X, baseMask, winMask, kSigma)
-	baseMu = mean(X(:, baseMask), 2, 'omitnan');
-	baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
-	winMx = max(X(:, winMask), [], 2, 'omitnan');
-	act = winMx > (baseMu + kSigma .* baseSd);
-end
-
-function [mouse, zlayer] = iCellMeta(DS, cellUID)
-	mouse = "";
-	zlayer = "";
-	try
-		C = DS.Cells;
-		row = find(uint64(C.CellUID) == uint64(cellUID), 1, 'first');
-		if isempty(row)
-			return;
-		end
-		mouse = string(C.Mouse(row));
-		zlayer = string(C.ZLayer(row));
-	catch
-	end
-end
-
-function [dt, trialUID] = iPickOneSessionTrialUID(DS, mouse, phaseName, stimulusName, dateTimeSelect)
-	% Pick one representative session (DateTime) for a mouse/phase/stimulus.
-	% If dateTimeSelect is empty: Naive -> earliest; Learned -> latest; Transfer -> earliest.
-	dt = NaT;
-	trialUID = uint64([]);
-	vars = ["TrialUID","Mouse","DateTime","Phase","Stimulus","Behavior"];
-	T = [];
-	try
-		T = DS.TableQuery(vars, Mouse=mouse, Phase=phaseName, Stimulus=stimulusName);
-	catch
-		% fallback without Behavior
-		try
-			vars2 = ["TrialUID","Mouse","DateTime","Phase","Stimulus"];
-			T = DS.TableQuery(vars2, Mouse=mouse, Phase=phaseName, Stimulus=stimulusName);
-		catch
-			T = [];
-		end
-	end
-	if isempty(T)
-		return;
-	end
-	T.DateTime = iNormalizeDateTime(T.DateTime);
-	T = sortrows(T, 'DateTime');
-	if ~isempty(dateTimeSelect) && ~ismissing(dateTimeSelect)
-		dt = dateTimeSelect;
-	else
-		if string(phaseName) == "Learned"
-			dt = T.DateTime(end);
-		else
-			dt = T.DateTime(1);
-		end
-	end
-	trialUID = uint64(T.TrialUID(T.DateTime == dt));
-	trialUID = unique(trialUID);
-end
-
-function dt = iNormalizeDateTime(dt)
-	try
-		dt = datetime(dt);
-	catch
-		% leave as-is
-	end
-	try
-		if isdatetime(dt)
-			dt.TimeZone = '';
-		end
-	catch
-	end
-end
-
-function S = iGetSignals(Ts, cellUID, trialUID)
-	% Return [nTrial x nTime] matrix
-	trialUID = uint64(trialUID(:));
-	cellUID = uint64(cellUID);
-	mask = (uint64(Ts.CellUID) == cellUID) & ismember(uint64(Ts.TrialUID), trialUID);
-	if ~any(mask)
-		S = [];
-		return;
-	end
-	sig = Ts.ResampledSignal(mask, :);
-	S = double(sig);
-end
-
-function Z = iZScoreByBaseline(S, baseMask)
-	mu = mean(S(:, baseMask), 2, 'omitnan');
-	sd = std(S(:, baseMask), 0, 2, 'omitnan');
-	sd(sd == 0 | ~isfinite(sd)) = 1;
-	Z = (S - mu) ./ sd;
-end
-
-function tf = iSessionActive(Z, winMask, thr)
-	m = median(Z, 1, 'omitnan');
-	pk = max(m(winMask), [], 'omitnan');
-	tf = isfinite(pk) && pk >= thr;
-end
-
-function tf = iSessionInactive(Z, winMask, thr)
-	m = median(Z, 1, 'omitnan');
-	pk = max(m(winMask), [], 'omitnan');
-	tf = isfinite(pk) && pk <= thr;
 end
