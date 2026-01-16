@@ -24,6 +24,14 @@
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 svgName = "Fig3_2a_RepresentativeCellReuse.svg";
 
+% --- Optional: pin to a specific known good cell (Mouse + CellIndex)
+% Example request: yqn0020, Cell197
+pinEnabled = true;
+pinMouse = "yqn0020";
+pinCellUIDExact = uint64(197); % if non-empty, pin by CellUID directly
+pinCellIndex = [];             % otherwise pin by CellIndex (can be non-unique)
+pinCellUIDs = uint64([]); % will be resolved from AL.Cells (may be multiple)
+
 % --- 0) Ensure project loaded (for UniExp)
 try
 	if ~exist('UniExp.DataSet','class')
@@ -43,10 +51,38 @@ end
 % --- 1) Load dataset (Audio→Light paradigm)
 AL = TransferLearning.AudioLightBaseline();
 
+% Resolve pinned cell UID (if requested)
+if pinEnabled
+	try
+		Cpin = AL.Cells(:, ["Mouse","CellIndex","CellUID"]);
+		mMask = string(Cpin.Mouse) == string(pinMouse);
+		if ~isempty(pinCellUIDExact)
+			idxPin = find(mMask & (uint64(Cpin.CellUID) == uint64(pinCellUIDExact)));
+			if numel(idxPin) ~= 1
+				error('Fig3_2a:BadPinnedCell', 'Pinned CellUID not uniquely found: Mouse=%s CellUID=%d (matches=%d).', string(pinMouse), uint64(pinCellUIDExact), numel(idxPin));
+			end
+			pinCellUIDs = uint64(Cpin.CellUID(idxPin));
+			fprintf('Fig3.2a pinned selection: Mouse=%s CellUID=%d\n', string(pinMouse), pinCellUIDs);
+		else
+			idxPin = find(mMask & (double(Cpin.CellIndex) == double(pinCellIndex)));
+			if isempty(idxPin)
+				error('Fig3_2a:BadPinnedCell', 'Pinned cell not found: Mouse=%s CellIndex=%d.', string(pinMouse), pinCellIndex);
+			end
+			pinCellUIDs = uint64(Cpin.CellUID(idxPin));
+			fprintf('Fig3.2a pinned selection: Mouse=%s CellIndex=%d -> CellUIDs=[%s]\n', ...
+				string(pinMouse), pinCellIndex, strjoin(string(pinCellUIDs(:).'), ','));
+		end
+	catch ME
+		warning(ME.identifier, 'Failed to resolve pinned cell; disabling pin. (%s)', ME.message);
+		pinEnabled = false;
+	end
+end
+
 xs = TransferLearning.Xs; % duration(48x1): -3~3s
 xsSec = seconds(xs);
 baseMask = (xsSec >= -3) & (xsSec < 0);
 winMask = (xsSec >= 0) & (xsSec <= 1);
+win2Mask = (xsSec >= 0) & (xsSec <= 2);
 plotMask = (xsSec >= -2) & (xsSec <= 2);
 xsPlot = xsSec(plotMask);
 if ~any(baseMask)
@@ -54,6 +90,9 @@ if ~any(baseMask)
 end
 if ~any(winMask)
 	error('Fig3_2a:NoWindowSamples', 'response window 0~1s has no samples in TransferLearning.Xs');
+end
+if ~any(win2Mask)
+	error('Fig3_2a:NoWindowSamples02', 'peak-compare window 0~2s has no samples in TransferLearning.Xs');
 end
 if ~any(plotMask)
 	error('Fig3_2a:NoPlotSamples', 'plot window -2~2s has no samples in TransferLearning.Xs');
@@ -187,6 +226,14 @@ candT = table(uint64(cellUIDOrdered(:)), double(scoreOrdered(:)), mouseOf(:), zO
 	'VariableNames', ["CellUID","Score","Mouse","ZLayer"]);
 candT = candT(candT.Mouse ~= "", :);
 
+% If pinned, restrict to the specified cell.
+if pinEnabled && ~isempty(pinCellUIDs)
+	candT = candT((string(candT.Mouse) == string(pinMouse)) & ismember(uint64(candT.CellUID), uint64(pinCellUIDs)), :);
+	if isempty(candT)
+		error('Fig3_2a:PinnedCellNotCandidate', 'Pinned cell(s) not present in candidate table: Mouse=%s CellIndex=%d. Check that they exist in all required groups.', string(pinMouse), pinCellIndex);
+	end
+end
+
 % Keep only mice that have all required sessions
 candT = candT(ismember(candT.Mouse, Sess.Mouse), :);
 if isempty(candT)
@@ -194,11 +241,20 @@ if isempty(candT)
 end
 
 % pick top-1 per mouse
-candT = sortrows(candT, ["Mouse","Score"], ["ascend","descend"]);
-[~, firstIdx] = unique(candT.Mouse, 'stable');
-candTop = candT(firstIdx, :);
-% search order: best overall score first
-candTop = sortrows(candTop, 'Score', 'descend');
+if pinEnabled
+	% pinned: only evaluate this one cell
+	candTop = candT;
+else
+	% pick top-N per mouse (increase robustness after QueryNTATS changes)
+	candidatesPerMouse = 30;
+	candT = sortrows(candT, ["Mouse","Score"], ["ascend","descend"]);
+	[gM, ~] = findgroups(candT.Mouse);
+	idxCell = splitapply(@(ii){ii(1:min(numel(ii), candidatesPerMouse))}, (1:height(candT))', gM);
+	idxKeep = vertcat(idxCell{:});
+	candTop = candT(idxKeep, :);
+	% search order: best overall score first
+	candTop = sortrows(candTop, 'Score', 'descend');
+end
 
 % --- 3) Choose a plottable candidate (must have enough trials per condition in selected sessions)
 Ts = AL.TrialSignals;
@@ -207,7 +263,20 @@ Tr = AL.Trials;
 picked = struct('CellUID', uint64(0), 'Mouse', "", 'ZLayer', "", 'DateTimeNaive', NaT, 'DateTimeLearned', NaT, 'DateTimeTransfer', NaT);
 plotSets = struct();
 
-minTrials = 4; % user request: 3~4 trials per condition is enough
+fallbackFull = picked;            % Learned+Hit active AND Naive+Miss inactive
+fallbackFullPlotSets = struct();
+hasFallbackFull = false;
+
+fallbackPartial = picked;         % Learned+Hit active only
+fallbackPartialPlotSets = struct();
+hasFallbackPartial = false;
+fallbackPartialWeaker = false;
+
+qual = table(uint64.empty(0,1), string.empty(0,1), string.empty(0,1), ...
+	double.empty(0,1), double.empty(0,1), double.empty(0,1), logical.empty(0,1), ...
+	'VariableNames', ["CellUID","Mouse","ZLayer","MedPkLearn01","MedPkHit02","MedPkMiss02","HitGtMiss02"]);
+
+minTrials = 3; % user request: 3~4 trials per condition is enough
 nPick = 4;
 
 for iRow = 1:height(candTop)
@@ -233,10 +302,12 @@ for iRow = 1:height(candTop)
 		continue;
 	end
 
-	tuNaive = tuNaiveAll(randperm(numel(tuNaiveAll), nPick));
-	tuLearn = tuLearnAll(randperm(numel(tuLearnAll), nPick));
-	truHit  = truHitAll(randperm(numel(truHitAll), nPick));
-	truMiss = truMissAll(randperm(numel(truMissAll), nPick));
+	% Do NOT randomly sample trials; use ALL trials in the selected sessions.
+	% Plot will later display up to 4 trials chosen deterministically by peak ranking.
+	tuNaive = tuNaiveAll;
+	tuLearn = tuLearnAll;
+	truHit  = truHitAll;
+	truMiss = truMissAll;
 
 	[S0, S1, S2, S3] = iGetSignals4Cond(Ts, cid, tuNaive, tuLearn, truHit, truMiss);
 	if isempty(S0) || isempty(S1) || isempty(S2) || isempty(S3)
@@ -249,38 +320,152 @@ for iRow = 1:height(candTop)
 	Z2 = iZScoreByBaseline(S2, baseMask);
 	Z3 = iZScoreByBaseline(S3, baseMask);
 
+	% Deterministically select up to 4 trials for DISPLAY (not for selection):
+	% - Naive: smallest 0~2s peak
+	% - Learned: largest 0~2s peak
+	% - Transfer Hit: largest 0~2s peak
+	% - Transfer Miss: smallest 0~2s peak
+	Ndisp = 4;
+	pk0 = max(Z0(:, win2Mask), [], 2, 'omitnan');
+	pk1 = max(Z1(:, win2Mask), [], 2, 'omitnan');
+	pk2 = max(Z2(:, win2Mask), [], 2, 'omitnan');
+	pk3 = max(Z3(:, win2Mask), [], 2, 'omitnan');
+
+	[~, o0] = sort(pk0, 'ascend', 'MissingPlacement','last');
+	[~, o1] = sort(pk1, 'descend', 'MissingPlacement','last');
+	[~, o2] = sort(pk2, 'descend', 'MissingPlacement','last');
+	[~, o3] = sort(pk3, 'ascend', 'MissingPlacement','last');
+
+	i0 = o0(1:min(numel(o0), Ndisp));
+	i1 = o1(1:min(numel(o1), Ndisp));
+	i2 = o2(1:min(numel(o2), Ndisp));
+	i3 = o3(1:min(numel(o3), Ndisp));
+
+	Z0p = Z0(i0, :);
+	Z1p = Z1(i1, :);
+	Z2p = Z2(i2, :);
+	Z3p = Z3(i3, :);
+
 	% Re-check that this particular session-level pattern roughly holds
 	okNaive = iSessionInactive(Z0, winMask, 1.5);
 	okLearn = iSessionActive(Z1, winMask, 3);
 	okHit = iSessionActive(Z2, winMask, 3);
 	okMiss = iSessionInactive(Z3, winMask, 1.5);
 	if ~(okLearn && okHit)
-		continue;
+		if ~pinEnabled
+			continue;
+		end
 	end
-	if ~(okNaive && okMiss)
+
+	% Prefer: Transfer Hit active but weaker than Learned ("最好能")
+	pkLearn = max(Z1(:, winMask), [], 2, 'omitnan');
+	pkHit   = max(Z2(:, winMask), [], 2, 'omitnan');
+	medLearn = median(pkLearn, 'omitnan');
+	medHit   = median(pkHit, 'omitnan');
+	isWeaker = isfinite(medLearn) && isfinite(medHit) && (medHit < medLearn);
+
+	% Additional required predicate: within 0~2s, Transfer Hit peak must exceed Miss peak
+	pkHit02  = max(Z2(:, win2Mask), [], 2, 'omitnan');
+	pkMiss02 = max(Z3(:, win2Mask), [], 2, 'omitnan');
+	medHit02  = median(pkHit02, 'omitnan');
+	medMiss02 = median(pkMiss02, 'omitnan');
+	hitGtMiss02 = isfinite(medHit02) && isfinite(medMiss02) && (medHit02 > medMiss02);
+
+	% Keep diagnostics (for later ">=4 sessions" question)
+	qual = [qual; table(cid, m, z, medLearn, medHit02, medMiss02, hitGtMiss02, ...
+		'VariableNames', qual.Properties.VariableNames)]; %#ok<AGROW>
+	if ~hitGtMiss02
+		if ~pinEnabled
+			continue;
+		end
+	end
+
+	isFullPattern = okNaive && okMiss;
+	if isFullPattern && isWeaker
+		picked.CellUID = cid;
+		picked.Mouse = m;
+		picked.ZLayer = z;
+		picked.DateTimeNaive = dtNaive;
+		picked.DateTimeLearned = dtLearn;
+		picked.DateTimeTransfer = dtTran;
+
+		plotSets.NaiveAudio = Z0p;
+		plotSets.LearnedAudio = Z1p;
+		plotSets.TransferHit = Z2p;
+		plotSets.TransferMiss = Z3p;
+		break;
+	end
+
+	if isFullPattern
+		if ~hasFallbackFull
+			fallbackFull.CellUID = cid;
+			fallbackFull.Mouse = m;
+			fallbackFull.ZLayer = z;
+			fallbackFull.DateTimeNaive = dtNaive;
+			fallbackFull.DateTimeLearned = dtLearn;
+			fallbackFull.DateTimeTransfer = dtTran;
+
+			fallbackFullPlotSets.NaiveAudio = Z0p;
+			fallbackFullPlotSets.LearnedAudio = Z1p;
+			fallbackFullPlotSets.TransferHit = Z2p;
+			fallbackFullPlotSets.TransferMiss = Z3p;
+			hasFallbackFull = true;
+		end
 		continue;
 	end
 
-	picked.CellUID = cid;
-	picked.Mouse = m;
-	picked.ZLayer = z;
-	picked.DateTimeNaive = dtNaive;
-	picked.DateTimeLearned = dtLearn;
-	picked.DateTimeTransfer = dtTran;
+	% Partial fallback: Learned/Hit active, but Naive/Miss not strictly inactive.
+	if ~hasFallbackPartial || (isWeaker && ~fallbackPartialWeaker)
+		fallbackPartial.CellUID = cid;
+		fallbackPartial.Mouse = m;
+		fallbackPartial.ZLayer = z;
+		fallbackPartial.DateTimeNaive = dtNaive;
+		fallbackPartial.DateTimeLearned = dtLearn;
+		fallbackPartial.DateTimeTransfer = dtTran;
 
-	plotSets.NaiveAudio = Z0;
-	plotSets.LearnedAudio = Z1;
-	plotSets.TransferHit = Z2;
-	plotSets.TransferMiss = Z3;
-	break;
+		fallbackPartialPlotSets.NaiveAudio = Z0p;
+		fallbackPartialPlotSets.LearnedAudio = Z1p;
+		fallbackPartialPlotSets.TransferHit = Z2p;
+		fallbackPartialPlotSets.TransferMiss = Z3p;
+		hasFallbackPartial = true;
+		fallbackPartialWeaker = isWeaker;
+	end
+	continue;
+
 end
 
 if picked.CellUID == 0
-	error('Fig3_2a:NoPlottableCell', 'No candidate cell found with sufficient trials and clear 4-condition pattern.');
+	if hasFallbackFull
+		warning('Fig3_2a:NoWeakerTransferCell', 'No cell found with Transfer Hit weaker than Learned; using the first cell that matches the 4-condition pattern (still requires Hit>Miss peak within 0~2s).');
+		picked = fallbackFull;
+		plotSets = fallbackFullPlotSets;
+	elseif hasFallbackPartial
+		warning('Fig3_2a:NoFullPatternCell', 'No cell found matching strict inactive(Naive/Miss) + active(Learned/Hit); using a cell with Learned/Hit active (still requires Hit>Miss peak within 0~2s).');
+		picked = fallbackPartial;
+		plotSets = fallbackPartialPlotSets;
+	else
+		error('Fig3_2a:NoPlottableCell', 'No candidate cell found that satisfies: Learned/Hit active (0~1s), Naive/Miss inactive (preferred), and Transfer Hit peak > Miss peak within 0~2s.');
+	end
+end
+
+% --- 3.8) Diagnostics: how many candidates satisfy Hit>Miss(0~2s)?
+try
+	assignin('base', 'Fig3_2a_RepresentativeCellReuse_QualCandidates', qual);
+catch
+end
+try
+	qok = qual(qual.HitGtMiss02, :);
+	nOk = height(qok);
+	nMouseOk = numel(unique(qok.Mouse));
+	fprintf('Fig3.2a diagnostics: candidates Hit>Miss within 0~2s: %d (mice=%d)\n', nOk, nMouseOk);
+	if nOk < 4
+		warning('Fig3_2a:FewerThan4Candidates', 'Only %d candidates satisfy Hit>Miss within 0~2s (mice=%d). If you require >=4 sessions, consider relaxing constraints or increasing candidatesPerMouse.', nOk, nMouseOk);
+	end
+catch
 end
 
 % --- 4) Plot (single-trial overlays)
-figTitle = sprintf('Fig3.2a Representative Cell (Mouse=%s, CellUID=%d, %s)', picked.Mouse, picked.CellUID, picked.ZLayer);
+figTitle = sprintf('Representative Cell (Mouse=%s, CellUID=%d, %s)', picked.Mouse, picked.CellUID, picked.ZLayer);
 f = figure('Color','w', 'Name', figTitle);
 MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 
@@ -308,13 +493,8 @@ for i = 1:4
 
 	Z = dataCells{i};
 	Z = Z(:, plotMask);
-	% keep at most N trials for display
-	Nshow = min(4, size(Z,1));
-	idx = 1:size(Z,1);
-	idx = idx(randperm(numel(idx), Nshow));
-
-	for k = 1:numel(idx)
-		plot(ax, xsPlot, Z(idx(k),:), 'Color', [0.7 0.7 0.7], 'LineWidth', 0.75);
+	for k = 1:size(Z,1)
+		plot(ax, xsPlot, Z(k,:), 'Color', [0.7 0.7 0.7], 'LineWidth', 0.75);
 	end
 	med = median(Z, 1, 'omitnan');
 	plot(ax, xsPlot, med, 'k-', 'LineWidth', 2);
@@ -323,7 +503,7 @@ for i = 1:4
 	grid(ax,'on');
 	xlim(ax, [-2 2]);
 	title(ax, titles(i), 'Interpreter','none');
-	box(ax,'on');
+	box(ax,'off');
 end
 
 % Unify limits across panels
@@ -346,7 +526,7 @@ try
 catch
 end
 
-sgtitle(TL, sprintf('Fig3.2a Representative Cell | Mouse=%s, CellUID=%d', ...
+sgtitle(TL, sprintf('Representative Cell | Mouse=%s, CellUID=%d', ...
 	picked.Mouse, picked.CellUID), 'Interpreter','none');
 
 % --- 5) Export (SVG only)

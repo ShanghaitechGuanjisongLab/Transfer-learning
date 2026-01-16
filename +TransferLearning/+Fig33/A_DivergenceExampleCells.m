@@ -16,8 +16,9 @@
 %
 % Signal:
 % - Use ResampledSignal (48 points, aligned to cue)
-% - ZScore per trial using baseline -3~0s
-% - Active criterion: max(0~1s) > kSigma
+% - ZScore per trial using EACH TRIAL's own baseline (-3~0s)
+% - Active criterion:   X(t=1s) > baseline mean(-3~0s) + kSigma*baseline std(-3~0s)
+% - Inactive criterion: X(t=1s) < baseline mean(-3~0s) (per-trial)
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -46,142 +47,199 @@ try
 catch
 end
 
-DS = TransferLearning.AudioLightBaseline();
-Ts = DS.TrialSignals;
-C = DS.Cells;
+% Datasets
+DS_low = TransferLearning.AudioLightBaseline();
+Ts_low = DS_low.TrialSignals;
+C_low = DS_low.Cells;
+
+% High divergence: Naive LightWater from LAInterspersed + LightAudioBaseline
+DS_high_1 = TransferLearning.LAInterspersed();
+Ts_high_1 = DS_high_1.TrialSignals;
+C_high_1 = DS_high_1.Cells;
+
+DS_high_2 = TransferLearning.LightAudioBaseline();
+Ts_high_2 = DS_high_2.TrialSignals;
+C_high_2 = DS_high_2.Cells;
 
 xs = TransferLearning.Xs;
 xsSec = seconds(xs);
 baseMask = (xsSec >= -3) & (xsSec < 0);
-winMask  = (xsSec >= 0) & (xsSec <= 1);
-plotMask = (xsSec >= -2) & (xsSec <= 2);
+plotMask = (xsSec >= -1) & (xsSec <= 1);
 xsPlot = xsSec(plotMask);
 
 if ~any(baseMask)
 	error('Fig3_3a:NoBaselineSamples', 'baseline window -3~0s has no samples in TransferLearning.Xs');
 end
-if ~any(winMask)
-	error('Fig3_3a:NoWindowSamples', 'response window 0~1s has no samples in TransferLearning.Xs');
-end
 if ~any(plotMask)
 	error('Fig3_3a:NoPlotSamples', 'plot window -2~2s has no samples in TransferLearning.Xs');
 end
 
+% active sample (closest to 1s)
+[dtMin, actIdx] = min(abs(xsSec - 1));
+if isempty(actIdx) || ~isfinite(dtMin) || dtMin > 0.25
+	error('Fig3_3a:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
+end
+
 kSigma = 3;
 
-% --- 1) Define which session type to use for the "high divergence" example
-% NOTE: In this dataset, Phase="Naive" has no Stimulus="LightWater".
-% We therefore attempt Naive+LightWater first, and if empty fall back to
-% Naive+LightOnly within LAuW design.
+% --- 1) Queries
+highQuery = struct('Phase','Naive','Stimulus','LightWater');
+lowQuery  = struct('Phase','Learned','Stimulus','AudioWater');
 
-highQueryPrimary = struct('Phase','Naive','Stimulus','LightWater');
-highQueryFallback = struct('Phase','Naive','Design','LAuW','Stimulus','LightOnly');
-
-lowQuery = struct('Phase','Learned','Stimulus','AudioWater');
-
-% --- 2) Find examples (deterministic search)
-[highEx, highLabel] = iFindExample(DS, Ts, C, highQueryPrimary, highQueryFallback, xsSec, baseMask, winMask, kSigma, "high");
-[lowEx,  lowLabel ] = iFindExample(DS, Ts, C, lowQuery,          struct(),        xsSec, baseMask, winMask, kSigma, "low");
+% --- 2) Find paired examples with SAME number of trials
+desiredTrialsList = [4 3];
+highEx = struct(); lowEx = struct();
+highLabel = ""; lowLabel = "";
+okPaired = false;
+for nTrialsDesired = desiredTrialsList
+	try
+		[highEx, highLabel] = iFindExample2Sources( ...
+			DS_high_1, Ts_high_1, C_high_1, "LAInterspersed", highQuery, ...
+			DS_high_2, Ts_high_2, C_high_2, "LightAudioBaseline", highQuery, ...
+			xsSec, baseMask, actIdx, kSigma, "high", nTrialsDesired);
+		[lowEx,  lowLabel ] = iFindExample(DS_low, Ts_low, C_low, lowQuery, struct(), xsSec, baseMask, actIdx, kSigma, "low", nTrialsDesired);
+		okPaired = true;
+		break;
+	catch
+		okPaired = false;
+	end
+end
+if ~okPaired
+	error('Fig3_3a:NoPairedExampleFound', 'Failed to find paired examples with the same number of trials (tried %s).', mat2str(desiredTrialsList));
+end
 
 assignin('base', 'Fig3_3a_HighDivergenceExample', highEx);
 assignin('base', 'Fig3_3a_LowDivergenceExample',  lowEx);
 
 % --- 3) Plot
-nCols = max([numel(highEx.TrialUIDs), numel(lowEx.TrialUIDs)]);
+nCols = numel(highEx.TrialUIDs);
 
 figName = sprintf('Fig3.3a Divergence examples (High=%s, Low=%s)', highEx.Mouse, lowEx.Mouse);
-f = figure('Color','w', 'Name', figName);
-MATLAB.Graphics.FigureAspectRatio(10, 6, 1/2);
+f = figure('Name', figName, 'Color','w');
+try
+	MATLAB.Graphics.FigureAspectRatio(10, 6, 1/2);
+catch
+end
 
 TL = tiledlayout(2, nCols, 'TileSpacing','compact', 'Padding','compact');
-
 axesList = gobjects(0,1);
 
-% --- High divergence row
+% --- High divergence row (row 1)
 for j = 1:nCols
 	ax = nexttile(TL, j);
 	axesList(end+1,1) = ax; %#ok<AGROW>
-	hold(ax,'on');	
+	hold(ax,'on');
 	try
 		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 			ax.Toolbar.Visible = 'off';
 		end
 	catch
 	end
-	box(ax,'off');	
+	box(ax,'off');
 	grid(ax,'on');
-	xlim(ax, [-2 2]);
+	xlim(ax, [-1 1]);
+
+	% Hide X axis for the first row
+	try
+		ax.XAxis.Visible = 'off';
+		ax.XTickLabel = [];
+	catch
+	end
+	% Hide Y axis for all but the first column
+	if j > 1
+		try
+			ax.YAxis.Visible = 'off';
+			ax.YTickLabel = [];
+		catch
+		end
+	end
+
 	if j <= numel(highEx.TrialUIDs)
-		Z = highEx.Z(:, :, :);
-		Zj = squeeze(Z(j, plotMask, :)); % 48->plot points
+		Zj = squeeze(highEx.Z(j, plotMask, :));
 		col = lines(size(Zj,2));
 		for cIdx = 1:size(Zj,2)
-			plot(ax, xsPlot, Zj(:,cIdx), 'LineWidth', 1.0, 'Color', col(cIdx,:), 'DisplayName', sprintf('CellUID=%d', highEx.CellUIDs(cIdx)));
+			plot(ax, xsPlot, Zj(:,cIdx), 'LineWidth', 1.0, 'Color', col(cIdx,:));
 		end
+		% Must be added BEFORE legend (and excluded by explicit handles below)
 		TransferLearning.DrawCueWaterLines(ax);
-		title(ax, sprintf('High: Trial %d', j), 'Interpreter','none');
 		if j == 1
-			lg = legend(ax, 'show', 'Location','best');
-			try
-				lg.Box = 'off';
-			catch
-			end
+			ylabel(ax, 'Higher inter-cell SD');
 		end
 	else
 		axis(ax,'off');
 	end
 end
 
-% --- Low divergence row
+% --- Low divergence row (row 2)
 for j = 1:nCols
 	ax = nexttile(TL, nCols + j);
 	axesList(end+1,1) = ax; %#ok<AGROW>
-	hold(ax,'on');	
+	hold(ax,'on');
 	try
 		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 			ax.Toolbar.Visible = 'off';
 		end
 	catch
 	end
-	box(ax,'off');	
+	box(ax,'off');
 	grid(ax,'on');
-	xlim(ax, [-2 2]);
+	xlim(ax, [-1 1]);
+
+	% Hide Y axis for all but the first column
+	if j > 1
+		try
+			ax.YAxis.Visible = 'off';
+			ax.YTickLabel = [];
+		catch
+		end
+	end
+
 	if j <= numel(lowEx.TrialUIDs)
-		Z = lowEx.Z(:, :, :);
-		Zj = squeeze(Z(j, plotMask, :));
+		Zj = squeeze(lowEx.Z(j, plotMask, :));
 		col = lines(size(Zj,2));
 		for cIdx = 1:size(Zj,2)
-			plot(ax, xsPlot, Zj(:,cIdx), 'LineWidth', 1.0, 'Color', col(cIdx,:), 'DisplayName', sprintf('CellUID=%d', lowEx.CellUIDs(cIdx)));
+			plot(ax, xsPlot, Zj(:,cIdx), 'LineWidth', 1.0, 'Color', col(cIdx,:));
 		end
+		% Must be added BEFORE legend (and excluded by explicit handles below)
 		TransferLearning.DrawCueWaterLines(ax);
-		title(ax, sprintf('Low: Trial %d', j), 'Interpreter','none');
 		if j == 1
-			lg = legend(ax, 'show', 'Location','best');
-			try
-				lg.Box = 'off';
-			catch
-			end
+			ylabel(ax, 'Lower inter-cell SD');
 		end
 	else
 		axis(ax,'off');
 	end
 end
 
-% Unify Y limits across all visible axes
+% Unify Y limits within each group only (high row vs low row)
 try
 	axesVisible = axesList(isgraphics(axesList));
-	MATLAB.Graphics.UnifyAxesLims(axesVisible, @xlim);
-	MATLAB.Graphics.UnifyAxesLims(axesVisible, @ylim);
+	isOn = false(size(axesVisible));
+	for ii = 1:numel(axesVisible)
+		try
+			isOn(ii) = strcmpi(axesVisible(ii).Visible, 'on');
+		catch
+			isOn(ii) = true;
+		end
+	end
+	axesVisible = axesVisible(isOn);
+	% split by row: first nCols tiles are high, next nCols tiles are low
+	highAxes = axesVisible(axesVisible.Tile <= nCols);
+	lowAxes  = axesVisible(axesVisible.Tile >  nCols);
+	if ~isempty(highAxes)
+		MATLAB.Graphics.UnifyAxesLims(highAxes, @ylim);
+	end
+	if ~isempty(lowAxes)
+		MATLAB.Graphics.UnifyAxesLims(lowAxes, @ylim);
+	end
 catch
 end
 
 % Shared labels on tiledlayout
-xlabel(TL, 'Time from cue (s)');
-ylabel(TL, sprintf('ZScore (baseline -3~0s), active if max(0~1s) > %.1f', kSigma));
+xlabel(TL, 'Time (s)');
+ylabel(TL, 'Z-score');
 
 % A concise title (no figure index)
-sgtitle(TL, sprintf('Example calcium traces | High divergence: %s (%s) | Low divergence: %s (%s)', ...
-	highEx.Mouse, highLabel, lowEx.Mouse, lowLabel), 'Interpreter','none');
+sgtitle(TL, 'Example calcium traces', 'Interpreter','none');
 
 % --- 4) Export (SVG only)
 try
@@ -201,7 +259,7 @@ end
 
 %% --- local functions
 
-function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseMask, winMask, kSigma, mode)
+function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired)
 	T = table;
 	label = "";
 	if ~isempty(fieldnames(qPrimary))
@@ -229,10 +287,10 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 	Sess = sortrows(Sess, {'NTrials','Mouse','DateTime'}, {'descend','ascend','ascend'});
 
 	ex = struct('Mode', string(mode), 'Mouse', "", 'DateTime', NaT, 'ZLayer', "", ...
-		'CellUIDs', uint64([]), 'TrialUIDs', uint64([]), 'ActiveMatrix', [], 'Z', []);
+		'CellUIDs', uint64([]), 'TrialUIDs', uint64([]), 'ActiveMatrix', [], 'InactiveMatrix', [], 'Z', []);
 
 	% Try top sessions until success
-	maxTry = min(30, height(Sess));
+	maxTry = min(60, height(Sess));
 	for i = 1:maxTry
 		m = string(Sess.Mouse(i));
 		dt = Sess.DateTime(i);
@@ -258,7 +316,7 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 		end
 
 		try
-			[ok, out] = iTrySession(Ts, cellUIDsAll, trialUIDs, xsSec, baseMask, winMask, kSigma, mode);
+			[ok, out] = iTrySession(Ts, cellUIDsAll, trialUIDs, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired);
 		catch
 			ok = false;
 			out = struct();
@@ -270,6 +328,7 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 			ex.CellUIDs = out.CellUIDs;
 			ex.TrialUIDs = out.TrialUIDs;
 			ex.ActiveMatrix = out.Active;
+				ex.InactiveMatrix = out.Inactive;
 			ex.Z = out.Z;
 			fprintf('Fig3.3a %s example: Mouse=%s %s | %s | cells=[%s] trials=[%s]\n', ...
 				string(mode), m, string(dt), zPick, strjoin(string(out.CellUIDs(:).'), ','), strjoin(string(out.TrialUIDs(:).'), ','));
@@ -280,10 +339,30 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 	error('Fig3_3a:NoExampleFound', 'Failed to find %s example within %d sessions (query=%s).', string(mode), maxTry, label);
 end
 
-function [ok, out] = iTrySession(Ts, cellUIDsAll, trialUIDsAll, xsSec, baseMask, winMask, kSigma, mode)
-	% limit trials (deterministic) to keep compute bounded
+
+function [ex, srcLabel] = iFindExample2Sources(DS1, Ts1, C1, src1, q1, DS2, Ts2, C2, src2, q2, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired)
+	srcLabel = "";
+	try
+		[ex, ~] = iFindExample(DS1, Ts1, C1, q1, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired);
+		srcLabel = string(src1);
+		return;
+	catch ME1
+		try
+			[ex, ~] = iFindExample(DS2, Ts2, C2, q2, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired);
+			srcLabel = string(src2);
+			warning('Fig3_3a:HighSourceFallback', 'Failed on %s (%s). Falling back to %s.', string(src1), ME1.identifier, string(src2));
+			return;
+		catch ME2
+			error('Fig3_3a:HighSourceBothFailed', 'Failed to find example in both sources. %s: %s | %s: %s', ...
+			string(src1), ME1.message, string(src2), ME2.message);
+		end
+	end
+end
+
+function [ok, out] = iTrySession(Ts, cellUIDsAll, trialUIDsAll, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired)
+		% limit trials (deterministic) to keep compute bounded
 	trialUIDsAll = sort(uint64(trialUIDsAll(:)));
-	maxTrials = 80;
+		maxTrials = 200;
 	if numel(trialUIDsAll) > maxTrials
 		trialUIDsAll = trialUIDsAll(1:maxTrials);
 	end
@@ -296,19 +375,26 @@ function [ok, out] = iTrySession(Ts, cellUIDsAll, trialUIDsAll, xsSec, baseMask,
 	sd = std(X(:, baseMask, :), 0, 2, 'omitnan');
 	Z = (X - mu) ./ sd;
 
-	A = squeeze(max(Z(:, winMask, :), [], 2, 'omitnan')) > kSigma; % trials x cells
-	if isempty(A)
+	X1 = squeeze(X(:, actIdx, :));
+	mu1 = squeeze(mu); % baseline mean per trial per cell (trials x cells)
+	sd1 = squeeze(sd); % baseline std per trial per cell (trials x cells)
+	A = X1 > (mu1 + kSigma .* sd1); % Active (trials x cells)
+	I = X1 < mu1; % Inactive (trials x cells)
+	if isempty(A) || isempty(I)
 		ok = false; out = struct(); return;
 	end
+	% robustify NaNs
+	A(~isfinite(A)) = false;
+	I(~isfinite(I)) = false;
 
 	if strcmpi(string(mode), "high")
-		[ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A);
+		[ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired);
 	else
-		[ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A);
+		[ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired);
 	end
 end
 
-function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A)
+function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired)
 	% High divergence constraints
 	% - 3~4 cells
 	% - 3~4 trials
@@ -320,14 +406,14 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A)
 	out = struct();
 
 	colSum = sum(A, 1, 'omitnan');
-	idxCandCells = find(colSum >= 1 & colSum <= 6);
+	idxCandCells = find(colSum >= 1 & colSum <= 12);
 	if numel(idxCandCells) < 6
 		return;
 	end
 	% deterministic: prefer sparser cells
 	[~, o] = sortrows([colSum(idxCandCells).', double(cellUIDsAll(idxCandCells))], [1 2]);
 	idxCandCells = idxCandCells(o);
-	idxCandCells = idxCandCells(1:min(20, numel(idxCandCells)));
+	idxCandCells = idxCandCells(1:min(30, numel(idxCandCells)));
 
 	% Try 4-cell combos first, then 3-cell
 	for nCells = [4 3]
@@ -335,6 +421,7 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A)
 		for i = 1:size(comb,1)
 			cIdx = idxCandCells(comb(i,:));
 			Acs = A(:, cIdx);
+			Ics = I(:, cIdx);
 			% candidate trials: 1~3 actives
 			rsum = sum(Acs, 2);
 			idxTrials = find(rsum >= 1 & rsum <= min(3, nCells));
@@ -350,6 +437,9 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A)
 			end
 			% try selecting 4 patterns else 3
 			for nT = [4 3]
+				if ~isempty(nTrialsDesired) && isfinite(nTrialsDesired) && nT ~= nTrialsDesired
+					continue;
+				end
 				if numel(uP) < nT
 					continue;
 				end
@@ -357,32 +447,33 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A)
 				bestScore = -inf;
 				best = struct();
 				for j = 1:size(patComb,1)
-					pp = uP(patComb(j,:));
-					pickTrials = zeros(nT,1,'uint64');
-					pickIdx = zeros(nT,1);
+					patIdx = patComb(j,:);
+					trialChoices = cell(nT,1);
 					for k = 1:nT
-						idxk = idxTrials(find(gP == patComb(j,k), 1, 'first')); %#ok<FNDSB>
-						pickIdx(k) = idxk;
-						pickTrials(k) = trialUIDsAll(idxk);
+						rowsP = idxTrials(gP == patIdx(k));
+						rowsP = rowsP(:);
+						trialChoices{k} = rowsP(1:min(5, numel(rowsP))); % bound search
 					end
-					pickIdx = unique(pickIdx, 'stable');
-					if numel(pickIdx) ~= nT
+					[pickIdx, Asel] = iPickTrialsHigh(Acs, trialChoices);
+					if isempty(pickIdx)
 						continue;
 					end
-					Asel = Acs(pickIdx, :);
-					% per-cell active count 1~3
+					Isel = Ics(pickIdx, :);
 					csum = sum(Asel, 1);
-					if any(csum < 1) || any(csum > min(3, nT))
+					% Each chosen cell must have >=1 active AND >=1 inactive trial
+					if any(csum < 1) || any(csum >= nT)
 						continue;
 					end
-					% trial patterns must be all unique (already by construction)
-					% score: maximize average pairwise Hamming distance
+					if any(sum(Isel, 1) < 1)
+						continue;
+					end
 					s = iAvgHamming(Asel);
 					if s > bestScore
 						bestScore = s;
 						best.CellUIDs = cellUIDsAll(cIdx);
 						best.TrialUIDs = uint64(trialUIDsAll(pickIdx));
 						best.Active = logical(Asel);
+						best.Inactive = logical(Isel);
 						best.Z = Z(pickIdx, :, cIdx);
 					end
 				end
@@ -396,7 +487,7 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A)
 	end
 end
 
-function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A)
+function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired)
 	% Low divergence constraints
 	% - 3~4 cells
 	% - 3~4 trials
@@ -423,6 +514,7 @@ function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A)
 		for i = 1:size(comb,1)
 			cIdx = idxCandCells(comb(i,:));
 			Acs = A(:, cIdx);
+			Ics = I(:, cIdx);
 			rsum = sum(Acs, 2);
 			idxTrials = find(rsum >= 2 & rsum <= min(4, nCells));
 			if numel(idxTrials) < 3
@@ -437,12 +529,25 @@ function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A)
 					continue;
 				end
 				% pick 4 if available, else 3
-				nT = min(4, numel(rowsP));
-				nT = max(3, nT);
+				if ~isempty(nTrialsDesired) && isfinite(nTrialsDesired)
+					nT = nTrialsDesired;
+					if numel(rowsP) < nT
+						continue;
+					end
+				else
+					nT = min(4, numel(rowsP));
+					nT = max(3, nT);
+				end
 				pickIdx = rowsP(1:nT);
 				Asel = Acs(pickIdx, :);
+				Isel = Ics(pickIdx, :);
 				% sanity: all rows identical
 				if ~all(all(Asel == Asel(1,:), 2))
+					continue;
+				end
+				% enforce that non-active cells are truly inactive (below baseline mean) across all selected trials
+				inactiveCols = ~logical(Asel(1,:));
+				if any(inactiveCols) && ~all(all(Isel(:, inactiveCols)))
 					continue;
 				end
 				if nT > bestN
@@ -450,6 +555,7 @@ function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A)
 					best.CellUIDs = cellUIDsAll(cIdx);
 					best.TrialUIDs = uint64(trialUIDsAll(pickIdx));
 					best.Active = logical(Asel);
+					best.Inactive = logical(Isel);
 					best.Z = Z(pickIdx, :, cIdx);
 				end
 			end
@@ -488,17 +594,27 @@ function [X, cellUIDs, trialUIDs] = iFetchMatrix(Ts, cellUIDs, trialUIDs, nTime)
 	ok = tfC & tfT;
 	iC = iC(ok);
 	iT = iT(ok);
-	sig = Ts1.ResampledSignal(ok);
+	sig = Ts1.ResampledSignal(ok, :);
 
-	for k = 1:numel(sig)
-		try
-			v = sig{k};
-			if numel(v) ~= nTime
-				continue;
-			end
-			X(iT(k), :, iC(k)) = double(v(:));
-		catch
+	if isnumeric(sig) && size(sig,2) == nTime
+		for k = 1:size(sig,1)
+			X(iT(k), :, iC(k)) = double(sig(k, :));
 		end
+		return;
+	end
+
+	if iscell(sig)
+		for k = 1:numel(sig)
+			try
+				v = sig{k};
+				if numel(v) ~= nTime
+					continue;
+				end
+				X(iT(k), :, iC(k)) = double(v(:));
+			catch
+			end
+		end
+		return;
 	end
 end
 
@@ -526,6 +642,49 @@ function s = iAvgHamming(A)
 		end
 	end
 	s = acc / max(cnt,1);
+end
+
+function [pickIdx, Asel] = iPickTrialsHigh(Acs, trialChoices)
+	% trialChoices: cell(nT,1), each contains trial indices in the FULL Acs row-space
+	nT = numel(trialChoices);
+	pickIdx = [];
+	Asel = [];
+
+	% simple depth-first search over bounded choices (<=5^4)
+	cur = zeros(nT,1);
+	best = [];
+	bestScore = -inf;
+
+	function dfs(k)
+		if k > nT
+			idx = cur;
+			if numel(unique(idx)) ~= nT
+				return;
+			end
+			A0 = Acs(idx, :);
+			% enforce all rows different (pairwise) for high divergence
+			if numel(unique(iRowPattern(A0))) ~= nT
+				return;
+			end
+			s = iAvgHamming(A0);
+			if s > bestScore
+				bestScore = s;
+				best = idx;
+			end
+			return;
+		end
+		choices = trialChoices{k};
+		for ii = 1:numel(choices)
+			cur(k) = choices(ii);
+			dfs(k+1);
+		end
+	end
+
+	dfs(1);
+	if ~isempty(best)
+		pickIdx = best;
+		Asel = Acs(pickIdx, :);
+	end
 end
 
 function T = iTableQueryOrEmpty(DS, queryStruct)

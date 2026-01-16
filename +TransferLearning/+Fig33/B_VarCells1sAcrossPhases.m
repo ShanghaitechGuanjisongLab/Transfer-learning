@@ -99,9 +99,11 @@ statsSummary = table(p_naiveLight_vs_transfer, p_naiveAudio_vs_learned, p_transf
 	'VariableNames', {'P_NaiveLight_vs_TransferLight','P_NaiveAudio_vs_LearnedAudio','P_TransferLight_vs_FinalLight', ...
 	'Z_NaiveLight_vs_TransferLight','Z_NaiveAudio_vs_LearnedAudio','Z_TransferLight_vs_FinalLight'});
 assignin('base','Fig3_3bVar_Stats', statsSummary);
+%% 
 
 % --- 5) Plot
 f = figure('Name','Fig3.3b StdCells@1s (preview)', 'Color','w');
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 ax = axes('Parent', f);
 hold(ax,'on');
 box(ax,'off');
@@ -126,7 +128,7 @@ if ~isempty(wide4)
 	end
 end
 
-ylabel(ax, 'StdAcrossCells@1s (NTATS Median ZScore)');
+ylabel(ax, 'Inter-cell SD');
 
 % annotate p-values (only requested pairs)
 iAnnotateP(ax, xPos.NaiveLight,    xPos.TransferLight, p_naiveLight_vs_transfer);

@@ -142,7 +142,7 @@ end
 
 % Plot
 f = figure('Color','w', 'Name','Fig3.2c Reuse vs Performance (by layer)');
-MATLAB.Graphics.FigureAspectRatio(10,4,1/2);
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 
 axesList = gobjects(0,1);
@@ -169,17 +169,28 @@ for iZ = 1:numel(layerNames)
 	end
 
 	scatter(ax, x(mask), y(mask), 50, 'filled');
+	% Fit line segment (simple linear fit) on valid points
+	if nnz(mask) >= 2 && std(x(mask)) > 0
+		pFit = polyfit(x(mask), y(mask), 1);
+		xFit = [min(x(mask)) max(x(mask))];
+		yFit = polyval(pFit, xFit);
+		plot(ax, xFit, yFit, '-', 'LineWidth', 1.5);
+	end
 	text(ax, x(mask), y(mask), R.Mouse(mask), 'FontSize', 8, 'VerticalAlignment','bottom', 'HorizontalAlignment','left');
-
-	xlabel(ax, 'Reuse: P(Transfer active | Learned active)');
-	ylabel(ax, 'Transfer phase performance');
 	ylim(ax, [0 1]);
 	grid(ax,'on');
-	box(ax,'on');
+	box(ax,'off');
 	if isfinite(p)
-		title(ax, sprintf('%s | Spearman \\rho=%.3f, p=%.3g (n=%d)', zl, rho, p, nnz(mask)), 'Interpreter','none');
+		title(ax, sprintf('%s  rho=%.2f, p=%.3g', zl, rho, p), 'Interpreter','none');
 	else
-		title(ax, sprintf('%s | Spearman (n=%d)', zl, nnz(mask)), 'Interpreter','none');
+		title(ax, sprintf('%s  n=%d', zl, nnz(mask)), 'Interpreter','none');
+	end
+	if iZ == 2
+		try
+			ax.YAxis.Visible = 'off';
+		catch
+			ax.YTickLabel = [];
+		end
 	end
 end
 
@@ -191,6 +202,9 @@ catch
 end
 
 sgtitle(TL, 'Reuse vs Transfer performance by ZLayer', 'Interpreter','none');
+
+xlabel(TL, 'Reuse: P(Transfer active | Learned active)');
+ylabel(TL, 'Transfer phase performance');
 
 % Export (SVG only)
 try

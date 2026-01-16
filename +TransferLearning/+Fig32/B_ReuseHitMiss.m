@@ -202,7 +202,7 @@ assignin('base','Fig3_2b_ReuseHitMiss_LayerCoverage', cov);
 
 % --- Plot (paired) by layer
 f = figure('Color','w', 'Name','Fig3.2b Reuse Hit vs Miss (by layer)');
-MATLAB.Graphics.FigureAspectRatio(10,4,1/2);
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 
 ylabel(TL, 'Reuse');
@@ -249,7 +249,7 @@ for iZ = 1:numel(layerNames)
 	nPairs(iZ) = nPair;
 	ax.XTickLabel = {sprintf('Hit (n=%d)', nPair), sprintf('Miss (n=%d)', nPair)};
 	grid(ax,'on');
-	box(ax,'on');
+	box(ax,'off');
 	title(ax, sprintf('%s', zl), 'Interpreter','none');
 	if iZ == numel(layerNames)
 		try
