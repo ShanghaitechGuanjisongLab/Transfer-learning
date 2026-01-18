@@ -138,7 +138,7 @@ statsOut.P_StdCells1p5 = pSD;
 % --- 5) Plot (2x2)
 f = figure('Color','w', 'Name', 'Fig3.4d Vacation7 vs Ctrl');
 try
-	MATLAB.Graphics.FigureAspectRatio(8, 7, MATLAB.Flags.Narrow);
+	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
 catch
 end
 tlo = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
@@ -239,24 +239,13 @@ try
 catch
 end
 
-% Also export a local copy for quick preview in VS Code
-localOutDir = pwd;
-
 svgPathUNC = fullfile(outDirUNC, 'Fig3_4d_Vacation7VsCtrl.svg');
-svgPathLocal = fullfile(localOutDir, 'Fig3_4d_Vacation7VsCtrl.svg');
 
 try
 	exportgraphics(f, svgPathUNC, 'ContentType','vector');
 	fprintf('Wrote: %s\n', svgPathUNC);
 catch ME
 	warning(ME.identifier, 'UNC export failed: %s', ME.message);
-end
-
-try
-	exportgraphics(f, svgPathLocal, 'ContentType','vector');
-	fprintf('Wrote: %s\n', svgPathLocal);
-catch ME
-	warning(ME.identifier, 'Local SVG export failed: %s', ME.message);
 end
 
 % Script outputs: Sess, rows, statsOut

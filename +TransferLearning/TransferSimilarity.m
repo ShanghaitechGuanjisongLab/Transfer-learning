@@ -5,6 +5,13 @@ arguments
 	options.PcaAx
 	options.HeatmapScale=MATLAB.Flags.Narrow
 end
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+try
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
+end
 if isfield(options,'PcaAx')
 	PcaAx={options.PcaAx};
 else
@@ -50,7 +57,7 @@ switch Target
 		title(Layout,Title);
 		MATLAB.Graphics.FigureAspectRatio(8,5,options.HeatmapScale);
 end
-print(ProjectPath(sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
+print(fullfile(outDirUNC, sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
 [~,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 FullNew=isempty(PcaAx);
@@ -63,5 +70,5 @@ UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNew
 	title('●0s(cue) ■1s(water)');
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-	print(ProjectPath(sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
+	print(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
 end

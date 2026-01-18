@@ -1,5 +1,12 @@
 %[text] 本图讲：细胞复用
 %[text] 迁移阶段活跃的细胞，扣除从学会阶段活跃的部分，恰好等于Naive活跃的细胞占比
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+try
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
+end
 MB=TransferLearning.MOpBaseline; %[output:425e9d55] %[output:39cba025] %[output:875eb4ab] %[output:40bb9dab] %[output:9b99ca65] %[output:877e6ff4] %[output:70f8aa68] %[output:68ef196e] %[output:9b62276b] %[output:37955c19] %[output:40bd7b6e] %[output:4708418c] %[output:90ff37c7] %[output:3910d0bb] %[output:102d7ad4] %[output:1b29e880] %[output:449e3cd8] %[output:5d1c1ebc] %[output:69dd25c5] %[output:1185ad6b] %[output:3ed02f12] %[output:4002fd1a] %[output:378daf7b] %[output:950ad531] %[output:53003023] %[output:0dee5800] %[output:74352dd3] %[output:64442ffe] %[output:54035623] %[output:1483d3ea] %[output:6a0f0770] %[output:22703207] %[output:6af1d0f9] %[output:83293bc8] %[output:23d0aa32] %[output:6917dc08] %[output:80a72512] %[output:72a25178] %[output:42e17b50] %[output:99a23394] %[output:344a13e5] %[output:4bcbebce] %[output:5cba3d10] %[output:73baeda4] %[output:8147cc39] %[output:545a6082] %[output:8bd7b044] %[output:37921405] %[output:56542b8b] %[output:50a1556a] %[output:208e80a4] %[output:32495820] %[output:68514d6e] %[output:48b91aa6] %[output:8d56bd2c] %[output:22704927] %[output:9be5ff03] %[output:1e054867] %[output:09195403] %[output:43f3064a] %[output:3fcea25d] %[output:89dfdac9] %[output:8235e4fa] %[output:1e5fe8a2] %[output:6812d804] %[output:19d00022] %[output:6a2d2edb] %[output:6f71000c] %[output:0207f4b1] %[output:4f8ea012] %[output:06ac7256] %[output:2a2a9bad] %[output:39ac06e3] %[output:9d6484b7] %[output:9ebc725e] %[output:95a42a1f] %[output:7968c642] %[output:267d1161] %[output:00e22828] %[output:1072f2e9] %[output:72cfd5ac] %[output:8d6fd9f1] %[output:1a6de2ca] %[output:695935ae] %[output:2e04a09f] %[output:3a0c14a0] %[output:9c45fdcf] %[output:5c2683c4] %[output:8792626e] %[output:08d4418b] %[output:55d3a6f9] %[output:40885167] %[output:72b7138c] %[output:878e5254] %[output:514710a7] %[output:1089ac34] %[output:882cd9b0] %[output:24c601db] %[output:4e0d70b6] %[output:1bc74b4e] %[output:93fd056f] %[output:3a9e7c6a] %[output:38016bf6] %[output:32193032] %[output:01dfd1de] %[output:6e791c3c] %[output:9c66054b] %[output:1bb570aa] %[output:7234fe86] %[output:7de45df9]
 %%
 GroupNtats=MB.QueryNTATS(UniExp.ReadQueryTable(TransferLearning.ProjectPath('尝试查询表.xlsx'),"CellReuse"),UniExp.Flags.ZScore,1:24,UniExp.Flags.Median);
@@ -42,7 +49,7 @@ Transfer25Lines=[LTActiveTransfer25Lines;TActiveTransfer25Lines];
 Fig=figure; %[output:258abdea]
 Lines=plot(Transfer25Lines.mean_NTATS.'); %[output:258abdea]
 legend(Lines,string(Transfer25Lines.ZLayer)+string(Transfer25Lines.LearnedActive),Location=MATLAB.Graphics.OptimizedLegendLocation(Lines)); %[output:258abdea]
-print(Fig,TransferLearning.ProjectPath('迁移活跃细胞按是否从学会阶段活跃继承划分.svg'),'-dsvg'); %[output:258abdea]
+print(Fig, fullfile(outDirUNC, '迁移活跃细胞按是否从学会阶段活跃继承划分.svg'), '-dsvg'); %[output:258abdea]
 %%
 %[text] 结论：迁移前20回合活跃的5层细胞，占比恰好等于，Naive前20回合活跃的5层细胞占比，与从学会阶段继承而来的5层细胞占比之和。活跃判据：1s内响应超过基线3倍标准差
 %%
@@ -53,7 +60,7 @@ Bars(2).CData=[0,0,0]; %[output:0fc6e3a4]
 legend(Bars,["Learned-inactive","Learned-active"]); %[output:0fc6e3a4]
 ylabel('Active cells proportion'); %[output:0fc6e3a4]
 title('Active L5 cells'); %[output:0fc6e3a4]
-print(Fig,TransferLearning.ProjectPath('比例相加.svg'),'-dsvg'); %[output:0fc6e3a4]
+print(Fig, fullfile(outDirUNC, '比例相加.svg'), '-dsvg'); %[output:0fc6e3a4]
 %[text] 迁移阶段L5共有6%活跃细胞，其中1.5%是从学会阶段继承，剩余4.5%恰等于Naive活跃细胞占比。
 %%
 V7=TransferLearning.Vacation7;

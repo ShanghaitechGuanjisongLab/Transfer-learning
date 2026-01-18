@@ -4,6 +4,13 @@ arguments
 	PCs
 	PcaAx={}
 end
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+try
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
+end
 FullNewPca=isempty(PcaAx);
 import TransferLearning.*
 switch bitand(FigureFlag,Flags.Paradigm)
@@ -32,7 +39,7 @@ UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNewPca
 	title('Transfer hit & miss ●0s(cue) ■1s(water)');
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-	print(ProjectPath(sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
+	print(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
 end
 figure;
 [~,Index]=maxk(PcaCoeff.Coeff(:,1),uint8(height(PcaCoeff)/20));
@@ -45,7 +52,7 @@ if Target==Flags.PPT
 	title(Layout,'Top 5% cells of PC1 coeff');
 end
 MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-print(ProjectPath(sprintf('%s.Top5.%s.svg',SheetName,Target)),'-dsvg');
+print(fullfile(outDirUNC, sprintf('%s.Top5.%s.svg',SheetName,Target)),'-dsvg');
 [Mean,Sem]=MATLAB.DataFun.MeanSem(NtatsData,1);
 Xs=seconds(linspace(-3,2,size(Mean,2))');
 figure;
@@ -65,5 +72,5 @@ ylabel(CurveLayout,'ΔF/F_0 ±SEM');
 xlabel(CurveLayout,'Time from cue');
 MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 MATLAB.Graphics.UnifyAxesLims(Axes,@ylim);
-print(TransferLearning.ProjectPath(sprintf('%s.线图.%s.svg',SheetName,Target)),'-dsvg');
+print(fullfile(outDirUNC, sprintf('%s.线图.%s.svg',SheetName,Target)),'-dsvg');
 end

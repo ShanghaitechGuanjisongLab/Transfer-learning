@@ -4,6 +4,13 @@ arguments
 	PCs
 	PcaAx={}
 end
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+try
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
+end
 FullNewPca=isempty(PcaAx);
 import TransferLearning.*
 DataSet=TransferLearning.FullCalcium;
@@ -29,7 +36,7 @@ switch Target
 		title(Layout,'Reinforced final network');
 		MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 end
-print(ProjectPath(sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
+print(fullfile(outDirUNC, sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
 [~,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 if FullNewPca
@@ -43,6 +50,6 @@ UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNewPca
 	title('Reinforced final network ●0s(cue) ■1s(water)');
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-	print(ProjectPath(sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
+	print(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
 end
 end

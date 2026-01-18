@@ -5,6 +5,26 @@ arguments
 	PrintPath
 	ScaleColor=false;
 end
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+try
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
+end
+try
+	pp = string(PrintPath);
+	if ~(startsWith(pp, "\\\\") || startsWith(pp, "//"))
+		[~, name, ~] = fileparts(pp);
+		pp = fullfile(outDirUNC, name);
+	end
+	PrintPath = pp;
+	parentDir = fileparts(pp);
+	if strlength(parentDir) > 0 && ~isfolder(parentDir)
+		mkdir(parentDir);
+	end
+catch
+end
 figure;
 Colors=GlobalOptimization.ColorAllocate(3,[1,1,1]);
 Layout1=tiledlayout(1,5,TileSpacing='tight',Padding='tight');

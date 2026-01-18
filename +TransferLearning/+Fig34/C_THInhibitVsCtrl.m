@@ -194,7 +194,7 @@ assignin('base', 'Fig3_4c_THInhibitVsCtrl_Stats', statsOut);
 % --- 5) Plot (2x2)
 f = figure('Color','w', 'Name', 'Fig3.4c THInhibit vs Ctrl');
 try
-	MATLAB.Graphics.FigureAspectRatio(8, 7, MATLAB.Flags.Narrow);
+	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
 catch
 end
 tlo = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
