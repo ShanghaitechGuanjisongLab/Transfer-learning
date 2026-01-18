@@ -45,21 +45,49 @@ end
 
 tl = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
 
-spec = {
-	struct('Group',"Naive",   'ZLayer',"MOp2/3", 'XVar',"StdCells0p3_MOp23")
-	struct('Group',"Naive",   'ZLayer',"MOp5",   'XVar',"StdCells0p3_MOp5")
-	struct('Group',"Transfer",'ZLayer',"MOp2/3", 'XVar',"StdCells0p3_MOp23")
-	struct('Group',"Transfer",'ZLayer',"MOp5",   'XVar',"StdCells0p3_MOp5")
-};
+axs = gobjects(2,2);
 
-for i = 1:numel(spec)
-	s = spec{i};
-	ax = nexttile(tl, i);
-	R = T(T.Group==s.Group, :);
-	iScatter(ax, R.(s.XVar), R.LearningSpeed_DeltaNext, sprintf('%s | %s', s.Group, s.ZLayer));
-	xlabel(ax, sprintf('Inter-cell SD @0.3s (%s)', s.ZLayer));
-	ylabel(ax, 'Learning speed (DeltaNext)');
+% Layout: rows = layer (MOp2/3, MOp5), cols = group (Naive, Transfer)
+rowLayers = ["MOp2/3","MOp5"];
+colGroups = ["Naive","Transfer"];
+sdVars = containers.Map;
+sdVars("MOp2/3") = "StdCells0p3_MOp23";
+sdVars("MOp5")   = "StdCells0p3_MOp5";
+
+for iR = 1:numel(rowLayers)
+	for iC = 1:numel(colGroups)
+		zl = rowLayers(iR);
+		grp = colGroups(iC);
+		ax = nexttile(tl, (iR-1)*2 + iC);
+		axs(iR,iC) = ax;
+		R = T(T.Group==grp, :);
+		iScatter(ax, R.(sdVars(zl)), R.LearningSpeed_DeltaNext);
+		if iR == 1
+			title(ax, grp, 'Interpreter','none');
+		end
+		if iC == 1
+			ylabel(ax, zl, 'Interpreter','none');
+		else
+			ax.YTickLabel = [];
+			ax.YLabel.String = '';
+		end
+	end
 end
+
+% Hide top-row x axis
+axs(1,1).XTickLabel = [];
+axs(1,1).XLabel.String = '';
+axs(1,2).XTickLabel = [];
+axs(1,2).XLabel.String = '';
+
+% Global x label (on tiledlayout)
+xlabel(tl, 'Inter-cell SD @0.3s', 'Interpreter','none');
+
+% Global y label (move from per-axes)
+ylabel(tl, 'Learning speed (DeltaNext)', 'Interpreter','none');
+
+% Unify X limits (all subplots)
+iUnifyX(axs(:));
 
 sgtitle(tl, '0.3s inter-cell SD vs learning speed (session-level)', 'Interpreter','none');
 
@@ -80,7 +108,7 @@ end
 
 %% --- helpers
 
-function iScatter(ax, x, y, ttl)
+function iScatter(ax, x, y)
 	x = double(x);
 	y = double(y);
 	use = isfinite(x) & isfinite(y);
@@ -96,8 +124,36 @@ function iScatter(ax, x, y, ttl)
 	end
 
 	scatter(ax, x(use), y(use), 26, 'filled', 'MarkerFaceAlpha', 0.75);
+
+	% Fit line segment (linear)
+	if nnz(use) >= 2 && std(x(use),'omitnan') > 0
+		b = polyfit(x(use), y(use), 1);
+		xLine = [min(x(use)), max(x(use))];
+		yLine = polyval(b, xLine);
+		plot(ax, xLine, yLine, 'k-', 'LineWidth', 1);
+	end
+
 	[rho, p] = iSpearman(x(use), y(use));
-	title(ax, sprintf('%s\nSpearman \rho=%.2f, p=%.3g, n=%d', ttl, rho, p, nnz(use)), 'Interpreter','none');
+	subtitle(ax, sprintf('\\rho=%.2f, p=%.3g', rho, p), 'Interpreter','tex');
+end
+
+function iUnifyX(axs)
+	try
+		MATLAB.Graphics.UnifyAxesLims(axs, 'x');
+		return;
+	catch
+	end
+	try
+		xl = nan(numel(axs),2);
+		for i = 1:numel(axs)
+			xl(i,:) = xlim(axs(i));
+		end
+		xl = [min(xl(:,1),[],'omitnan') max(xl(:,2),[],'omitnan')];
+		for i = 1:numel(axs)
+			xlim(axs(i), xl);
+		end
+	catch
+	end
 end
 
 function [rho, p] = iSpearman(x, y)

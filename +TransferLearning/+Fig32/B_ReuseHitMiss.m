@@ -1,7 +1,7 @@
-% 图3.2b：Transfer LightWater 会话内 Hit vs Miss 的复用表型（同鼠配对）
+% 图3.2b（新口径预览）：Transfer LightWater 会话内 Hit vs Miss 的复用表型（同鼠配对）
 %
-% Primary metric (forward reuse):
-%   Reuse = P(TransferLight active | LearnedAudio active)
+% Primary metric (forward reuse, updated):
+%   Reuse (1 s) = P(TransferLight active at 1 s | LearnedAudio active at 1 s)
 % computed within the SAME mouse.
 %
 % Implementation notes:
@@ -10,8 +10,8 @@
 %     Learned:  Phase=Learned,  Stimulus=AudioWater
 %     Transfer: Phase=Transfer, Stimulus=LightWater, split by Behavior (Hit/Miss)
 %   This avoids dropping mice due to session Hit/Miss imbalance.
-% - Active definition (matches Methods):
-%     max(0~1s) > mean(-3~0s) + 3*std(-3~0s)
+% - Active definition (updated):
+%     value(1s) > mean(-3~0s) + 3*std(-3~0s)
 %   applied to the per-cell median trial trace from QueryNTATS (ZScore baseline indices 1:24).
 %
 % Output:
@@ -20,10 +20,9 @@
 % Execution (hard requirements):
 % - This file MUST remain a SCRIPT (do not convert to a function).
 % - Call it like a function via the package name (do NOT use run):
-%     TransferLearning.Fig32.B_ReuseHitMiss
+%     TransferLearning.Fig32.B_ReuseHitMiss_ActiveAt1s
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2b_Reuse_HitMiss.svg";
 excludeMice = string([]);
 
 % --- 0) Ensure project loaded (for UniExp)
@@ -48,7 +47,11 @@ xsSec = seconds(xs);
 baseMask = (xsSec >= -3) & (xsSec < 0);
 winMask  = (xsSec >= 0) & (xsSec <= 1);
 if ~any(baseMask) || ~any(winMask)
-	error('Fig3_2b:BadTimeMask', 'Baseline or response window has no samples.');
+	error('Fig3_2b1s:BadTimeMask', 'Baseline or response window has no samples.');
+end
+idx1 = find(xsSec == 1, 1, 'first');
+if isempty(idx1)
+	[~, idx1] = min(abs(xsSec - 1));
 end
 kSigma = 3;
 
@@ -56,7 +59,7 @@ kSigma = 3;
 Tlearn = iTableQueryOrEmpty(DS, ["Mouse"], Phase="Learned", Stimulus="AudioWater");
 Ttran  = iTableQueryOrEmpty(DS, ["Mouse"], Phase="Transfer", Stimulus="LightWater");
 if isempty(Tlearn) || isempty(Ttran)
-	error('Fig3_2b:MissingTrials', 'Missing Learned(AudioWater) or Transfer(LightWater) trials in dataset.');
+	error('Fig3_2b1s:MissingTrials', 'Missing Learned(AudioWater) or Transfer(LightWater) trials in dataset.');
 end
 Tlearn.Mouse = string(Tlearn.Mouse);
 Ttran.Mouse = string(Ttran.Mouse);
@@ -64,7 +67,7 @@ Tlearn = Tlearn(~ismember(Tlearn.Mouse, excludeMice), :);
 Ttran  = Ttran(~ismember(Ttran.Mouse, excludeMice), :);
 mice = intersect(unique(Tlearn.Mouse), unique(Ttran.Mouse));
 if isempty(mice)
-	error('Fig3_2b:NoCommonMice', 'No mice have both Learned(AudioWater) and Transfer(LightWater).');
+	error('Fig3_2b1s:NoCommonMice', 'No mice have both Learned(AudioWater) and Transfer(LightWater).');
 end
 
 % --- 2) Per mouse: compute reuse(Hit/Miss) from QueryNTATS
@@ -126,12 +129,12 @@ for iM = 1:numel(mice)
 		XHitz = XHit(maskZ, :);
 		XMissz = XMiss(maskZ, :);
 
-		learnAct = iMedianActive(XLz, baseMask, winMask, kSigma);
+		learnAct = iActiveAt1s(XLz, baseMask, idx1, kSigma);
 		nLearnAct = nnz(learnAct);
 		isIn = nCellsLayer > 0;
 		detail = [detail; table(m, zl, nCellsLayer, nLearnAct, isIn, 'VariableNames', detail.Properties.VariableNames)]; %#ok<AGROW>
-		hitAct   = iMedianActive(XHitz, baseMask, winMask, kSigma);
-		missAct  = iMedianActive(XMissz, baseMask, winMask, kSigma);
+		hitAct   = iActiveAt1s(XHitz, baseMask, idx1, kSigma);
+		missAct  = iActiveAt1s(XMissz, baseMask, idx1, kSigma);
 
 		den = learnAct;
 
@@ -167,14 +170,14 @@ for iM = 1:numel(mice)
 end
 
 if isempty(rows)
-	error('Fig3_2b:NoValidMice', 'No mice passed requirements.');
+	error('Fig3_2b1s:NoValidMice', 'No mice passed requirements.');
 end
 
 rows = sortrows(rows, "Mouse");
-assignin('base','Fig3_2b_ReuseHitMiss_Summary', rows);
-assignin('base','Fig3_2b_ReuseHitMiss_LayerDetail', detail);
+assignin('base','Fig3_2b1s_ReuseHitMiss_Summary', rows);
+assignin('base','Fig3_2b1s_ReuseHitMiss_LayerDetail', detail);
 if ~isempty(skip)
-	assignin('base','Fig3_2b_ReuseHitMiss_Skipped', array2table(skip, 'VariableNames', {'Mouse','Reason'}));
+	assignin('base','Fig3_2b1s_ReuseHitMiss_Skipped', array2table(skip, 'VariableNames', {'Mouse','Reason'}));
 end
 
 % --- 3) Stats (paired) by layer
@@ -198,14 +201,16 @@ for iZ = 1:numel(layerNames)
 	has = ismember(allMice, unique(string(rows.Mouse(rows.ZLayer==zl))));
 	cov.(matlab.lang.makeValidName(char(zl))) = has;
 end
-assignin('base','Fig3_2b_ReuseHitMiss_LayerCoverage', cov);
+assignin('base','Fig3_2b1s_ReuseHitMiss_LayerCoverage', cov);
 
+%% 
 % --- Plot (paired) by layer
-f = figure('Color','w', 'Name','Fig3.2b Reuse Hit vs Miss (by layer)');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+svgName = "Fig3_2b_Reuse_HitMiss_ActiveAt1s.svg";
+f = figure('Color','w', 'Name','Fig3.2b Reuse Hit vs Miss (by layer, active at 1 s)');
+MATLAB.Graphics.FigureAspectRatio(1,1,1/2);
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 
-ylabel(TL, 'Reuse');
+ylabel(TL, 'Reuse (1 s)');
 
 axesList = gobjects(0,1);
 pvals = nan(numel(layerNames),1);
@@ -295,7 +300,7 @@ for iZ = 1:min(numel(layerNames), numel(axesList))
 		'Interpreter','none');
 end
 
-sgtitle(TL, 'Transfer phase Hit vs Miss (paired) by ZLayer', 'Interpreter','none');
+sgtitle(TL, 'Transfer phase Hit vs Miss (paired) by ZLayer (active at 1 s)', 'Interpreter','none');
 
 % --- 5) Export (SVG only)
 try
@@ -373,11 +378,11 @@ function z = iCellZLayer(DS, cellUID)
 	end
 end
 
-function act = iMedianActive(X, baseMask, winMask, kSigma)
+function act = iActiveAt1s(X, baseMask, idx1, kSigma)
 	baseMu = mean(X(:, baseMask), 2, 'omitnan');
 	baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
-	winMx = max(X(:, winMask), [], 2, 'omitnan');
-	act = winMx > (baseMu + kSigma .* baseSd);
+	val1 = X(:, idx1);
+	act = val1 > (baseMu + kSigma .* baseSd);
 end
 
 function [pk, lat] = iPeakAndLatency(X, xsSec, winMask)

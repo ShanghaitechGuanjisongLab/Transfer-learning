@@ -9,7 +9,7 @@
 % 4 子图（2×2）：
 %   1) LightWater 学习曲线（所有 LightWater 会话，不限 Phase；UniExp.LearningSummarize + MultiShadowedLines）
 %   2) 平均钙曲线（Median NTATS ZScore，Transfer，mean±SEM across mice）
-%   3) 复用率：Reuse(1s)=P(TransferLight active@1s | LearnedAudio active@1s)（Median NTATS ZScore；仅 MOp5）
+%   3) 复用率：Reuse(1s)=P(TransferLight active@1s | LearnedAudio active@1s)（Median NTATS ZScore；每鼠第一个 Transfer 会话；不分层）
 %   4) 稳定性：StdCells@1.5s（Median NTATS DeltaF，Transfer，会话内跨细胞 SD；仅 MOp5）
 %
 % 执行方式（工程约束）：
@@ -112,7 +112,7 @@ for i = 1:height(Sess)
 		DS = V7DS;
 	end
 
-	[reuse, nReuse] = iReuse1s_LearnedAudio_to_TransferLight(DS, m, idx1, baseMask, kSigma, "MOp5");
+	[reuse, nReuse] = iReuse1s_LearnedAudio_to_TransferLight(DS, m, dt, idx1, baseMask, kSigma);
 	keepUID = iLearnedActiveCellUIDs_1s(DS, m, idx1, baseMask, kSigma);
 	[meanCurve, nCellZ] = iMeanCurveZScore(DS, m, dt, keepUID);
 	sd15 = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
@@ -179,7 +179,7 @@ end
 xlabel(ax1, 'Session');
 ylabel(ax1, 'Performance (LightWater)');
 ylim(ax1, [0 1]);
-title(ax1, sprintf('LightWater learning curve  p=%.2g', PValueLS));
+title(ax1, 'LightWater learning curve');
 grid(ax1,'on');
 box(ax1,'off');
 
@@ -192,8 +192,8 @@ iHideToolbar(ax2);
 iPlotMeanSem(ax2, xsSec, mC, sC, cols(1,:), 'Ctrl');
 iPlotMeanSem(ax2, xsSec, mV, sV, cols(2,:), 'Vacation7');
 xlabel(ax2, 'Time (s)');
-ylabel(ax2, 'Median NTATS (ZScore)');
-title(ax2, 'Mean Ca trace (Transfer; cells filtered by Learned AudioWater active@1s)');
+ylabel(ax2, 'z-score');
+title(ax2, 'Mean Ca (Transfer; filtered)');
 grid(ax2,'on');
 box(ax2,'off');
 legend(ax2, 'Location','best');
@@ -202,18 +202,18 @@ legend(ax2, 'Location','best');
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 iHideToolbar(ax3);
-iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), {'Ctrl','Vacation7'}, 'Reuse(1s) [MOp5]');
+iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), {'Ctrl','Vacation7'}, 'Reuse(1s)');
 try
 	iPValuePLineScatter(ax3, 1, 2, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), pReuse);
 catch
 end
 grid(ax3,'on');
 
-% 5.4 Stability: StdCells@1.5s (DeltaF)
+% 5.4 Stability: StdCells@1.5s
 ax4 = nexttile(tlo, 4);
 hold(ax4,'on');
 iHideToolbar(ax4);
-iSwarm2(ax4, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), {'Ctrl','Vacation7'}, 'StdCells@1.5s (DeltaF) [MOp5]');
+iSwarm2(ax4, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), {'Ctrl','Vacation7'}, 'StdCells@1.5s [MOp5]');
 try
 	iPValuePLineScatter(ax4, 1, 2, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), pSD);
 catch
@@ -392,17 +392,17 @@ function keepUID = iLearnedActiveCellUIDs_1s(DS, mouse, idx1, baseMask, kSigma)
 	end
 end
 
-function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, idx1, baseMask, kSigma, zLayer)
+function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, transferDT, idx1, baseMask, kSigma)
 	% Reuse(1s) = P(TransferLight active@1s | LearnedAudio active@1s)
 	% Active predicate matches Fig3.2c: Z(1s) > mean(Z(-3~0)) + kSigma*std(Z(-3~0)) on Median NTATS ZScore.
 	reuse = NaN;
 	nCells = NaN;
 	try
 		mouse = string(mouse);
-		zLayer = string(zLayer);
+		transferDT = iNormalizeDateTime(transferDT);
 
 		GLearn = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','AudioWater', 'Phase','Learned'));
-		GTran  = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','LightWater', 'Phase','Transfer'));
+		GTran  = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','LightWater', 'Phase','Transfer', 'DateTime', transferDT));
 		if isempty(GLearn) || isempty(GTran)
 			return;
 		end
@@ -419,18 +419,7 @@ function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, idx
 		learnedCell = table(uint64(GLearn.CellUID), logical(actL), 'VariableNames', {'CellUID','LearnedActive'});
 		transferCell = table(uint64(GTran.CellUID), logical(actT), 'VariableNames', {'CellUID','TransferActive'});
 
-		C = DS.Cells;
-		learnedCell = innerjoin(learnedCell, C(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
-		transferCell = innerjoin(transferCell, C(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
-		learnedCell.ZLayer = string(learnedCell.ZLayer);
-		transferCell.ZLayer = string(transferCell.ZLayer);
-
-		if strlength(zLayer) > 0
-			learnedCell = learnedCell(learnedCell.ZLayer==zLayer, :);
-			transferCell = transferCell(transferCell.ZLayer==zLayer, :);
-		end
-
-		LT = innerjoin(learnedCell(:,{'CellUID','LearnedActive'}), transferCell(:,{'CellUID','TransferActive'}), 'Keys','CellUID');
+		LT = innerjoin(learnedCell, transferCell, 'Keys','CellUID');
 		nCells = height(LT);
 		if nCells < 10
 			reuse = NaN;

@@ -1,18 +1,17 @@
-% 图3.3a：示例细胞钙曲线（高散度 vs 低散度）
+% 图3.3b：示例细胞钙曲线（细胞间标准差低 vs 高）
 %
-% High divergence example (within ONE mouse):
+% Lower inter-cell SD example (within ONE mouse):
 % - Choose 3~4 cells (same mouse)
-% - Choose 3~4 trials from a Naive-stage session (see config below)
-% - In each chosen trial: only 1~3 cells are active
+% - Choose 3~4 trials from ONE session
+% - For each chosen cell: among chosen trials, at least one trial is active at 1s,
+%   and at least one trial is negative at 1s
 % - Active-cell sets are NOT identical across trials
-% - Each cell is active in only 1~3 trials
 %
-% Low divergence example (within ONE mouse):
+% Higher inter-cell SD example (within ANOTHER mouse):
 % - Choose 3~4 cells (same mouse)
-% - Choose 3~4 trials from a Learned AudioWater session
-% - In each chosen trial: 2~4 cells are active
-% - Active-cell sets are identical across chosen trials
-%   (so each cell is either always active or always inactive)
+% - Choose 3~4 trials from ONE session
+% - For each chosen cell: across chosen trials, 1s is either always active OR always negative
+% - Each chosen trial contains at least one active cell and one negative cell
 %
 % Signal:
 % - Use ResampledSignal (48 points, aligned to cue)
@@ -25,11 +24,10 @@
 %
 % Execution:
 %   IMPORTANT: MUST REMAIN A SCRIPT (do not convert to a function).
-%   Call via package name (do NOT use run):
-%     TransferLearning.Fig33.A_DivergenceExampleCells
+%   Call via package name:
+%     TransferLearning.Fig33.B_DivergenceExampleCells
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_3a_DivergenceExampleCells.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -48,18 +46,19 @@ catch
 end
 
 % Datasets
-DS_low = TransferLearning.AudioLightBaseline();
-Ts_low = DS_low.TrialSignals;
-C_low = DS_low.Cells;
+% - Lower-SD example: Naive LightWater from LAInterspersed + LightAudioBaseline
+% - Higher-SD example: Learned AudioWater from AudioLightBaseline
+DS_hiSD = TransferLearning.AudioLightBaseline();
+Ts_hiSD = DS_hiSD.TrialSignals;
+C_hiSD  = DS_hiSD.Cells;
 
-% High divergence: Naive LightWater from LAInterspersed + LightAudioBaseline
-DS_high_1 = TransferLearning.LAInterspersed();
-Ts_high_1 = DS_high_1.TrialSignals;
-C_high_1 = DS_high_1.Cells;
+DS_loSD_1 = TransferLearning.LAInterspersed();
+Ts_loSD_1 = DS_loSD_1.TrialSignals;
+C_loSD_1  = DS_loSD_1.Cells;
 
-DS_high_2 = TransferLearning.LightAudioBaseline();
-Ts_high_2 = DS_high_2.TrialSignals;
-C_high_2 = DS_high_2.Cells;
+DS_loSD_2 = TransferLearning.LightAudioBaseline();
+Ts_loSD_2 = DS_loSD_2.TrialSignals;
+C_loSD_2  = DS_loSD_2.Cells;
 
 xs = TransferLearning.Xs;
 xsSec = seconds(xs);
@@ -71,33 +70,35 @@ if ~any(baseMask)
 	error('Fig3_3a:NoBaselineSamples', 'baseline window -3~0s has no samples in TransferLearning.Xs');
 end
 if ~any(plotMask)
-	error('Fig3_3a:NoPlotSamples', 'plot window -2~2s has no samples in TransferLearning.Xs');
+	error('Fig3_3b:NoPlotSamples', 'plot window -1~1s has no samples in TransferLearning.Xs');
 end
 
 % active sample (closest to 1s)
 [dtMin, actIdx] = min(abs(xsSec - 1));
 if isempty(actIdx) || ~isfinite(dtMin) || dtMin > 0.25
-	error('Fig3_3a:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
+	error('Fig3_3b:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
 end
 
 kSigma = 3;
 
 % --- 1) Queries
-highQuery = struct('Phase','Naive','Stimulus','LightWater');
-lowQuery  = struct('Phase','Learned','Stimulus','AudioWater');
+qLoSD = struct('Phase','Naive','Stimulus','LightWater');
+qHiSD = struct('Phase','Learned','Stimulus','AudioWater');
 
 % --- 2) Find paired examples with SAME number of trials
 desiredTrialsList = [4 3];
-highEx = struct(); lowEx = struct();
-highLabel = ""; lowLabel = "";
+lowEx = struct(); highEx = struct();
+lowLabel = ""; highLabel = "";
 okPaired = false;
 for nTrialsDesired = desiredTrialsList
 	try
-		[highEx, highLabel] = iFindExample2Sources( ...
-			DS_high_1, Ts_high_1, C_high_1, "LAInterspersed", highQuery, ...
-			DS_high_2, Ts_high_2, C_high_2, "LightAudioBaseline", highQuery, ...
-			xsSec, baseMask, actIdx, kSigma, "high", nTrialsDesired);
-		[lowEx,  lowLabel ] = iFindExample(DS_low, Ts_low, C_low, lowQuery, struct(), xsSec, baseMask, actIdx, kSigma, "low", nTrialsDesired);
+		% Lower-SD example (variable active sets): allow fallback across two sources
+		[lowEx, lowLabel] = iFindExample2Sources( ...
+			DS_loSD_1, Ts_loSD_1, C_loSD_1, "LAInterspersed", qLoSD, ...
+			DS_loSD_2, Ts_loSD_2, C_loSD_2, "LightAudioBaseline", qLoSD, ...
+			xsSec, baseMask, actIdx, kSigma, "low", nTrialsDesired, "");
+		% Higher-SD example (stable sign per cell) must be ANOTHER mouse
+		[highEx, highLabel] = iFindExample(DS_hiSD, Ts_hiSD, C_hiSD, qHiSD, struct(), xsSec, baseMask, actIdx, kSigma, "high", nTrialsDesired, lowEx.Mouse);
 		okPaired = true;
 		break;
 	catch
@@ -105,26 +106,28 @@ for nTrialsDesired = desiredTrialsList
 	end
 end
 if ~okPaired
-	error('Fig3_3a:NoPairedExampleFound', 'Failed to find paired examples with the same number of trials (tried %s).', mat2str(desiredTrialsList));
+	error('Fig3_3b:NoPairedExampleFound', 'Failed to find paired examples with the same number of trials (tried %s).', mat2str(desiredTrialsList));
 end
 
-assignin('base', 'Fig3_3a_HighDivergenceExample', highEx);
-assignin('base', 'Fig3_3a_LowDivergenceExample',  lowEx);
+assignin('base', 'Fig3_3b_LowSDExample',  lowEx);
+assignin('base', 'Fig3_3b_HighSDExample', highEx);
+%% 
 
 % --- 3) Plot
-nCols = numel(highEx.TrialUIDs);
+nCols = numel(lowEx.TrialUIDs);
 
-figName = sprintf('Fig3.3a Divergence examples (High=%s, Low=%s)', highEx.Mouse, lowEx.Mouse);
+svgName = "Fig3_3b_CellToCellSD_ExampleDistributions.svg";
+figName = sprintf('Fig3.3b Cell-to-cell SD examples (Low=%s, High=%s)', lowEx.Mouse, highEx.Mouse);
 f = figure('Name', figName, 'Color','w');
 try
-	MATLAB.Graphics.FigureAspectRatio(10, 6, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(16, 5, 1);
 catch
 end
 
 TL = tiledlayout(2, nCols, 'TileSpacing','compact', 'Padding','compact');
 axesList = gobjects(0,1);
 
-% --- High divergence row (row 1)
+% --- Lower inter-cell SD row (row 1)
 for j = 1:nCols
 	ax = nexttile(TL, j);
 	axesList(end+1,1) = ax; %#ok<AGROW>
@@ -154,23 +157,23 @@ for j = 1:nCols
 		end
 	end
 
-	if j <= numel(highEx.TrialUIDs)
-		Zj = squeeze(highEx.Z(j, plotMask, :));
-		col = lines(size(Zj,2));
+	if j <= numel(lowEx.TrialUIDs)
+		Zj = squeeze(lowEx.Z(j, plotMask, :));
+		col = feval('lines', size(Zj,2));
 		for cIdx = 1:size(Zj,2)
 			plot(ax, xsPlot, Zj(:,cIdx), 'LineWidth', 1.0, 'Color', col(cIdx,:));
 		end
 		% Must be added BEFORE legend (and excluded by explicit handles below)
 		TransferLearning.DrawCueWaterLines(ax);
 		if j == 1
-			ylabel(ax, 'Higher inter-cell SD');
+			ylabel(ax, 'Low SD');
 		end
 	else
 		axis(ax,'off');
 	end
 end
 
-% --- Low divergence row (row 2)
+% --- Higher inter-cell SD row (row 2)
 for j = 1:nCols
 	ax = nexttile(TL, nCols + j);
 	axesList(end+1,1) = ax; %#ok<AGROW>
@@ -194,16 +197,16 @@ for j = 1:nCols
 		end
 	end
 
-	if j <= numel(lowEx.TrialUIDs)
-		Zj = squeeze(lowEx.Z(j, plotMask, :));
-		col = lines(size(Zj,2));
+	if j <= numel(highEx.TrialUIDs)
+		Zj = squeeze(highEx.Z(j, plotMask, :));
+		col = feval('lines', size(Zj,2));
 		for cIdx = 1:size(Zj,2)
 			plot(ax, xsPlot, Zj(:,cIdx), 'LineWidth', 1.0, 'Color', col(cIdx,:));
 		end
 		% Must be added BEFORE legend (and excluded by explicit handles below)
 		TransferLearning.DrawCueWaterLines(ax);
 		if j == 1
-			ylabel(ax, 'Lower inter-cell SD');
+			ylabel(ax, 'High SD');
 		end
 	else
 		axis(ax,'off');
@@ -239,7 +242,7 @@ xlabel(TL, 'Time (s)');
 ylabel(TL, 'Z-score');
 
 % A concise title (no figure index)
-sgtitle(TL, 'Example calcium traces', 'Interpreter','none');
+sgtitle(TL, 'Example calcium traces (low vs high cell-to-cell SD)', 'Interpreter','none');
 
 % --- 4) Export (SVG only)
 try
@@ -259,7 +262,7 @@ end
 
 %% --- local functions
 
-function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired)
+function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired, excludeMouse)
 	T = table;
 	label = "";
 	if ~isempty(fieldnames(qPrimary))
@@ -274,7 +277,7 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 		end
 	end
 	if isempty(T) || height(T) == 0
-		error('Fig3_3a:EmptyQuery', 'No trials returned for mode=%s.', string(mode));
+		error('Fig3_3b:EmptyQuery', 'No trials returned for mode=%s.', string(mode));
 	end
 
 	T.Mouse = string(T.Mouse);
@@ -293,6 +296,11 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 	maxTry = min(60, height(Sess));
 	for i = 1:maxTry
 		m = string(Sess.Mouse(i));
+		if exist('excludeMouse','var') && strlength(string(excludeMouse))>0
+			if strcmpi(m, string(excludeMouse))
+				continue;
+			end
+		end
 		dt = Sess.DateTime(i);
 		idx = (T.Mouse==m) & (T.DateTime==dt);
 		trialUIDs = unique(uint64(T.TrialUID(idx)));
@@ -330,30 +338,30 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 			ex.ActiveMatrix = out.Active;
 				ex.InactiveMatrix = out.Inactive;
 			ex.Z = out.Z;
-			fprintf('Fig3.3a %s example: Mouse=%s %s | %s | cells=[%s] trials=[%s]\n', ...
+			fprintf('Fig3.3b %s example: Mouse=%s %s | %s | cells=[%s] trials=[%s]\n', ...
 				string(mode), m, string(dt), zPick, strjoin(string(out.CellUIDs(:).'), ','), strjoin(string(out.TrialUIDs(:).'), ','));
 			return;
 		end
 	end
 
-	error('Fig3_3a:NoExampleFound', 'Failed to find %s example within %d sessions (query=%s).', string(mode), maxTry, label);
+	error('Fig3_3b:NoExampleFound', 'Failed to find %s example within %d sessions (query=%s).', string(mode), maxTry, label);
 end
 
 
-function [ex, srcLabel] = iFindExample2Sources(DS1, Ts1, C1, src1, q1, DS2, Ts2, C2, src2, q2, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired)
+function [ex, srcLabel] = iFindExample2Sources(DS1, Ts1, C1, src1, q1, DS2, Ts2, C2, src2, q2, xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired, excludeMouse)
 	srcLabel = "";
 	try
-		[ex, ~] = iFindExample(DS1, Ts1, C1, q1, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired);
+		[ex, ~] = iFindExample(DS1, Ts1, C1, q1, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired, excludeMouse);
 		srcLabel = string(src1);
 		return;
 	catch ME1
 		try
-			[ex, ~] = iFindExample(DS2, Ts2, C2, q2, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired);
+			[ex, ~] = iFindExample(DS2, Ts2, C2, q2, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired, excludeMouse);
 			srcLabel = string(src2);
-			warning('Fig3_3a:HighSourceFallback', 'Failed on %s (%s). Falling back to %s.', string(src1), ME1.identifier, string(src2));
+			warning('Fig3_3b:SourceFallback', 'Failed on %s (%s). Falling back to %s.', string(src1), ME1.identifier, string(src2));
 			return;
 		catch ME2
-			error('Fig3_3a:HighSourceBothFailed', 'Failed to find example in both sources. %s: %s | %s: %s', ...
+			error('Fig3_3b:SourceBothFailed', 'Failed to find example in both sources. %s: %s | %s: %s', ...
 			string(src1), ME1.message, string(src2), ME2.message);
 		end
 	end
@@ -387,20 +395,20 @@ function [ok, out] = iTrySession(Ts, cellUIDsAll, trialUIDsAll, xsSec, baseMask,
 	A(~isfinite(A)) = false;
 	I(~isfinite(I)) = false;
 
-	if strcmpi(string(mode), "high")
-		[ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired);
+	if strcmpi(string(mode), "low")
+		% Low inter-cell SD example: variable active sets; each chosen cell has both active and negative trials
+		[ok, out] = iSelectLowSD(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired);
 	else
-		[ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired);
+		% High inter-cell SD example: stable sign per cell across selected trials
+		[ok, out] = iSelectHighSD(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired);
 	end
 end
 
-function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired)
-	% High divergence constraints
-	% - 3~4 cells
-	% - 3~4 trials
-	% - Each chosen trial has 1~3 active cells
-	% - Active sets are all different
-	% - Each chosen cell active in 1~3 trials
+function [ok, out] = iSelectLowSD(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired)
+	% Lower inter-cell SD constraints (per outline)
+	% - 3~4 cells, 3~4 trials
+	% - Active sets are NOT identical across chosen trials
+	% - Each chosen cell has >=1 active trial AND >=1 negative trial
 
 	ok = false;
 	out = struct();
@@ -422,7 +430,7 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesi
 			cIdx = idxCandCells(comb(i,:));
 			Acs = A(:, cIdx);
 			Ics = I(:, cIdx);
-			% candidate trials: 1~3 actives
+			% candidate trials: require at least 1 active cell (cap to keep patterns sparse)
 			rsum = sum(Acs, 2);
 			idxTrials = find(rsum >= 1 & rsum <= min(3, nCells));
 			if numel(idxTrials) < 3
@@ -460,7 +468,7 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesi
 					end
 					Isel = Ics(pickIdx, :);
 					csum = sum(Asel, 1);
-					% Each chosen cell must have >=1 active AND >=1 inactive trial
+					% Each chosen cell must have >=1 active AND >=1 negative trial
 					if any(csum < 1) || any(csum >= nT)
 						continue;
 					end
@@ -487,17 +495,16 @@ function [ok, out] = iSelectHigh(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesi
 	end
 end
 
-function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired)
-	% Low divergence constraints
-	% - 3~4 cells
-	% - 3~4 trials
-	% - Each chosen trial has 2~4 active cells
-	% - Active sets are identical across chosen trials
+function [ok, out] = iSelectHighSD(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesired)
+	% Higher inter-cell SD constraints (per outline)
+	% - 3~4 cells, 3~4 trials
+	% - For each chosen cell: across chosen trials, 1s is either always active OR always negative
+	% - Each chosen trial contains at least one active and one negative cell
 
 	ok = false;
 	out = struct();
 
-	% prefer cells with some activity (to allow 3~4 actives)
+	% prefer cells with some activity (to allow 2~4 actives)
 	colSum = sum(A, 1, 'omitnan');
 	idxCandCells = find(colSum >= 2);
 	if numel(idxCandCells) < 6
@@ -541,13 +548,17 @@ function [ok, out] = iSelectLow(cellUIDsAll, trialUIDsAll, Z, A, I, nTrialsDesir
 				pickIdx = rowsP(1:nT);
 				Asel = Acs(pickIdx, :);
 				Isel = Ics(pickIdx, :);
-				% sanity: all rows identical
+				% sanity: all rows identical (active set stable)
 				if ~all(all(Asel == Asel(1,:), 2))
 					continue;
 				end
-				% enforce that non-active cells are truly inactive (below baseline mean) across all selected trials
+				% enforce that non-active cells are truly negative across all selected trials
 				inactiveCols = ~logical(Asel(1,:));
 				if any(inactiveCols) && ~all(all(Isel(:, inactiveCols)))
+					continue;
+				end
+				% also require at least one active and one negative cell (then every trial has both)
+				if ~any(Asel(1,:)) || ~any(inactiveCols)
 					continue;
 				end
 				if nT > bestN
@@ -714,11 +725,7 @@ function s = iLabelOfQuery(q)
 	s = strings(numel(f),1);
 	for i = 1:numel(f)
 		v = q.(f{i});
-		if isstring(v) || ischar(v)
-			s(i) = string(f{i}) + "=" + string(v);
-		else
-			s(i) = string(f{i}) + "=" + string(v);
-		end
+		s(i) = string(f{i}) + "=" + string(v);
 	end
 	s = strjoin(s, ",");
 end

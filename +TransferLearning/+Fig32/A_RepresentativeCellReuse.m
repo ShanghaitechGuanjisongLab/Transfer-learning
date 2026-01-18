@@ -22,7 +22,6 @@
 % - Or run from the MATLAB editor (Run/F5).
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2a_RepresentativeCellReuse.svg";
 
 % --- Optional: pin to a specific known good cell (Mouse + CellIndex)
 % Example request: yqn0020, Cell197
@@ -464,10 +463,12 @@ try
 catch
 end
 
+%% 
 % --- 4) Plot (single-trial overlays)
+svgName = "Fig3_2a_RepresentativeCellReuse.svg";
 figTitle = sprintf('Representative Cell (Mouse=%s, CellUID=%d, %s)', picked.Mouse, picked.CellUID, picked.ZLayer);
 f = figure('Color','w', 'Name', figTitle);
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+MATLAB.Graphics.FigureAspectRatio(1,1,1/2);
 
 TL = tiledlayout(2,2,'TileSpacing','compact','Padding','compact');
 
@@ -526,7 +527,7 @@ try
 catch
 end
 
-sgtitle(TL, sprintf('Representative Cell | Mouse=%s, CellUID=%d', ...
+sgtitle(TL, sprintf('Mouse=%s, CellUID=%d', ...
 	picked.Mouse, picked.CellUID), 'Interpreter','none');
 
 % --- 5) Export (SVG only)

@@ -406,16 +406,16 @@ T.Source = string(T.Source);
 nSrc = splitapply(@(x) numel(unique(string(x))), T.Source, G);
 dup = mice(nSrc > 1);
 if ~isempty(dup)
-	lines = strings(numel(dup),1);
+	msgLines = strings(numel(dup),1);
 	for i = 1:numel(dup)
 		m = dup(i);
 		srcs = unique(T.Source(T.Mouse == m));
-		lines(i) = m + ": " + strjoin(srcs, ",");
+		msgLines(i) = m + ": " + strjoin(srcs, ",");
 	end
 	error(struct(...
 		'identifier', 'Fig3_1c:DuplicateMouseAcrossSources', ...
 		'message', sprintf('Group %s has duplicated mice across sources (should not happen).\n%s', ...
-		char(string(groupName)), char(strjoin(lines, newline)))));
+		char(string(groupName)), char(strjoin(msgLines, newline)))));
 end
 end
 
@@ -429,15 +429,15 @@ T.Group = string(T.Group);
 nG = splitapply(@(x) numel(unique(string(x))), T.Group, G);
 dup = mice(nG > 1);
 if ~isempty(dup)
-	lines = strings(numel(dup),1);
+	msgLines = strings(numel(dup),1);
 	for i = 1:numel(dup)
 		m = dup(i);
 		gs = unique(T.Group(T.Mouse == m));
-		lines(i) = m + ": " + strjoin(gs, ",");
+		msgLines(i) = m + ": " + strjoin(gs, ",");
 	end
 	error(struct(...
 		'identifier', 'Fig3_1c:MouseInMultipleGroups', ...
-		'message', sprintf('Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(lines, newline)))));
+		'message', sprintf('Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(msgLines, newline)))));
 end
 end
 

@@ -45,7 +45,7 @@ layerNames = string(["MOp2/3","MOp5"]);
 
 f = figure('Color','w', 'Name','Fig3.2g Target drop');
 try
-	MATLAB.Graphics.FigureAspectRatio(8,3.6,1/2);
+	MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 catch
 end
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
@@ -53,9 +53,16 @@ TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 ylabel(TL,'Δz = atanh(r_{all}) - atanh(r_{drop})');
 
 axList = gobjects(1,2);
+allPLines = matlab.graphics.primitive.Line.empty(0,1);
+allPTexts = matlab.graphics.primitive.Text.empty(0,1);
 for i = 1:2
 	ax = nexttile(TL, i); hold(ax,'on'); iHideToolbar(ax);
-	iPanel(ax, rows, layerNames(i));
+	[Lines, Texts] = iPanel(ax, rows, layerNames(i));
+	try
+		allPLines = [allPLines; Lines(:)];
+		allPTexts = [allPTexts; Texts(:)];
+	catch
+	end
 	axList(i) = ax;
 	if i == 2
 		ax.YAxis.Visible = 'off';
@@ -65,6 +72,33 @@ end
 % Unify Y across panels + hide right Y axis
 try
 	MATLAB.Graphics.UnifyAxesLims(axList, @ylim);
+catch
+end
+
+% Snapshot unified y-lims (PLineRetune may temporarily switch ylim to 'auto')
+yLimsFixed = NaN(numel(axList),2);
+try
+	for ii = 1:numel(axList)
+		yLimsFixed(ii,:) = ylim(axList(ii));
+	end
+catch
+end
+
+% Retune p-lines after ylim is unified (prevents drift)
+try
+	if ~isempty(allPLines) && ~isempty(allPTexts)
+		MATLAB.Graphics.PLineRetune(allPLines, allPTexts);
+	end
+catch
+end
+
+% Restore the unified y-lims in case PLineRetune changed them.
+try
+	if all(isfinite(yLimsFixed(:)))
+		for ii = 1:numel(axList)
+			ylim(axList(ii), yLimsFixed(ii,:));
+		end
+	end
 catch
 end
 
@@ -85,7 +119,9 @@ end
 
 %% --- local helpers
 
-function iPanel(ax, rows, zLayer)
+function [Lines, Texts] = iPanel(ax, rows, zLayer)
+	Lines = matlab.graphics.primitive.Line.empty(0,1);
+	Texts = matlab.graphics.primitive.Text.empty(0,1);
 	R = rows(rows.ZLayer==string(zLayer), :);
 	dTarget = double(R.DeltaZ_Target);
 	dRand = double(R.DeltaZ_RandMean);
@@ -95,7 +131,7 @@ function iPanel(ax, rows, zLayer)
 	xticks(ax,[1 2]);
 	xlim(ax,[0.5 2.5]);
 	xticklabels(ax, {'Random(mean)','Target(Top50%)'});
-	grid(ax,'on'); box(ax,'on');
+	grid(ax,'on'); box(ax,'off');
 
 	if nnz(use) == 0
 		return;
@@ -117,14 +153,16 @@ function iPanel(ax, rows, zLayer)
 		p = signrank(d(isfinite(d)), 0, 'tail','right');
 	end
 	try
-		iPValuePLineScatter(ax, 1, 2, dRand(use), dTarget(use), p);
+		[Lines, Texts] = iPValuePLineScatter(ax, 1, 2, dRand(use), dTarget(use), p);
 	catch
 	end
 
 	fprintf('Fig3.2g %s: signrank(Target-Rand>0) p=%.4g (n=%d)\n', zLayer, p, nnz(use));
 end
 
-function iPValuePLineScatter(ax, x1, x2, y1, y2, p, extraOffset)
+function [Lines, Texts] = iPValuePLineScatter(ax, x1, x2, y1, y2, p, extraOffset)
+	Lines = matlab.graphics.primitive.Line.empty(0,1);
+	Texts = matlab.graphics.primitive.Text.empty(0,1);
 	if nargin < 7 || isempty(extraOffset)
 		extraOffset = 0;
 	end
@@ -152,7 +190,7 @@ function iPValuePLineScatter(ax, x1, x2, y1, y2, p, extraOffset)
 	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', p), extraOffset, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 	try
-		MATLAB.Graphics.PLine(Descriptors);
+		[Lines, Texts] = MATLAB.Graphics.PLine(Descriptors);
 	catch
 	end
 

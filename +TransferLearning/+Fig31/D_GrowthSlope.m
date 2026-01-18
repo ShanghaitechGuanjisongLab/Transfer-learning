@@ -437,15 +437,15 @@ function iAssertNoCrossSourceDuplicateMice(T, groupName)
 		return;
 	end
 
-	lines = strings(numel(bad), 1);
+	msgLines = strings(numel(bad), 1);
 	for idx = 1:numel(bad)
 		m = bad(idx);
 		src = unique(string(U.Source(string(U.Mouse) == m)));
-		lines(idx) = m + " -> " + strjoin(src, ", ");
+		msgLines(idx) = m + " -> " + strjoin(src, ", ");
 	end
 
 	error('Fig3_1d:DuplicateMouseAcrossSources', ...
-		'Duplicate mouse IDs across sources in group %s:\n%s', char(string(groupName)), char(strjoin(lines, newline)));
+		'Duplicate mouse IDs across sources in group %s:\n%s', char(string(groupName)), char(strjoin(msgLines, newline)));
 end
 
 function iAssertNoMouseAppearsInMultipleGroups(T)
@@ -461,13 +461,13 @@ function iAssertNoMouseAppearsInMultipleGroups(T)
 	if isempty(bad)
 		return;
 	end
-	lines = strings(numel(bad), 1);
+	msgLines = strings(numel(bad), 1);
 	for i = 1:numel(bad)
 		m = bad(i);
 		gs = unique(T.Group(T.Mouse == m));
-		lines(i) = m + " -> " + strjoin(gs, ", ");
+		msgLines(i) = m + " -> " + strjoin(gs, ", ");
 	end
-	error('Fig3_1d:MouseInMultipleGroups', 'Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(lines, newline)));
+	error('Fig3_1d:MouseInMultipleGroups', 'Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(msgLines, newline)));
 end
 
 function [beta, ci, pval, coefName] = iGetInteractionEffect(lme)

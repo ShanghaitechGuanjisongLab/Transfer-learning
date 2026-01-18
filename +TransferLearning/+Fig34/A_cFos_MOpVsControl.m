@@ -1,6 +1,6 @@
-% 图3.4a：cFos ensemble 抑制（MOp vs Control）行为效应
+% 图3.4a：cFos ensemble 抑制（Inhibited vs Control）行为效应
 %
-% 仅比较：MOp 组 vs Control 组
+% 仅比较：Inhibited 组 (MOp) vs Control 组
 % 4 子图：
 %   1) 学习曲线（按 session index）
 %   2) 正确率（首次迁移/Day0 = session 1 performance）
@@ -145,7 +145,30 @@ statsOut = struct();
 %   - the first perf==1 (100%) session and all sessions after it (per mouse)
 [grpOrder, grpNames] = iGroupOrder();
 SessLC = iFilterSessionsForLearningCurve(Sess);
-[curveMean, curveSem, curveN] = iLearningCurve(SessLC, grpOrder);
+curveMean = cell(numel(grpOrder),1);
+curveSem  = cell(numel(grpOrder),1);
+curveN    = nan(numel(grpOrder),1);
+try
+	% Use LearningSummarize on session-level table (each row = one session)
+	ST = UniExp.LearningSummarize(SessLC(:, {'Mouse','Performance','DateTime','Group'}));
+	rn = string(ST.Properties.RowNames);
+	ST = ST(ismember(rn, grpOrder), :);
+	[~, ord] = ismember(grpOrder, string(ST.Properties.RowNames));
+	if all(ord > 0)
+		ST = ST(ord, :);
+	end
+	curveMean = ST.MeanCurve;
+	curveSem  = ST.SemCurve;
+catch ME
+	warning('Fig3_4a:LearningSummarizeFailed', 'LearningSummarize failed (%s). Falling back to internal summarize.', ME.message);
+	[curveMean, curveSem, curveN] = iLearningCurve(SessLC, grpOrder);
+end
+
+% n = # mice contributing (for legend)
+for k = 1:numel(grpOrder)
+	g = grpOrder(k);
+	curveN(k) = numel(unique(SessLC.Mouse(SessLC.Group == g)));
+end
 
 % 4.2 day0 accuracy (Phase==Transfer, earliest Transfer session per mouse)
 idxCtrl = perMouse.Group == "Control";
@@ -154,8 +177,10 @@ idxMOp  = perMouse.Group == "MOp";
 statsOut.AccuracyP = accP;
 
 % 4.3 learning speed (baseline-adjusted slope)
-[perMouse, slopeP] = iAddBaselineAdjustedSlope(perMouse);
-statsOut.SlopeAdjP = slopeP;
+% One session = one point; use the same sessions as panel 1.
+[dCtrl, dInhib] = iSessionDeltaPerfByGroup(SessLC);
+speedP = iRanksumSafe(dCtrl, dInhib);
+statsOut.SpeedP = speedP;
 
 % 4.4 time-to-criterion
 thr = 0.80;
@@ -163,7 +188,7 @@ thr = 0.80;
 statsOut.TTCThreshold = thr;
 
 % --- 5) Plot (2x2)
-f = figure('Color','w', 'Name', 'Fig3.4a cFos MOp vs Control');
+f = figure('Color','w', 'Name', 'Fig3.4a cFos Inhibited vs Control');
 MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
 tlo = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
 
@@ -177,7 +202,7 @@ hLines = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrd
 	'EdgeColors', GlobalOptimization.ColorAllocate(numel(grpOrder), [1,1,1;1,1,1]));
 lgdLabels = grpNames(:) + " n=" + string(curveN(:));
 legend(ax1, hLines, lgdLabels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(hLines));
-xlabel(ax1, 'Session');
+xlabel(ax1, 'Block');
 ylabel(ax1, 'Hit rate');
 title(ax1, 'Learning curve (LightWater)');
 box(ax1,'off');
@@ -195,12 +220,8 @@ if ~isempty(accMOp)
 end
 ax2.XLim = [0.5 2.5];
 ax2.XTick = [1 2];
-ax2.XTickLabel = {sprintf('Control (n=%d)', numel(accCtrl)), sprintf('MOp (n=%d)', numel(accMOp))};
-if accNote == " (Transfer only)"
-	ylabel(ax2, 'Transfer session performance');
-else
-	ylabel(ax2, 'Session performance');
-end
+ax2.XTickLabel = {sprintf('Control (n=%d)', numel(accCtrl)), sprintf('Inhibited (n=%d)', numel(accMOp))};
+ylabel(ax2, 'Perf');
 if isnan(accP)
 	title(ax2, 'Day0 accuracy');
 else
@@ -211,17 +232,13 @@ box(ax2,'on');
 % 5.3 learning speed
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
-slCtrl = perMouse.SlopeAdj(idxCtrl);
-slMOp  = perMouse.SlopeAdj(idxMOp);
-slCtrl = slCtrl(isfinite(slCtrl));
-slMOp  = slMOp(isfinite(slMOp));
-swarmchart(ax3, ones(size(slCtrl)), slCtrl, 24, 'filled');
-swarmchart(ax3, 2*ones(size(slMOp)),  slMOp,  24, 'filled');
+swarmchart(ax3, ones(size(dCtrl)), dCtrl, 24, 'filled');
+swarmchart(ax3, 2*ones(size(dInhib)), dInhib, 24, 'filled');
 ax3.XLim = [0.5 2.5];
 ax3.XTick = [1 2];
-ax3.XTickLabel = {sprintf('Control (n=%d)', numel(slCtrl)), sprintf('MOp (n=%d)', numel(slMOp))};
-ylabel(ax3, 'Baseline-adjusted slope');
-title(ax3, sprintf('Learning speed  ranksum p=%.2g', slopeP));
+ax3.XTickLabel = {sprintf('Control (n=%d)', numel(dCtrl)), sprintf('Inhibited (n=%d)', numel(dInhib))};
+ylabel(ax3, '\DeltaPerf');
+title(ax3, sprintf('Speed  p=%.2g', speedP));
 box(ax3,'on');
 
 % 5.4 time-to-criterion (KM-style)
@@ -232,10 +249,10 @@ hold(ax4,'on');
 stairs(ax4, [0; xn], [0; 1-sn], 'LineWidth', 1.8);
 stairs(ax4, [0; xm], [0; 1-sm], 'LineWidth', 1.8);
 ylim(ax4, [0 1]);
-xlabel(ax4, 'Session to criterion');
-ylabel(ax4, sprintf('Fraction reached (Perf \\geq %.0f%%)', 100*thr));
-title(ax4, sprintf('Time-to-criterion (censored)  thr=%.0f%%', 100*thr));
-legend(ax4, {sprintf('Control (n=%d)', sum(idxCtrl)), sprintf('MOp (n=%d)', sum(idxMOp))}, 'Location','southeast');
+xlabel(ax4, 'Block to criterion');
+ylabel(ax4, sprintf('Reached (\\geq %.0f%%)', 100*thr));
+title(ax4, 'Time to crit');
+legend(ax4, {sprintf('Control (n=%d)', sum(idxCtrl)), sprintf('Inhibited (n=%d)', sum(idxMOp))}, 'Location','southeast');
 box(ax4,'off');
 
 % Hide axes toolbar overlays in SVG
@@ -431,6 +448,31 @@ function [meanCells, semCells, nMice] = iLearningCurve(Sess, grpOrder)
 		meanCells{k} = m(:);
 		semCells{k}  = se(:);
 	end
+end
+
+function [dCtrl, dInhib] = iSessionDeltaPerfByGroup(SessLC)
+	% One session = one point, using delta from previous session.
+	% For each mouse: diff(Performance) across sessions.
+	dCtrl = nan(0,1);
+	dInhib = nan(0,1);
+	mice = unique(SessLC.Mouse);
+	for i = 1:numel(mice)
+		m = mice(i);
+		S = SessLC(SessLC.Mouse == m, :);
+		S = sortrows(S, 'Session');
+		if height(S) < 2
+			continue;
+		end
+		d = diff(double(S.Performance));
+		g = string(S.Group(1));
+		if g == "Control"
+			dCtrl = [dCtrl; d(:)]; %#ok<AGROW>
+		elseif g == "MOp"
+			dInhib = [dInhib; d(:)]; %#ok<AGROW>
+		end
+	end
+	dCtrl = dCtrl(isfinite(dCtrl));
+	dInhib = dInhib(isfinite(dInhib));
 end
 
 function SessOut = iFilterSessionsForLearningCurve(SessIn)

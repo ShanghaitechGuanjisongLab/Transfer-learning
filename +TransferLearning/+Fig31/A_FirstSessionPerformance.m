@@ -362,14 +362,14 @@ function iAssertNoDuplicateMiceAcrossSources(T, groupName)
 		return;
 	end
 
-	lines = strings(numel(dupMice), 1);
+	msgLines = strings(numel(dupMice), 1);
 	for idx = 1:numel(dupMice)
 		m = dupMice(idx);
 		src = unique(string(T.Source(T.Mouse == m)));
-		lines(idx) = m + " -> " + strjoin(src, ", ");
+		msgLines(idx) = m + " -> " + strjoin(src, ", ");
 	end
 
-	msg = "Duplicate mouse IDs across sources in group '" + string(groupName) + "':\n" + strjoin(lines, "\n");
+	msg = "Duplicate mouse IDs across sources in group '" + string(groupName) + "':\n" + strjoin(msgLines, "\n");
 	error('TransferLearningFig31:DuplicateMouse', char(msg));
 end
 
@@ -384,15 +384,15 @@ function iAssertNoOverlapBetweenGroups(naive, tran)
 		return;
 	end
 
-	lines = strings(numel(overlap), 1);
+	msgLines = strings(numel(overlap), 1);
 	for idx = 1:numel(overlap)
 		m = overlap(idx);
 		sNaive = unique(string(naive.Source(naive.Mouse == m)));
 		sTran = unique(string(tran.Source(tran.Mouse == m)));
-		lines(idx) = m + " -> Naive{" + strjoin(sNaive, ",") + "} Transfer{" + strjoin(sTran, ",") + "}";
+		msgLines(idx) = m + " -> Naive{" + strjoin(sNaive, ",") + "} Transfer{" + strjoin(sTran, ",") + "}";
 	end
 
-	msg = "Mouse IDs overlap between Naive and Transfer groups:\n" + strjoin(lines, "\n");
+	msg = "Mouse IDs overlap between Naive and Transfer groups:\n" + strjoin(msgLines, "\n");
 	error('TransferLearningFig31:OverlapMouse', char(msg));
 end
 

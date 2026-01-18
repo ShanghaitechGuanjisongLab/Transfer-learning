@@ -52,7 +52,7 @@ layerNames = string(["MOp2/3","MOp5"]);
 
 f = figure('Color','w', 'Name','Fig3.2f CellCorr vs Performance');
 try
-	MATLAB.Graphics.FigureAspectRatio(8,6,1/2);
+	MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 catch
 end
 TL = tiledlayout(2,2,'TileSpacing','compact','Padding','compact');
@@ -126,7 +126,7 @@ function iPanel_One(ax, rows, groupName, zLayer)
 
 	xlabel(ax,'');
 	ylabel(ax,'');
-	grid(ax,'on'); box(ax,'on');
+	grid(ax,'on'); box(ax,'off');
 
 	if nnz(use) == 0
 		return;

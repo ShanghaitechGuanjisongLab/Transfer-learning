@@ -1,18 +1,17 @@
-% 图3.2c：复用率与迁移阶段行为表现的相关性（transfer cohort 内）
+% 图3.2c（新口径预览）：复用率与迁移阶段行为表现的相关性（transfer cohort 内）
 %
 % Required computation:
 % - Median per-cell response must come from QueryNTATS:
 %     DS.QueryNTATS(..., UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median)
 %
-% Metric (per mouse):
-%   Reuse = P(TransferLight active | LearnedAudio active)
+% Metric (per mouse, updated):
+%   Reuse (1 s) = P(TransferLight active at 1 s | LearnedAudio active at 1 s)
 % where Learned/Transfer are pooled at the phase level:
 %   Learned:  Phase=Learned,  Stimulus=AudioWater
 %   Transfer: Phase=Transfer, Stimulus=LightWater
 %
 % Behavior (y-axis):
 %   Transfer phase performance = mean(Performance) from DataSet field
-%   (matched to AudioLightMedianNTATSReuseFigureExport.m).
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -20,10 +19,9 @@
 % Execution:
 %   IMPORTANT: MUST REMAIN A SCRIPT (do not convert to a function).
 %   Call it like a function via the package name (do NOT use run):
-%     TransferLearning.Fig32.C_ReuseVsPerformance
+%     TransferLearning.Fig32.C_ReuseVsPerformance_ActiveAt1s
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2c_ReuseVsPerformance.svg";
 excludeMice = string([]);
 
 % --- 0) Ensure project loaded (for UniExp)
@@ -46,22 +44,28 @@ DS = TransferLearning.AudioLightBaseline();
 xs = TransferLearning.Xs;
 xsSec = seconds(xs);
 baseMask = (xsSec >= -3) & (xsSec < 0);
-winMask  = (xsSec >= 0) & (xsSec <= 1);
+if ~any(baseMask)
+	error('Fig3_2c1s:BadTimeMask', 'Baseline(-3~0) has no samples.');
+end
+idx1 = find(xsSec == 1, 1, 'first');
+if isempty(idx1)
+	[~, idx1] = min(abs(xsSec - 1));
+end
 kSigma = 3;
 layerNames = string(["MOp2/3","MOp5"]);
 
-% --- Strictly match AudioLightMedianNTATSReuseFigureExport.m
+% --- Strictly match AudioLightMedianNTATSReuseFigureExport.m (active at 1 s)
 GLearn = iQueryNTATSOrEmpty(DS, struct('Stimulus','AudioWater','Phase','Learned'));
 GTran  = iQueryNTATSOrEmpty(DS, struct('Stimulus','LightWater','Phase','Transfer'));
 if isempty(GLearn) || isempty(GTran)
-	error('Fig3_2c:MissingGroups', 'QueryNTATS empty for Learned(AudioWater) or Transfer(LightWater).');
+	error('Fig3_2c1s:MissingGroups', 'QueryNTATS empty for Learned(AudioWater) or Transfer(LightWater).');
 end
 
 XLearn = iNtatsData(GLearn.NTATS);
 XTran  = iNtatsData(GTran.NTATS);
 
-learnAct = iMedianActive(XLearn, baseMask, winMask, kSigma);
-tranAct  = iMedianActive(XTran,  baseMask, winMask, kSigma);
+learnAct = iActiveAt1s(XLearn, baseMask, idx1, kSigma);
+tranAct  = iActiveAt1s(XTran,  baseMask, idx1, kSigma);
 
 C = DS.Cells;
 learnedCell = table(uint64(GLearn.CellUID), double(learnAct), 'VariableNames', {'CellUID','LearnedActiveMed'});
@@ -81,7 +85,7 @@ transferCell = transferCell(~ismember(transferCell.Mouse, excludeMice), :);
 medLT = innerjoin(learnedCell(:,{'Mouse','ZLayer','CellUID','LearnedActiveMed'}), ...
 	transferCell(:,{'Mouse','ZLayer','CellUID','TransferActiveMed'}), 'Keys', {'Mouse','ZLayer','CellUID'});
 
-% Performance: use dataset Performance field (same as AudioLightMedianNTATSReuseFigureExport)
+% Performance: use dataset Performance field
 PerfT = DS.TableQuery(["Mouse","Performance"], Design="LightWater", Phase="Transfer");
 PerfT.Mouse = string(PerfT.Mouse);
 [gM, mKeys] = findgroups(PerfT.Mouse);
@@ -120,11 +124,11 @@ for i = 1:height(mouseLayer)
 end
 
 if isempty(rows)
-	error('Fig3_2c:NoValidMice', 'No mice passed requirements.');
+	error('Fig3_2c1s:NoValidMice', 'No mice passed requirements.');
 end
 
 rows = sortrows(rows, {'ZLayer','Reuse'});
-assignin('base','Fig3_2c_ReuseVsPerformance_Summary', rows);
+assignin('base','Fig3_2c1s_ReuseVsPerformance_Summary', rows);
 
 % Spearman correlation by layer
 for iZ = 1:numel(layerNames)
@@ -139,11 +143,13 @@ for iZ = 1:numel(layerNames)
 	end
 	fprintf('Fig3.2c (%s) Spearman rho=%.3f, p=%.4g (n=%d)\n', zl, rho, p, nnz(mask));
 end
+%% 
 
+svgName = "Fig3_2c_ReuseVsPerformance_ActiveAt1s.svg";
 % Plot
-f = figure('Color','w', 'Name','Fig3.2c Reuse vs Performance (by layer)');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
-TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
+f = figure('Color','w', 'Name','Fig3.2c Reuse (1 s) vs Performance (by layer)');
+MATLAB.Graphics.FigureAspectRatio(1,1,1/2);
+TL = tiledlayout('flow','TileSpacing','compact','Padding','compact');
 
 axesList = gobjects(0,1);
 
@@ -201,9 +207,9 @@ try
 catch
 end
 
-sgtitle(TL, 'Reuse vs Transfer performance by ZLayer', 'Interpreter','none');
+sgtitle(TL, 'Reuse (1 s) vs Transfer performance by ZLayer', 'Interpreter','none');
 
-xlabel(TL, 'Reuse: P(Transfer active | Learned active)');
+xlabel(TL, 'Reuse (1 s): P(T|L)');
 ylabel(TL, 'Transfer phase performance');
 
 % Export (SVG only)
@@ -240,10 +246,9 @@ function X = iNtatsData(NT)
 	X = squeeze(X);
 end
 
-
-function act = iMedianActive(X, baseMask, winMask, kSigma)
+function act = iActiveAt1s(X, baseMask, idx1, kSigma)
 	baseMu = mean(X(:, baseMask), 2, 'omitnan');
 	baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
-	winMx = max(X(:, winMask), [], 2, 'omitnan');
-	act = winMx > (baseMu + kSigma .* baseSd);
+	val1 = X(:, idx1);
+	act = val1 > (baseMu + kSigma .* baseSd);
 end

@@ -370,14 +370,14 @@ function iAssertNoCrossSourceDuplicateMice(T, groupName)
 	nSrc = splitapply(@(x) numel(unique(string(x))), T.Source, G);
 	dup = mice(nSrc > 1);
 	if ~isempty(dup)
-		lines = strings(numel(dup),1);
+		msgLines = strings(numel(dup),1);
 		for i = 1:numel(dup)
 			m = dup(i);
 			srcs = unique(T.Source(T.Mouse == m));
-			lines(i) = m + ": " + strjoin(srcs, ",");
+			msgLines(i) = m + ": " + strjoin(srcs, ",");
 		end
 		error('Fig3_1b:DuplicateMouseAcrossSources', ...
-			'Group %s has duplicated mice across sources (should not happen).\n%s', char(string(groupName)), char(strjoin(lines, newline)));
+			'Group %s has duplicated mice across sources (should not happen).\n%s', char(string(groupName)), char(strjoin(msgLines, newline)));
 	end
 end
 
@@ -391,13 +391,13 @@ function iAssertNoMouseAppearsInMultipleGroups(T)
 	nG = splitapply(@(x) numel(unique(string(x))), T.Group, G);
 	dup = mice(nG > 1);
 	if ~isempty(dup)
-		lines = strings(numel(dup),1);
+		msgLines = strings(numel(dup),1);
 		for i = 1:numel(dup)
 			m = dup(i);
 			gs = unique(T.Group(T.Mouse == m));
-			lines(i) = m + ": " + strjoin(gs, ",");
+			msgLines(i) = m + ": " + strjoin(gs, ",");
 		end
-		error('Fig3_1b:MouseInMultipleGroups', 'Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(lines, newline)));
+		error('Fig3_1b:MouseInMultipleGroups', 'Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(msgLines, newline)));
 	end
 end
 
