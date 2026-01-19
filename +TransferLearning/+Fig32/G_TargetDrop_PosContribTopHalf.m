@@ -3,8 +3,8 @@ function G_TargetDrop_PosContribTopHalf
 % 图3.2g（按论文大纲口径）：
 % 剔除 Learned 阶段对相关性正贡献最高的 Top50% 细胞后，Transfer 相关性显著下降，且强于随机剔除对照（按层）。
 %
-% 数据来源（scratch 输出）：
-% - Scratch_TargetDrop_PosContribTopHalf_1s1p5_ByLayer
+% 数据来源（non-Scratch builder）：
+% - TransferLearning.Fig32.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -31,14 +31,7 @@ try
 catch
 end
 
-% --- Ensure scratch exists
-TransferLearning.Scratch.Transfer_CellCorr_Attribution_PosContribTopHalf_1s_1p5s_ByLayer();
-
-if evalin('base', "exist('Scratch_TargetDrop_PosContribTopHalf_1s1p5_ByLayer','var')") ~= 1
-	error('Fig3_2g_TargetDrop:Missing', 'Missing base var Scratch_TargetDrop_PosContribTopHalf_1s1p5_ByLayer.');
-end
-
-rows = evalin('base','Scratch_TargetDrop_PosContribTopHalf_1s1p5_ByLayer');
+rows = TransferLearning.Fig32.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer();
 rows.ZLayer = string(rows.ZLayer);
 
 layerNames = string(["MOp2/3","MOp5"]);

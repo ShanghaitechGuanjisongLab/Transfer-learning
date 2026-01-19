@@ -134,14 +134,14 @@ xlabel(axs(2,1), 'Reuse', 'Interpreter','none');
 xlabel(axs(2,2), 'CellCorr', 'Interpreter','none');
 
 % Global y label (move from per-axes)
-ylabel(tl, 'Learning speed (slope)', 'Interpreter','none');
-	tl.YLabel.String = 'Learning speed (DeltaNext)';
+% NOTE: Learning speed is forward difference DeltaNext = Perf(i+1)-Perf(i) within mouse.
+ylabel(tl, 'Learning speed (DeltaNext)', 'Interpreter','none');
 
 % Unify X limits (by column)
 iUnifyX(axs(:,1));
 iUnifyX(axs(:,2));
 
-sgtitle(tl, 'Reuse/CellCorr vs learning speed (\DeltaNext)', 'Interpreter','tex');
+sgtitle(tl, 'Reuse/CellCorr vs learning speed (DeltaNext)', 'Interpreter','none');
 tl.Title.String = '';
 
 % --- 4) Export SVG

@@ -187,6 +187,28 @@ ylabel(ax, 'Baseline-adjusted per-mouse slope');
 title(ax, 'Growth slope (LightWater, baseline-adjusted)');
 box(ax,'on');
 
+% p-value line (via MATLAB.Graphics.PLine)
+if isfinite(pSwarmAdj) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
+	S = scatter(ax, [ones(numel(xNaiveAdj),1); 2*ones(numel(xTranAdj),1)], [xNaiveAdj(:); xTranAdj(:)], ...
+		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+	try
+		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+	catch
+	end
+	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', pSwarmAdj), 0, ...
+		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+	try
+		MATLAB.Graphics.PLine(Descriptors);
+	catch
+	end
+	try
+		delete(S);
+	catch
+	end
+end
+
 
 % LME as supplementary info on the same figure
 text(ax, 1.5, min([xNaiveAdj; xTranAdj; 0]) - 0.02, sprintf('LME %s = %.3g [%.3g, %.3g], p=%.2g', coefName, beta, ci(1), ci(2), pval), ...

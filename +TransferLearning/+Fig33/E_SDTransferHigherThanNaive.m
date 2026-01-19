@@ -7,7 +7,7 @@
 %
 % Implementation:
 % - Use one-session-per-mouse (start-phase) design:
-%     TransferLearning.Scratch.NaiveVsTransfer_StdCells1p5_OneSessionStartPhase(targetSec)
+%     TransferLearning.Fig33.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(targetSec)
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -34,11 +34,8 @@ try
 catch
 end
 
-TransferLearning.Scratch.NaiveVsTransfer_StdCells1p5_OneSessionStartPhase(0.3);
-T03 = evalin('base', 'Scratch_NVST_OneSession_0p3_Table');
-
-TransferLearning.Scratch.NaiveVsTransfer_StdCells1p5_OneSessionStartPhase(1.5);
-T15 = evalin('base', 'Scratch_NVST_OneSession_1p5_Table');
+T03 = TransferLearning.Fig33.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(0.3);
+T15 = TransferLearning.Fig33.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(1.5);
 
 T03.Group = string(T03.Group);
 T15.Group = string(T15.Group);
@@ -125,5 +122,26 @@ function iPanel(ax, T, varName, ttl)
 	ax.XTick = [1 2];
 	ax.XTickLabel = {sprintf('Naive (n=%d)', numel(xN)), sprintf('Transfer (n=%d)', numel(xT))};
 	ylabel(ax, 'Inter-cell SD');
-	title(ax, sprintf('%s\nranksum p=%.3g', ttl, p), 'Interpreter','none');
+	title(ax, ttl, 'Interpreter','none');
+	% p-value line (via MATLAB.Graphics.PLine)
+	if isfinite(p) && ~isempty(xN) && ~isempty(xT)
+		S = scatter(ax, [ones(numel(xN),1); 2*ones(numel(xT),1)], [xN(:); xT(:)], ...
+			1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+		try
+			if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+			if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+			if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+		catch
+		end
+		Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', p), 0, ...
+			'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+		try
+			MATLAB.Graphics.PLine(Descriptors);
+		catch
+		end
+		try
+			delete(S);
+		catch
+		end
+	end
 end

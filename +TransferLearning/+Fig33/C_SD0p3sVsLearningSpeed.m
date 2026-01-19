@@ -2,7 +2,7 @@
 %
 % Implementation:
 % - Use session-level table from:
-%     TransferLearning.Scratch.SpeedVsSd2s_ByGroupLayerMissOnly(0.3)
+%     TransferLearning.Fig33.iBuildSpeedVsSd_ByGroupLayerMissOnly(0.3)
 % - Plot Spearman correlations for LearningSpeed_DeltaNext.
 %
 % Output:
@@ -30,10 +30,9 @@ try
 catch
 end
 
-TransferLearning.Scratch.SpeedVsSd2s_ByGroupLayerMissOnly(0.3);
-T = evalin('base', 'Scratch_SpeedVsSD0p3_Sessions');
+T = TransferLearning.Fig33.iBuildSpeedVsSd_ByGroupLayerMissOnly(0.3);
 if isempty(T)
-	error('Fig3_3c:Empty', 'Scratch_SpeedVsSD0p3_Sessions is empty.');
+	error('Fig3_3c:Empty', 'Speed-vs-SD table is empty.');
 end
 T.Group = string(T.Group);
 
@@ -112,6 +111,7 @@ function iScatter(ax, x, y)
 	x = double(x);
 	y = double(y);
 	use = isfinite(x) & isfinite(y);
+	setappdata(ax, 'HasFiniteXY', nnz(use) > 0);
 
 	hold(ax,'on');
 	box(ax,'off');
@@ -138,19 +138,49 @@ function iScatter(ax, x, y)
 end
 
 function iUnifyX(axs)
+	axs = axs(isgraphics(axs));
+	if isempty(axs)
+		return;
+	end
+	% Only unify axes that actually have finite points.
+	has = false(numel(axs), 1);
+	for i = 1:numel(axs)
+		try
+			if isappdata(axs(i), 'HasFiniteXY')
+				has(i) = logical(getappdata(axs(i), 'HasFiniteXY'));
+			else
+				ch = axs(i).Children;
+				for k = 1:numel(ch)
+					if isprop(ch(k), 'XData')
+						xd = ch(k).XData;
+						if isnumeric(xd) && any(isfinite(xd(:)))
+							has(i) = true;
+							break;
+						end
+					end
+				end
+			end
+		catch
+			has(i) = false;
+		end
+	end
+	axUse = axs(has);
+	if numel(axUse) < 2
+		return;
+	end
 	try
-		MATLAB.Graphics.UnifyAxesLims(axs, 'x');
+		MATLAB.Graphics.UnifyAxesLims(axUse, 'x');
 		return;
 	catch
 	end
 	try
-		xl = nan(numel(axs),2);
-		for i = 1:numel(axs)
-			xl(i,:) = xlim(axs(i));
+		xl = nan(numel(axUse),2);
+		for i = 1:numel(axUse)
+			xl(i,:) = xlim(axUse(i));
 		end
 		xl = [min(xl(:,1),[],'omitnan') max(xl(:,2),[],'omitnan')];
-		for i = 1:numel(axs)
-			xlim(axs(i), xl);
+		for i = 1:numel(axUse)
+			xlim(axUse(i), xl);
 		end
 	catch
 	end

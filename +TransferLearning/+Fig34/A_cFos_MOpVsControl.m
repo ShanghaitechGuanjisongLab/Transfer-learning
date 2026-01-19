@@ -99,6 +99,7 @@ accCtrl = nan(0,1);
 accMOp  = nan(0,1);
 accP = nan;
 accNote = "";
+statsOut = struct();
 if ismember('Phase', J.Properties.VariableNames)
 	J.Phase = string(J.Phase);
 	JT = J(J.Phase == "Transfer", :);
@@ -136,13 +137,11 @@ Sess = iAddSessionIndex(Sess);
 % per-mouse table
 perMouse = iPerMouseTable(Sess);
 
-% --- 4) Build summaries
-statsOut = struct();
-
 % 4.1 learning curve (session-level; each point = one session)
 % Use all LightWater sessions, excluding:
 %   - perf==0
 %   - the first perf==1 (100%) session and all sessions after it (per mouse)
+%   - plus the last step into ceiling (session immediately before the first perf==1)
 [grpOrder, grpNames] = iGroupOrder();
 SessLC = iFilterSessionsForLearningCurve(Sess);
 curveMean = cell(numel(grpOrder),1);
@@ -176,11 +175,16 @@ idxMOp  = perMouse.Group == "MOp";
 
 statsOut.AccuracyP = accP;
 
-% 4.3 learning speed (baseline-adjusted slope)
-% One session = one point; use the same sessions as panel 1.
-[dCtrl, dInhib] = iSessionDeltaPerfByGroup(SessLC);
-speedP = iRanksumSafe(dCtrl, dInhib);
-statsOut.SpeedP = speedP;
+% 4.3 learning speed (Fig3.1d style): per-mouse growth slope, baseline-adjusted
+[pmSlope, pSlopeAdj] = TransferLearning.Fig34.iPerMouseSlopeAdj(SessLC, ["Control","MOp"]);
+pmSlope.Group = string(pmSlope.Group);
+sCtrl  = pmSlope.SlopeAdj(pmSlope.Group == "Control");
+sInhib = pmSlope.SlopeAdj(pmSlope.Group == "MOp");
+sCtrl  = sCtrl(isfinite(sCtrl));
+sInhib = sInhib(isfinite(sInhib));
+speedP = pSlopeAdj;
+statsOut.SlopeAdjP = pSlopeAdj;
+statsOut.SpeedP = pSlopeAdj;
 
 % 4.4 time-to-criterion
 thr = 0.80;
@@ -202,9 +206,9 @@ hLines = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrd
 	'EdgeColors', GlobalOptimization.ColorAllocate(numel(grpOrder), [1,1,1;1,1,1]));
 lgdLabels = grpNames(:) + " n=" + string(curveN(:));
 legend(ax1, hLines, lgdLabels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(hLines));
-xlabel(ax1, 'Block');
-ylabel(ax1, 'Hit rate');
-title(ax1, 'Learning curve (LightWater)');
+xlabel(ax1, 'Session');
+ylabel(ax1, 'Performance');
+title(ax1, 'Learning curve');
 box(ax1,'off');
 
 % 5.2 accuracy day0
@@ -221,24 +225,62 @@ end
 ax2.XLim = [0.5 2.5];
 ax2.XTick = [1 2];
 ax2.XTickLabel = {sprintf('Control (n=%d)', numel(accCtrl)), sprintf('Inhibited (n=%d)', numel(accMOp))};
-ylabel(ax2, 'Perf');
-if isnan(accP)
-	title(ax2, 'Day0 accuracy');
-else
-	title(ax2, sprintf('Day0 accuracy  p=%.2g', accP));
+ylabel(ax2, 'Performance');
+title(ax2, 'First session');
+% p-value line (via MATLAB.Graphics.PLine)
+if isfinite(accP) && ~isempty(accCtrl) && ~isempty(accMOp)
+	S = scatter(ax2, [ones(numel(accCtrl),1); 2*ones(numel(accMOp),1)], [accCtrl(:); accMOp(:)], ...
+		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+	try
+		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+	catch
+	end
+	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', accP), 0, ...
+		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+	try
+		MATLAB.Graphics.PLine(Descriptors);
+	catch
+	end
+	try
+		delete(S);
+	catch
+	end
 end
 box(ax2,'on');
 
 % 5.3 learning speed
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
-swarmchart(ax3, ones(size(dCtrl)), dCtrl, 24, 'filled');
-swarmchart(ax3, 2*ones(size(dInhib)), dInhib, 24, 'filled');
+swarmchart(ax3, ones(size(sCtrl)),  sCtrl,  24, 'filled');
+swarmchart(ax3, 2*ones(size(sInhib)), sInhib, 24, 'filled');
 ax3.XLim = [0.5 2.5];
 ax3.XTick = [1 2];
-ax3.XTickLabel = {sprintf('Control (n=%d)', numel(dCtrl)), sprintf('Inhibited (n=%d)', numel(dInhib))};
-ylabel(ax3, '\DeltaPerf');
-title(ax3, sprintf('Speed  p=%.2g', speedP));
+ax3.XTickLabel = {sprintf('Control (n=%d)', numel(sCtrl)), sprintf('Inhibited (n=%d)', numel(sInhib))};
+ylabel(ax3, 'Adj. slope');
+title(ax3, 'Learning speed');
+% p-value line (via MATLAB.Graphics.PLine)
+if isfinite(speedP) && ~isempty(sCtrl) && ~isempty(sInhib)
+	S = scatter(ax3, [ones(numel(sCtrl),1); 2*ones(numel(sInhib),1)], [sCtrl(:); sInhib(:)], ...
+		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+	try
+		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+	catch
+	end
+	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', speedP), 0, ...
+		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+	try
+		MATLAB.Graphics.PLine(Descriptors);
+	catch
+	end
+	try
+		delete(S);
+	catch
+	end
+end
 box(ax3,'on');
 
 % 5.4 time-to-criterion (KM-style)
@@ -249,9 +291,9 @@ hold(ax4,'on');
 stairs(ax4, [0; xn], [0; 1-sn], 'LineWidth', 1.8);
 stairs(ax4, [0; xm], [0; 1-sm], 'LineWidth', 1.8);
 ylim(ax4, [0 1]);
-xlabel(ax4, 'Block to criterion');
-ylabel(ax4, sprintf('Reached (\\geq %.0f%%)', 100*thr));
-title(ax4, 'Time to crit');
+xlabel(ax4, 'Session to criterion');
+ylabel(ax4, 'Fraction reached');
+title(ax4, 'Time to criterion');
 legend(ax4, {sprintf('Control (n=%d)', sum(idxCtrl)), sprintf('Inhibited (n=%d)', sum(idxMOp))}, 'Location','southeast');
 box(ax4,'off');
 
@@ -478,7 +520,8 @@ end
 function SessOut = iFilterSessionsForLearningCurve(SessIn)
 	% Apply session-level exclusions per mouse:
 	% 1) Drop perf==0
-	% 2) Find first perf==1, and drop that session and all later sessions
+	% 2) Find first perf==1, and drop that session and all later sessions,
+	%    PLUS the last step into ceiling (session immediately before the first 1)
 	SessOut = SessIn;
 	SessOut = SessOut(isfinite(SessOut.Performance), :);
 	SessOut = SessOut(double(SessOut.Performance) > 0, :);
@@ -495,8 +538,9 @@ function SessOut = iFilterSessionsForLearningCurve(SessIn)
 		k100 = find(p >= 1, 1, 'first');
 		if isempty(k100)
 			keep(idxSorted) = true;
-		elseif k100 > 1
-			keep(idxSorted(1:k100-1)) = true;
+		elseif k100 > 2
+			% keep only strictly before the last step into ceiling
+			keep(idxSorted(1:k100-2)) = true;
 		end
 	end
 	SessOut = SessOut(keep, :);

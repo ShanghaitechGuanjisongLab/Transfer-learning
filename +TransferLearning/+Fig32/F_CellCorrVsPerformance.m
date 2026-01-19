@@ -6,8 +6,8 @@ function F_CellCorrVsPerformance
 % - Naive × (MOp2/3, MOp5)
 % - Transfer × (MOp2/3, MOp5)
 %
-% 数据来源（scratch 输出）：
-% - Scratch_CellCorr1s1p5_VsPerformance_Sessions
+% 数据来源（non-Scratch builder）：
+% - TransferLearning.Fig32.iBuildCellCorr1s1p5_VsPerformance_Sessions
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -34,17 +34,7 @@ try
 catch
 end
 
-% --- Ensure scratch exists
-try
-	TransferLearning.Scratch.NaiveTransfer_CellCorr_1s_1p5s_VsPerformance;
-catch
-end
-
-if evalin('base', "exist('Scratch_CellCorr1s1p5_VsPerformance_Sessions','var')") ~= 1
-	error('Fig3_2f_CellCorrPerf:Missing', 'Missing base var Scratch_CellCorr1s1p5_VsPerformance_Sessions.');
-end
-
-rows = evalin('base','Scratch_CellCorr1s1p5_VsPerformance_Sessions');
+rows = TransferLearning.Fig32.iBuildCellCorr1s1p5_VsPerformance_Sessions();
 rows.Group = string(rows.Group);
 rows.ZLayer = string(rows.ZLayer);
 

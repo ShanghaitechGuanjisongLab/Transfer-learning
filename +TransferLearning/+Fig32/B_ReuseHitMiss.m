@@ -278,26 +278,26 @@ for iZ = 1:min(numel(layerNames), numel(axesList))
 	end
 	pp = pvals(iZ);
 	if ~isfinite(pp)
-		pStr = 'p=n/a';
-	else
-		pStr = sprintf('p=%.3g', pp);
+		continue;
 	end
-
-	yl = ylim(ax);
-	yr = yl(2) - yl(1);
-	if ~(isfinite(yr) && yr > 0)
-		yr = 1;
+	try
+		% p-value line (via MATLAB.Graphics.PLine)
+		S = scatter(ax, [1; 2], [nan; nan], 1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+		try
+			if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+			if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+			if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+		except
+		end
+		Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', pp), 0, ...
+			'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+		MATLAB.Graphics.PLine(Descriptors);
+		try
+			delete(S);
+		catch
+		end
+	catch
 	end
-	yBar = yl(2) - 0.10 * yr;
-	h = 0.03 * yr;
-
-	% bracket between x=1 and x=2
-	line(ax, [1 2], [yBar yBar], 'Color', [0 0 0], 'LineWidth', 1);
-	line(ax, [1 1], [yBar-h yBar], 'Color', [0 0 0], 'LineWidth', 1);
-	line(ax, [2 2], [yBar-h yBar], 'Color', [0 0 0], 'LineWidth', 1);
-	text(ax, 1.5, yBar + 0.01 * yr, pStr, ...
-		'HorizontalAlignment','center', 'VerticalAlignment','bottom', ...
-		'Interpreter','none');
 end
 
 sgtitle(TL, 'Transfer phase Hit vs Miss (paired) by ZLayer (active at 1 s)', 'Interpreter','none');

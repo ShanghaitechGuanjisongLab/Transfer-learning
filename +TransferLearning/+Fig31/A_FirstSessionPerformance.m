@@ -120,16 +120,30 @@ ax.XLim = [0.5 2.5];
 ax.XTick = [1 2];
 ax.XTickLabel = {sprintf('Naive (n=%d)', numel(xNaive)), sprintf('Transfer (n=%d)', numel(xTran))};
 ylim(ax, [0 1]);
-ylabel(ax, 'Performance (first LightWater session)');
-title(ax, 'Naive vs Transfer');
+ylabel(ax, 'Performance');
+title(ax, 'First session');
 box(ax,'on');
 
-if isfinite(p)
-	txt = sprintf('ranksum p=%.2g', p);
-else
-	txt = 'ranksum p=NA';
+% p-value line (via MATLAB.Graphics.PLine)
+if isfinite(p) && ~isempty(xNaive) && ~isempty(xTran)
+	S = scatter(ax, [x1(:); x2(:)], [xNaive(:); xTran(:)], 1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+	try
+		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+	catch
+	end
+	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', p), 0, ...
+		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+	try
+		MATLAB.Graphics.PLine(Descriptors);
+	catch
+	end
+	try
+		delete(S);
+	catch
+	end
 end
-text(ax, 1.5, 0.98, txt, 'HorizontalAlignment','center', 'VerticalAlignment','top');
 
 % --- 5) Export
 try

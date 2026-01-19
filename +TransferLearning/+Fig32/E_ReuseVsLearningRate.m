@@ -14,9 +14,9 @@ function E_ReuseVsLearningRate
 % - 1/3 图 ylabel 写 Naive vs Transfer | Reuse vs CellCorr；2/4 图 ylabel 去掉
 % - 所有子图 box off
 %
-% Data sources (scratch outputs):
-% - Scratch_NVST_CellCorr_Sessions_1s1p5_ByLayer
-% - Scratch_T_ReuseVsCellCorr_PerMouseLayer_1s1p5
+% Data sources (non-Scratch builders):
+% - TransferLearning.Fig32.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer
+% - TransferLearning.Fig32.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -42,28 +42,12 @@ try
 catch
 end
 
-% --- Ensure required scratch tables exist
-try
-	TransferLearning.Scratch.NaiveVsTransfer_CellCorr_1s_1p5s;
-catch
-end
-try
-	TransferLearning.Scratch.Transfer_ReuseVsCellCorr_1s_1p5s;
-catch
-end
-
-if evalin('base', "exist('Scratch_NVST_CellCorr_Sessions_1s1p5_ByLayer','var')") ~= 1
-	error('Fig3_2e:MissingNVST', 'Missing base var Scratch_NVST_CellCorr_Sessions_1s1p5_ByLayer.');
-end
-if evalin('base', "exist('Scratch_T_ReuseVsCellCorr_PerMouseLayer_1s1p5','var')") ~= 1
-	error('Fig3_2e:MissingReuseCorr', 'Missing base var Scratch_T_ReuseVsCellCorr_PerMouseLayer_1s1p5.');
-end
-
-rowsNVST = evalin('base','Scratch_NVST_CellCorr_Sessions_1s1p5_ByLayer');
+% --- Build required tables (non-Scratch)
+rowsNVST = TransferLearning.Fig32.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer();
 rowsNVST.Group = string(rowsNVST.Group);
 rowsNVST.ZLayer = string(rowsNVST.ZLayer);
 
-rowsTR = evalin('base','Scratch_T_ReuseVsCellCorr_PerMouseLayer_1s1p5');
+rowsTR = TransferLearning.Fig32.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s();
 rowsTR.ZLayer = string(rowsTR.ZLayer);
 
 layerNames = string(["MOp2/3","MOp5"]);
