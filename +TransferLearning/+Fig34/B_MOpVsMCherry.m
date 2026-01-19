@@ -3,7 +3,8 @@
 % 4 子图：
 %   1) 学习曲线（所有 LightWater 会话，mean±SEM；MultiShadowedLines）
 %   2) 迁移首会话正确率（Phase=Transfer 的首个会话）
-%   3) 学习速度：每鼠一个 growth slope（Session vs Performance 的斜率），并做 baseline-adjusted（Fig3.1d 风格）
+%   3) 学习速度：每点=一个会话，ΔPerf=Perf(s)-Perf(s-1)；
+%      排除 Performance==0/1 的会话及其后的会话（对每只鼠分别截断）
 %   4) time-to-criterion（KM style，按 session index）
 %
 % 数据库：
@@ -111,14 +112,12 @@ tr_Gi  = perMouse.TransferFirstPerf(perMouse.Group == "hM4D(Gi)");
 [pTr, ~] = TransferLearning.Fig34.iRanksumSafe(tr_mCh, tr_Gi);
 statsOut.TransferFirstP = pTr;
 
-% Panel 3 per-mouse growth slope (baseline-adjusted, Fig3.1d style)
-[pmSlope, pSlopeAdj] = TransferLearning.Fig34.iPerMouseSlopeAdj(Sess, ["mCherry","hM4D(Gi)"]);
-pmSlope.Group = string(pmSlope.Group);
-s_mCh = pmSlope.SlopeAdj(pmSlope.Group == "mCherry");
-s_Gi  = pmSlope.SlopeAdj(pmSlope.Group == "hM4D(Gi)");
-s_mCh = s_mCh(isfinite(s_mCh));
-s_Gi  = s_Gi(isfinite(s_Gi));
-statsOut.SlopeAdjP = pSlopeAdj;
+% Panel 3 session-level delta perf
+Delta = TransferLearning.Fig34.iBuildSessionDeltaTable(Sess);
+d_mCh = Delta.DeltaPerf(Delta.Group == "mCherry");
+d_Gi  = Delta.DeltaPerf(Delta.Group == "hM4D(Gi)");
+[pDelta, ~] = TransferLearning.Fig34.iRanksumSafe(d_mCh, d_Gi);
+statsOut.DeltaPerfP = pDelta;
 
 % Panel 4 time-to-criterion
 thr = 0.80;
@@ -142,7 +141,7 @@ hLines = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrd
 lgdLabels = grpOrder(:) + " n=" + string(curveN(:));
 legend(ax1, hLines, lgdLabels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(hLines));
 xlabel(ax1, 'Session');
-ylabel(ax1, 'Performance');
+ylabel(ax1, 'Hit rate');
 title(ax1, 'Learning curve');
 box(ax1,'off');
 
@@ -161,7 +160,7 @@ end
 ax2.XLim = [0.5 2.5];
 ax2.XTick = [1 2];
 ax2.XTickLabel = {sprintf('mCherry (n=%d)', numel(tr_mCh)), sprintf('hM4D(Gi) (n=%d)', numel(tr_Gi))};
- ylabel(ax2, 'Performance');
+ylabel(ax2, 'Perf');
 title(ax2, 'First session');
 % p-value line (via MATLAB.Graphics.PLine)
 if isfinite(pTr) && ~isempty(tr_mCh) && ~isempty(tr_Gi)
@@ -186,26 +185,26 @@ if isfinite(pTr) && ~isempty(tr_mCh) && ~isempty(tr_Gi)
 end
 box(ax2,'on');
 
-% 5.3 growth slope (per mouse, baseline-adjusted)
+% 5.3 delta perf
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 try, if isprop(ax3,'Toolbar'), ax3.Toolbar.Visible = 'off'; end, catch, end
-s_mCh = s_mCh(isfinite(s_mCh));
-s_Gi  = s_Gi(isfinite(s_Gi));
-if ~isempty(s_mCh)
-	swarmchart(ax3, ones(numel(s_mCh),1), s_mCh, 20, 'filled');
+d_mCh = d_mCh(isfinite(d_mCh));
+d_Gi  = d_Gi(isfinite(d_Gi));
+if ~isempty(d_mCh)
+	swarmchart(ax3, ones(numel(d_mCh),1), d_mCh, 20, 'filled');
 end
-if ~isempty(s_Gi)
-	swarmchart(ax3, 2*ones(numel(s_Gi),1), s_Gi, 20, 'filled');
+if ~isempty(d_Gi)
+	swarmchart(ax3, 2*ones(numel(d_Gi),1), d_Gi, 20, 'filled');
 end
 ax3.XLim = [0.5 2.5];
 ax3.XTick = [1 2];
-ax3.XTickLabel = {sprintf('mCherry (n=%d)', numel(s_mCh)), sprintf('hM4D(Gi) (n=%d)', numel(s_Gi))};
-ylabel(ax3, 'Adj. slope');
+ax3.XTickLabel = {sprintf('mCherry (n=%d)', numel(d_mCh)), sprintf('hM4D(Gi) (n=%d)', numel(d_Gi))};
+ylabel(ax3, 'Learning speed (DeltaNext)', 'Interpreter','none');
 title(ax3, 'Learning speed');
 % p-value line (via MATLAB.Graphics.PLine)
-if isfinite(pSlopeAdj) && ~isempty(s_mCh) && ~isempty(s_Gi)
-	S = scatter(ax3, [ones(numel(s_mCh),1); 2*ones(numel(s_Gi),1)], [s_mCh(:); s_Gi(:)], ...
+if isfinite(pDelta) && ~isempty(d_mCh) && ~isempty(d_Gi)
+	S = scatter(ax3, [ones(numel(d_mCh),1); 2*ones(numel(d_Gi),1)], [d_mCh(:); d_Gi(:)], ...
 		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 	try
 		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
@@ -213,7 +212,7 @@ if isfinite(pSlopeAdj) && ~isempty(s_mCh) && ~isempty(s_Gi)
 		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 	catch
 	end
-	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', pSlopeAdj), 0, ...
+	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', pDelta), 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 	try
 		MATLAB.Graphics.PLine(Descriptors);
@@ -241,9 +240,9 @@ for k = 1:numel(grpOrder)
 		stairs(ax4, xKM, 1 - yKM, 'LineWidth', 1.5);
 	end
 end
-xlabel(ax4, 'Session to criterion');
+xlabel(ax4, 'Session');
 ylabel(ax4, 'Fraction reached');
-title(ax4, 'Time to criterion');
+title(ax4, sprintf('Reached criterion (%.0f%%)', thr*100));
 legend(ax4, grpOrder, 'Location', 'best');
 box(ax4,'off');
 

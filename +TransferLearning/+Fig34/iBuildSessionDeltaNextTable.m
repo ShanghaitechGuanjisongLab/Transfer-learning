@@ -9,8 +9,7 @@ function Delta = iBuildSessionDeltaNextTable(Sess)
 % Filtering rule (per mouse; consistent with Fig3.3 session filtering):
 %   1) Drop ALL sessions with Perf==0.
 %   2) Find first session where Perf==1, and drop that session AND all later
-%      sessions, PLUS the last step into ceiling (the session immediately
-%      before the first Perf==1).
+%      sessions (keep the last step immediately before reaching ceiling).
 %   3) Enforce 0<Perf<1 after filtering.
 %   4) Compute forward differences between remaining consecutive sessions.
 %
@@ -59,17 +58,17 @@ for i = 1:numel(mice)
         continue;
     end
 
-    % 2) Drop ceiling segment: first Perf==1 and later, plus the last step into ceiling
+    % 2) Drop ceiling segment: first Perf==1 and later (keep the last pre-ceiling step)
     i100 = find(isfinite(perf) & (perf >= oneTol), 1, 'first');
     if ~isempty(i100)
         if i100 <= 1
             % first remaining session is already ceiling -> drop all
             continue;
         end
-        % drop from (i100-1) onward
-        S = S(1:i100-2, :);
-        dt = dt(1:i100-2);
-        perf = perf(1:i100-2);
+        % drop from i100 onward
+        S = S(1:i100-1, :);
+        dt = dt(1:i100-1);
+        perf = perf(1:i100-1);
     end
     if height(S) < 2
         continue;

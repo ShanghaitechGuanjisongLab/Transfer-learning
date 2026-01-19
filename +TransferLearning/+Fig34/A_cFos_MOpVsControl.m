@@ -175,16 +175,14 @@ idxMOp  = perMouse.Group == "MOp";
 
 statsOut.AccuracyP = accP;
 
-% 4.3 learning speed (Fig3.1d style): per-mouse growth slope, baseline-adjusted
-[pmSlope, pSlopeAdj] = TransferLearning.Fig34.iPerMouseSlopeAdj(SessLC, ["Control","MOp"]);
-pmSlope.Group = string(pmSlope.Group);
-sCtrl  = pmSlope.SlopeAdj(pmSlope.Group == "Control");
-sInhib = pmSlope.SlopeAdj(pmSlope.Group == "MOp");
-sCtrl  = sCtrl(isfinite(sCtrl));
-sInhib = sInhib(isfinite(sInhib));
-speedP = pSlopeAdj;
-statsOut.SlopeAdjP = pSlopeAdj;
-statsOut.SpeedP = pSlopeAdj;
+% 4.3 learning speed: session-level DeltaNext (one session -> one point)
+Delta = TransferLearning.Fig34.iBuildSessionDeltaNextTable(SessLC);
+Delta.Group = string(Delta.Group);
+dCtrl  = Delta.DeltaPerf(Delta.Group == "Control");
+dInhib = Delta.DeltaPerf(Delta.Group == "MOp");
+[speedP, ~] = TransferLearning.Fig34.iRanksumSafe(dCtrl, dInhib);
+statsOut.DeltaNextP = speedP;
+statsOut.SpeedP = speedP;
 
 % 4.4 time-to-criterion
 thr = 0.80;
@@ -253,16 +251,22 @@ box(ax2,'on');
 % 5.3 learning speed
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
-swarmchart(ax3, ones(size(sCtrl)),  sCtrl,  24, 'filled');
-swarmchart(ax3, 2*ones(size(sInhib)), sInhib, 24, 'filled');
+dCtrl = dCtrl(isfinite(dCtrl));
+dInhib = dInhib(isfinite(dInhib));
+if ~isempty(dCtrl)
+	swarmchart(ax3, ones(numel(dCtrl),1), dCtrl,  24, 'filled');
+end
+if ~isempty(dInhib)
+	swarmchart(ax3, 2*ones(numel(dInhib),1), dInhib, 24, 'filled');
+end
 ax3.XLim = [0.5 2.5];
 ax3.XTick = [1 2];
-ax3.XTickLabel = {sprintf('Control (n=%d)', numel(sCtrl)), sprintf('Inhibited (n=%d)', numel(sInhib))};
-ylabel(ax3, 'Adj. slope');
+ax3.XTickLabel = {sprintf('Control (n=%d)', numel(dCtrl)), sprintf('Inhibited (n=%d)', numel(dInhib))};
+ ylabel(ax3, 'Learning speed (DeltaNext)', 'Interpreter','none');
 title(ax3, 'Learning speed');
 % p-value line (via MATLAB.Graphics.PLine)
-if isfinite(speedP) && ~isempty(sCtrl) && ~isempty(sInhib)
-	S = scatter(ax3, [ones(numel(sCtrl),1); 2*ones(numel(sInhib),1)], [sCtrl(:); sInhib(:)], ...
+if isfinite(speedP) && ~isempty(dCtrl) && ~isempty(dInhib)
+	S = scatter(ax3, [ones(numel(dCtrl),1); 2*ones(numel(dInhib),1)], [dCtrl(:); dInhib(:)], ...
 		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 	try
 		if isprop(S, 'HitTest'); S.HitTest = 'off'; end

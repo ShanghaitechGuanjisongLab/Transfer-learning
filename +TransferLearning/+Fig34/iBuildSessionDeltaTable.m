@@ -1,12 +1,8 @@
 function Delta = iBuildSessionDeltaTable(Sess)
 % Build session-level delta performance table.
 % Each row: one session for one mouse with DeltaPerf = Perf(s)-Perf(s-1).
-% Rule (per mouse):
-%   1) Exclude ALL sessions with Perf==0.
-%   2) Exclude the first session where Perf==1 and all sessions after it.
-%      (i.e., keep only sessions with 0<Perf<1, before first Perf==1.)
-%   3) Compute DeltaPerf between remaining consecutive sessions and drop the
-%      first session per mouse (so Delta is defined).
+% Rule: exclude sessions with Perf==0 or 1 and all sessions after the first
+% occurrence of Perf==0 or 1 (per mouse). Also drops the first session per mouse.
 
 Delta = table();
 if isempty(Sess)
@@ -31,13 +27,8 @@ for i = 1:numel(mice)
     S = sortrows(S, {'DateTime'});
     perf = double(S.Performance);
 
-    % 1) Drop all-zero sessions anywhere
-    keep = (perf ~= 0) & isfinite(perf);
-    S = S(keep, :);
-    perf = perf(keep);
-
-    % 2) Truncate at first all-correct session (exclude it and after)
-    jCut = find(perf == 1, 1, 'first');
+    % Find first all-correct/all-wrong session; cut at that point (exclude it and after)
+    jCut = find(perf == 0 | perf == 1, 1, 'first');
     if ~isempty(jCut)
         S = S(1:jCut-1, :);
         perf = perf(1:jCut-1);
@@ -57,8 +48,8 @@ for i = 1:numel(mice)
     T.PrevPerformance = perf(1:end-1);
     T.DeltaPerf = deltaPerf;
 
-    % Safety: keep finite deltas and ensure current performance is strictly between 0 and 1.
-    keep = isfinite(T.DeltaPerf) & (T.Performance > 0) & (T.Performance < 1);
+    % Exclude sessions where current perf is 0 or 1 (shouldn't happen after cut, but keep safe)
+    keep = isfinite(T.DeltaPerf) & T.Performance ~= 0 & T.Performance ~= 1;
     T = T(keep,:);
 
     out{i} = T;

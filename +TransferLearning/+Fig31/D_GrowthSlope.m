@@ -1,8 +1,10 @@
 % 图3.1d：增长斜率差异
 %
 % Plot: per-mouse growth slope (one dot per mouse), baseline-adjusted via
-% residualization against baseline performance, + ranksum p-value.
-% LME (supplementary on figure):
+% residualization against baseline performance.
+% P-value annotation on figure MUST use LME p-value (via MATLAB.Graphics.PLine).
+% (Ranksum p-values are still computed and saved to statsOut for reference.)
+% LME:
 %   Perf ~ 1 + Session + Group + Session:Group + BaselinePerf + Session:BaselinePerf + (1+Session|Mouse)
 %
 % Cohorts (consistent with Fig3.1a/3.1b/3.1c):
@@ -187,8 +189,9 @@ ylabel(ax, 'Baseline-adjusted per-mouse slope');
 title(ax, 'Growth slope (LightWater, baseline-adjusted)');
 box(ax,'on');
 
-% p-value line (via MATLAB.Graphics.PLine)
-if isfinite(pSwarmAdj) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
+
+% p-value line (via MATLAB.Graphics.PLine) — MUST be LME p-value
+if isfinite(pval) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
 	S = scatter(ax, [ones(numel(xNaiveAdj),1); 2*ones(numel(xTranAdj),1)], [xNaiveAdj(:); xTranAdj(:)], ...
 		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 	try
@@ -197,7 +200,7 @@ if isfinite(pSwarmAdj) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
 		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 	catch
 	end
-	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', pSwarmAdj), 0, ...
+	Descriptors = table(S, 0, 0, "LME p=" + sprintf('%.3g', pval), 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 	try
 		MATLAB.Graphics.PLine(Descriptors);
@@ -210,9 +213,6 @@ if isfinite(pSwarmAdj) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
 end
 
 
-% LME as supplementary info on the same figure
-text(ax, 1.5, min([xNaiveAdj; xTranAdj; 0]) - 0.02, sprintf('LME %s = %.3g [%.3g, %.3g], p=%.2g', coefName, beta, ci(1), ci(2), pval), ...
-	'HorizontalAlignment','center', 'VerticalAlignment','bottom', 'Interpreter','none');
 
 % --- 5) Export (SVG only)
 try

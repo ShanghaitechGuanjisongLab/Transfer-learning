@@ -50,29 +50,25 @@ TL = tiledlayout(2,2,'TileSpacing','compact','Padding','compact');
 groups = string(["Naive","Transfer"]);
 
 ax1 = nexttile(TL,1); hold(ax1,'on'); iHideToolbar(ax1);
-iPanel_One(ax1, rows, groups(1), layerNames(1));
-
-title(ax1, layerNames(1));
+[rho1, p1] = iPanel_One(ax1, rows, groups(1), layerNames(1));
+title(ax1, iPanelTitle(layerNames(1), rho1, p1), 'Interpreter','tex');
 ax1.XAxis.Visible = 'off';
 ax1.YLabel.String = 'Naive';
 
 ax2 = nexttile(TL,2); hold(ax2,'on'); iHideToolbar(ax2);
-iPanel_One(ax2, rows, groups(1), layerNames(2));
-
-title(ax2, layerNames(2));
+[rho2, p2] = iPanel_One(ax2, rows, groups(1), layerNames(2));
+title(ax2, iPanelTitle(layerNames(2), rho2, p2), 'Interpreter','tex');
 ax2.XAxis.Visible = 'off';
 ax2.YAxis.Visible = 'off';
 
 ax3 = nexttile(TL,3); hold(ax3,'on'); iHideToolbar(ax3);
-iPanel_One(ax3, rows, groups(2), layerNames(1));
-
-title(ax3, '');
+[rho3, p3] = iPanel_One(ax3, rows, groups(2), layerNames(1));
+title(ax3, iPanelTitle(layerNames(1), rho3, p3), 'Interpreter','tex');
 ax3.YLabel.String = 'Transfer';
 
 ax4 = nexttile(TL,4); hold(ax4,'on'); iHideToolbar(ax4);
-iPanel_One(ax4, rows, groups(2), layerNames(2));
-
-title(ax4, '');
+[rho4, p4] = iPanel_One(ax4, rows, groups(2), layerNames(2));
+title(ax4, iPanelTitle(layerNames(2), rho4, p4), 'Interpreter','tex');
 ax4.YAxis.Visible = 'off';
 
 % Global labels on tiledlayout
@@ -107,8 +103,7 @@ catch ME
 end
 
 %% --- local helpers
-
-function iPanel_One(ax, rows, groupName, zLayer)
+function [rho, p] = iPanel_One(ax, rows, groupName, zLayer)
 	R = rows(rows.Group==string(groupName) & rows.ZLayer==string(zLayer), :);
 	x = double(R.Performance);
 	y = double(R.CellCorr_1s1p5s);
@@ -118,6 +113,8 @@ function iPanel_One(ax, rows, groupName, zLayer)
 	ylabel(ax,'');
 	grid(ax,'on'); box(ax,'off');
 
+	rho = NaN;
+	p = NaN;
 	if nnz(use) == 0
 		return;
 	end
@@ -131,11 +128,18 @@ function iPanel_One(ax, rows, groupName, zLayer)
 	catch
 	end
 
-	rho = NaN; p = NaN;
 	if nnz(use) >= 4 && std(x(use))>0 && std(y(use))>0
 		[rho, p] = corr(x(use), y(use), 'type','Spearman');
 	end
 	fprintf('Fig3.2f %s %s: Spearman rho=%.3f p=%.4g (n=%d)\n', groupName, zLayer, rho, p, nnz(use));
+end
+
+function t = iPanelTitle(layerName, rho, p)
+	if isfinite(rho) && isfinite(p)
+		t = sprintf('%s  \\rho=%.2f  P=%.2g', layerName, rho, p);
+	else
+		t = sprintf('%s  \\rho=NA  P=NA', layerName);
+	end
 end
 
 function iHideToolbar(ax)

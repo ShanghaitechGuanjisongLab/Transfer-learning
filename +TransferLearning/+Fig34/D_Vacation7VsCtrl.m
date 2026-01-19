@@ -112,7 +112,7 @@ for i = 1:height(Sess)
 		DS = V7DS;
 	end
 	
-	[reuse, nReuse] = iReuse1s_LearnedAudio_to_TransferLight(DS, m, dt, idx1, baseMask, kSigma);
+	[reuse, nReuse] = iReuse1s_LearnedAudio_to_TransferLight(DS, m, dt, idx1, baseMask, kSigma, "MOp2/3");
 	keepUID = iLearnedActiveCellUIDs_1s(DS, m, idx1, baseMask, kSigma);
 	[meanCurve, nCellZ] = iMeanCurveZScore(DS, m, dt, keepUID);
 	sd15 = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
@@ -198,12 +198,12 @@ grid(ax2,'on');
 box(ax2,'off');
 legend(ax2, 'Location','best');
 
-% 5.3 Reuse(1s)
+% 5.3 Reuse(1s) (MOp2/3)
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 iHideToolbar(ax3);
-iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), {'Ctrl','Vacation7'}, 'Reuse(1s)');
-title(ax3, 'Reuse(1s)');
+iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), {'Ctrl','Vacation7'}, 'Reuse(1s) (MOp2/3)');
+title(ax3, 'Reuse');
 try
 	iPValuePLineScatter(ax3, 1, 2, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), pReuse);
 catch
@@ -215,7 +215,7 @@ ax4 = nexttile(tlo, 4);
 hold(ax4,'on');
 iHideToolbar(ax4);
 iSwarm2(ax4, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), {'Ctrl','Vacation7'}, 'Inter-cell SD @1.5 s (MOp5)');
-title(ax4, 'Stability @1.5 s (MOp5)');
+title(ax4, 'Stability');
 try
 	iPValuePLineScatter(ax4, 1, 2, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), pSD);
 catch
@@ -394,7 +394,7 @@ catch
 end
 end
 
-function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, transferDT, idx1, baseMask, kSigma)
+function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, transferDT, idx1, baseMask, kSigma, zLayer)
 % Reuse(1s) = P(TransferLight active@1s | LearnedAudio active@1s)
 % Active predicate matches Fig3.2c: Z(1s) > mean(Z(-3~0)) + kSigma*std(Z(-3~0)) on Median NTATS ZScore.
 reuse = NaN;
@@ -422,6 +422,10 @@ try
 	transferCell = table(uint64(GTran.CellUID), logical(actT), 'VariableNames', {'CellUID','TransferActive'});
 	
 	LT = innerjoin(learnedCell, transferCell, 'Keys','CellUID');
+	% Layer filter (uniform requirement): keep only the specified ZLayer (e.g., MOp2/3)
+	if nargin >= 7 && strlength(string(zLayer)) > 0
+		LT = iFilterTableByZLayer(DS, LT, string(zLayer));
+	end
 	nCells = height(LT);
 	if nCells < 10
 		reuse = NaN;
@@ -436,6 +440,34 @@ try
 catch
 	reuse = NaN;
 	nCells = NaN;
+end
+
+function T = iFilterTableByZLayer(DS, T, zLayer)
+% Filter a table with CellUID by DS.Cells.ZLayer.
+try
+	if isempty(T) || ~ismember('CellUID', T.Properties.VariableNames)
+		return;
+	end
+	if ~isprop(DS, 'Cells')
+		return;
+	end
+	C = DS.Cells;
+	need = ["CellUID","ZLayer"];
+	if ~all(ismember(need, string(C.Properties.VariableNames)))
+		return;
+	end
+	uids = uint64(T.CellUID);
+	[tf, loc] = ismember(uids, uint64(C.CellUID));
+	if ~any(tf)
+		T = T([],:);
+		return;
+	end
+	z = strings(numel(uids), 1);
+	z(tf) = string(C.ZLayer(loc(tf)));
+	keep = (z == string(zLayer));
+	T = T(keep, :);
+catch
+end
 end
 end
 

@@ -215,6 +215,8 @@ ylabel(TL, 'Reuse (1 s)');
 axesList = gobjects(0,1);
 pvals = nan(numel(layerNames),1);
 nPairs = zeros(numel(layerNames),1);
+hitVals = cell(numel(layerNames),1);
+missVals = cell(numel(layerNames),1);
 
 for iZ = 1:numel(layerNames)
 	zl = layerNames(iZ);
@@ -226,6 +228,8 @@ for iZ = 1:numel(layerNames)
 	x = R.ReuseHit;
 	y = R.ReuseMiss;
 	mask = isfinite(x) & isfinite(y);
+	hitVals{iZ} = x(mask);
+	missVals{iZ} = y(mask);
 	pp = NaN;
 	if nnz(mask) >= 4
 		pp = signrank(x(mask), y(mask), 'tail','right');
@@ -282,7 +286,13 @@ for iZ = 1:min(numel(layerNames), numel(axesList))
 	end
 	try
 		% p-value line (via MATLAB.Graphics.PLine)
-		S = scatter(ax, [1; 2], [nan; nan], 1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+		xh = hitVals{iZ};
+		ym = missVals{iZ};
+		if isempty(xh) || isempty(ym)
+			continue;
+		end
+		S = scatter(ax, [ones(numel(xh),1); 2*ones(numel(ym),1)], [xh(:); ym(:)], ...
+			1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 		try
 			if isprop(S, 'HitTest'); S.HitTest = 'off'; end
 			if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end

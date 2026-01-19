@@ -117,23 +117,23 @@ for i = 1:height(Sess)
 	m = string(Sess.Mouse(i));
 	dt = Sess.DateTime(i);
 	grp = string(Sess.Group(i));
-	
+
 	if grp=="Ctrl"
 		DS = CtrlDS;
 	else
 		DS = THDS;
 	end
-	
+
 	% Panel2筛选：只保留 Learned(AudioWater) 阶段 1s 活跃的细胞（MOp5）
 	uidLearnActive = iLearnedAudioActiveCellUIDs_At1s(DS, m, baseMask, idx1, kSigma, "MOp5");
 	[meanCurve, nCellZ] = iMeanCurveZScore(DS, m, dt, "MOp5", uidLearnActive);
 	% Panel3复用率：只看“首个 Transfer 会话”的复用率
 	% Reuse(1s)=P(TransferLight(active@1s in THIS session) | LearnedAudio active@1s)
-	% NOTE: 不分层，所有细胞都计入复用率
-	reuse = iReuseRate_1s_FirstTransferSession(DS, m, dt, baseMask, idx1, kSigma, "");
+	% NOTE: 统一口径：Reuse 一律用 MOp2/3 层
+	reuse = iReuseRate_1s_FirstTransferSession(DS, m, dt, baseMask, idx1, kSigma, "MOp2/3");
 	sd03 = iStdCellsAt_DeltaF(DS, m, dt, idx03, "MOp5");
 	sd15 = iStdCellsAt_DeltaF(DS, m, dt, idx15, "MOp5");
-	
+
 	rows = [rows; table(m, dt, grp, nCellZ, {meanCurve}, reuse, sd03, sd15, ...
 		'VariableNames', rows.Properties.VariableNames)]; %#ok<AGROW>
 end
@@ -258,8 +258,8 @@ legend(ax2, {'Ctrl','TH'}, 'Location','best');
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 iHideToolbar(ax3);
-iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxTH), {'Ctrl','TH'}, 'Reuse(1s)', pReuse);
-title(ax3, 'Reuse(1s)');
+iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxTH), {'Ctrl','TH'}, 'Reuse(1s) (MOp2/3)', pReuse);
+title(ax3, 'Reuse');
 grid(ax3,'on');
 
 % 5.4 Stability: SD across cells (DeltaF), MOp5 only (ALL LightWater sessions)
@@ -267,7 +267,7 @@ ax4 = nexttile(tlo, 4);
 hold(ax4,'on');
 iHideToolbar(ax4);
 iSwarm2(ax4, rowsLW.SD_MOp5_1p5(idxCtrlLW), rowsLW.SD_MOp5_1p5(idxTHLW), {'Ctrl','TH'}, 'Inter-cell SD @1.5 s (MOp5)', pSD15_LW);
-title(ax4, 'Stability @1.5 s (MOp5)');
+title(ax4, 'Stability');
 grid(ax4,'on');
 
 % Hide axes toolbar overlays in SVG
@@ -301,894 +301,894 @@ end
 
 %% --- local functions
 function Sess = iPhaseSessionsOnePerMouse(DS, phaseName, stimName)
-% Return table(Mouse, DateTime) for Phase + Stimulus.
-phaseName = string(phaseName);
-stimName = string(stimName);
-Sess = table(string.empty(0,1), NaT(0,1), 'VariableNames', {'Mouse','DateTime'});
-T = iTableQueryOrEmpty(DS, ["Mouse","DateTime","Phase","Stimulus"], Phase=phaseName, Stimulus=stimName);
-if isempty(T)
-	return;
-end
-T.Mouse = string(T.Mouse);
-T.Phase = string(T.Phase);
-if ismember('Stimulus', T.Properties.VariableNames)
-	T.Stimulus = string(T.Stimulus);
-end
-T.DateTime = iNormalizeDateTime(T.DateTime);
-T = T(~ismissing(T.Mouse) & ~ismissing(T.DateTime), :);
-if isempty(T)
-	return;
-end
-
-% Unique sessions then drop mixed (AudioWater present in same session)
-Sess = unique(T(:,{'Mouse','DateTime'}), 'rows');
-Sess = sortrows(Sess, ["Mouse","DateTime"]);
-Sess = iDropMixedSessions(DS, Sess);
-if isempty(Sess)
-	return;
-end
-
-% One session per mouse: earliest session within phase
-mice = unique(Sess.Mouse);
-keep = false(height(Sess),1);
-for iM = 1:numel(mice)
-	m = mice(iM);
-	rowsM = find(Sess.Mouse==m);
-	if isempty(rowsM)
-		continue;
+	% Return table(Mouse, DateTime) for Phase + Stimulus.
+	phaseName = string(phaseName);
+	stimName = string(stimName);
+	Sess = table(string.empty(0,1), NaT(0,1), 'VariableNames', {'Mouse','DateTime'});
+	T = iTableQueryOrEmpty(DS, ["Mouse","DateTime","Phase","Stimulus"], Phase=phaseName, Stimulus=stimName);
+	if isempty(T)
+		return;
 	end
-	[~, k] = min(Sess.DateTime(rowsM));
-	keep(rowsM(k)) = true;
-end
-Sess = Sess(keep, :);
+	T.Mouse = string(T.Mouse);
+	T.Phase = string(T.Phase);
+	if ismember('Stimulus', T.Properties.VariableNames)
+		T.Stimulus = string(T.Stimulus);
+	end
+	T.DateTime = iNormalizeDateTime(T.DateTime);
+	T = T(~ismissing(T.Mouse) & ~ismissing(T.DateTime), :);
+	if isempty(T)
+		return;
+	end
+
+	% Unique sessions then drop mixed (AudioWater present in same session)
+	Sess = unique(T(:,{'Mouse','DateTime'}), 'rows');
+	Sess = sortrows(Sess, ["Mouse","DateTime"]);
+	Sess = iDropMixedSessions(DS, Sess);
+	if isempty(Sess)
+		return;
+	end
+
+	% One session per mouse: earliest session within phase
+	mice = unique(Sess.Mouse);
+	keep = false(height(Sess),1);
+	for iM = 1:numel(mice)
+		m = mice(iM);
+		rowsM = find(Sess.Mouse==m);
+		if isempty(rowsM)
+			continue;
+		end
+		[~, k] = min(Sess.DateTime(rowsM));
+		keep(rowsM(k)) = true;
+	end
+	Sess = Sess(keep, :);
 end
 
 function Sess = iAllLightWaterSessions(DS)
-% Return unique sessions (Mouse, DateTime) for ALL LightWater blocks.
-Sess = table(string.empty(0,1), NaT(0,1), 'VariableNames', {'Mouse','DateTime'});
-T = table();
-try
-	T = DS.TableQuery(["Mouse","DateTime","Stimulus"], Stimulus="LightWater");
-catch
+	% Return unique sessions (Mouse, DateTime) for ALL LightWater blocks.
+	Sess = table(string.empty(0,1), NaT(0,1), 'VariableNames', {'Mouse','DateTime'});
+	T = table();
 	try
-		T = DS.TableQuery(["Mouse","DateTime","Design"], Design="LightWater");
+		T = DS.TableQuery(["Mouse","DateTime","Stimulus"], Stimulus="LightWater");
 	catch
-		T = table();
+		try
+			T = DS.TableQuery(["Mouse","DateTime","Design"], Design="LightWater");
+		catch
+			T = table();
+		end
 	end
-end
-if isempty(T)
-	return;
-end
-T.Mouse = string(T.Mouse);
-T.DateTime = iNormalizeDateTime(T.DateTime);
-T = T(~ismissing(T.Mouse) & ~ismissing(T.DateTime), :);
-if isempty(T)
-	return;
-end
-Sess = unique(T(:, {'Mouse','DateTime'}), 'rows');
-Sess = sortrows(Sess, ["Mouse","DateTime"]);
-Sess = iDropMixedSessions(DS, Sess);
+	if isempty(T)
+		return;
+	end
+	T.Mouse = string(T.Mouse);
+	T.DateTime = iNormalizeDateTime(T.DateTime);
+	T = T(~ismissing(T.Mouse) & ~ismissing(T.DateTime), :);
+	if isempty(T)
+		return;
+	end
+	Sess = unique(T(:, {'Mouse','DateTime'}), 'rows');
+	Sess = sortrows(Sess, ["Mouse","DateTime"]);
+	Sess = iDropMixedSessions(DS, Sess);
 end
 
 function B = iQueryLightWaterBlocks(DS)
-% Block/session-level behavior rows for LightWater.
-vars = ["Mouse","DateTime","Performance","Stimulus","Phase","Design"];
-B = table();
-try
-	B = DS.TableQuery(vars, Stimulus="LightWater");
-catch
+	% Block/session-level behavior rows for LightWater.
+	vars = ["Mouse","DateTime","Performance","Stimulus","Phase","Design"];
+	B = table();
 	try
-		B = DS.TableQuery(vars, Design="LightWater");
+		B = DS.TableQuery(vars, Stimulus="LightWater");
 	catch
-		B = table();
+		try
+			B = DS.TableQuery(vars, Design="LightWater");
+		catch
+			B = table();
+		end
 	end
-end
-if isempty(B)
-	return;
-end
-B.Mouse = string(B.Mouse);
-B.DateTime = iNormalizeDateTime(B.DateTime);
-if ismember('Stimulus', B.Properties.VariableNames)
-	B.Stimulus = string(B.Stimulus);
-	B = B(B.Stimulus=="LightWater", :);
-end
-% Keep ALL phases: user required using all LightWater sessions for learning curve.
-B = B(~ismissing(B.Mouse) & ~ismissing(B.DateTime), :);
+	if isempty(B)
+		return;
+	end
+	B.Mouse = string(B.Mouse);
+	B.DateTime = iNormalizeDateTime(B.DateTime);
+	if ismember('Stimulus', B.Properties.VariableNames)
+		B.Stimulus = string(B.Stimulus);
+		B = B(B.Stimulus=="LightWater", :);
+	end
+	% Keep ALL phases: user required using all LightWater sessions for learning curve.
+	B = B(~ismissing(B.Mouse) & ~ismissing(B.DateTime), :);
 end
 
 function perf = iSessionPerformance(DS, mouse, dt, phaseName, stimName)
-perf = NaN;
-phaseName = string(phaseName);
-stimName = string(stimName);
-T = iTableQueryOrEmpty(DS, ["Mouse","DateTime","Performance","Phase","Stimulus"], Mouse=mouse, Phase=phaseName, Stimulus=stimName);
-if isempty(T) || ~ismember('Performance', T.Properties.VariableNames)
-	return;
-end
-T.Mouse = string(T.Mouse);
-T.DateTime = iNormalizeDateTime(T.DateTime);
-rows = (T.Mouse==string(mouse)) & (T.DateTime==datetime(dt));
-if ~any(rows)
-	% allow within 6 hours
-	try
-		dd = abs(datetime(T.DateTime) - datetime(dt));
-		[best, k] = min(dd);
-		if ~isempty(best) && isfinite(best) && best <= hours(6)
-			rows = false(height(T),1);
-			rows(k) = true;
-		end
-	catch
+	perf = NaN;
+	phaseName = string(phaseName);
+	stimName = string(stimName);
+	T = iTableQueryOrEmpty(DS, ["Mouse","DateTime","Performance","Phase","Stimulus"], Mouse=mouse, Phase=phaseName, Stimulus=stimName);
+	if isempty(T) || ~ismember('Performance', T.Properties.VariableNames)
+		return;
 	end
-end
-if ~any(rows)
-	return;
-end
-perf = mean(double(T.Performance(rows)), 'omitnan');
+	T.Mouse = string(T.Mouse);
+	T.DateTime = iNormalizeDateTime(T.DateTime);
+	rows = (T.Mouse==string(mouse)) & (T.DateTime==datetime(dt));
+	if ~any(rows)
+		% allow within 6 hours
+		try
+			dd = abs(datetime(T.DateTime) - datetime(dt));
+			[best, k] = min(dd);
+			if ~isempty(best) && isfinite(best) && best <= hours(6)
+				rows = false(height(T),1);
+				rows(k) = true;
+			end
+		catch
+		end
+	end
+	if ~any(rows)
+		return;
+	end
+	perf = mean(double(T.Performance(rows)), 'omitnan');
 end
 
 function sd = iStdCellsAt_DeltaF(DS, mouse, dt, idxT, layerName)
-% SD across cells at a specific time index, using Median NTATS DeltaF.
-sd = NaN;
-layerName = string(layerName);
-q = struct('Mouse', string(mouse), 'DateTime', dt, 'Stimulus', 'LightWater');
-try
-	G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
-catch
-	% Some sessions have no imaging / empty group; treat as missing.
-	return;
-end
-if isempty(G) || ~ismember("NTATS", string(G.Properties.VariableNames))
-	return;
-end
-if strlength(layerName) > 0 && ismember("ZLayer", string(G.Properties.VariableNames))
-	zl = string(G.ZLayer);
-	G = G(zl==layerName, :);
-	if isempty(G)
+	% SD across cells at a specific time index, using Median NTATS DeltaF.
+	sd = NaN;
+	layerName = string(layerName);
+	q = struct('Mouse', string(mouse), 'DateTime', dt, 'Stimulus', 'LightWater');
+	try
+		G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
+	catch
+		% Some sessions have no imaging / empty group; treat as missing.
 		return;
 	end
-end
-M = iNtatsData(G.NTATS);
-if isempty(M) || idxT < 1 || idxT > size(M,2)
-	return;
-end
-v = double(M(:, idxT));
-sd = std(v, 'omitnan');
-end
-
-function S = iPooledCellsCorrStats(CtrlDS, THDS, SC, ST, idx1, idx15, layerName, nBoot, nPerm)
-% Cell as sample: compare corr(Z@1s,Z@1.5s) between groups via permutation on Fisher-z.
-layerName = string(layerName);
-[rC, xC1, xC2] = iPooledCellsVectors(CtrlDS, SC, idx1, idx15, layerName);
-[rT, xT1, xT2] = iPooledCellsVectors(THDS, ST, idx1, idx15, layerName);
-
-S = struct();
-S.R = [rC, rT];
-S.N = [numel(xC1), numel(xT1)];
-S.SemR = [NaN, NaN];
-S.P = NaN;
-if any(S.N < 3) || ~all(isfinite(S.R))
-	return;
-end
-
-% Bootstrap SEM of r (resample cells within group)
-B = max(50, double(nBoot));
-rBootC = nan(B,1);
-rBootT = nan(B,1);
-nC = numel(xC1);
-nT = numel(xT1);
-for b = 1:B
-	ic = randi(nC, nC, 1);
-	it = randi(nT, nT, 1);
-	rBootC(b) = corr(xC1(ic), xC2(ic), 'Type','Pearson', 'Rows','complete');
-	rBootT(b) = corr(xT1(it), xT2(it), 'Type','Pearson', 'Rows','complete');
-end
-S.SemR = [std(rBootC, 'omitnan'), std(rBootT, 'omitnan')];
-
-% Permutation p-value on Fisher-z difference
-zC = atanh(max(min(rC,0.999999),-0.999999));
-zT = atanh(max(min(rT,0.999999),-0.999999));
-zObs = zC - zT;
-if ~isfinite(zObs)
-	return;
-end
-x1 = [xC1; xT1];
-x2 = [xC2; xT2];
-labels = [zeros(nC,1); ones(nT,1)];
-P = max(200, double(nPerm));
-dZ = nan(P,1);
-for p = 1:P
-	lab = labels(randperm(numel(labels)));
-	maskC = (lab==0);
-	maskT = (lab==1);
-	rc = corr(x1(maskC), x2(maskC), 'Type','Pearson', 'Rows','complete');
-	rt = corr(x1(maskT), x2(maskT), 'Type','Pearson', 'Rows','complete');
-	zc = atanh(max(min(rc,0.999999),-0.999999));
-	zt = atanh(max(min(rt,0.999999),-0.999999));
-	dZ(p) = zc - zt;
-end
-dZ = dZ(isfinite(dZ));
-if isempty(dZ)
-	return;
-end
-S.P = mean(abs(dZ) >= abs(zObs));
-end
-
-function [r, x1, x2] = iPooledCellsVectors(DS, Sess, idx1, idx15, layerName)
-x1 = [];
-x2 = [];
-r = NaN;
-layerName = string(layerName);
-if isempty(Sess)
-	return;
-end
-for i = 1:height(Sess)
-	mouse = string(Sess.Mouse(i));
-	dt = Sess.DateTime(i);
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
-	G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 	if isempty(G) || ~ismember("NTATS", string(G.Properties.VariableNames))
-		continue;
+		return;
 	end
 	if strlength(layerName) > 0 && ismember("ZLayer", string(G.Properties.VariableNames))
 		zl = string(G.ZLayer);
 		G = G(zl==layerName, :);
 		if isempty(G)
-			continue;
+			return;
 		end
 	end
 	M = iNtatsData(G.NTATS);
-	if isempty(M) || idx1<1 || idx15<1 || idx1>size(M,2) || idx15>size(M,2)
-		continue;
+	if isempty(M) || idxT < 1 || idxT > size(M,2)
+		return;
 	end
-	v1 = double(M(:, idx1));
-	v2 = double(M(:, idx15));
-	mask = isfinite(v1) & isfinite(v2);
-	x1 = [x1; v1(mask)]; %#ok<AGROW>
-	x2 = [x2; v2(mask)]; %#ok<AGROW>
+	v = double(M(:, idxT));
+	sd = std(v, 'omitnan');
 end
-if numel(x1) < 3
-	return;
+
+function S = iPooledCellsCorrStats(CtrlDS, THDS, SC, ST, idx1, idx15, layerName, nBoot, nPerm)
+	% Cell as sample: compare corr(Z@1s,Z@1.5s) between groups via permutation on Fisher-z.
+	layerName = string(layerName);
+	[rC, xC1, xC2] = iPooledCellsVectors(CtrlDS, SC, idx1, idx15, layerName);
+	[rT, xT1, xT2] = iPooledCellsVectors(THDS, ST, idx1, idx15, layerName);
+
+	S = struct();
+	S.R = [rC, rT];
+	S.N = [numel(xC1), numel(xT1)];
+	S.SemR = [NaN, NaN];
+	S.P = NaN;
+	if any(S.N < 3) || ~all(isfinite(S.R))
+		return;
+	end
+
+	% Bootstrap SEM of r (resample cells within group)
+	B = max(50, double(nBoot));
+	rBootC = nan(B,1);
+	rBootT = nan(B,1);
+	nC = numel(xC1);
+	nT = numel(xT1);
+	for b = 1:B
+		ic = randi(nC, nC, 1);
+		it = randi(nT, nT, 1);
+		rBootC(b) = corr(xC1(ic), xC2(ic), 'Type','Pearson', 'Rows','complete');
+		rBootT(b) = corr(xT1(it), xT2(it), 'Type','Pearson', 'Rows','complete');
+	end
+	S.SemR = [std(rBootC, 'omitnan'), std(rBootT, 'omitnan')];
+
+	% Permutation p-value on Fisher-z difference
+	zC = atanh(max(min(rC,0.999999),-0.999999));
+	zT = atanh(max(min(rT,0.999999),-0.999999));
+	zObs = zC - zT;
+	if ~isfinite(zObs)
+		return;
+	end
+	x1 = [xC1; xT1];
+	x2 = [xC2; xT2];
+	labels = [zeros(nC,1); ones(nT,1)];
+	P = max(200, double(nPerm));
+	dZ = nan(P,1);
+	for p = 1:P
+		lab = labels(randperm(numel(labels)));
+		maskC = (lab==0);
+		maskT = (lab==1);
+		rc = corr(x1(maskC), x2(maskC), 'Type','Pearson', 'Rows','complete');
+		rt = corr(x1(maskT), x2(maskT), 'Type','Pearson', 'Rows','complete');
+		zc = atanh(max(min(rc,0.999999),-0.999999));
+		zt = atanh(max(min(rt,0.999999),-0.999999));
+		dZ(p) = zc - zt;
+	end
+	dZ = dZ(isfinite(dZ));
+	if isempty(dZ)
+		return;
+	end
+	S.P = mean(abs(dZ) >= abs(zObs));
 end
-r = corr(x1, x2, 'Type','Pearson', 'Rows','complete');
+
+function [r, x1, x2] = iPooledCellsVectors(DS, Sess, idx1, idx15, layerName)
+	x1 = [];
+	x2 = [];
+	r = NaN;
+	layerName = string(layerName);
+	if isempty(Sess)
+		return;
+	end
+	for i = 1:height(Sess)
+		mouse = string(Sess.Mouse(i));
+		dt = Sess.DateTime(i);
+		q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
+		G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+		if isempty(G) || ~ismember("NTATS", string(G.Properties.VariableNames))
+			continue;
+		end
+		if strlength(layerName) > 0 && ismember("ZLayer", string(G.Properties.VariableNames))
+			zl = string(G.ZLayer);
+			G = G(zl==layerName, :);
+			if isempty(G)
+				continue;
+			end
+		end
+		M = iNtatsData(G.NTATS);
+		if isempty(M) || idx1<1 || idx15<1 || idx1>size(M,2) || idx15>size(M,2)
+			continue;
+		end
+		v1 = double(M(:, idx1));
+		v2 = double(M(:, idx15));
+		mask = isfinite(v1) & isfinite(v2);
+		x1 = [x1; v1(mask)]; %#ok<AGROW>
+		x2 = [x2; v2(mask)]; %#ok<AGROW>
+	end
+	if numel(x1) < 3
+		return;
+	end
+	r = corr(x1, x2, 'Type','Pearson', 'Rows','complete');
 end
 
 function [XYc, XYt] = iPooledCellsForScatter(CtrlDS, THDS, SC, ST, idx1, idx15)
-[~, xC1, xC2] = iPooledCellsVectors(CtrlDS, SC, idx1, idx15);
-[~, xT1, xT2] = iPooledCellsVectors(THDS, ST, idx1, idx15);
-XYc = [xC1, xC2];
-XYt = [xT1, xT2];
-% Downsample for plotting if too many points
-maxN = 20000;
-if size(XYc,1) > maxN
-	ix = randperm(size(XYc,1), maxN);
-	XYc = XYc(ix,:);
-end
-if size(XYt,1) > maxN
-	ix = randperm(size(XYt,1), maxN);
-	XYt = XYt(ix,:);
-end
+	[~, xC1, xC2] = iPooledCellsVectors(CtrlDS, SC, idx1, idx15);
+	[~, xT1, xT2] = iPooledCellsVectors(THDS, ST, idx1, idx15);
+	XYc = [xC1, xC2];
+	XYt = [xT1, xT2];
+	% Downsample for plotting if too many points
+	maxN = 20000;
+	if size(XYc,1) > maxN
+		ix = randperm(size(XYc,1), maxN);
+		XYc = XYc(ix,:);
+	end
+	if size(XYt,1) > maxN
+		ix = randperm(size(XYt,1), maxN);
+		XYt = XYt(ix,:);
+	end
 end
 
 function [meanCurve, nCell] = iMeanCurveZScore(DS, mouse, dt, layerName, keepCellUID)
-meanCurve = []; nCell = NaN;
-if nargin < 4
-	layerName = "";
-end
-if nargin < 5
-	keepCellUID = uint64([]);
-end
-try
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
-	G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	if isempty(G) || ~all(ismember(["CellUID","NTATS"], string(G.Properties.VariableNames)))
-		return;
-	end
-	% Optional layer filter (e.g., "MOp5")
-	if strlength(string(layerName)) > 0 && ismember('ZLayer', G.Properties.VariableNames)
-		G.ZLayer = string(G.ZLayer);
-		G = G(G.ZLayer == string(layerName), :);
-		if isempty(G)
-			return;
-		end
-	end
-	% Optional CellUID filter (e.g., Learned Audio active@1s cells)
-	if ~isempty(keepCellUID)
-		uid = uint64(G.CellUID);
-		mask = ismember(uid, uint64(keepCellUID));
-		G = G(mask, :);
-		if isempty(G)
-			return;
-		end
-	end
-	M = iNtatsData(G.NTATS);
-	if isempty(M)
-		return;
-	end
-	nCell = size(M,1);
-	meanCurve = mean(double(M), 1, 'omitnan');
-	meanCurve = meanCurve(:);
-catch
 	meanCurve = []; nCell = NaN;
-end
+	if nargin < 4
+		layerName = "";
+	end
+	if nargin < 5
+		keepCellUID = uint64([]);
+	end
+	try
+		q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
+		G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+		if isempty(G) || ~all(ismember(["CellUID","NTATS"], string(G.Properties.VariableNames)))
+			return;
+		end
+		% Optional layer filter (e.g., "MOp5")
+		if strlength(string(layerName)) > 0 && ismember('ZLayer', G.Properties.VariableNames)
+			G.ZLayer = string(G.ZLayer);
+			G = G(G.ZLayer == string(layerName), :);
+			if isempty(G)
+				return;
+			end
+		end
+		% Optional CellUID filter (e.g., Learned Audio active@1s cells)
+		if ~isempty(keepCellUID)
+			uid = uint64(G.CellUID);
+			mask = ismember(uid, uint64(keepCellUID));
+			G = G(mask, :);
+			if isempty(G)
+				return;
+			end
+		end
+		M = iNtatsData(G.NTATS);
+		if isempty(M)
+			return;
+		end
+		nCell = size(M,1);
+		meanCurve = mean(double(M), 1, 'omitnan');
+		meanCurve = meanCurve(:);
+	catch
+		meanCurve = []; nCell = NaN;
+	end
 end
 
 function uid = iLearnedAudioActiveCellUIDs_At1s(DS, mouse, baseMask, idx1, kSigma, layerName)
-uid = uint64([]);
-try
-	qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
-	GL = iQueryNTATSOrEmpty(DS, qL);
-	if isempty(GL) || ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames)))
-		return;
-	end
-	% Layer filter
-	if strlength(string(layerName)) > 0 && ismember('ZLayer', GL.Properties.VariableNames)
-		GL.ZLayer = string(GL.ZLayer);
-		GL = GL(GL.ZLayer == string(layerName), :);
-		if isempty(GL)
+	uid = uint64([]);
+	try
+		qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
+		GL = iQueryNTATSOrEmpty(DS, qL);
+		if isempty(GL) || ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames)))
 			return;
 		end
+		% Layer filter
+		if strlength(string(layerName)) > 0 && ismember('ZLayer', GL.Properties.VariableNames)
+			GL.ZLayer = string(GL.ZLayer);
+			GL = GL(GL.ZLayer == string(layerName), :);
+			if isempty(GL)
+				return;
+			end
+		end
+		X = iNtatsData(GL.NTATS);
+		if isempty(X)
+			return;
+		end
+		act = iActiveAt1s(double(X), baseMask, idx1, kSigma);
+		uid = uint64(GL.CellUID(act));
+	catch
+		uid = uint64([]);
 	end
-	X = iNtatsData(GL.NTATS);
-	if isempty(X)
-		return;
-	end
-	act = iActiveAt1s(double(X), baseMask, idx1, kSigma);
-	uid = uint64(GL.CellUID(act));
-catch
-	uid = uint64([]);
-end
 end
 
 function reuse = iReuseRate_1s(DS, mouse, baseMask, idx1, kSigma, layerName)
-% Reuse(1s)=P(TransferLight active@1s | LearnedAudio active@1s)
-reuse = NaN;
-try
-	qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
-	qT = struct('Mouse', mouse, 'Phase', 'Transfer', 'Stimulus', 'LightWater');
-	GL = iQueryNTATSOrEmpty(DS, qL);
-	GT = iQueryNTATSOrEmpty(DS, qT);
-	if isempty(GL) || isempty(GT)
-		return;
-	end
-	if ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames))) || ~all(ismember(["CellUID","NTATS"], string(GT.Properties.VariableNames)))
-		return;
-	end
-	uidL = uint64(GL.CellUID);
-	uidT = uint64(GT.CellUID);
-	uid = intersect(uidL, uidT);
-	if isempty(uid)
-		return;
-	end
-	[~, iL] = ismember(uid, uidL);
-	[~, iT] = ismember(uid, uidT);
-	XL = iNtatsData(GL.NTATS);
-	XT = iNtatsData(GT.NTATS);
-	if isempty(XL) || isempty(XT)
-		return;
-	end
-	XL = double(XL(iL, :));
-	XT = double(XT(iT, :));
-	
-	% Layer filter (prefer QueryNTATS-provided ZLayer; fallback to DS.Cells)
-	maskZ = true(numel(uid),1);
-	if strlength(string(layerName)) > 0
-		zl = strings(numel(uid),1);
-		if ismember('ZLayer', GL.Properties.VariableNames)
-			zAll = string(GL.ZLayer);
-			zl = zAll(iL);
-		else
-			zl = iCellZLayer(DS, uid);
-		end
-		maskZ = (zl == string(layerName));
-	end
-	if ~any(maskZ)
-		return;
-	end
-	XL = XL(maskZ, :);
-	XT = XT(maskZ, :);
-	
-	learnAct = iActiveAt1s(XL, baseMask, idx1, kSigma);
-	tranAct  = iActiveAt1s(XT, baseMask, idx1, kSigma);
-	if nnz(learnAct) < 1
-		return;
-	end
-	reuse = mean(double(tranAct(learnAct)), 'omitnan');
-catch
+	% Reuse(1s)=P(TransferLight active@1s | LearnedAudio active@1s)
 	reuse = NaN;
-end
+	try
+		qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
+		qT = struct('Mouse', mouse, 'Phase', 'Transfer', 'Stimulus', 'LightWater');
+		GL = iQueryNTATSOrEmpty(DS, qL);
+		GT = iQueryNTATSOrEmpty(DS, qT);
+		if isempty(GL) || isempty(GT)
+			return;
+		end
+		if ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames))) || ~all(ismember(["CellUID","NTATS"], string(GT.Properties.VariableNames)))
+			return;
+		end
+		uidL = uint64(GL.CellUID);
+		uidT = uint64(GT.CellUID);
+		uid = intersect(uidL, uidT);
+		if isempty(uid)
+			return;
+		end
+		[~, iL] = ismember(uid, uidL);
+		[~, iT] = ismember(uid, uidT);
+		XL = iNtatsData(GL.NTATS);
+		XT = iNtatsData(GT.NTATS);
+		if isempty(XL) || isempty(XT)
+			return;
+		end
+		XL = double(XL(iL, :));
+		XT = double(XT(iT, :));
+
+		% Layer filter (prefer QueryNTATS-provided ZLayer; fallback to DS.Cells)
+		maskZ = true(numel(uid),1);
+		if strlength(string(layerName)) > 0
+			zl = strings(numel(uid),1);
+			if ismember('ZLayer', GL.Properties.VariableNames)
+				zAll = string(GL.ZLayer);
+				zl = zAll(iL);
+			else
+				zl = iCellZLayer(DS, uid);
+			end
+			maskZ = (zl == string(layerName));
+		end
+		if ~any(maskZ)
+			return;
+		end
+		XL = XL(maskZ, :);
+		XT = XT(maskZ, :);
+
+		learnAct = iActiveAt1s(XL, baseMask, idx1, kSigma);
+		tranAct  = iActiveAt1s(XT, baseMask, idx1, kSigma);
+		if nnz(learnAct) < 1
+			return;
+		end
+		reuse = mean(double(tranAct(learnAct)), 'omitnan');
+	catch
+		reuse = NaN;
+	end
 end
 
 function reuse = iReuseRate_1s_FirstTransferSession(DS, mouse, transferDT, baseMask, idx1, kSigma, layerName)
-% Reuse(1s)=P(TransferLight active@1s in the specified session | LearnedAudio active@1s)
-% Learned is pooled at phase level (per mouse). Transfer is restricted to the first Transfer session DateTime.
-reuse = NaN;
-try
-	qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
-	qT = struct('Mouse', mouse, 'DateTime', transferDT, 'Stimulus', 'LightWater');
-	GL = iQueryNTATSOrEmpty(DS, qL);
-	GT = iQueryNTATSOrEmpty(DS, qT);
-	if isempty(GL) || isempty(GT)
-		return;
-	end
-	if ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames))) || ~all(ismember(["CellUID","NTATS"], string(GT.Properties.VariableNames)))
-		return;
-	end
-	uidL = uint64(GL.CellUID);
-	uidT = uint64(GT.CellUID);
-	uid = intersect(uidL, uidT);
-	if isempty(uid)
-		return;
-	end
-	[~, iL] = ismember(uid, uidL);
-	[~, iT] = ismember(uid, uidT);
-	XL = iNtatsData(GL.NTATS);
-	XT = iNtatsData(GT.NTATS);
-	if isempty(XL) || isempty(XT)
-		return;
-	end
-	XL = double(XL(iL, :));
-	XT = double(XT(iT, :));
-	
-	% Layer filter
-	maskZ = true(numel(uid),1);
-	if strlength(string(layerName)) > 0
-		zl = strings(numel(uid),1);
-		if ismember('ZLayer', GL.Properties.VariableNames)
-			zAll = string(GL.ZLayer);
-			zl = zAll(iL);
-		else
-			zl = iCellZLayer(DS, uid);
-		end
-		maskZ = (zl == string(layerName));
-	end
-	if ~any(maskZ)
-		return;
-	end
-	XL = XL(maskZ, :);
-	XT = XT(maskZ, :);
-	
-	learnAct = iActiveAt1s(XL, baseMask, idx1, kSigma);
-	tranAct  = iActiveAt1s(XT, baseMask, idx1, kSigma);
-	if nnz(learnAct) < 1
-		return;
-	end
-	reuse = mean(double(tranAct(learnAct)), 'omitnan');
-catch
+	% Reuse(1s)=P(TransferLight active@1s in the specified session | LearnedAudio active@1s)
+	% Learned is pooled at phase level (per mouse). Transfer is restricted to the first Transfer session DateTime.
 	reuse = NaN;
-end
+	try
+		qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
+		qT = struct('Mouse', mouse, 'DateTime', transferDT, 'Stimulus', 'LightWater');
+		GL = iQueryNTATSOrEmpty(DS, qL);
+		GT = iQueryNTATSOrEmpty(DS, qT);
+		if isempty(GL) || isempty(GT)
+			return;
+		end
+		if ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames))) || ~all(ismember(["CellUID","NTATS"], string(GT.Properties.VariableNames)))
+			return;
+		end
+		uidL = uint64(GL.CellUID);
+		uidT = uint64(GT.CellUID);
+		uid = intersect(uidL, uidT);
+		if isempty(uid)
+			return;
+		end
+		[~, iL] = ismember(uid, uidL);
+		[~, iT] = ismember(uid, uidT);
+		XL = iNtatsData(GL.NTATS);
+		XT = iNtatsData(GT.NTATS);
+		if isempty(XL) || isempty(XT)
+			return;
+		end
+		XL = double(XL(iL, :));
+		XT = double(XT(iT, :));
+
+		% Layer filter
+		maskZ = true(numel(uid),1);
+		if strlength(string(layerName)) > 0
+			zl = strings(numel(uid),1);
+			if ismember('ZLayer', GL.Properties.VariableNames)
+				zAll = string(GL.ZLayer);
+				zl = zAll(iL);
+			else
+				zl = iCellZLayer(DS, uid);
+			end
+			maskZ = (zl == string(layerName));
+		end
+		if ~any(maskZ)
+			return;
+		end
+		XL = XL(maskZ, :);
+		XT = XT(maskZ, :);
+
+		learnAct = iActiveAt1s(XL, baseMask, idx1, kSigma);
+		tranAct  = iActiveAt1s(XT, baseMask, idx1, kSigma);
+		if nnz(learnAct) < 1
+			return;
+		end
+		reuse = mean(double(tranAct(learnAct)), 'omitnan');
+	catch
+		reuse = NaN;
+	end
 end
 
 function act = iActiveAt1s(X, baseMask, idx1, kSigma)
-baseMu = mean(X(:, baseMask), 2, 'omitnan');
-baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
-val1 = X(:, idx1);
-act = val1 > (baseMu + kSigma .* baseSd);
+	baseMu = mean(X(:, baseMask), 2, 'omitnan');
+	baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
+	val1 = X(:, idx1);
+	act = val1 > (baseMu + kSigma .* baseSd);
 end
 
 function zl = iCellZLayer(DS, cellUID)
-% Fallback for layer assignment when QueryNTATS doesn't carry ZLayer
-zl = strings(numel(cellUID),1);
-try
-	C = DS.Cells;
-	if isempty(C) || ~all(ismember({"CellUID","ZLayer"}, C.Properties.VariableNames))
-		return;
-	end
-	uid = uint64(cellUID(:));
-	Cu = C;
-	Cu.CellUID = uint64(Cu.CellUID);
-	[tf, loc] = ismember(uid, Cu.CellUID);
-	zl(tf) = string(Cu.ZLayer(loc(tf)));
-catch
+	% Fallback for layer assignment when QueryNTATS doesn't carry ZLayer
 	zl = strings(numel(cellUID),1);
-end
+	try
+		C = DS.Cells;
+		if isempty(C) || ~all(ismember({"CellUID","ZLayer"}, C.Properties.VariableNames))
+			return;
+		end
+		uid = uint64(cellUID(:));
+		Cu = C;
+		Cu.CellUID = uint64(Cu.CellUID);
+		[tf, loc] = ismember(uid, Cu.CellUID);
+		zl(tf) = string(Cu.ZLayer(loc(tf)));
+	catch
+		zl = strings(numel(cellUID),1);
+	end
 end
 
 function G = iQueryNTATSOrEmpty(DS, query)
-try
-	G = DS.QueryNTATS(query, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-catch
-	G = [];
-end
+	try
+		G = DS.QueryNTATS(query, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	catch
+		G = [];
+	end
 end
 
 function r = iCellCorr1s1p5s_ZScore(DS, mouse, dt, idx1, idx15)
-r = NaN;
-try
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
-	G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	if isempty(G) || ~all(ismember(["NTATS"], string(G.Properties.VariableNames)))
-		return;
-	end
-	M = iNtatsData(G.NTATS);
-	v1 = double(M(:, idx1));
-	v2 = double(M(:, idx15));
-	mask = isfinite(v1) & isfinite(v2);
-	if nnz(mask) < 3 || std(v1(mask))==0 || std(v2(mask))==0
-		return;
-	end
-	r = corr(v1(mask), v2(mask), 'Type','Pearson');
-catch
 	r = NaN;
-end
+	try
+		q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
+		G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+		if isempty(G) || ~all(ismember(["NTATS"], string(G.Properties.VariableNames)))
+			return;
+		end
+		M = iNtatsData(G.NTATS);
+		v1 = double(M(:, idx1));
+		v2 = double(M(:, idx15));
+		mask = isfinite(v1) & isfinite(v2);
+		if nnz(mask) < 3 || std(v1(mask))==0 || std(v2(mask))==0
+			return;
+		end
+		r = corr(v1(mask), v2(mask), 'Type','Pearson');
+	catch
+		r = NaN;
+	end
 end
 
 function sd15 = iStdCells1p5_DeltaF(DS, mouse, dt, idx15)
-sd15 = NaN;
-try
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
-	G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
-	if isempty(G) || ~all(ismember(["NTATS"], string(G.Properties.VariableNames)))
-		return;
-	end
-	M = iNtatsData(G.NTATS);
-	v = double(M(:, idx15));
-	sd15 = std(v, 0, 1, 'omitnan');
-catch
 	sd15 = NaN;
-end
+	try
+		q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
+		G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
+		if isempty(G) || ~all(ismember(["NTATS"], string(G.Properties.VariableNames)))
+			return;
+		end
+		M = iNtatsData(G.NTATS);
+		v = double(M(:, idx15));
+		sd15 = std(v, 0, 1, 'omitnan');
+	catch
+		sd15 = NaN;
+	end
 end
 
 function [m, s] = iMeanSemCurves(curveCells)
-% curveCells: cell array of column vectors
-m = []; s = [];
-if isempty(curveCells)
-	return;
-end
-curves = curveCells(:);
-curves = curves(~cellfun(@isempty, curves));
-if isempty(curves)
-	return;
-end
-L = cellfun(@numel, curves);
-L0 = mode(L);
-curves = curves(L==L0);
-if isempty(curves)
-	return;
-end
-A = nan(numel(curves), L0);
-for i = 1:numel(curves)
-	x = double(curves{i}(:));
-	if numel(x) == L0
-		A(i,:) = x;
+	% curveCells: cell array of column vectors
+	m = []; s = [];
+	if isempty(curveCells)
+		return;
 	end
-end
-m = mean(A, 1, 'omitnan');
-n = sum(isfinite(A), 1);
-s = std(A, 0, 1, 'omitnan') ./ sqrt(max(n,1));
-m = m(:);
-s = s(:);
+	curves = curveCells(:);
+	curves = curves(~cellfun(@isempty, curves));
+	if isempty(curves)
+		return;
+	end
+	L = cellfun(@numel, curves);
+	L0 = mode(L);
+	curves = curves(L==L0);
+	if isempty(curves)
+		return;
+	end
+	A = nan(numel(curves), L0);
+	for i = 1:numel(curves)
+		x = double(curves{i}(:));
+		if numel(x) == L0
+			A(i,:) = x;
+		end
+	end
+	m = mean(A, 1, 'omitnan');
+	n = sum(isfinite(A), 1);
+	s = std(A, 0, 1, 'omitnan') ./ sqrt(max(n,1));
+	m = m(:);
+	s = s(:);
 end
 
 function iPlotMeanSem(ax, xsSec, m, s, col, label)
-if isempty(m) || isempty(s)
-	return;
-end
-x = double(xsSec(:));
-if numel(x) ~= numel(m)
-	return;
-end
-X = [x; flipud(x)];
-Y = [m+s; flipud(m-s)];
-patch(ax, X, Y, col, 'FaceAlpha', 0.20, 'EdgeColor','none', 'HandleVisibility','off');
-plot(ax, x, m, 'LineWidth', 1.8, 'Color', col, 'DisplayName', label);
+	if isempty(m) || isempty(s)
+		return;
+	end
+	x = double(xsSec(:));
+	if numel(x) ~= numel(m)
+		return;
+	end
+	X = [x; flipud(x)];
+	Y = [m+s; flipud(m-s)];
+	patch(ax, X, Y, col, 'FaceAlpha', 0.20, 'EdgeColor','none', 'HandleVisibility','off');
+	plot(ax, x, m, 'LineWidth', 1.8, 'Color', col, 'DisplayName', label);
 end
 
 function iSwarm2(ax, xA, xB, labels, yLabel, p)
-xA = double(xA(:));
-xB = double(xB(:));
-xA = xA(isfinite(xA));
-xB = xB(isfinite(xB));
+	xA = double(xA(:));
+	xB = double(xB(:));
+	xA = xA(isfinite(xA));
+	xB = xB(isfinite(xB));
 
-swarmchart(ax, ones(size(xA)), xA, 24, 'filled', 'MarkerFaceAlpha', 0.75);
-swarmchart(ax, 2*ones(size(xB)), xB, 24, 'filled', 'MarkerFaceAlpha', 0.75);
-medA = median(xA,'omitnan');
-medB = median(xB,'omitnan');
-plot(ax, [0.85 1.15], [medA medA], '-', 'LineWidth', 2);
-plot(ax, [1.85 2.15], [medB medB], '-', 'LineWidth', 2);
-ax.XLim = [0.5 2.5];
-ax.XTick = [1 2];
-ax.XTickLabel = {sprintf('%s (n=%d)', labels{1}, numel(xA)), sprintf('%s (n=%d)', labels{2}, numel(xB))};
-ylabel(ax, yLabel);
-% p-value line (required: MATLAB.Graphics.PLine)
-try
-	iPValuePLineScatter(ax, 1, 2, xA, xB, p);
-catch
-end
+	swarmchart(ax, ones(size(xA)), xA, 24, 'filled', 'MarkerFaceAlpha', 0.75);
+	swarmchart(ax, 2*ones(size(xB)), xB, 24, 'filled', 'MarkerFaceAlpha', 0.75);
+	medA = median(xA,'omitnan');
+	medB = median(xB,'omitnan');
+	plot(ax, [0.85 1.15], [medA medA], '-', 'LineWidth', 2);
+	plot(ax, [1.85 2.15], [medB medB], '-', 'LineWidth', 2);
+	ax.XLim = [0.5 2.5];
+	ax.XTick = [1 2];
+	ax.XTickLabel = {sprintf('%s (n=%d)', labels{1}, numel(xA)), sprintf('%s (n=%d)', labels{2}, numel(xB))};
+	ylabel(ax, yLabel);
+	% p-value line (required: MATLAB.Graphics.PLine)
+	try
+		iPValuePLineScatter(ax, 1, 2, xA, xB, p);
+	catch
+	end
 end
 
 function iPValuePLineScatter(ax, x1, x2, y1, y2, p, opts)
-arguments
-	ax
-	x1
-	x2
-	y1
-	y2
-	p
-	opts.extraOffset double = 0
-end
-if ~isfinite(p)
-	return;
-end
-y1 = y1(:);
-y2 = y2(:);
-y1 = y1(isfinite(y1));
-y2 = y2(isfinite(y2));
-if isempty(y1) || isempty(y2)
-	return;
-end
+	arguments
+		ax
+		x1
+		x2
+		y1
+		y2
+		p
+		opts.extraOffset double = 0
+	end
+	if ~isfinite(p)
+		return;
+	end
+	y1 = y1(:);
+	y2 = y2(:);
+	y1 = y1(isfinite(y1));
+	y2 = y2(isfinite(y2));
+	if isempty(y1) || isempty(y2)
+		return;
+	end
 
-% Create an invisible scatter with exactly two unique X values.
-X = [x1*ones(numel(y1),1); x2*ones(numel(y2),1)];
-Y = [y1; y2];
-S = scatter(ax, X, Y, 1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-try
-	if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-	if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-	if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-catch
-end
-
-Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', p), opts.extraOffset, ...
-	'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-try
-	MATLAB.Graphics.PLine(Descriptors);
-catch
-	% fallback: draw a simple bracket + text
+	% Create an invisible scatter with exactly two unique X values.
+	X = [x1*ones(numel(y1),1); x2*ones(numel(y2),1)];
+	Y = [y1; y2];
+	S = scatter(ax, X, Y, 1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 	try
-		yAll = Y(isfinite(Y));
-		if isempty(yAll); return; end
-		yMax = max(yAll);
-		yMin = min(yAll);
-		yR = max(1e-6, yMax - yMin);
-		y0 = yMax + 0.12*yR;
-		plot(ax, [x1 x1 x2 x2], [y0-0.01*yR y0 y0 y0-0.01*yR], 'k-', 'LineWidth', 1);
-		text(ax, mean([x1 x2]), y0, sprintf('p=%.3g', p), 'HorizontalAlignment','center', 'VerticalAlignment','bottom', 'Interpreter','none');
+		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 	catch
 	end
-end
 
-try
-	delete(S);
-catch
-end
+	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', p), opts.extraOffset, ...
+		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+	try
+		MATLAB.Graphics.PLine(Descriptors);
+	catch
+		% fallback: draw a simple bracket + text
+		try
+			yAll = Y(isfinite(Y));
+			if isempty(yAll); return; end
+			yMax = max(yAll);
+			yMin = min(yAll);
+			yR = max(1e-6, yMax - yMin);
+			y0 = yMax + 0.12*yR;
+			plot(ax, [x1 x1 x2 x2], [y0-0.01*yR y0 y0 y0-0.01*yR], 'k-', 'LineWidth', 1);
+			text(ax, mean([x1 x2]), y0, sprintf('p=%.3g', p), 'HorizontalAlignment','center', 'VerticalAlignment','bottom', 'Interpreter','none');
+		catch
+		end
+	end
+
+	try
+		delete(S);
+	catch
+	end
 end
 
 function iHideToolbar(ax)
-try
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-		ax.Toolbar.Visible = 'off';
-	end
-catch
-end
-end
-
-function T = iTableQueryOrEmpty(DS, vars, varargin)
-try
-	T = DS.TableQuery(vars, varargin{:});
-catch
-	T = [];
-end
-if isempty(T)
-	return;
-end
-if ismember('DateTime', T.Properties.VariableNames)
-	T.DateTime = iNormalizeDateTime(T.DateTime);
-end
-end
-
-function Sess = iDropMixedSessions(DS, Sess)
-Ta = iTableQueryOrEmpty(DS, ["Mouse","DateTime","Stimulus"], Stimulus="AudioWater");
-if isempty(Ta) || isempty(Sess)
-	return;
-end
-Ta.Mouse = string(Ta.Mouse);
-Ta.DateTime = iNormalizeDateTime(Ta.DateTime);
-badKey = unique(Ta.Mouse + "|" + string(Ta.DateTime,'yyyy-MM-dd HH:mm:ss'));
-key = string(Sess.Mouse) + "|" + string(iNormalizeDateTime(Sess.DateTime),'yyyy-MM-dd HH:mm:ss');
-Sess = Sess(~ismember(key, badKey), :);
-end
-
-function X = iNtatsData(NT)
-if isa(NT, 'MATLAB.DataTypes.NDTable')
-	X = NT.Data;
-else
-	X = NT;
-end
-X = squeeze(X);
-end
-
-function dt = iNormalizeDateTime(dt)
-try
-	dt = datetime(dt);
-	if isdatetime(dt) && ~isempty(dt.TimeZone)
-		dt.TimeZone = '';
-	end
-catch
-end
-end
-
-function Sess = iSessionizeByDateTime(T)
-% Input columns: Mouse, DateTime, Performance, Group (block-level rows)
-T.Mouse = string(T.Mouse);
-T.Group = string(T.Group);
-T.DateTime = datetime(T.DateTime);
-T.DateTime.TimeZone = '';
-[G, mouse, dt, grp] = findgroups(T.Mouse, T.DateTime, T.Group);
-perf = splitapply(@(x) mean(double(x), 'omitnan'), T.Performance, G);
-nBlk = splitapply(@numel, T.Performance, G);
-Sess = table(mouse, dt, grp, perf, nBlk, 'VariableNames', {'Mouse','DateTime','Group','Performance','NBlocksInSession'});
-end
-
-function T = iAddSessionIndex(T)
-T.Session = nan(height(T),1);
-mice = unique(T.Mouse);
-for i = 1:numel(mice)
-	m = mice(i);
-	rows = (T.Mouse == m);
-	[~, ord] = sort(T.DateTime(rows));
-	idx = find(rows);
-	T.Session(idx(ord)) = (1:numel(ord))';
-end
-end
-
-function perMouse = iPerMouseTable(Sess)
-mice = unique(Sess.Mouse);
-perMouse = table();
-perMouse.Mouse = mice;
-perMouse.Group = strings(numel(mice),1);
-perMouse.BaselinePerf = nan(numel(mice),1);
-perMouse.NSessions = nan(numel(mice),1);
-perMouse.Slope = nan(numel(mice),1);
-
-for i = 1:numel(mice)
-	m = mice(i);
-	S = Sess(Sess.Mouse == m, :);
-	S = sortrows(S, 'Session');
-	perMouse.Group(i) = string(S.Group(1));
-	perMouse.NSessions(i) = max(S.Session);
-	perMouse.BaselinePerf(i) = S.Performance(find(S.Session==1,1,'first'));
-	
-	ok = isfinite(S.Session) & isfinite(S.Performance);
-	if nnz(ok) >= 2
-		x = double(S.Session(ok));
-		y = double(S.Performance(ok));
-		p = polyfit(x, y, 1);
-		perMouse.Slope(i) = p(1);
-	end
-end
-perMouse.Mouse = string(perMouse.Mouse);
-perMouse.Group = string(perMouse.Group);
-end
-
-function [meanCells, semCells, nMice, xSess] = iLearningCurve(Sess, grpOrder)
-maxSess = max(Sess.Session);
-xSess = (1:maxSess)';
-meanCells = cell(numel(grpOrder), 1);
-semCells  = cell(numel(grpOrder), 1);
-nMice = nan(numel(grpOrder), 1);
-
-for k = 1:numel(grpOrder)
-	g = grpOrder(k);
-	Sg = Sess(Sess.Group == g, :);
-	mice = unique(Sg.Mouse);
-	nMice(k) = numel(mice);
-	M = nan(numel(mice), maxSess);
-	for i = 1:numel(mice)
-		Sm = Sg(Sg.Mouse == mice(i), :);
-		for s = 1:maxSess
-			row = Sm.Session == s;
-			if any(row)
-				M(i,s) = mean(double(Sm.Performance(row)), 'omitnan');
-			end
-		end
-	end
-	m = mean(M, 1, 'omitnan');
-	se = nan(1, maxSess);
-	for s = 1:maxSess
-		xs = M(:,s);
-		xs = xs(isfinite(xs));
-		if numel(xs) >= 2
-			se(s) = std(xs, 0) ./ sqrt(numel(xs));
-		elseif numel(xs) == 1
-			se(s) = 0;
-		end
-	end
-	meanCells{k} = m(:);
-	semCells{k}  = se(:);
-end
-end
-
-function p = iRanksumSafe(x, y)
-x = x(isfinite(x));
-y = y(isfinite(y));
-if isempty(x) || isempty(y)
-	p = nan;
-	return;
-end
-try
-	p = ranksum(x, y);
-catch
-	p = nan;
-end
-end
-
-function [perMouse, p] = iAddBaselineAdjustedSlope(perMouse, groupA, groupB)
-perMouse.SlopeAdj = nan(height(perMouse),1);
-ok = isfinite(perMouse.Slope) & isfinite(perMouse.BaselinePerf);
-if any(ok)
 	try
-		if exist('robustfit','file')
-			b = robustfit(double(perMouse.BaselinePerf(ok)), double(perMouse.Slope(ok)));
-			perMouse.SlopeAdj(ok) = double(perMouse.Slope(ok)) - (b(1) + b(2) * double(perMouse.BaselinePerf(ok)));
-		else
-			mdl = fitlm(perMouse(ok,:), 'Slope ~ 1 + BaselinePerf');
-			perMouse.SlopeAdj(ok) = mdl.Residuals.Raw;
+		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+			ax.Toolbar.Visible = 'off';
 		end
 	catch
 	end
 end
 
-x = perMouse.SlopeAdj(perMouse.Group == string(groupA));
-y = perMouse.SlopeAdj(perMouse.Group == string(groupB));
-p = iRanksumSafe(x, y);
+function T = iTableQueryOrEmpty(DS, vars, varargin)
+	try
+		T = DS.TableQuery(vars, varargin{:});
+	catch
+		T = [];
+	end
+	if isempty(T)
+		return;
+	end
+	if ismember('DateTime', T.Properties.VariableNames)
+		T.DateTime = iNormalizeDateTime(T.DateTime);
+	end
+end
+
+function Sess = iDropMixedSessions(DS, Sess)
+	Ta = iTableQueryOrEmpty(DS, ["Mouse","DateTime","Stimulus"], Stimulus="AudioWater");
+	if isempty(Ta) || isempty(Sess)
+		return;
+	end
+	Ta.Mouse = string(Ta.Mouse);
+	Ta.DateTime = iNormalizeDateTime(Ta.DateTime);
+	badKey = unique(Ta.Mouse + "|" + string(Ta.DateTime,'yyyy-MM-dd HH:mm:ss'));
+	key = string(Sess.Mouse) + "|" + string(iNormalizeDateTime(Sess.DateTime),'yyyy-MM-dd HH:mm:ss');
+	Sess = Sess(~ismember(key, badKey), :);
+end
+
+function X = iNtatsData(NT)
+	if isa(NT, 'MATLAB.DataTypes.NDTable')
+		X = NT.Data;
+	else
+		X = NT;
+	end
+	X = squeeze(X);
+end
+
+function dt = iNormalizeDateTime(dt)
+	try
+		dt = datetime(dt);
+		if isdatetime(dt) && ~isempty(dt.TimeZone)
+			dt.TimeZone = '';
+		end
+	catch
+	end
+end
+
+function Sess = iSessionizeByDateTime(T)
+	% Input columns: Mouse, DateTime, Performance, Group (block-level rows)
+	T.Mouse = string(T.Mouse);
+	T.Group = string(T.Group);
+	T.DateTime = datetime(T.DateTime);
+	T.DateTime.TimeZone = '';
+	[G, mouse, dt, grp] = findgroups(T.Mouse, T.DateTime, T.Group);
+	perf = splitapply(@(x) mean(double(x), 'omitnan'), T.Performance, G);
+	nBlk = splitapply(@numel, T.Performance, G);
+	Sess = table(mouse, dt, grp, perf, nBlk, 'VariableNames', {'Mouse','DateTime','Group','Performance','NBlocksInSession'});
+end
+
+function T = iAddSessionIndex(T)
+	T.Session = nan(height(T),1);
+	mice = unique(T.Mouse);
+	for i = 1:numel(mice)
+		m = mice(i);
+		rows = (T.Mouse == m);
+		[~, ord] = sort(T.DateTime(rows));
+		idx = find(rows);
+		T.Session(idx(ord)) = (1:numel(ord))';
+	end
+end
+
+function perMouse = iPerMouseTable(Sess)
+	mice = unique(Sess.Mouse);
+	perMouse = table();
+	perMouse.Mouse = mice;
+	perMouse.Group = strings(numel(mice),1);
+	perMouse.BaselinePerf = nan(numel(mice),1);
+	perMouse.NSessions = nan(numel(mice),1);
+	perMouse.Slope = nan(numel(mice),1);
+	
+	for i = 1:numel(mice)
+		m = mice(i);
+		S = Sess(Sess.Mouse == m, :);
+		S = sortrows(S, 'Session');
+		perMouse.Group(i) = string(S.Group(1));
+		perMouse.NSessions(i) = max(S.Session);
+		perMouse.BaselinePerf(i) = S.Performance(find(S.Session==1,1,'first'));
+		
+		ok = isfinite(S.Session) & isfinite(S.Performance);
+		if nnz(ok) >= 2
+			x = double(S.Session(ok));
+			y = double(S.Performance(ok));
+			p = polyfit(x, y, 1);
+			perMouse.Slope(i) = p(1);
+		end
+	end
+	perMouse.Mouse = string(perMouse.Mouse);
+	perMouse.Group = string(perMouse.Group);
+end
+
+function [meanCells, semCells, nMice, xSess] = iLearningCurve(Sess, grpOrder)
+	maxSess = max(Sess.Session);
+	xSess = (1:maxSess)';
+	meanCells = cell(numel(grpOrder), 1);
+	semCells  = cell(numel(grpOrder), 1);
+	nMice = nan(numel(grpOrder), 1);
+	
+	for k = 1:numel(grpOrder)
+		g = grpOrder(k);
+		Sg = Sess(Sess.Group == g, :);
+		mice = unique(Sg.Mouse);
+		nMice(k) = numel(mice);
+		M = nan(numel(mice), maxSess);
+		for i = 1:numel(mice)
+			Sm = Sg(Sg.Mouse == mice(i), :);
+			for s = 1:maxSess
+				row = Sm.Session == s;
+				if any(row)
+					M(i,s) = mean(double(Sm.Performance(row)), 'omitnan');
+				end
+			end
+		end
+		m = mean(M, 1, 'omitnan');
+		se = nan(1, maxSess);
+		for s = 1:maxSess
+			xs = M(:,s);
+			xs = xs(isfinite(xs));
+			if numel(xs) >= 2
+				se(s) = std(xs, 0) ./ sqrt(numel(xs));
+			elseif numel(xs) == 1
+				se(s) = 0;
+			end
+		end
+		meanCells{k} = m(:);
+		semCells{k}  = se(:);
+	end
+end
+
+function p = iRanksumSafe(x, y)
+	x = x(isfinite(x));
+	y = y(isfinite(y));
+	if isempty(x) || isempty(y)
+		p = nan;
+		return;
+	end
+	try
+		p = ranksum(x, y);
+	catch
+		p = nan;
+	end
+end
+
+function [perMouse, p] = iAddBaselineAdjustedSlope(perMouse, groupA, groupB)
+	perMouse.SlopeAdj = nan(height(perMouse),1);
+	ok = isfinite(perMouse.Slope) & isfinite(perMouse.BaselinePerf);
+	if any(ok)
+		try
+			if exist('robustfit','file')
+				b = robustfit(double(perMouse.BaselinePerf(ok)), double(perMouse.Slope(ok)));
+				perMouse.SlopeAdj(ok) = double(perMouse.Slope(ok)) - (b(1) + b(2) * double(perMouse.BaselinePerf(ok)));
+			else
+				mdl = fitlm(perMouse(ok,:), 'Slope ~ 1 + BaselinePerf');
+				perMouse.SlopeAdj(ok) = mdl.Residuals.Raw;
+			end
+		catch
+		end
+	end
+	
+	x = perMouse.SlopeAdj(perMouse.Group == string(groupA));
+	y = perMouse.SlopeAdj(perMouse.Group == string(groupB));
+	p = iRanksumSafe(x, y);
 end
 
 function [ttc, cens] = iTimeToCriterion(Sess, perMouse, thr)
-% First session index where Performance >= thr; censored if never reaches.
-ttc = nan(height(perMouse),1);
-cens = true(height(perMouse),1);
-for i = 1:height(perMouse)
-	m = string(perMouse.Mouse(i));
-	S = Sess(Sess.Mouse == m, :);
-	S = sortrows(S, 'Session');
-	if isempty(S)
-		continue;
+	% First session index where Performance >= thr; censored if never reaches.
+	ttc = nan(height(perMouse),1);
+	cens = true(height(perMouse),1);
+	for i = 1:height(perMouse)
+		m = string(perMouse.Mouse(i));
+		S = Sess(Sess.Mouse == m, :);
+		S = sortrows(S, 'Session');
+		if isempty(S)
+			continue;
+		end
+		k = find(double(S.Performance) >= thr, 1, 'first');
+		if ~isempty(k)
+			ttc(i) = double(S.Session(k));
+			cens(i) = false;
+		else
+			ttc(i) = max(double(S.Session));
+			cens(i) = true;
+		end
 	end
-	k = find(double(S.Performance) >= thr, 1, 'first');
-	if ~isempty(k)
-		ttc(i) = double(S.Session(k));
-		cens(i) = false;
-	else
-		ttc(i) = max(double(S.Session));
-		cens(i) = true;
-	end
-end
 end
 
 function [S, X] = iKaplanMeier(time, cens)
-% Kaplan–Meier survival S(t) with censor indicator.
-% time: vector (>=1)
-% cens: true if censored
-time = double(time(:));
-cens = logical(cens(:));
-ok = isfinite(time) & time > 0;
-time = time(ok);
-cens = cens(ok);
-
-if isempty(time)
-	S = 1;
-	X = 0;
-	return;
-end
-
-% event times only
-eventTimes = unique(time(~cens));
-eventTimes = sort(eventTimes);
-if isempty(eventTimes)
-	S = 1;
-	X = max(time);
-	return;
-end
-
-S = nan(numel(eventTimes),1);
-X = eventTimes;
-prodS = 1;
-for i = 1:numel(eventTimes)
-	t = eventTimes(i);
-	nAtRisk = sum(time >= t);
-	d = sum((time == t) & ~cens);
-	if nAtRisk > 0
-		prodS = prodS * (1 - d / nAtRisk);
+	% Kaplan–Meier survival S(t) with censor indicator.
+	% time: vector (>=1)
+	% cens: true if censored
+	time = double(time(:));
+	cens = logical(cens(:));
+	ok = isfinite(time) & time > 0;
+	time = time(ok);
+	cens = cens(ok);
+	
+	if isempty(time)
+		S = 1;
+		X = 0;
+		return;
 	end
-	S(i) = prodS;
-end
+	
+	% event times only
+	eventTimes = unique(time(~cens));
+	eventTimes = sort(eventTimes);
+	if isempty(eventTimes)
+		S = 1;
+		X = max(time);
+		return;
+	end
+	
+	S = nan(numel(eventTimes),1);
+	X = eventTimes;
+	prodS = 1;
+	for i = 1:numel(eventTimes)
+		t = eventTimes(i);
+		nAtRisk = sum(time >= t);
+		d = sum((time == t) & ~cens);
+		if nAtRisk > 0
+			prodS = prodS * (1 - d / nAtRisk);
+		end
+		S(i) = prodS;
+	end
 end
