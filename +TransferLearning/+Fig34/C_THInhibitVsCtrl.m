@@ -644,14 +644,15 @@ function reuse = iReuseRate_1s(DS, mouse, baseMask, idx1, kSigma, layerName)
 	try
 		qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
 		qT = struct('Mouse', mouse, 'Phase', 'Transfer', 'Stimulus', 'LightWater');
-		GL = iQueryNTATSOrEmpty(DS, qL);
-		GT = iQueryNTATSOrEmpty(DS, qT);
+		GL = DS.QueryNTATS(qL, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+		GT = DS.QueryNTATS(qT, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 		if isempty(GL) || isempty(GT)
 			return;
 		end
 		if ~all(ismember(["CellUID","NTATS"], string(GL.Properties.VariableNames))) || ~all(ismember(["CellUID","NTATS"], string(GT.Properties.VariableNames)))
 			return;
 		end
+
 		uidL = uint64(GL.CellUID);
 		uidT = uint64(GT.CellUID);
 		uid = intersect(uidL, uidT);
@@ -660,31 +661,28 @@ function reuse = iReuseRate_1s(DS, mouse, baseMask, idx1, kSigma, layerName)
 		end
 		[~, iL] = ismember(uid, uidL);
 		[~, iT] = ismember(uid, uidT);
-		XL = iNtatsData(GL.NTATS);
-		XT = iNtatsData(GT.NTATS);
-		if isempty(XL) || isempty(XT)
-			return;
-		end
-		XL = double(XL(iL, :));
-		XT = double(XT(iT, :));
+		XL = double(iNtatsData(GL.NTATS));
+		XT = double(iNtatsData(GT.NTATS));
+		XL = XL(iL, :);
+		XT = XT(iT, :);
 
-		% Layer filter (prefer QueryNTATS-provided ZLayer; fallback to DS.Cells)
-		maskZ = true(numel(uid),1);
+		% Layer filter via DS.Cells (QueryNTATS may not carry ZLayer)
 		if strlength(string(layerName)) > 0
-			zl = strings(numel(uid),1);
-			if ismember('ZLayer', GL.Properties.VariableNames)
-				zAll = string(GL.ZLayer);
-				zl = zAll(iL);
-			else
-				zl = iCellZLayer(DS, uid);
+			C = DS.Cells;
+			if isempty(C) || ~all(ismember(["CellUID","ZLayer"], string(C.Properties.VariableNames)))
+				return;
 			end
+			C.CellUID = uint64(C.CellUID);
+			[tf, loc] = ismember(uid, C.CellUID);
+			zl = strings(numel(uid),1);
+			zl(tf) = string(C.ZLayer(loc(tf)));
 			maskZ = (zl == string(layerName));
+			if ~any(maskZ)
+				return;
+			end
+			XL = XL(maskZ, :);
+			XT = XT(maskZ, :);
 		end
-		if ~any(maskZ)
-			return;
-		end
-		XL = XL(maskZ, :);
-		XT = XT(maskZ, :);
 
 		learnAct = iActiveAt1s(XL, baseMask, idx1, kSigma);
 		tranAct  = iActiveAt1s(XT, baseMask, idx1, kSigma);
@@ -692,7 +690,8 @@ function reuse = iReuseRate_1s(DS, mouse, baseMask, idx1, kSigma, layerName)
 			return;
 		end
 		reuse = mean(double(tranAct(learnAct)), 'omitnan');
-	catch
+	catch ME
+		iAppendDebugError_("iReuseRate_1s", mouse, NaT, ME);
 		reuse = NaN;
 	end
 end
@@ -704,8 +703,8 @@ function reuse = iReuseRate_1s_FirstTransferSession(DS, mouse, transferDT, baseM
 	try
 		qL = struct('Mouse', mouse, 'Phase', 'Learned', 'Stimulus', 'AudioWater');
 		qT = struct('Mouse', mouse, 'DateTime', transferDT, 'Stimulus', 'LightWater');
-		GL = iQueryNTATSOrEmpty(DS, qL);
-		GT = iQueryNTATSOrEmpty(DS, qT);
+		GL = DS.QueryNTATS(qL, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+		GT = DS.QueryNTATS(qT, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 		if isempty(GL) || isempty(GT)
 			return;
 		end
@@ -720,31 +719,28 @@ function reuse = iReuseRate_1s_FirstTransferSession(DS, mouse, transferDT, baseM
 		end
 		[~, iL] = ismember(uid, uidL);
 		[~, iT] = ismember(uid, uidT);
-		XL = iNtatsData(GL.NTATS);
-		XT = iNtatsData(GT.NTATS);
-		if isempty(XL) || isempty(XT)
-			return;
-		end
-		XL = double(XL(iL, :));
-		XT = double(XT(iT, :));
+		XL = double(iNtatsData(GL.NTATS));
+		XT = double(iNtatsData(GT.NTATS));
+		XL = XL(iL, :);
+		XT = XT(iT, :);
 
-		% Layer filter
-		maskZ = true(numel(uid),1);
+		% Layer filter via DS.Cells (QueryNTATS may not carry ZLayer)
 		if strlength(string(layerName)) > 0
-			zl = strings(numel(uid),1);
-			if ismember('ZLayer', GL.Properties.VariableNames)
-				zAll = string(GL.ZLayer);
-				zl = zAll(iL);
-			else
-				zl = iCellZLayer(DS, uid);
+			C = DS.Cells;
+			if isempty(C) || ~all(ismember(["CellUID","ZLayer"], string(C.Properties.VariableNames)))
+				return;
 			end
+			C.CellUID = uint64(C.CellUID);
+			[tf, loc] = ismember(uid, C.CellUID);
+			zl = strings(numel(uid),1);
+			zl(tf) = string(C.ZLayer(loc(tf)));
 			maskZ = (zl == string(layerName));
+			if ~any(maskZ)
+				return;
+			end
+			XL = XL(maskZ, :);
+			XT = XT(maskZ, :);
 		end
-		if ~any(maskZ)
-			return;
-		end
-		XL = XL(maskZ, :);
-		XT = XT(maskZ, :);
 
 		learnAct = iActiveAt1s(XL, baseMask, idx1, kSigma);
 		tranAct  = iActiveAt1s(XT, baseMask, idx1, kSigma);
@@ -752,8 +748,29 @@ function reuse = iReuseRate_1s_FirstTransferSession(DS, mouse, transferDT, baseM
 			return;
 		end
 		reuse = mean(double(tranAct(learnAct)), 'omitnan');
-	catch
+	catch ME
+		iAppendDebugError_("iReuseRate_1s_FirstTransferSession", mouse, transferDT, ME);
 		reuse = NaN;
+	end
+end
+
+function iAppendDebugError_(where, mouse, dt, ME)
+	% Keep the first few errors for post-mortem debugging (avoid flooding)
+	persistent ERR
+	if isempty(ERR)
+		ERR = table(string.empty(0,1), string.empty(0,1), NaT(0,1), string.empty(0,1), string.empty(0,1), ...
+			'VariableNames', {'Where','Mouse','DateTime','Identifier','Message'});
+	end
+	try
+		if height(ERR) >= 20
+			return;
+		end
+		row = table(string(where), string(mouse), iNormalizeDateTime(dt), string(ME.identifier), string(ME.message), ...
+			'VariableNames', ERR.Properties.VariableNames);
+		ERR = [ERR; row]; %#ok<AGROW>
+		assignin('base', 'Fig3_4c_Debug_ReuseErrors', ERR);
+	catch
+		% ignore
 	end
 end
 
