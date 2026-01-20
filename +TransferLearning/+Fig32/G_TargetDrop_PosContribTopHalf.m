@@ -1,5 +1,4 @@
 
-function G_TargetDrop_PosContribTopHalf
 % 图3.2g（按论文大纲口径）：
 % 剔除 Learned 阶段对相关性正贡献最高的 Top50% 细胞后，Transfer 相关性显著下降，且强于随机剔除对照（按层）。
 %
@@ -200,4 +199,3 @@ function iHideToolbar(ax)
 	end
 end
 
-end

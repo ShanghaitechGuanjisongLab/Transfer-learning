@@ -245,7 +245,7 @@ end
 function sd = iStdCellsAt_Miss(DS, mouse, dt, idx, zLayer)
 sd = NaN;
 try
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater', 'Behavior', 0);
+	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
 	G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
 	if isempty(G) || ~all(ismember(["NTATS","CellUID"], string(G.Properties.VariableNames)))
 		return;

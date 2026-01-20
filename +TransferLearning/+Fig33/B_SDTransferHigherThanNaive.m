@@ -1,4 +1,4 @@
-% 图3.3e：SD 组间差异（Transfer vs Naive），分 0.3s/1.5s 与 2/5 层
+% 图3.3b：SD 组间差异（Transfer vs Naive），分 0.3s/1.5s 与 2/5 层
 %
 % Spec (from 论文大纲.md 3.3):
 % - 1.5s (feedback) SD: Transfer significantly higher than Naive
@@ -13,10 +13,10 @@
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.Fig33.E_SDTransferHigherThanNaive
+%   TransferLearning.Fig33.B_SDTransferHigherThanNaive
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_3e_SD_TransferHigherThanNaive.svg";
+svgName = "Fig3_3b_SD_TransferHigherThanNaive.svg";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -48,10 +48,10 @@ if ismember('IsMixedAudio', T15.Properties.VariableNames)
 	T15 = T15(~T15.IsMixedAudio, :);
 end
 
-assignin('base', 'Fig3_3e_T03', T03);
-assignin('base', 'Fig3_3e_T15', T15);
+assignin('base', 'Fig3_3b_T03', T03);
+assignin('base', 'Fig3_3b_T15', T15);
 
-f = figure('Color','w', 'Name', 'Fig3.3e SD group difference');
+f = figure('Color','w', 'Name', 'Fig3.3b SD group difference');
 try
 	MATLAB.Graphics.FigureAspectRatio(10, 6, 1/2);
 catch

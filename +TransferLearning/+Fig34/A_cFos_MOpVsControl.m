@@ -12,8 +12,8 @@
 %   - Group 标注：ExpressedBrain；未标记 (MarkTimes==false) 视为 Control
 %
 % 执行方式：
-% - 本文件必须保持为脚本（SCRIPT）
-% - 在 MATLAB Editor 里打开后直接 Run/F5
+% - 本文件保持为脚本（SCRIPT）入口
+% - 以函数语法调用（按你的约束）：TransferLearning.Fig34.A_cFos_MOpVsControl()
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -138,18 +138,15 @@ Sess = iAddSessionIndex(Sess);
 perMouse = iPerMouseTable(Sess);
 
 % 4.1 learning curve (session-level; each point = one session)
-% Use all LightWater sessions, excluding:
-%   - perf==0
-%   - the first perf==1 (100%) session and all sessions after it (per mouse)
-%   - plus the last step into ceiling (session immediately before the first perf==1)
+% NOTE: 作为学习曲线展示，这里使用所有 LightWater 会话（不做 0/100% “天地板”排除）。
 [grpOrder, grpNames] = iGroupOrder();
-SessLC = iFilterSessionsForLearningCurve(Sess);
+SessLC_All = Sess;
 curveMean = cell(numel(grpOrder),1);
 curveSem  = cell(numel(grpOrder),1);
 curveN    = nan(numel(grpOrder),1);
 try
 	% Use LearningSummarize on session-level table (each row = one session)
-	ST = UniExp.LearningSummarize(SessLC(:, {'Mouse','Performance','DateTime','Group'}));
+	ST = UniExp.LearningSummarize(SessLC_All(:, {'Mouse','Performance','DateTime','Group'}));
 	rn = string(ST.Properties.RowNames);
 	ST = ST(ismember(rn, grpOrder), :);
 	[~, ord] = ismember(grpOrder, string(ST.Properties.RowNames));
@@ -160,13 +157,13 @@ try
 	curveSem  = ST.SemCurve;
 catch ME
 	warning('Fig3_4a:LearningSummarizeFailed', 'LearningSummarize failed (%s). Falling back to internal summarize.', ME.message);
-	[curveMean, curveSem, curveN] = iLearningCurve(SessLC, grpOrder);
+	[curveMean, curveSem, curveN] = iLearningCurve(SessLC_All, grpOrder);
 end
 
 % n = # mice contributing (for legend)
 for k = 1:numel(grpOrder)
 	g = grpOrder(k);
-	curveN(k) = numel(unique(SessLC.Mouse(SessLC.Group == g)));
+	curveN(k) = numel(unique(SessLC_All.Mouse(SessLC_All.Group == g)));
 end
 
 % 4.2 day0 accuracy (Phase==Transfer, earliest Transfer session per mouse)
@@ -176,8 +173,8 @@ idxMOp  = perMouse.Group == "MOp";
 statsOut.AccuracyP = accP;
 
 % 4.3 learning speed: session-level DeltaNext (one session -> one point)
-Delta = TransferLearning.Fig34.iBuildSessionDeltaNextTable(SessLC);
-Delta.Group = string(Delta.Group);
+SessSpeed = iFilterSessionsForLearningCurve(Sess);
+Delta = TransferLearning.Fig34.iBuildSessionDeltaNextTable(SessSpeed);
 dCtrl  = Delta.DeltaPerf(Delta.Group == "Control");
 dInhib = Delta.DeltaPerf(Delta.Group == "MOp");
 [speedP, ~] = TransferLearning.Fig34.iRanksumSafe(dCtrl, dInhib);

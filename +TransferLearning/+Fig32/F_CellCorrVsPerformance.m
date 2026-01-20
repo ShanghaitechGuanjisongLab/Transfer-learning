@@ -1,5 +1,4 @@
 
-function F_CellCorrVsPerformance
 % 图3.2f（按论文大纲口径）：相关性与 Performance 显著相关（分 N/T 和 2/5 层）
 %
 % 4 子图：
@@ -149,4 +148,3 @@ function iHideToolbar(ax)
 	end
 end
 
-end

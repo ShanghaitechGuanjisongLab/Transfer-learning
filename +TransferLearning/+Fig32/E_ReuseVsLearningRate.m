@@ -1,4 +1,3 @@
-function E_ReuseVsLearningRate
 % Fig3.2e（按论文大纲口径）：复用提高 1s/1.5s 相关性（4 panels）
 %
 % Panels:
@@ -280,4 +279,3 @@ function iHideToolbar(ax)
 	end
 end
 
-end

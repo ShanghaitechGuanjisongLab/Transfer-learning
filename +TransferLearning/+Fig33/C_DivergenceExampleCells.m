@@ -1,4 +1,4 @@
-% 图3.3b：示例细胞钙曲线（细胞间标准差低 vs 高）
+% 图3.3c：示例细胞钙曲线（细胞间标准差低 vs 高）
 %
 % Lower inter-cell SD example (within ONE mouse):
 % - Choose 3~4 cells (same mouse)
@@ -25,7 +25,7 @@
 % Execution:
 %   IMPORTANT: MUST REMAIN A SCRIPT (do not convert to a function).
 %   Call via package name:
-%     TransferLearning.Fig33.B_DivergenceExampleCells
+%     TransferLearning.Fig33.C_DivergenceExampleCells
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -70,13 +70,13 @@ if ~any(baseMask)
 	error('Fig3_3a:NoBaselineSamples', 'baseline window -3~0s has no samples in TransferLearning.Xs');
 end
 if ~any(plotMask)
-	error('Fig3_3b:NoPlotSamples', 'plot window -1~1s has no samples in TransferLearning.Xs');
+	error('Fig3_3c:NoPlotSamples', 'plot window -1~1s has no samples in TransferLearning.Xs');
 end
 
 % active sample (closest to 1s)
 [dtMin, actIdx] = min(abs(xsSec - 1));
 if isempty(actIdx) || ~isfinite(dtMin) || dtMin > 0.25
-	error('Fig3_3b:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
+	error('Fig3_3c:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
 end
 
 kSigma = 3;
@@ -106,18 +106,18 @@ for nTrialsDesired = desiredTrialsList
 	end
 end
 if ~okPaired
-	error('Fig3_3b:NoPairedExampleFound', 'Failed to find paired examples with the same number of trials (tried %s).', mat2str(desiredTrialsList));
+	error('Fig3_3c:NoPairedExampleFound', 'Failed to find paired examples with the same number of trials (tried %s).', mat2str(desiredTrialsList));
 end
 
-assignin('base', 'Fig3_3b_LowSDExample',  lowEx);
-assignin('base', 'Fig3_3b_HighSDExample', highEx);
+assignin('base', 'Fig3_3c_LowSDExample',  lowEx);
+assignin('base', 'Fig3_3c_HighSDExample', highEx);
 %% 
 
 % --- 3) Plot
 nCols = numel(lowEx.TrialUIDs);
 
-svgName = "Fig3_3b_CellToCellSD_ExampleDistributions.svg";
-figName = sprintf('Fig3.3b Cell-to-cell SD examples (Low=%s, High=%s)', lowEx.Mouse, highEx.Mouse);
+svgName = "Fig3_3c_CellToCellSD_ExampleDistributions.svg";
+figName = sprintf('Fig3.3c Cell-to-cell SD examples (Low=%s, High=%s)', lowEx.Mouse, highEx.Mouse);
 f = figure('Name', figName, 'Color','w');
 try
 	MATLAB.Graphics.FigureAspectRatio(16, 5, 1);
@@ -273,11 +273,11 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 		if ~isempty(fieldnames(qFallback))
 			T = iTableQueryOrEmpty(DS, qFallback);
 			label = iLabelOfQuery(qFallback);
-			warning('Fig3_3a:FallbackQuery', 'Primary query returned empty; using fallback: %s', label);
+			warning('Fig3_3c:FallbackQuery', 'Primary query returned empty; using fallback: %s', label);
 		end
 	end
 	if isempty(T) || height(T) == 0
-		error('Fig3_3b:EmptyQuery', 'No trials returned for mode=%s.', string(mode));
+		error('Fig3_3c:EmptyQuery', 'No trials returned for mode=%s.', string(mode));
 	end
 
 	T.Mouse = string(T.Mouse);
@@ -338,13 +338,13 @@ function [ex, label] = iFindExample(DS, Ts, C, qPrimary, qFallback, xsSec, baseM
 			ex.ActiveMatrix = out.Active;
 				ex.InactiveMatrix = out.Inactive;
 			ex.Z = out.Z;
-			fprintf('Fig3.3b %s example: Mouse=%s %s | %s | cells=[%s] trials=[%s]\n', ...
+			fprintf('Fig3.3c %s example: Mouse=%s %s | %s | cells=[%s] trials=[%s]\n', ...
 				string(mode), m, string(dt), zPick, strjoin(string(out.CellUIDs(:).'), ','), strjoin(string(out.TrialUIDs(:).'), ','));
 			return;
 		end
 	end
 
-	error('Fig3_3b:NoExampleFound', 'Failed to find %s example within %d sessions (query=%s).', string(mode), maxTry, label);
+	error('Fig3_3c:NoExampleFound', 'Failed to find %s example within %d sessions (query=%s).', string(mode), maxTry, label);
 end
 
 
@@ -358,10 +358,10 @@ function [ex, srcLabel] = iFindExample2Sources(DS1, Ts1, C1, src1, q1, DS2, Ts2,
 		try
 			[ex, ~] = iFindExample(DS2, Ts2, C2, q2, struct(), xsSec, baseMask, actIdx, kSigma, mode, nTrialsDesired, excludeMouse);
 			srcLabel = string(src2);
-			warning('Fig3_3b:SourceFallback', 'Failed on %s (%s). Falling back to %s.', string(src1), ME1.identifier, string(src2));
+			warning('Fig3_3c:SourceFallback', 'Failed on %s (%s). Falling back to %s.', string(src1), ME1.identifier, string(src2));
 			return;
 		catch ME2
-			error('Fig3_3b:SourceBothFailed', 'Failed to find example in both sources. %s: %s | %s: %s', ...
+			error('Fig3_3c:SourceBothFailed', 'Failed to find example in both sources. %s: %s | %s: %s', ...
 			string(src1), ME1.message, string(src2), ME2.message);
 		end
 	end

@@ -1,6 +1,6 @@
-function T = iBuildSpeedVsSd_ByGroupLayerMissOnly(targetSec)
+function T = iBuildSpeedVsSd_ByGroupLayerAllTrials(targetSec)
 % Build session-step table for Fig3.3c/d:
-% miss-only inter-cell SD (by layer) vs forward-diff learning speed.
+% inter-cell SD (by layer; all trials) vs forward-diff learning speed.
 %
 % Returns one-row-per-session-step table with:
 %   Mouse, DateTime, Group, Performance, LearningSpeed_DeltaNext,
@@ -8,18 +8,18 @@ function T = iBuildSpeedVsSd_ByGroupLayerMissOnly(targetSec)
 %
 % Notes:
 % - Performance is LightWater-only session performance computed from Trials.
-% - Miss-only SD uses QueryNTATS with Behavior==0 (LightWater).
+% - SD uses QueryNTATS on LightWater without Behavior filtering (i.e., all trials).
 % - Sessions with any AudioWater trials in the session are excluded.
 
 sec = double(targetSec);
 if ~(isfinite(sec) && sec > -10 && sec < 20)
-	error('Fig33:iBuildSpeedVsSd_ByGroupLayerMissOnly:BadTarget', 'Invalid targetSec=%g', sec);
+	error('Fig33:iBuildSpeedVsSd_ByGroupLayerAllTrials:BadTarget', 'Invalid targetSec=%g', sec);
 end
 
 xsSec = seconds(TransferLearning.Xs);
 [dtMin, idx] = min(abs(xsSec - sec));
 if isempty(idx) || ~isfinite(dtMin) || dtMin > 0.25
-	error('Fig33:iBuildSpeedVsSd_ByGroupLayerMissOnly:NoSample', 'Cannot find a sample close to %.3gs in TransferLearning.Xs.', sec);
+	error('Fig33:iBuildSpeedVsSd_ByGroupLayerAllTrials:NoSample', 'Cannot find a sample close to %.3gs in TransferLearning.Xs.', sec);
 end
 
 secTag = iSecTag(sec);
@@ -122,7 +122,7 @@ if isempty(SessPerf)
 	return;
 end
 
-% Miss-only SD by layer
+% Inter-cell SD by layer (all trials)
 std23 = nan(height(SessPerf), 1);
 std5  = nan(height(SessPerf), 1);
 for i = 1:height(SessPerf)
@@ -175,12 +175,12 @@ if isempty(Tblk)
 	return;
 end
 if ~isprop(DS, 'Trials')
-	error('Fig33:iBuildSpeedVsSd_ByGroupLayerMissOnly:MissingTrials', 'DataSet %s has no Trials.', class(DS));
+	error('Fig33:iBuildSpeedVsSd_ByGroupLayerAllTrials:MissingTrials', 'DataSet %s has no Trials.', class(DS));
 end
 Tr = DS.Trials;
 need = {'BlockUID','Stimulus','Behavior'};
 if ~all(ismember(need, Tr.Properties.VariableNames))
-	error('Fig33:iBuildSpeedVsSd_ByGroupLayerMissOnly:TrialsMissingFields', 'Trials table for %s lacks required fields.', class(DS));
+	error('Fig33:iBuildSpeedVsSd_ByGroupLayerAllTrials:TrialsMissingFields', 'Trials table for %s lacks required fields.', class(DS));
 end
 TrStim = string(Tr.Stimulus);
 TrLW = Tr(TrStim == "LightWater", {'BlockUID','Behavior'});
@@ -238,11 +238,11 @@ if isempty(T)
 	return;
 end
 if ~isprop(DS, 'Trials')
-	error('Fig33:iBuildSpeedVsSd_ByGroupLayerMissOnly:MissingTrials', 'DataSet %s has no Trials; cannot detect mixing.', class(DS));
+	error('Fig33:iBuildSpeedVsSd_ByGroupLayerAllTrials:MissingTrials', 'DataSet %s has no Trials; cannot detect mixing.', class(DS));
 end
 Tr = DS.Trials;
 if ~ismember('Stimulus', Tr.Properties.VariableNames) || ~ismember('BlockUID', Tr.Properties.VariableNames)
-	error('Fig33:iBuildSpeedVsSd_ByGroupLayerMissOnly:TrialsMissingFields', 'Trials table for %s lacks Stimulus/BlockUID.', class(DS));
+	error('Fig33:iBuildSpeedVsSd_ByGroupLayerAllTrials:TrialsMissingFields', 'Trials table for %s lacks Stimulus/BlockUID.', class(DS));
 end
 TrStim = string(Tr.Stimulus);
 TrBU = uint64(Tr.BlockUID);
@@ -266,10 +266,10 @@ badMice = mice(bad);
 end
 
 function sd = iStdCellsAt_Miss(DS, mouse, dt, idx, zLayer)
-% SD of Median(DeltaF) across cells at given time index, Miss-only LightWater trials.
+% SD of Median(DeltaF) across cells at given time index, LightWater all trials.
 sd = NaN;
 try
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater', 'Behavior', 0);
+	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
 	G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
 	if isempty(G) || ~all(ismember(["NTATS","CellUID"], string(G.Properties.VariableNames)))
 		return;

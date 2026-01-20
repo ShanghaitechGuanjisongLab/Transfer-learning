@@ -1,18 +1,18 @@
-% 图3.3d：1.5s（反馈）SD 与学习速率的关系（Naive vs Transfer，分 2/5 层）
+% 图3.3e：1.5s（反馈）SD 与学习速率的关系（Naive vs Transfer，分 2/5 层）
 %
 % Implementation:
 % - Use session-level table from:
-%     TransferLearning.Fig33.iBuildSpeedVsSd_ByGroupLayerMissOnly(1.5)
+%     TransferLearning.Fig33.iBuildSpeedVsSd_ByGroupLayerAllTrials(1.5)
 % - Plot Spearman correlations for LearningSpeed_DeltaNext.
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.Fig33.D_SD1p5sVsLearningSpeed
+%   TransferLearning.Fig33.E_SD1p5sVsLearningSpeed
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_3d_SD1p5s_vs_LearningSpeed.svg";
+svgName = "Fig3_3e_SD1p5s_vs_LearningSpeed.svg";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -30,13 +30,13 @@ try
 catch
 end
 
-T = TransferLearning.Fig33.iBuildSpeedVsSd_ByGroupLayerMissOnly(1.5);
+T = TransferLearning.Fig33.iBuildSpeedVsSd_ByGroupLayerAllTrials(1.5);
 if isempty(T)
-	error('Fig3_3d:Empty', 'Speed-vs-SD table is empty.');
+	error('Fig3_3e:Empty', 'Speed-vs-SD table is empty.');
 end
 T.Group = string(T.Group);
 
-f = figure('Color','w', 'Name', 'Fig3.3d SD@1.5s vs learning speed');
+f = figure('Color','w', 'Name', 'Fig3.3e SD@1.5s vs learning speed');
 try
 	MATLAB.Graphics.FigureAspectRatio(10, 6, 1/2);
 catch
