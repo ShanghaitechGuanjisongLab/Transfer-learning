@@ -242,7 +242,7 @@ for k = 1:numel(grpOrder)
 end
 xlabel(ax4, 'Session');
 ylabel(ax4, 'Fraction reached');
-title(ax4, sprintf('Reached criterion (%.0f%%)', thr*100));
+title(ax4, sprintf('Reached criterion (%.0f%%)', thr*100), 'Interpreter','none');
 legend(ax4, grpOrder, 'Location', 'best');
 box(ax4,'off');
 

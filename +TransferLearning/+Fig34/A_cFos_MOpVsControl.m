@@ -292,9 +292,9 @@ hold(ax4,'on');
 stairs(ax4, [0; xn], [0; 1-sn], 'LineWidth', 1.8);
 stairs(ax4, [0; xm], [0; 1-sm], 'LineWidth', 1.8);
 ylim(ax4, [0 1]);
-xlabel(ax4, 'Session to criterion');
-ylabel(ax4, 'Fraction reached');
-title(ax4, 'Time to criterion');
+xlabel(ax4, 'Session', 'Interpreter','none');
+ylabel(ax4, 'Fraction reached', 'Interpreter','none');
+title(ax4, sprintf('Reached criterion (%.0f%%)', thr*100), 'Interpreter','none');
 legend(ax4, {sprintf('Control (n=%d)', sum(idxCtrl)), sprintf('Inhibited (n=%d)', sum(idxMOp))}, 'Location','southeast');
 box(ax4,'off');
 
