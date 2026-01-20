@@ -195,17 +195,20 @@ function [rows, skip] = iNaiveMouseRowsOneDataSet(DS, mice, baseMask, idx1, kSig
 			skip = [skip; table(m, string(class(DS)), "NoPureNaiveLightSession", 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
 			continue;
 		end
+		% Learned LightWater is NOT required for the exported panels (Z@1s, ActiveRate).
+		% Keep the mouse even if Learned LightWater is missing; reuse metrics become NaN.
 		if isempty(Tl)
 			skip = [skip; table(m, string(class(DS)), "NoPureLearnedLightSession", 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
-			continue;
+			dtL = NaT;
 		end
 		if numel(Tn) < minTrials
 			skip = [skip; table(m, string(class(DS)), "TooFewNaiveTrials", 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
 			continue;
 		end
-		if numel(Tl) < minTrials
+		if ~isempty(Tl) && numel(Tl) < minTrials
 			skip = [skip; table(m, string(class(DS)), "TooFewLearnedTrials", 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
-			continue;
+			Tl = [];
+			dtL = NaT;
 		end
 		cellUID = iMouseCellUID(DS, m);
 		if isempty(cellUID)
@@ -213,39 +216,46 @@ function [rows, skip] = iNaiveMouseRowsOneDataSet(DS, mice, baseMask, idx1, kSig
 			continue;
 		end
 		Zn = iMedianTraceZScore(DS, cellUID, Tn);
-		Zl = iMedianTraceZScore(DS, cellUID, Tl);
-		if isempty(Zn) || isempty(Zl)
+		if isempty(Zn)
 			skip = [skip; table(m, string(class(DS)), "QueryNTATSEmpty", 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
 			continue;
 		end
-		% Intersect cells to make reuse meaningful
-		uid = intersect(uint64(Zn.CellUID), uint64(Zl.CellUID));
-		if numel(uid) < minCells
-			skip = [skip; table(m, string(class(DS)), sprintf("TooFewCommonCells(%d)", numel(uid)), 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
-			continue;
-		end
-		Zn = sortrows(Zn(ismember(uint64(Zn.CellUID), uid), :), 'CellUID');
-		Zl = sortrows(Zl(ismember(uint64(Zl.CellUID), uid), :), 'CellUID');
-
+		% Primary panel metrics are computed from Naive LightWater only.
 		actN = iActiveAt1s(Zn.Trace, baseMask, idx1, kSigma);
-		actL = iActiveAt1s(Zl.Trace, baseMask, idx1, kSigma);
-
-		uidActN = uid(actN);
-		uidActL = uid(actL);
-
-		denL = numel(uidActL);
-		denN = numel(uidActN);
-		reuseNL_over_L = NaN;
-		reuseNL_over_N = NaN;
-		if denL > 0
-			reuseNL_over_L = numel(intersect(uidActN, uidActL)) / denL;
-		end
-		if denN > 0
-			reuseNL_over_N = numel(intersect(uidActN, uidActL)) / denN;
-		end
-
 		meanZ1 = mean(Zn.Trace(:, idx1), 'omitnan');
 		activeRate = mean(double(actN), 'omitnan');
+		uidAll = uint64(Zn.CellUID);
+		uidActN = uidAll(actN);
+
+		% Optional reuse metrics (Naive vs Learned LightWater) if Learned is available.
+		reuseNL_over_L = NaN;
+		reuseNL_over_N = NaN;
+		if ~isempty(Tl)
+			Zl = iMedianTraceZScore(DS, cellUID, Tl);
+			if ~isempty(Zl)
+				uidCommon = intersect(uint64(Zn.CellUID), uint64(Zl.CellUID));
+				if numel(uidCommon) >= minCells
+					ZnC = sortrows(Zn(ismember(uint64(Zn.CellUID), uidCommon), :), 'CellUID');
+					ZlC = sortrows(Zl(ismember(uint64(Zl.CellUID), uidCommon), :), 'CellUID');
+					actN_C = iActiveAt1s(ZnC.Trace, baseMask, idx1, kSigma);
+					actL_C = iActiveAt1s(ZlC.Trace, baseMask, idx1, kSigma);
+					uidActN_C = uidCommon(actN_C);
+					uidActL_C = uidCommon(actL_C);
+					denL = numel(uidActL_C);
+					denN = numel(uidActN_C);
+					if denL > 0
+						reuseNL_over_L = numel(intersect(uidActN_C, uidActL_C)) / denL;
+					end
+					if denN > 0
+						reuseNL_over_N = numel(intersect(uidActN_C, uidActL_C)) / denN;
+					end
+				else
+					skip = [skip; table(m, string(class(DS)), sprintf("TooFewCommonCells(%d)", numel(uidCommon)), 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
+				end
+			else
+				skip = [skip; table(m, string(class(DS)), "QueryNTATSEmpty(Learned)", 'VariableNames', skip.Properties.VariableNames)]; %#ok<AGROW>
+			end
+		end
 
 		meanCurve = mean(Zn.Trace, 1, 'omitnan');
 		meanCurve = meanCurve(:);
@@ -254,7 +264,7 @@ function [rows, skip] = iNaiveMouseRowsOneDataSet(DS, mice, baseMask, idx1, kSig
 		end
 
 		rows = [rows; table(m, string(class(DS)), dtN, dtL, ...
-			numel(Tn), numel(Tl), numel(uid), meanZ1, activeRate, nnz(actN), ...
+			numel(Tn), numel(Tl), numel(uidAll), meanZ1, activeRate, nnz(actN), ...
 			reuseNL_over_L, reuseNL_over_N, ...
 			{meanCurve}, "", ...
 			'VariableNames', rows.Properties.VariableNames)]; %#ok<AGROW>
