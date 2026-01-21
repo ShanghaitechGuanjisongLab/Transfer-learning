@@ -273,6 +273,15 @@ iHideToolbar(ax2);
 [mT, sT] = iMeanSemCurves(rows.MeanCurve_ZScore(idxTH));
 iPlotMeanSem(ax2, xsSec, mC, sC, cols(1,:), 'Ctrl');
 iPlotMeanSem(ax2, xsSec, mT, sT, cols(2,:), 'TH');
+% Cue(:) and Water(|) timing lines
+try
+	h0 = findall(ax2, 'Type', 'ConstantLine');
+	TransferLearning.DrawCueWaterLines(ax2);
+	h1 = findall(ax2, 'Type', 'ConstantLine');
+	newH = setdiff(h1, h0);
+	set(newH, 'HandleVisibility', 'off');
+catch
+end
 xlabel(ax2, 'Time (s)');
 ylabel(ax2, 'Z-score');
 title(ax2, 'Mean Ca trace (MOp5)');
