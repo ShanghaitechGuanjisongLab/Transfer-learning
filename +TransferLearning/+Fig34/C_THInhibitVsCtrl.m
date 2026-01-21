@@ -101,6 +101,33 @@ sessionForSummary = SessAll(:, ["Mouse","DateTime","Performance","Group"]);
 sessionForSummary.Group = string(sessionForSummary.Group);
 sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
 
+% --- 3c) ALSO include legacy PO chemogenetic inhibition behavior into TH group (Panel1 only)
+% Reference: \\Data-Server-2\个人数据\张天夫\202512\WTMulti.m
+poMatPath = "\\Data-Server-2\个人数据\张天夫\202505\化学遗传抑制PO.v1.mat";
+try
+	if exist(poMatPath, 'file')
+		PO = UniExp.DataSet(poMatPath);
+		POTable = PO.TableQuery(["Mouse","DateTime","Performance","Phase"], Design="LightWater", Expression="溢出");
+		if ~isempty(POTable)
+			if ismember('Phase', POTable.Properties.VariableNames)
+				POTable.Phase = string(POTable.Phase);
+				POTable(POTable.Phase=="Recall", :) = [];
+			end
+			poSess = POTable(:, intersect(["Mouse","DateTime","Performance"], string(POTable.Properties.VariableNames), 'stable'));
+			poSess.Mouse = string(poSess.Mouse);
+			poSess.DateTime = iNormalizeDateTime(poSess.DateTime);
+			poSess.Group = repmat("TH", height(poSess), 1);
+			poSess = unique(poSess(:, ["Mouse","DateTime","Performance","Group"]), 'rows');
+			% Merge into session-level table used by LearningSummarize
+			sessionForSummary = [sessionForSummary; poSess]; %#ok<AGROW>
+			sessionForSummary.Group = string(sessionForSummary.Group);
+			sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
+		end
+	end
+catch
+	% Keep figure generation robust even if PO mat is unavailable.
+end
+
 PValueLS = NaN;
 try
 	[SummaryL, PValueLS] = UniExp.LearningSummarize(sessionForSummary);
