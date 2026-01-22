@@ -10,7 +10,7 @@
 %   1) LightWater 学习曲线（所有 LightWater 会话，不限 Phase；UniExp.LearningSummarize + MultiShadowedLines）
 %   2) 平均钙曲线（Median NTATS ZScore，Transfer，mean±SEM across mice）
 %   3) 复用率：Reuse(1s)=P(TransferLight active@1s | LearnedAudio active@1s)（Median NTATS ZScore；每鼠第一个 Transfer 会话；不分层）
-%   4) 稳定性：StdCells@1.5s（Median NTATS DeltaF，Transfer，会话内跨细胞 SD；仅 MOp5）
+%   4) 稳定性：StdCells@1.5s（Median NTATS DeltaF；每会话一个点；仅 MOp5；与 Fig3.4c-4 图一致）
 %
 % 执行方式（工程约束）：
 % - 本文件必须保持为脚本（SCRIPT）。
@@ -131,9 +131,40 @@ idxV7 = rows.Group=="Vacation7";
 pReuse = iRanksumSafe(rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7));
 pSD   = iRanksumSafe(rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7));
 
+% --- 4b) Stability (ALL LightWater sessions): each session as one sample (match Fig3.4c)
+SessLW_C = iAllLightWaterSessions(CtrlDS);
+SessLW_V = iAllLightWaterSessions(V7DS);
+SessLW_C.Group(:) = "Ctrl";
+SessLW_V.Group(:) = "Vacation7";
+SessLW = [SessLW_C; SessLW_V];
+
+rowsLW = table(string.empty(0,1), NaT(0,1), string.empty(0,1), nan(0,1), ...
+	'VariableNames', {'Mouse','DateTime','Group','StdCells1p5'});
+for i = 1:height(SessLW)
+	grp = string(SessLW.Group(i));
+	m = string(SessLW.Mouse(i));
+	dt = SessLW.DateTime(i);
+	if grp=="Ctrl"
+		DS = CtrlDS;
+	else
+		DS = V7DS;
+	end
+	sd15_all = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
+	rowsLW = [rowsLW; table(m, dt, grp, sd15_all, 'VariableNames', rowsLW.Properties.VariableNames)]; %#ok<AGROW>
+end
+
+idxCtrlLW = rowsLW.Group=="Ctrl";
+idxV7LW = rowsLW.Group=="Vacation7";
+pSD_LW = iRanksumSafe(rowsLW.StdCells1p5(idxCtrlLW), rowsLW.StdCells1p5(idxV7LW));
+
+assignin('base', 'Vacation7VsCtrl_AllLightWaterSessions', SessLW);
+assignin('base', 'Vacation7VsCtrl_MOp5_SD_AllLightWaterSessions', rowsLW);
+
 statsOut = struct();
 statsOut.P_Reuse_1s = pReuse;
 statsOut.P_StdCells1p5 = pSD;
+statsOut.P_StdCells1p5_AllLightWaterSessions = pSD_LW;
+statsOut.N_AllLightWaterSessions = [sum(idxCtrlLW), sum(idxV7LW)];
 
 % --- 5) Plot (2x2)
 f = figure('Color','w', 'Name', 'Fig3.4d Vacation7 vs Ctrl');
@@ -191,6 +222,15 @@ iHideToolbar(ax2);
 [mV, sV] = iMeanSemCurves(rows.MeanCurve_ZScore(idxV7));
 iPlotMeanSem(ax2, xsSec, mC, sC, cols(1,:), 'Ctrl');
 iPlotMeanSem(ax2, xsSec, mV, sV, cols(2,:), 'Vacation7');
+% Cue(:) and Water(|) timing lines
+try
+	h0 = findall(ax2, 'Type', 'ConstantLine');
+	TransferLearning.DrawCueWaterLines(ax2);
+	h1 = findall(ax2, 'Type', 'ConstantLine');
+	newH = setdiff(h1, h0);
+	set(newH, 'HandleVisibility', 'off');
+catch
+end
 xlabel(ax2, 'Time (s)');
 ylabel(ax2, 'Z-score');
 title(ax2, 'Mean Ca (Transfer; filtered)');
@@ -214,10 +254,10 @@ grid(ax3,'on');
 ax4 = nexttile(tlo, 4);
 hold(ax4,'on');
 iHideToolbar(ax4);
-iSwarm2(ax4, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), {'Ctrl','Vacation7'}, 'Inter-cell SD @1.5 s (MOp5)');
+iSwarm2(ax4, rowsLW.StdCells1p5(idxCtrlLW), rowsLW.StdCells1p5(idxV7LW), {'Ctrl','Vacation7'}, 'Inter-cell SD @1.5 s (MOp5)');
 title(ax4, 'Stability');
 try
-	iPValuePLineScatter(ax4, 1, 2, rows.StdCells1p5(idxCtrl), rows.StdCells1p5(idxV7), pSD);
+	iPValuePLineScatter(ax4, 1, 2, rowsLW.StdCells1p5(idxCtrlLW), rowsLW.StdCells1p5(idxV7LW), pSD_LW);
 catch
 end
 grid(ax4,'on');
@@ -305,6 +345,33 @@ for iM = 1:numel(mice)
 	keep(rowsM(k)) = true;
 end
 Sess = Sess(keep, :);
+end
+
+function Sess = iAllLightWaterSessions(DS)
+% Return unique sessions (Mouse, DateTime) for ALL LightWater blocks.
+Sess = table(string.empty(0,1), NaT(0,1), 'VariableNames', {'Mouse','DateTime'});
+T = table();
+try
+	T = DS.TableQuery(["Mouse","DateTime","Stimulus"], Stimulus="LightWater");
+catch
+	try
+		T = DS.TableQuery(["Mouse","DateTime","Design"], Design="LightWater");
+	catch
+		T = table();
+	end
+end
+if isempty(T)
+	return;
+end
+T.Mouse = string(T.Mouse);
+T.DateTime = iNormalizeDateTime(T.DateTime);
+T = T(~ismissing(T.Mouse) & ~ismissing(T.DateTime), :);
+if isempty(T)
+	return;
+end
+Sess = unique(T(:, {'Mouse','DateTime'}), 'rows');
+Sess = sortrows(Sess, ["Mouse","DateTime"]);
+Sess = iDropMixedSessions(DS, Sess);
 end
 
 function B = iQueryLightWaterBlocks(DS)
@@ -487,22 +554,31 @@ end
 end
 
 function sd15 = iStdCells1p5_DeltaF(DS, mouse, dt, idx15, zLayer)
+% Match Fig3.4c: filter by QueryNTATS-provided ZLayer when available.
 sd15 = NaN;
+layerName = string(zLayer);
+q = struct('Mouse', string(mouse), 'DateTime', dt, 'Stimulus', 'LightWater');
 try
-	q = struct('Mouse', mouse, 'DateTime', dt, 'Stimulus', 'LightWater');
 	G = DS.QueryNTATS(q, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
-	if isempty(G) || ~all(ismember(["NTATS"], string(G.Properties.VariableNames)))
+catch
+	return;
+end
+if isempty(G) || ~ismember("NTATS", string(G.Properties.VariableNames))
+	return;
+end
+if strlength(layerName) > 0 && ismember("ZLayer", string(G.Properties.VariableNames))
+	zl = string(G.ZLayer);
+	G = G(zl==layerName, :);
+	if isempty(G)
 		return;
 	end
-	M = iNtatsData(G.NTATS);
-	if nargin >= 5 && strlength(string(zLayer)) > 0
-		M = iFilterByZLayer(DS, G, M, string(zLayer));
-	end
-	v = double(M(:, idx15));
-	sd15 = std(v, 0, 1, 'omitnan');
-catch
-	sd15 = NaN;
 end
+M = iNtatsData(G.NTATS);
+if isempty(M) || idx15 < 1 || idx15 > size(M,2)
+	return;
+end
+v = double(M(:, idx15));
+sd15 = std(v, 'omitnan');
 end
 
 function M = iFilterByZLayer(DS, G, M, zLayer)
