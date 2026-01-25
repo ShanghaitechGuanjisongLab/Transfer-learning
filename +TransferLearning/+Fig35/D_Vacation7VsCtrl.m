@@ -93,33 +93,44 @@ catch
 	SummaryL = UniExp.LearningSummarize(sessionForSummary);
 end
 
-% --- 4) Compute per-session metrics
-rows = table(string.empty(0,1), NaT(0,1), string.empty(0,1), ...
-	nan(0,1), nan(0,1), nan(0,1), nan(0,1), nan(0,1), ...
-	cell(0,1), ...
-	'VariableNames', {'Mouse','DateTime','Group', 'Performance','Reuse_1s','StdCells1p5','NCells_Reuse','NCells_ZScore','MeanCurve_ZScore'});
+% --- 4) Compute per-session metrics (one Transfer session per mouse)
+nSess = height(Sess);
+Mouse = strings(nSess, 1);
+DateTime = NaT(nSess, 1);
+Group = strings(nSess, 1);
+Performance = nan(nSess, 1);
+Reuse_1s = nan(nSess, 1);
+StdCells1p5 = nan(nSess, 1);
+NCells_Reuse = nan(nSess, 1);
+NCells_ZScore = nan(nSess, 1);
+MeanCurve_ZScore = cell(nSess, 1);
 
-for i = 1:height(Sess)
+for i = 1:nSess
 	m = string(Sess.Mouse(i));
 	dt = Sess.DateTime(i);
 	grp = string(Sess.Group(i));
-	
+
+	Mouse(i) = m;
+	DateTime(i) = dt;
+	Group(i) = grp;
+
 	if grp=="Ctrl"
-		perf = iSessionPerformance(CtrlDS, m, dt, phaseName, stimName);
+		Performance(i) = iSessionPerformance(CtrlDS, m, dt, phaseName, stimName);
 		DS = CtrlDS;
 	else
-		perf = iSessionPerformance(V7DS, m, dt, phaseName, stimName);
+		Performance(i) = iSessionPerformance(V7DS, m, dt, phaseName, stimName);
 		DS = V7DS;
 	end
-	
-	[reuse, nReuse] = iReuse1s_LearnedAudio_to_TransferLight(DS, m, dt, idx1, baseMask, kSigma, "MOp2/3");
-	keepUID = iLearnedActiveCellUIDs_1s(DS, m, idx1, baseMask, kSigma);
-	[meanCurve, nCellZ] = iMeanCurveZScore(DS, m, dt, keepUID);
-	sd15 = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
-	
-	rows = [rows; table(m, dt, grp, perf, reuse, sd15, nReuse, nCellZ, {meanCurve}, ...
-		'VariableNames', rows.Properties.VariableNames)]; %#ok<AGROW>
+
+	% Query Learned(AudioWater) once, reuse for both Reuse@1s and curve filtering.
+	[learnedCell, keepUID] = iLearnedAudioCellTable_1s(DS, m, idx1, baseMask, kSigma);
+	[Reuse_1s(i), NCells_Reuse(i)] = iReuse1s_LearnedAudio_to_TransferLight(DS, m, dt, idx1, baseMask, kSigma, "MOp2/3", learnedCell);
+	[MeanCurve_ZScore{i}, NCells_ZScore(i)] = iMeanCurveZScore(DS, m, dt, keepUID);
+	StdCells1p5(i) = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
 end
+
+rows = table(Mouse, DateTime, Group, Performance, Reuse_1s, StdCells1p5, NCells_Reuse, NCells_ZScore, MeanCurve_ZScore, ...
+	'VariableNames', {'Mouse','DateTime','Group', 'Performance','Reuse_1s','StdCells1p5','NCells_Reuse','NCells_ZScore','MeanCurve_ZScore'});
 
 assignin('base', 'Fig3_5d_Vacation7VsCtrl_TransferSessions', Sess);
 assignin('base', 'Fig3_5d_Vacation7VsCtrl_Rows', rows);
@@ -138,20 +149,26 @@ SessLW_C.Group(:) = "Ctrl";
 SessLW_V.Group(:) = "Vacation7";
 SessLW = [SessLW_C; SessLW_V];
 
-rowsLW = table(string.empty(0,1), NaT(0,1), string.empty(0,1), nan(0,1), ...
-	'VariableNames', {'Mouse','DateTime','Group','StdCells1p5'});
-for i = 1:height(SessLW)
+nLW = height(SessLW);
+MouseLW = strings(nLW, 1);
+DateTimeLW = NaT(nLW, 1);
+GroupLW = strings(nLW, 1);
+StdCells1p5LW = nan(nLW, 1);
+for i = 1:nLW
 	grp = string(SessLW.Group(i));
 	m = string(SessLW.Mouse(i));
 	dt = SessLW.DateTime(i);
+	MouseLW(i) = m;
+	DateTimeLW(i) = dt;
+	GroupLW(i) = grp;
 	if grp=="Ctrl"
 		DS = CtrlDS;
 	else
 		DS = V7DS;
 	end
-	sd15_all = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
-	rowsLW = [rowsLW; table(m, dt, grp, sd15_all, 'VariableNames', rowsLW.Properties.VariableNames)]; %#ok<AGROW>
+	StdCells1p5LW(i) = iStdCells1p5_DeltaF(DS, m, dt, idx15, "MOp5");
 end
+rowsLW = table(MouseLW, DateTimeLW, GroupLW, StdCells1p5LW, 'VariableNames', {'Mouse','DateTime','Group','StdCells1p5'});
 
 idxCtrlLW = rowsLW.Group=="Ctrl";
 idxV7LW = rowsLW.Group=="Vacation7";
@@ -167,7 +184,7 @@ statsOut.P_StdCells1p5_AllLightWaterSessions = pSD_LW;
 statsOut.N_AllLightWaterSessions = [sum(idxCtrlLW), sum(idxV7LW)];
 
 % --- 5) Plot (2x2)
-f = figure('Color','w', 'Name', 'Fig3.4d Vacation7 vs Ctrl');
+f = figure('Color','w', 'Name', 'Fig3.5d Vacation7 vs Ctrl');
 try
 	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
 catch
@@ -450,7 +467,31 @@ catch
 end
 end
 
-function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, transferDT, idx1, baseMask, kSigma, zLayer)
+function [learnedCell, keepUID] = iLearnedAudioCellTable_1s(DS, mouse, idx1, baseMask, kSigma)
+% Return learned-phase table(CellUID, LearnedActive) and active CellUIDs for filtering.
+learnedCell = table(uint64.empty(0,1), logical.empty(0,1), 'VariableNames', {'CellUID','LearnedActive'});
+keepUID = uint64([]);
+try
+	mouse = string(mouse);
+	G = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','AudioWater', 'Phase','Learned'));
+	if isempty(G) || ~all(ismember(["CellUID","NTATS"], string(G.Properties.VariableNames)))
+		return;
+	end
+	X = iNtatsData(G.NTATS);
+	if isempty(X)
+		return;
+	end
+	act = iActiveAtIdx(X, baseMask, idx1, kSigma);
+	learnedCell = table(uint64(G.CellUID), logical(act), 'VariableNames', {'CellUID','LearnedActive'});
+	keepUID = uint64(G.CellUID(act));
+catch
+	learnedCell = table(uint64.empty(0,1), logical.empty(0,1), 'VariableNames', {'CellUID','LearnedActive'});
+	keepUID = uint64([]);
+end
+end
+
+
+function [reuse, nCells] = iReuse1s_LearnedAudio_to_TransferLight(DS, mouse, transferDT, idx1, baseMask, kSigma, zLayer, learnedCell)
 % Reuse(1s) = P(TransferLight active@1s | LearnedAudio active@1s)
 % Active predicate matches Fig3.2c: Z(1s) > mean(Z(-3~0)) + kSigma*std(Z(-3~0)) on Median NTATS ZScore.
 reuse = NaN;
@@ -459,22 +500,30 @@ try
 	mouse = string(mouse);
 	transferDT = iNormalizeDateTime(transferDT);
 	
-	GLearn = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','AudioWater', 'Phase','Learned'));
+	GLearn = [];
+	if nargin < 8 || isempty(learnedCell)
+		GLearn = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','AudioWater', 'Phase','Learned'));
+	end
 	GTran  = iQueryNTATSOrEmpty(DS, struct('Mouse', mouse, 'Stimulus','LightWater', 'Phase','Transfer', 'DateTime', transferDT));
-	if isempty(GLearn) || isempty(GTran)
+	if (isempty(learnedCell) && isempty(GLearn)) || isempty(GTran)
 		return;
 	end
-	
-	XL = iNtatsData(GLearn.NTATS);
+
 	XT = iNtatsData(GTran.NTATS);
-	if isempty(XL) || isempty(XT)
+	if isempty(XT)
 		return;
 	end
-	
-	actL = iActiveAtIdx(XL, baseMask, idx1, kSigma);
+
+	if isempty(learnedCell)
+		XL = iNtatsData(GLearn.NTATS);
+		if isempty(XL)
+			return;
+		end
+		actL = iActiveAtIdx(XL, baseMask, idx1, kSigma);
+		learnedCell = table(uint64(GLearn.CellUID), logical(actL), 'VariableNames', {'CellUID','LearnedActive'});
+	end
+
 	actT = iActiveAtIdx(XT, baseMask, idx1, kSigma);
-	
-	learnedCell = table(uint64(GLearn.CellUID), logical(actL), 'VariableNames', {'CellUID','LearnedActive'});
 	transferCell = table(uint64(GTran.CellUID), logical(actT), 'VariableNames', {'CellUID','TransferActive'});
 	
 	LT = innerjoin(learnedCell, transferCell, 'Keys','CellUID');
@@ -496,6 +545,8 @@ try
 catch
 	reuse = NaN;
 	nCells = NaN;
+end
+
 end
 
 function T = iFilterTableByZLayer(DS, T, zLayer)
@@ -523,7 +574,6 @@ try
 	keep = (z == string(zLayer));
 	T = T(keep, :);
 catch
-end
 end
 end
 

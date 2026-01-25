@@ -106,7 +106,7 @@ assignin('base','Fig3_5f', Fig3_5f);
 % --- 5) Plot
 f = figure('Color','w', 'Name', 'Fig3.5f Mean NTATS');
 try
-	MATLAB.Graphics.FigureAspectRatio(8,5, 1/3);
+	MATLAB.Graphics.FigureAspectRatio(4,5, 1/3);
 catch
 end
 ax = axes('Parent', f);
@@ -124,8 +124,8 @@ Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, X=xsSec(xMask)
 
 try
 	lgd = legend(ax, Patches(1:2), {
-		'Transfer LightWater active', ...
-		'Transfer LightWater inactive' ...
+		'Tr LW active', ...
+		'Tr LW inactive' ...
 		}, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2)));
 	try
 		lgd.AutoUpdate = 'off';

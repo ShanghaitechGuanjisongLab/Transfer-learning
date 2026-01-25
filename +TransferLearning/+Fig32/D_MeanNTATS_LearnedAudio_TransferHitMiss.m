@@ -144,14 +144,6 @@ catch
 	legend(ax, 'Location', 'best');
 end
 
-try
-	text(ax, 0.02, 0.98, sprintf('nCells: Learned=%d, Hit=%d, Miss=%d', nLearn, nHit, nMiss), ...
-		'Units','normalized', 'HorizontalAlignment','left', 'VerticalAlignment','top', ...
-		'Color',[0.2 0.2 0.2], 'FontSize', 9, 'Interpreter','none', ...
-		'HandleVisibility','off');
-catch
-end
-
 % Cue(:) and Water(|) timing lines MUST be after legend
 try
 	TransferLearning.DrawCueWaterLines(ax);

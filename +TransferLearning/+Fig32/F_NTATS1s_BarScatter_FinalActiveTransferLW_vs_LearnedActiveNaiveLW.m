@@ -136,7 +136,7 @@ Data.Learned2Naive  = vLearnedToNaive;
 CompareGroup = table(["Final2Transfer", "Learned2Naive"], 'VariableNames', {'GroupPair'});
 
 f = figure('Color','w', 'Name', 'Fig3.5e NTATS@1s');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/3);
+MATLAB.Graphics.FigureAspectRatio(4,5,1/3);
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
 
@@ -144,6 +144,13 @@ UniExp.BarScatterCompare(Data, false, CompareGroup);
 ylabel('NTATS@1s (z-score)');
 title('NTATS at 1s');
 ax = gca;
+try
+	% Shorten xticklabels for论文排版
+	ax.XTick = [1 2];
+	ax.XTickLabel = {'Final→Transfer','Learned→Naive'};
+	ax.TickLabelInterpreter = 'none';
+catch
+end
 try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';

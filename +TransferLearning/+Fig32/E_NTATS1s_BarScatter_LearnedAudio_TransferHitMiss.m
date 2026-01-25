@@ -112,7 +112,7 @@ Data = array2table([double(vLearn(:)), double(vHit(:)), double(vMiss(:))], ...
 CompareGroup = table(["Hit","Miss"], 'VariableNames', {'GroupPair'});
 
 f = figure('Color','w', 'Name', 'Fig3.5d NTATS@1s (BarScatterCompare)');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/3);
+MATLAB.Graphics.FigureAspectRatio(4,5,1/3);
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
 
