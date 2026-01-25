@@ -7,9 +7,9 @@ function rows = iBuildCellCorr1s1p5_VsPerformance_Sessions()
 %   Mouse, DateTime, Group, Source, ZLayer, NCells, CellCorr_1s1p5s, Performance
 %
 % Execution:
-%   TransferLearning.Fig32.iBuildCellCorr1s1p5_VsPerformance_Sessions
+%   TransferLearning.Fig33.iBuildCellCorr1s1p5_VsPerformance_Sessions
 
-rows = TransferLearning.Fig32.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer();
+rows = TransferLearning.Fig33.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer();
 if isempty(rows)
 	return;
 end

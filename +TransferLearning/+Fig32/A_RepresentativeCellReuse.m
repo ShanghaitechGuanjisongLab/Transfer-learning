@@ -468,7 +468,7 @@ end
 svgName = "Fig3_2a_RepresentativeCellReuse.svg";
 figTitle = sprintf('Representative Cell (Mouse=%s, CellUID=%d, %s)', picked.Mouse, picked.CellUID, picked.ZLayer);
 f = figure('Color','w', 'Name', figTitle);
-MATLAB.Graphics.FigureAspectRatio(1,1,1/2);
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 
 TL = tiledlayout(2,2,'TileSpacing','compact','Padding','compact');
 

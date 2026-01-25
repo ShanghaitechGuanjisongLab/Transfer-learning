@@ -15,7 +15,7 @@ function rowsOut = iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer(varargin)
 %   DeltaZ_Target, DeltaZ_RandMean, DeltaZ_RandStd, P_perm_target_gt_rand
 %
 % Execution:
-%   TransferLearning.Fig32.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer
+%   TransferLearning.Fig33.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer
 
 p = inputParser;
 p.addParameter('FracTop', 0.5, @(x) isscalar(x) && isfinite(x) && x > 0 && x <= 1);

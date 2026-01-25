@@ -16,7 +16,7 @@ if isempty(B)
 end
 
 if ~ismember('Mouse', B.Properties.VariableNames) || ~ismember('DateTime', B.Properties.VariableNames) || ~ismember('Performance', B.Properties.VariableNames)
-    error('Fig3_4b:BehaviorMissingFields', 'Behavior query lacks required fields (Mouse/DateTime/Performance).');
+    error('Fig3_5b:BehaviorMissingFields', 'Behavior query lacks required fields (Mouse/DateTime/Performance).');
 end
 
 if ismember('Stimulus', B.Properties.VariableNames)
@@ -33,7 +33,7 @@ end
 if nargin >= 2
     requirePhaseTransfer = logical(requirePhaseTransfer);
     if requirePhaseTransfer && ~ismember('Phase', B.Properties.VariableNames)
-        error('Fig3_4b:MissingPhase', 'Behavior table has no Phase column; cannot run subplot-2 Transfer-only metric.');
+        error('Fig3_5b:MissingPhase', 'Behavior table has no Phase column; cannot run subplot-2 Transfer-only metric.');
     end
 end
 end

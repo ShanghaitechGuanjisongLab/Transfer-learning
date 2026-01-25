@@ -6,7 +6,7 @@
 % - Transfer × (MOp2/3, MOp5)
 %
 % 数据来源（non-Scratch builder）：
-% - TransferLearning.Fig32.iBuildCellCorr1s1p5_VsPerformance_Sessions
+% - TransferLearning.Fig33.iBuildCellCorr1s1p5_VsPerformance_Sessions
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -15,7 +15,7 @@
 %   TransferLearning.Fig32.F_CellCorrVsPerformance
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2f_CellCorr1s1p5_vsPerformance_4panels.svg";
+svgName = "Fig3_3e_CellCorr1s1p5_vsPerformance_4panels.svg";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -33,7 +33,7 @@ try
 catch
 end
 
-rows = TransferLearning.Fig32.iBuildCellCorr1s1p5_VsPerformance_Sessions();
+rows = TransferLearning.Fig33.iBuildCellCorr1s1p5_VsPerformance_Sessions();
 rows.Group = string(rows.Group);
 rows.ZLayer = string(rows.ZLayer);
 

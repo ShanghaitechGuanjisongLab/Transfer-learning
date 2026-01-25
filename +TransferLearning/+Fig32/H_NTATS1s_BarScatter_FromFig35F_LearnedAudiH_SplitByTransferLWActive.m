@@ -17,7 +17,7 @@
 %   TransferLearning.Fig35.G_NTATS1s_BarScatter_FromFig35F_LearnedAudio_SplitByTransferLWActive
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_5g_NTATS1s_LearnedAudio_SplitByTransferLWActive_BarScatter.svg";
+svgName = "Fig3_2h_NTATS1s_LearnedAudio_SplitByTransferLWActive_BarScatter.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try

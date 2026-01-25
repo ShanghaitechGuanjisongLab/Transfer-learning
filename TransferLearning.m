@@ -32,8 +32,23 @@ classdef(Abstract)TransferLearning
 			else
 				Ax={};
 			end
-			xline(Ax{:},0,':');
-			xline(Ax{:},1,'-');
+			CueLine = xline(Ax{:},0,':');
+			WaterLine = xline(Ax{:},1,'-');
+			for h = [CueLine, WaterLine]
+				try
+					h.HandleVisibility = 'off';
+				catch
+				end
+				try
+					h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+				catch
+				end
+				try
+					if isprop(h, 'PickableParts'); h.PickableParts = 'none'; end
+					if isprop(h, 'HitTest'); h.HitTest = 'off'; end
+				catch
+				end
+			end
 		end
 	end
 	methods(Access=private,Static)

@@ -1,4 +1,4 @@
-% 图3.4c：丘脑后部抑制（THInhibit vs Control）
+% 图3.5c：丘脑后部抑制（THInhibit vs Control）
 %
 % 用户明确要求：第 2/3/4 子图为“平均钙曲线、相关性、稳定性”，参考 Fig3.2 与 Fig3.3 的口径。
 %
@@ -16,7 +16,7 @@
 % - 本文件必须保持为脚本（SCRIPT）。
 % - 不要使用 run。
 % - 请用包名限定方式调用：
-%     TransferLearning.Fig34.C_THInhibitVsCtrl
+%     TransferLearning.Fig35.C_THInhibitVsCtrl
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -51,7 +51,7 @@ xsSec = seconds(TransferLearning.Xs);
 %   value(1s) > mean(-3~0s) + 3*std(-3~0s)
 baseMask = (xsSec >= -3) & (xsSec < 0);
 if ~any(baseMask)
-	error('Fig3_4c:BadBaselineMask', 'Baseline window (-3~0s) has no samples in TransferLearning.Xs.');
+	error('Fig3_5c:BadBaselineMask', 'Baseline window (-3~0s) has no samples in TransferLearning.Xs.');
 end
 kSigma = 3;
 
@@ -59,13 +59,13 @@ kSigma = 3;
 [dtMin1, idx1] = min(abs(xsSec - 1));
 [dtMin15, idx15] = min(abs(xsSec - 1.5));
 if isempty(idx03) || ~isfinite(dtMin03) || dtMin03 > 0.25
-	error('Fig3_4c:No0p3sSample', 'Cannot find a sample close to 0.3s in TransferLearning.Xs.');
+	error('Fig3_5c:No0p3sSample', 'Cannot find a sample close to 0.3s in TransferLearning.Xs.');
 end
 if isempty(idx1) || ~isfinite(dtMin1) || dtMin1 > 0.25
-	error('Fig3_4c:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
+	error('Fig3_5c:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
 end
 if isempty(idx15) || ~isfinite(dtMin15) || dtMin15 > 0.25
-	error('Fig3_4c:No1p5sSample', 'Cannot find a sample close to 1.5s in TransferLearning.Xs.');
+	error('Fig3_5c:No1p5sSample', 'Cannot find a sample close to 1.5s in TransferLearning.Xs.');
 end
 
 % --- 3) Transfer LightWater sessions (one per mouse)
@@ -78,7 +78,7 @@ ST.Group(:) = "TH";
 Sess = [SC; ST];
 
 if isempty(Sess)
-	error('Fig3_4c:EmptyTransfer', 'No Transfer LightWater sessions found in Ctrl/TH datasets.');
+	error('Fig3_5c:EmptyTransfer', 'No Transfer LightWater sessions found in Ctrl/TH datasets.');
 end
 
 % --- 3b) Full LightWater learning curve across ALL LightWater sessions, for Panel1
@@ -165,8 +165,8 @@ for i = 1:height(Sess)
 		'VariableNames', rows.Properties.VariableNames)]; %#ok<AGROW>
 end
 
-assignin('base', 'Fig3_4c_THInhibitVsCtrl_TransferSessions', Sess);
-assignin('base', 'Fig3_4c_THInhibitVsCtrl_Rows', rows);
+assignin('base', 'Fig3_5c_THInhibitVsCtrl_TransferSessions', Sess);
+assignin('base', 'Fig3_5c_THInhibitVsCtrl_Rows', rows);
 
 idxCtrl = rows.Group=="Ctrl";
 idxTH = rows.Group=="TH";
@@ -216,7 +216,7 @@ statsOut.P_SD_MOp5_0p3_AllLightWaterSessions = pSD03_LW;
 statsOut.P_SD_MOp5_1p5_AllLightWaterSessions = pSD15_LW;
 statsOut.N_AllLightWaterSessions = [sum(idxCtrlLW), sum(idxTHLW)];
 
-assignin('base', 'Fig3_4c_THInhibitVsCtrl_Stats', statsOut);
+assignin('base', 'Fig3_5c_THInhibitVsCtrl_Stats', statsOut);
 
 % --- 5) Plot (2x2)
 f = figure('Color','w', 'Name', 'Fig3.4c THInhibit vs Ctrl');
@@ -325,7 +325,7 @@ try
 catch
 end
 
-svgPath = fullfile(outDirUNC, 'Fig3_4c_THInhibitVsCtrl.svg');
+svgPath = fullfile(outDirUNC, 'Fig3_5c_THInhibitVsCtrl.svg');
 try
 	exportgraphics(f, svgPath, 'ContentType','vector');
 	fprintf('Wrote: %s\n', svgPath);
@@ -804,7 +804,7 @@ function iAppendDebugError_(where, mouse, dt, ME)
 		row = table(string(where), string(mouse), iNormalizeDateTime(dt), string(ME.identifier), string(ME.message), ...
 			'VariableNames', ERR.Properties.VariableNames);
 		ERR = [ERR; row]; %#ok<AGROW>
-		assignin('base', 'Fig3_4c_Debug_ReuseErrors', ERR);
+		assignin('base', 'Fig3_5c_Debug_ReuseErrors', ERR);
 	catch
 		% ignore
 	end

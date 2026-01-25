@@ -1,4 +1,4 @@
-% 图3.4b：非特异性对照（hM4D(Gi) vs mCherry）
+% 图3.5b：非特异性对照（hM4D(Gi) vs mCherry）
 %
 % 4 子图：
 %   1) 学习曲线（所有 LightWater 会话，mean±SEM；MultiShadowedLines）
@@ -13,10 +13,10 @@
 %
 % 执行方式：
 % - 本文件必须保持为脚本（SCRIPT），不得包含 local functions
-% - 以“函数调用”方式执行（不使用 run）：TransferLearning.Fig34.Run_B_MOpVsMCherry()
+% - 以“函数调用”方式执行（不使用 run）：TransferLearning.Fig35.Run_B_MOpVsMCherry()
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-exportPath = fullfile(outDirUNC, 'Fig3_4b_MOpVsMCherry.svg');
+exportPath = fullfile(outDirUNC, 'Fig3_5b_MOpVsMCherry.svg');
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -41,18 +41,18 @@ DS_mCh = UniExp.DataSet(mchPath);
 
 % --- 2) Query LightWater behavior blocks (do NOT filter Phase here)
 requirePhaseTransfer = true; % 图2需要 Phase 字段
-B1 = TransferLearning.Fig34.iQueryLightWaterBlocks(DS_Gi,  requirePhaseTransfer);
-B2 = TransferLearning.Fig34.iQueryLightWaterBlocks(DS_mCh, requirePhaseTransfer);
+B1 = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Gi,  requirePhaseTransfer);
+B2 = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_mCh, requirePhaseTransfer);
 if isempty(B1) || isempty(B2)
-	error('Fig3_4b:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
+	error('Fig3_5b:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
 
 B1.Group = repmat("hM4D(Gi)", height(B1), 1);
 B2.Group = repmat("mCherry",  height(B2), 1);
 
 % Normalize DateTime
-B1.DateTime = TransferLearning.Fig34.iNormalizeDateTime(B1.DateTime);
-B2.DateTime = TransferLearning.Fig34.iNormalizeDateTime(B2.DateTime);
+B1.DateTime = TransferLearning.Fig35.iNormalizeDateTime(B1.DateTime);
+B2.DateTime = TransferLearning.Fig35.iNormalizeDateTime(B2.DateTime);
 
 % Concatenate
 J = [B1; B2];
@@ -60,13 +60,13 @@ J.Mouse = string(J.Mouse);
 J.Group = string(J.Group);
 
 % --- 3) Sessionize (Mouse+DateTime) and add session index
-Sess = TransferLearning.Fig34.iSessionizeByDateTime(J(:, intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable')));
+Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable')));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
-Sess = TransferLearning.Fig34.iAddSessionIndex(Sess);
+Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
 
 % per-mouse table
-perMouse = TransferLearning.Fig34.iPerMouseTable(Sess);
-perMouse = TransferLearning.Fig34.iAddFirstTransferPerf(perMouse, Sess);
+perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
+perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
 
 % --- 4) Build panel data & stats
 statsOut = struct();
@@ -109,19 +109,19 @@ end
 % Panel 2 transfer first session per mouse
 tr_mCh = perMouse.TransferFirstPerf(perMouse.Group == "mCherry");
 tr_Gi  = perMouse.TransferFirstPerf(perMouse.Group == "hM4D(Gi)");
-[pTr, ~] = TransferLearning.Fig34.iRanksumSafe(tr_mCh, tr_Gi);
+[pTr, ~] = TransferLearning.Fig35.iRanksumSafe(tr_mCh, tr_Gi);
 statsOut.TransferFirstP = pTr;
 
 % Panel 3 session-level delta perf
-Delta = TransferLearning.Fig34.iBuildSessionDeltaTable(Sess);
+Delta = TransferLearning.Fig35.iBuildSessionDeltaTable(Sess);
 d_mCh = Delta.DeltaPerf(Delta.Group == "mCherry");
 d_Gi  = Delta.DeltaPerf(Delta.Group == "hM4D(Gi)");
-[pDelta, ~] = TransferLearning.Fig34.iRanksumSafe(d_mCh, d_Gi);
+[pDelta, ~] = TransferLearning.Fig35.iRanksumSafe(d_mCh, d_Gi);
 statsOut.DeltaPerfP = pDelta;
 
 % Panel 4 time-to-criterion
 thr = 0.80;
-TTC = TransferLearning.Fig34.iTimeToCriterion(Sess, thr);
+TTC = TransferLearning.Fig35.iTimeToCriterion(Sess, thr);
 statsOut.TTCThreshold = thr;
 
 % --- 5) Plot (2x2)
@@ -235,7 +235,7 @@ for k = 1:numel(grpOrder)
 	if isempty(Tg)
 		continue;
 	end
-	[xKM, yKM] = TransferLearning.Fig34.iKaplanMeier(Tg.TTC, Tg.Censored);
+	[xKM, yKM] = TransferLearning.Fig35.iKaplanMeier(Tg.TTC, Tg.Censored);
 	if ~isempty(xKM)
 		stairs(ax4, xKM, 1 - yKM, 'LineWidth', 1.5);
 	end

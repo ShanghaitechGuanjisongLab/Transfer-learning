@@ -25,7 +25,7 @@
 %   TransferLearning.Fig35.E_NTATS1s_BarScatter_FinalActiveTransferLW_vs_LearnedActiveNaiveLW
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_5e_NTATS1s_FinalActive_TransferLW_vs_LearnedActive_NaiveLW_BarScatter.svg";
+svgName = "Fig3_2f_NTATS1s_FinalActive_TransferLW_vs_LearnedActive_NaiveLW_BarScatter.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try

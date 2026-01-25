@@ -3,7 +3,7 @@
 % 剔除 Learned 阶段对相关性正贡献最高的 Top50% 细胞后，Transfer 相关性显著下降，且强于随机剔除对照（按层）。
 %
 % 数据来源（non-Scratch builder）：
-% - TransferLearning.Fig32.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer
+% - TransferLearning.Fig33.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -12,7 +12,7 @@
 %   TransferLearning.Fig32.G_TargetDrop_PosContribTopHalf
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2g_TargetDrop_PosContribTop50_1s1p5_ByLayer.svg";
+svgName = "Fig3_3f_TargetDrop_PosContribTop50_1s1p5_ByLayer.svg";
 
 % --- Ensure project loaded
 try
@@ -30,7 +30,7 @@ try
 catch
 end
 
-rows = TransferLearning.Fig32.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer();
+rows = TransferLearning.Fig33.iBuildTargetDrop_PosContribTopHalf_1s_1p5s_ByLayer();
 rows.ZLayer = string(rows.ZLayer);
 
 layerNames = string(["MOp2/3","MOp5"]);

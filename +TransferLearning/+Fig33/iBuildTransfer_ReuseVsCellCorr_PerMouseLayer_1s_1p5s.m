@@ -13,7 +13,7 @@ function T = iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s()
 %   Mouse, ZLayer, NCellsReuse, Reuse, TransferDateTime, NCellsCorr, CellCorr_1s1p5s
 %
 % Execution:
-%   TransferLearning.Fig32.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s
+%   TransferLearning.Fig33.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s
 
 DS = TransferLearning.AudioLightBaseline();
 

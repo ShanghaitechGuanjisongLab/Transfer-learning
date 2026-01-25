@@ -14,7 +14,7 @@
 %   TransferLearning.Fig35.D_NTATS1s_BarScatter_LearnedAudio_TransferHitMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_5d_NTATS1s_LearnedAudio_TransferHitMiss_BarScatter.svg";
+svgName = "Fig3_2e_NTATS1s_LearnedAudio_TransferHitMiss_BarScatter.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try

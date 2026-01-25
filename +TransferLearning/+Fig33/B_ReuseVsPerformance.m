@@ -145,10 +145,10 @@ for iZ = 1:numel(layerNames)
 end
 %% 
 
-svgName = "Fig3_2c_ReuseVsPerformance_ActiveAt1s.svg";
+svgName = "Fig3_3b_ReuseVsPerformance_ActiveAt1s.svg";
 % Plot
 f = figure('Color','w', 'Name','Fig3.2c Reuse (1 s) vs Performance (by layer)');
-MATLAB.Graphics.FigureAspectRatio(1,1,1/2);
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 TL = tiledlayout('flow','TileSpacing','compact','Padding','compact');
 
 axesList = gobjects(0,1);

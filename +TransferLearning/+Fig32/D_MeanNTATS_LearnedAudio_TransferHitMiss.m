@@ -22,7 +22,7 @@
 %   TransferLearning.Fig35.C_MeanNTATS_LearnedAudio_TransferHitMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_5c_MeanNTATS_LearnedAudio_TransferHitMiss_0to3.svg";
+svgName = "Fig3_2d_MeanNTATS_LearnedAudio_TransferHitMiss_0to3.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try

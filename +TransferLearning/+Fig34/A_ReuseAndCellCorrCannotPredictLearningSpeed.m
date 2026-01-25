@@ -1,4 +1,4 @@
-% 图3.3a：复用率和 1s/1.5s 相关性都不能预测 Transfer 学习速率
+% 图3.4a：复用率和 1s/1.5s 相关性都不能预测 Transfer 学习速率
 %
 % Spec (from 论文大纲.md 3.3):
 % - Within Transfer cohort, show that:
@@ -21,10 +21,10 @@
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.Fig33.A_ReuseAndCellCorrCannotPredictLearningSpeed
+%   TransferLearning.Fig34.A_ReuseAndCellCorrCannotPredictLearningSpeed
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_3a_ReuseAndCellCorr_CannotPredictLearningSpeed_DeltaNext.svg";
+svgName = "Fig3_4a_ReuseAndCellCorr_CannotPredictLearningSpeed_DeltaNext.svg";
 
 % --- Ensure project loaded (for UniExp)
 try

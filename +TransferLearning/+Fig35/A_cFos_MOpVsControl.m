@@ -1,4 +1,4 @@
-% 图3.4a：cFos ensemble 抑制（Inhibited vs Control）行为效应
+% 图3.5a：cFos ensemble 抑制（Inhibited vs Control）行为效应
 %
 % 仅比较：Inhibited 组 (MOp) vs Control 组
 % 4 子图：
@@ -13,7 +13,7 @@
 %
 % 执行方式：
 % - 本文件保持为脚本（SCRIPT）入口
-% - 以函数语法调用（按你的约束）：TransferLearning.Fig34.A_cFos_MOpVsControl()
+% - 以函数语法调用（按你的约束）：TransferLearning.Fig35.A_cFos_MOpVsControl()
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -40,23 +40,23 @@ cFosAll = UniExp.DataSet(matPath);
 % --- 2) Build group table (Mouse -> Group)
 S = cFosAll.Mice;
 if isempty(S)
-	error('Fig3_4a:EmptyMiceTable', 'cFosAll.Mice is empty.');
+	error('Fig3_5a:EmptyMiceTable', 'cFosAll.Mice is empty.');
 end
 
 if ~ismember('Mouse', S.Properties.VariableNames)
 	if ~isempty(S.Properties.RowNames)
 		S.Mouse = string(S.Properties.RowNames);
 	else
-		error('Fig3_4a:MissingMouse', 'cFosAll.Mice has no Mouse column or RowNames.');
+		error('Fig3_5a:MissingMouse', 'cFosAll.Mice has no Mouse column or RowNames.');
 	end
 end
 S.Mouse = string(S.Mouse);
 
 if ~ismember('ExpressedBrain', S.Properties.VariableNames)
-	error('Fig3_4a:MissingExpressedBrain', 'cFosAll.Mice lacks ExpressedBrain.');
+	error('Fig3_5a:MissingExpressedBrain', 'cFosAll.Mice lacks ExpressedBrain.');
 end
 if ~ismember('MarkTimes', S.Properties.VariableNames)
-	error('Fig3_4a:MissingMarkTimes', 'cFosAll.Mice lacks MarkTimes (needed to define Control).');
+	error('Fig3_5a:MissingMarkTimes', 'cFosAll.Mice lacks MarkTimes (needed to define Control).');
 end
 
 S.Group = string(S.ExpressedBrain);
@@ -78,13 +78,13 @@ S = S(keepGroups, :);
 S = S(ia, :);
 
 if isempty(S)
-	error('Fig3_4a:EmptyGroups', 'No mice left after filtering to MOp vs Control.');
+	error('Fig3_5a:EmptyGroups', 'No mice left after filtering to MOp vs Control.');
 end
 
 % --- 3) Query LightWater behavior and sessionize
 B = iQueryLightWaterBlocks(cFosAll);
 if isempty(B)
-	error('Fig3_4a:EmptyBehavior', 'No LightWater behavior rows found in cFos dataset.');
+	error('Fig3_5a:EmptyBehavior', 'No LightWater behavior rows found in cFos dataset.');
 end
 
 B.Mouse = string(B.Mouse);
@@ -112,7 +112,7 @@ if ismember('Phase', J.Properties.VariableNames)
 	end
 	accNote = " (Transfer only)";
 else
-	warning('Fig3_4a:PhaseMissing', ['Behavior table has no Phase column; cannot restrict to Phase==Transfer. ' ...
+	warning('Fig3_5a:PhaseMissing', ['Behavior table has no Phase column; cannot restrict to Phase==Transfer. ' ...
 		'Falling back to each mouse''s earliest LightWater session for panel 2.']);
 	Sess0 = iSessionizeByDateTime(J(:, {'Mouse','DateTime','Performance','Group'}));
 	Sess0 = sortrows(Sess0, {'Group','Mouse','DateTime'});
@@ -156,7 +156,7 @@ try
 	curveMean = ST.MeanCurve;
 	curveSem  = ST.SemCurve;
 catch ME
-	warning('Fig3_4a:LearningSummarizeFailed', 'LearningSummarize failed (%s). Falling back to internal summarize.', ME.message);
+	warning('Fig3_5a:LearningSummarizeFailed', 'LearningSummarize failed (%s). Falling back to internal summarize.', ME.message);
 	[curveMean, curveSem, curveN] = iLearningCurve(SessLC_All, grpOrder);
 end
 
@@ -174,10 +174,10 @@ statsOut.AccuracyP = accP;
 
 % 4.3 learning speed: session-level DeltaNext (one session -> one point)
 SessSpeed = iFilterSessionsForLearningCurve(Sess);
-Delta = TransferLearning.Fig34.iBuildSessionDeltaNextTable(SessSpeed);
+Delta = TransferLearning.Fig35.iBuildSessionDeltaNextTable(SessSpeed);
 dCtrl  = Delta.DeltaPerf(Delta.Group == "Control");
 dInhib = Delta.DeltaPerf(Delta.Group == "MOp");
-[speedP, ~] = TransferLearning.Fig34.iRanksumSafe(dCtrl, dInhib);
+[speedP, ~] = TransferLearning.Fig35.iRanksumSafe(dCtrl, dInhib);
 statsOut.DeltaNextP = speedP;
 statsOut.SpeedP = speedP;
 
@@ -317,7 +317,7 @@ try
 catch
 end
 
-svgPath = fullfile(outDirUNC, 'Fig3_4a_cFos_MOpVsControl.svg');
+svgPath = fullfile(outDirUNC, 'Fig3_5a_cFos_MOpVsControl.svg');
 try
 	drawnow;
 	exportgraphics(f, svgPath, 'ContentType','vector');
@@ -362,7 +362,7 @@ function B = iQueryLightWaterBlocks(DS)
 		return;
 	end
 	if ~ismember('Mouse', B.Properties.VariableNames) || ~ismember('DateTime', B.Properties.VariableNames) || ~ismember('Performance', B.Properties.VariableNames)
-		error('Fig3_4a:BehaviorMissingFields', 'Behavior query lacks required fields (Mouse/DateTime/Performance).');
+		error('Fig3_5a:BehaviorMissingFields', 'Behavior query lacks required fields (Mouse/DateTime/Performance).');
 	end
 	if ismember('Stimulus', B.Properties.VariableNames)
 		stim = string(B.Stimulus);

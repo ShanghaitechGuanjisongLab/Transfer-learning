@@ -205,9 +205,9 @@ assignin('base','Fig3_2b1s_ReuseHitMiss_LayerCoverage', cov);
 
 %% 
 % --- Plot (paired) by layer
-svgName = "Fig3_2b_Reuse_HitMiss_ActiveAt1s.svg";
+svgName = "Fig3_3a_Reuse_HitMiss_ActiveAt1s.svg";
 f = figure('Color','w', 'Name','Fig3.2b Reuse Hit vs Miss (by layer, active at 1 s)');
-MATLAB.Graphics.FigureAspectRatio(1,1,1/2);
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 
 ylabel(TL, 'Reuse (1 s)');

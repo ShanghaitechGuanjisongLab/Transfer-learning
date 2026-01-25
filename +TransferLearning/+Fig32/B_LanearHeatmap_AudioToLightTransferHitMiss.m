@@ -25,7 +25,7 @@
 %   TransferLearning.Fig35.A_LanearHeatmap_AudioToLightTransferHitMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_5a_LanearHeatmap_NaiveLearned_TransferHit_TransferMiss_0to3.svg";
+svgName = "Fig3_2b_LanearHeatmap_NaiveLearned_TransferHit_TransferMiss_0to3.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try

@@ -87,7 +87,7 @@ nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
 % --- 4) Plot
 f = figure('Color','w', 'Name', 'Fig3.1f Learning curve (AudioWater)');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+MATLAB.Graphics.FigureAspectRatio(8,5,1/3);
 ax = axes(f);
 hold(ax,'on');
 axes(ax);

@@ -24,14 +24,14 @@ end
 need = {"Mouse","Group","DateTime","Performance"};
 for k = 1:numel(need)
 	if ~ismember(need{k}, Sess.Properties.VariableNames)
-		error('Fig34:iPerMouseSlopeAdj:MissingVar', 'Missing variable %s', need{k});
+		error('Fig35:iPerMouseSlopeAdj:MissingVar', 'Missing variable %s', need{k});
 	end
 end
 
 T = Sess(:, intersect(Sess.Properties.VariableNames, {'Mouse','Group','DateTime','Performance'}, 'stable'));
 T.Mouse = string(T.Mouse);
 T.Group = string(T.Group);
-T.DateTime = TransferLearning.Fig34.iNormalizeDateTime(T.DateTime);
+T.DateTime = TransferLearning.Fig35.iNormalizeDateTime(T.DateTime);
 T.Performance = double(T.Performance);
 T = sortrows(T, {'Group','Mouse','DateTime'});
 

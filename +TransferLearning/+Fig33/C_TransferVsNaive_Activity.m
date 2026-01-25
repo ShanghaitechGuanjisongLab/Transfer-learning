@@ -110,7 +110,7 @@ fprintf('Fig3.2d Panel1 Z@1s: ranksum(N vs T) p=%.3g\n', pZ);
 fprintf('Fig3.2d Panel2 ActiveRate: ranksum(N vs T) p=%.3g\n', pAct);
 %% 
 
-svgName = "Fig3_2d_TransferVsNaive_Activity_1sZ_ActiveRate.svg";
+svgName = "Fig3_3c_TransferVsNaive_Activity_1sZ_ActiveRate.svg";
 % --------------------
 % Plot
 f = figure('Color','w', 'Name','Fig3.2d Transfer vs Naive');

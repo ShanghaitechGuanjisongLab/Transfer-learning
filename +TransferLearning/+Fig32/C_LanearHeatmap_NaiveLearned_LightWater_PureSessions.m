@@ -30,7 +30,7 @@
 %   TransferLearning.Fig35.B_LanearHeatmap_NaiveLearned_LightWater_PureSessions
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_5b_LanearHeatmap_NaiveLearned_LightWater_0to3_ActiveLearnedLW.svg";
+svgName = "Fig3_2c_LanearHeatmap_NaiveLearned_LightWater_0to3_ActiveLearnedLW.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try

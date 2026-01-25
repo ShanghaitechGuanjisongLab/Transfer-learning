@@ -1,4 +1,4 @@
-% 图3.3c：示例细胞钙曲线（细胞间标准差低 vs 高）
+% 图3.4c：示例细胞钙曲线（细胞间标准差低 vs 高）
 %
 % Lower inter-cell SD example (within ONE mouse):
 % - Choose 3~4 cells (same mouse)
@@ -25,7 +25,7 @@
 % Execution:
 %   IMPORTANT: MUST REMAIN A SCRIPT (do not convert to a function).
 %   Call via package name:
-%     TransferLearning.Fig33.C_DivergenceExampleCells
+%     TransferLearning.Fig34.C_DivergenceExampleCells
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -116,7 +116,7 @@ assignin('base', 'Fig3_3c_HighSDExample', highEx);
 % --- 3) Plot
 nCols = numel(lowEx.TrialUIDs);
 
-svgName = "Fig3_3c_CellToCellSD_ExampleDistributions.svg";
+svgName = "Fig3_4c_CellToCellSD_ExampleDistributions.svg";
 figName = sprintf('Fig3.3c Cell-to-cell SD examples (Low=%s, High=%s)', lowEx.Mouse, highEx.Mouse);
 f = figure('Name', figName, 'Color','w');
 try

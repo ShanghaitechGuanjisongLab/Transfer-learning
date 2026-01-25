@@ -1,4 +1,4 @@
-% 图3.4d：7 天 homecage 间隔（Vacation7 vs Control）
+% 图3.5d：7 天 homecage 间隔（Vacation7 vs Control）
 %
 % 用户明确要求：按大纲做“钙分析”，并参考 Fig3.2/3.3 的口径。
 %
@@ -16,7 +16,7 @@
 % - 本文件必须保持为脚本（SCRIPT）。
 % - 不要使用 run。
 % - 请用包名限定方式调用：
-%     TransferLearning.Fig34.D_Vacation7VsCtrl
+%     TransferLearning.Fig35.D_Vacation7VsCtrl
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -45,17 +45,17 @@ xsSec = seconds(TransferLearning.Xs);
 [dtMin1, idx1] = min(abs(xsSec - 1));
 [dtMin15, idx15] = min(abs(xsSec - 1.5));
 if isempty(idx1) || ~isfinite(dtMin1) || dtMin1 > 0.25
-	error('Fig3_4d:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
+	error('Fig3_5d:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
 end
 
 % --- 2b) Active predicate params (for Reuse@1s)
 baseMask = (xsSec >= -3) & (xsSec < 0);
 if ~any(baseMask)
-	error('Fig3_4d:BadTimeMask', 'Baseline(-3~0) has no samples in TransferLearning.Xs.');
+	error('Fig3_5d:BadTimeMask', 'Baseline(-3~0) has no samples in TransferLearning.Xs.');
 end
 kSigma = 3;
 if isempty(idx15) || ~isfinite(dtMin15) || dtMin15 > 0.25
-	error('Fig3_4d:No1p5sSample', 'Cannot find a sample close to 1.5s in TransferLearning.Xs.');
+	error('Fig3_5d:No1p5sSample', 'Cannot find a sample close to 1.5s in TransferLearning.Xs.');
 end
 
 % --- 3) Transfer LightWater sessions (for calcium metrics: one per mouse)
@@ -68,7 +68,7 @@ SV.Group(:) = "Vacation7";
 Sess = [SC; SV];
 
 if isempty(Sess)
-	error('Fig3_4d:EmptyTransfer', 'No Transfer LightWater sessions found in Ctrl/Vacation7 datasets.');
+	error('Fig3_5d:EmptyTransfer', 'No Transfer LightWater sessions found in Ctrl/Vacation7 datasets.');
 end
 
 % --- 3b) Full LightWater learning curve across ALL LightWater sessions (Panel1)
@@ -121,8 +121,8 @@ for i = 1:height(Sess)
 		'VariableNames', rows.Properties.VariableNames)]; %#ok<AGROW>
 end
 
-assignin('base', 'Fig3_4d_Vacation7VsCtrl_TransferSessions', Sess);
-assignin('base', 'Fig3_4d_Vacation7VsCtrl_Rows', rows);
+assignin('base', 'Fig3_5d_Vacation7VsCtrl_TransferSessions', Sess);
+assignin('base', 'Fig3_5d_Vacation7VsCtrl_Rows', rows);
 
 idxCtrl = rows.Group=="Ctrl";
 idxV7 = rows.Group=="Vacation7";
@@ -281,24 +281,13 @@ try
 catch
 end
 
-% Also export a local copy for quick preview in VS Code
-localOutDir = pwd;
-
-svgPathUNC = fullfile(outDirUNC, 'Fig3_4d_Vacation7VsCtrl.svg');
-svgPathLocal = fullfile(localOutDir, 'Fig3_4d_Vacation7VsCtrl.svg');
+svgPathUNC = fullfile(outDirUNC, 'Fig3_5d_Vacation7VsCtrl.svg');
 
 try
 	exportgraphics(f, svgPathUNC, 'ContentType','vector');
 	fprintf('Wrote: %s\n', svgPathUNC);
 catch ME
 	warning(ME.identifier, 'UNC export failed: %s', ME.message);
-end
-
-try
-	exportgraphics(f, svgPathLocal, 'ContentType','vector');
-	fprintf('Wrote: %s\n', svgPathLocal);
-catch ME
-	warning(ME.identifier, 'Local SVG export failed: %s', ME.message);
 end
 
 % Script outputs: Sess, rows, statsOut

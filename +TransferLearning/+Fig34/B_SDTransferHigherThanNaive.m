@@ -1,4 +1,4 @@
-% 图3.3b：SD 组间差异（Transfer vs Naive），分 0.3s/1.5s 与 2/5 层
+% 图3.4b：SD 组间差异（Transfer vs Naive），分 0.3s/1.5s 与 2/5 层
 %
 % Spec (from 论文大纲.md 3.3):
 % - 1.5s (feedback) SD: Transfer significantly higher than Naive
@@ -7,16 +7,16 @@
 %
 % Implementation:
 % - Use one-session-per-mouse (start-phase) design:
-%     TransferLearning.Fig33.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(targetSec)
+%     TransferLearning.Fig34.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(targetSec)
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.Fig33.B_SDTransferHigherThanNaive
+%   TransferLearning.Fig34.B_SDTransferHigherThanNaive
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_3b_SD_TransferHigherThanNaive.svg";
+svgName = "Fig3_4b_SD_TransferHigherThanNaive.svg";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -34,8 +34,8 @@ try
 catch
 end
 
-T03 = TransferLearning.Fig33.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(0.3);
-T15 = TransferLearning.Fig33.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(1.5);
+T03 = TransferLearning.Fig34.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(0.3);
+T15 = TransferLearning.Fig34.iBuildNaiveVsTransfer_OneSessionStartPhaseSdTable(1.5);
 
 T03.Group = string(T03.Group);
 T15.Group = string(T15.Group);
@@ -48,8 +48,8 @@ if ismember('IsMixedAudio', T15.Properties.VariableNames)
 	T15 = T15(~T15.IsMixedAudio, :);
 end
 
-assignin('base', 'Fig3_3b_T03', T03);
-assignin('base', 'Fig3_3b_T15', T15);
+assignin('base', 'Fig3_4b_T03', T03);
+assignin('base', 'Fig3_4b_T15', T15);
 
 f = figure('Color','w', 'Name', 'Fig3.3b SD group difference');
 try

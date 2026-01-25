@@ -14,8 +14,8 @@
 % - 所有子图 box off
 %
 % Data sources (non-Scratch builders):
-% - TransferLearning.Fig32.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer
-% - TransferLearning.Fig32.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s
+% - TransferLearning.Fig33.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer
+% - TransferLearning.Fig33.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -42,17 +42,17 @@ catch
 end
 
 % --- Build required tables (non-Scratch)
-rowsNVST = TransferLearning.Fig32.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer();
+rowsNVST = TransferLearning.Fig33.iBuildNVST_CellCorr_Sessions_1s_1p5s_ByLayer();
 rowsNVST.Group = string(rowsNVST.Group);
 rowsNVST.ZLayer = string(rowsNVST.ZLayer);
 
-rowsTR = TransferLearning.Fig32.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s();
+rowsTR = TransferLearning.Fig33.iBuildTransfer_ReuseVsCellCorr_PerMouseLayer_1s_1p5s();
 rowsTR.ZLayer = string(rowsTR.ZLayer);
 
 layerNames = string(["MOp2/3","MOp5"]);
 %% 
 
-svgName = "Fig3_2e_CellCorr1s1p5_ReusedPrediction_4panels.svg";
+svgName = "Fig3_3d_CellCorr1s1p5_ReusedPrediction_4panels.svg";
 f = figure('Color','w', 'Name','Fig3.2e CellCorr+Reuse');
 try
 	MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
