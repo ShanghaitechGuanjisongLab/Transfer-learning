@@ -140,12 +140,12 @@ CLim = [-climLowAbs, climHighAbs];
 % --- 6) Plot
 f = figure('Color','w', 'Name', 'Fig3.5a Lane heatmap (0~3s)');
 try
-	MATLAB.Graphics.FigureAspectRatio(11, 4.5, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(8,5, 1/2);
 catch
 end
 
 Layout = tiledlayout(f, 1, 4, 'TileSpacing','none', 'Padding','tight');
-subTitles = ["Naive AudioWater", "Learned AudioWater", "Transfer LightWater Hit", "Transfer LightWater Miss"];
+subTitles = ["Naive 🔊💧", "Learned 🔊💧", "Tr 💡💧 Hit", "Tr 💡💧 Miss"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...
@@ -172,6 +172,13 @@ for iA = 1:numel(Axes)
 	xline(A, 1, '-k');
 	A.TickDir = 'in';
 	box(A, 'on');
+	try
+		% Ensure emoji glyphs render in exported SVG on Windows.
+		if isprop(A, 'Title') && isgraphics(A.Title)
+			A.Title.FontName = 'Segoe UI Emoji';
+		end
+	catch
+	end
 	try
 		if isprop(A, 'Toolbar') && ~isempty(A.Toolbar)
 			A.Toolbar.Visible = 'off';

@@ -222,21 +222,21 @@ iHideToolbar(ax2);
 [mV, sV] = iMeanSemCurves(rows.MeanCurve_ZScore(idxV7));
 iPlotMeanSem(ax2, xsSec, mC, sC, cols(1,:), 'Ctrl');
 iPlotMeanSem(ax2, xsSec, mV, sV, cols(2,:), 'Vacation7');
-% Cue(:) and Water(|) timing lines
-try
-	h0 = findall(ax2, 'Type', 'ConstantLine');
-	TransferLearning.DrawCueWaterLines(ax2);
-	h1 = findall(ax2, 'Type', 'ConstantLine');
-	newH = setdiff(h1, h0);
-	set(newH, 'HandleVisibility', 'off');
-catch
-end
 xlabel(ax2, 'Time (s)');
 ylabel(ax2, 'Z-score');
 title(ax2, 'Mean Ca (Transfer; filtered)');
 grid(ax2,'on');
 box(ax2,'off');
-legend(ax2, 'Location','best');
+lgd = legend(ax2, 'Location','best');
+try
+	lgd.AutoUpdate = 'off';
+catch
+end
+% Cue(:) and Water(|) timing lines MUST be after legend
+try
+	TransferLearning.DrawCueWaterLines(ax2);
+catch
+end
 
 % 5.3 Reuse(1s) (MOp2/3)
 ax3 = nexttile(tlo, 3);

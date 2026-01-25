@@ -158,7 +158,7 @@ CLim = [-climLowAbs, climHighAbs];
 % --- 8) Plot
 f = figure('Color','w', 'Name', 'Fig3.5b Lane heatmap (0~3s)');
 try
-	MATLAB.Graphics.FigureAspectRatio(8.5, 4.5, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
 catch
 end
 
