@@ -42,14 +42,25 @@ if ~ismember('ReuseRate_Hit', Summary.Properties.VariableNames)
 end
 
 f = figure('Color','w', 'Name', 'Fig3.6d hit vs miss reuse');
+MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
 ax = axes(f);
+
+% Avoid exporting axes toolbar icons
+try
+	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+		ax.Toolbar.Visible = 'off';
+	end
+catch
+end
 hold(ax,'on');
 box(ax,'off');
 grid(ax,'on');
 
 layers = ["RSPd2/3","RSPd5"];
 cols = lines(2);
-xpos = [1 2];
+% mimic Fig3.3a spacing: keep layer groups away from far-left and insert a gap
+xpos23 = [2 3];
+xpos5  = [5 6];
 
 Summary.ZLayer = string(Summary.ZLayer);
 
@@ -62,23 +73,47 @@ for iL = 1:2
 	hit = hit(mask);
 	miss = miss(mask);
 	
-	x = xpos + (iL-1)*2.8;
+	if iL == 1
+		x = xpos23;
+	else
+		x = xpos5;
+	end
 	lineCol = cols(iL,:)*0.55 + 0.45;
 	for i = 1:numel(hit)
 		plot(ax, x, [hit(i) miss(i)], '-', 'Color', lineCol, 'LineWidth', 1);
 	end
 	scatter(ax, repmat(x(1), size(hit)), hit, 28, 'filled', 'MarkerFaceAlpha', 0.85, 'MarkerFaceColor', cols(iL,:));
 	scatter(ax, repmat(x(2), size(miss)), miss, 28, 'filled', 'MarkerFaceAlpha', 0.85, 'MarkerFaceColor', cols(iL,:));
-	
+
+	% p-value line (paired signrank) via MATLAB.Graphics.PLine
 	p = TransferLearning.Fig36.iSignrankRight(hit, miss);
-	text(ax, mean(x), max([hit;miss],[],'omitnan'), sprintf('%s p=%.2g', zl, p), ...
-		'HorizontalAlignment','center', 'VerticalAlignment','bottom', 'Color', cols(iL,:), 'Interpreter','none');
+	if isfinite(p)
+		S = scatter(ax, [repmat(x(1), numel(hit), 1); repmat(x(2), numel(miss), 1)], [hit(:); miss(:)], ...
+			1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
+		try
+			if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+			if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+			if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
+		catch
+		end
+		Descriptors = table(S, 0, 0, (zl + " p=" + sprintf('%.3g', p)), 0, ...
+			'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+		try
+			MATLAB.Graphics.PLine(Descriptors);
+		catch
+		end
+		try
+			delete(S);
+		catch
+		end
+	end
 end
 
-ax.XTick = [xpos xpos+2.8];
+ax.XTick = [xpos23 xpos5];
 ax.XTickLabel = {'Hit','Miss','Hit','Miss'};
+xlim(ax, [1.3 6.7]);
 ylabel(ax, 'Reuse rate', 'Interpreter','none');
-title(ax, 'Fig3.6d RSPd Hit vs Miss forward reuse (paired)', 'Interpreter','none');
+title(ax, 'RSPd Hit vs Miss forward reuse (paired)', 'Interpreter','none');
 
 try
 	if ~isfolder(outDirUNC); mkdir(outDirUNC); end
