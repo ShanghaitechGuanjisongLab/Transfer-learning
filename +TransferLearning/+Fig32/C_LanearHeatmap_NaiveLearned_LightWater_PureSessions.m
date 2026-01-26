@@ -11,8 +11,8 @@
 % Cell unification:
 % - Use UniExp.NtatsCellStrip to unify the cell set across lanes.
 %
-% Active-cell filter (Learned lane only):
-% - max(0~1s) > mean(-3~0s) + 3*std(-3~0s)
+% Active-cell filter (ANY lane):
+% - NTATS(1s) > mean(-3~0s) + 3*std(-3~0s)
 %
 % Cell sorting:
 % - Within 0~3s, compute peak time in Learned and Naive.
@@ -103,12 +103,23 @@ assignin('base','Fig3_5b_BadMiceLAI', badMiceLAI);
 
 X = iGetNtats3D(S);
 
-% --- 5) Learned-active cells only
-XLearned = squeeze(X(:,:,2));
-baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
-baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
-respMax = max(XLearned(:, respMask), [], 2, 'omitnan');
-activeMask = isfinite(respMax) & isfinite(baseMu) & isfinite(baseSd) & (respMax > (baseMu + kSigma*baseSd));
+% --- 5) Keep cells that are active at 1s in ANY plotted lane
+% Only drop cells that are inactive at 1s in ALL lanes.
+[idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
+if ~ok1s
+	error('Fig3_5b:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
+end
+
+nLane = size(X, 3);
+activeByLane = false(size(X,1), nLane);
+for iL = 1:nLane
+	XL = squeeze(X(:,:,iL));
+	baseMu = mean(XL(:, baseMask), 2, 'omitnan');
+	baseSd = std(XL(:, baseMask), 0, 2, 'omitnan');
+	v1 = XL(:, idx1s);
+	activeByLane(:, iL) = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma*baseSd));
+end
+activeMask = any(activeByLane, 2);
 
 if istable(S) && any(strcmp(S.Properties.VariableNames,'CellUID'))
 	activeCellUID = uint64(S.CellUID(activeMask));
@@ -117,20 +128,21 @@ else
 end
 assignin('base','Fig3_5b_ActiveMask', activeMask);
 assignin('base','Fig3_5b_ActiveCellUID', activeCellUID);
+assignin('base','Fig3_5b_ActiveByLane_1s', activeByLane);
 
 X = X(activeMask, :, :);
 
-% --- 6) Sorting by delta peak time (Learned - Naive), peak computed only within 0~3s
+% --- 6) Sorting by NTATS@1s difference (Learned - Naive)
 XNaive = squeeze(X(:,:,1));
 XLearn = squeeze(X(:,:,2));
 
-[tPeakNaive, okN] = iPeakTime_0to3(XNaive, xsSec, xMask);
-[tPeakLearn, okL] = iPeakTime_0to3(XLearn, xsSec, xMask);
+vNaive1s = XNaive(:, idx1s);
+vLearn1s = XLearn(:, idx1s);
 
-deltaPeak = tPeakLearn - tPeakNaive;
-deltaPeak(~(okN & okL)) = NaN;
+delta1s = vLearn1s - vNaive1s;
+delta1s(~(isfinite(vNaive1s) & isfinite(vLearn1s))) = NaN;
 
-[~, sortIdx] = sort(deltaPeak, 'ascend', 'MissingPlacement','last');
+[~, sortIdx] = sort(delta1s, 'ascend', 'MissingPlacement','last');
 
 % --- 7) Prepare lane data (only 0~3s)
 X0to3 = X(:, xMask, :);
@@ -216,9 +228,9 @@ end
 
 % diagnostics to base
 assignin('base','Fig3_5b_SortIdx', sortIdx);
-assignin('base','Fig3_5b_PeakTimeNaive', tPeakNaive);
-assignin('base','Fig3_5b_PeakTimeLearned', tPeakLearn);
-assignin('base','Fig3_5b_DeltaPeak', deltaPeak);
+assignin('base','Fig3_5b_SortDelta1s_LearnedMinusNaive', delta1s);
+assignin('base','Fig3_5b_Naive1s', vNaive1s);
+assignin('base','Fig3_5b_Learned1s', vLearn1s);
 
 %% --- local helpers
 
@@ -328,17 +340,6 @@ end
 error('Fig3_5b:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
 
-function [tPeak, ok] = iPeakTime_0to3(X, xsSec, xMask)
-Xw = X(:, xMask);
-finiteRow = any(isfinite(Xw), 2);
-[~, idxRel] = max(Xw, [], 2, 'omitnan');
-idxRel(~finiteRow) = 1;
-xsW = xsSec(xMask);
-	tPeak = xsW(idxRel);
-tPeak(~finiteRow) = NaN;
-ok = finiteRow;
-end
-
 function y = iNiceLimit(x)
 % Round x up to a "nice" limit using 1-2-5 scaling.
 if ~isfinite(x) || x <= 0
@@ -363,4 +364,16 @@ y = n * (10^e);
 if y < x
 	y = 10 * (10^e);
 end
+end
+
+function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
+% Find index closest to tSec within tolSec.
+if isempty(xsSec) || ~isvector(xsSec)
+	idx = 1;
+	ok = false;
+	return;
+end
+
+[d, idx] = min(abs(xsSec(:) - tSec));
+ok = isfinite(d) && (d <= tolSec);
 end

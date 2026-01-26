@@ -56,7 +56,7 @@ if nnz(xMask) < 5
 	error('Fig3_5a:BadTimeMask', 'Too few samples in 0~3s window.');
 end
 
-% Active-cell criterion (Learned lane only): max(0~1s) > mean(-3~0s) + 3*std(-3~0s)
+% Active-cell criterion (ANY lane): NTATS(1s) > mean(-3~0s) + 3*std(-3~0s)
 baseMask = (xsSec >= -3) & (xsSec < 0);
 respMask = (xsSec >= 0) & (xsSec <= 1);
 if nnz(baseMask) < 5 || nnz(respMask) < 2
@@ -83,12 +83,23 @@ assignin('base','Fig3_5a_CellStrip', S);
 laneOrder = ["NaiveAudio","LearnedAudio","TransferHit","TransferMiss"];
 X = iGetNtats3D(S, laneOrder);
 
-% --- 3.5) Learned-active cells only
-XLearned = squeeze(X(:,:,2));
-baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
-baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
-respMax = max(XLearned(:, respMask), [], 2, 'omitnan');
-activeMask = isfinite(respMax) & isfinite(baseMu) & isfinite(baseSd) & (respMax > (baseMu + kSigma*baseSd));
+% --- 3.5) Keep cells that are active at 1s in ANY plotted lane
+% Only drop cells that are inactive at 1s in ALL lanes.
+[idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
+if ~ok1s
+	error('Fig3_5a:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
+end
+
+nLane = size(X, 3);
+activeByLane = false(size(X,1), nLane);
+for iL = 1:nLane
+	XL = squeeze(X(:,:,iL));
+	baseMu = mean(XL(:, baseMask), 2, 'omitnan');
+	baseSd = std(XL(:, baseMask), 0, 2, 'omitnan');
+	v1 = XL(:, idx1s);
+	activeByLane(:, iL) = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma*baseSd));
+end
+activeMask = any(activeByLane, 2);
 
 if istable(S) && any(strcmp(S.Properties.VariableNames,'CellUID'))
 	activeCellUID = uint64(S.CellUID(activeMask));
@@ -97,20 +108,22 @@ else
 end
 assignin('base','Fig3_5a_ActiveMask', activeMask);
 assignin('base','Fig3_5a_ActiveCellUID', activeCellUID);
+assignin('base','Fig3_5a_ActiveByLane_1s', activeByLane);
 
 X = X(activeMask, :, :);
 
-% --- 4) Compute sort key using only 0~3s window
-XHit  = squeeze(X(:,:,3));
-XMiss = squeeze(X(:,:,4));
+% --- 4) Compute sort key using NTATS@1s difference
+% Sort key: (LearnedAudio@1s - TransferMiss@1s)
+XLearn = squeeze(X(:,:,2));
+XMiss  = squeeze(X(:,:,4));
 
-[tPeakHit, okHit]   = iPeakTime_0to3(XHit,  xsSec, xMask);
-[tPeakMiss, okMiss] = iPeakTime_0to3(XMiss, xsSec, xMask);
+vLearn1s = XLearn(:, idx1s);
+vMiss1s  = XMiss(:, idx1s);
 
-deltaPeak = tPeakHit - tPeakMiss;
-deltaPeak(~(okHit & okMiss)) = NaN;
+delta1s = vLearn1s - vMiss1s;
+delta1s(~(isfinite(vLearn1s) & isfinite(vMiss1s))) = NaN;
 
-[~, sortIdx] = sort(deltaPeak, 'ascend', 'MissingPlacement','last');
+[~, sortIdx] = sort(delta1s, 'ascend', 'MissingPlacement','last');
 
 % --- 5) Prepare lane data for LanearHeatmap (only 0~3s)
 X0to3 = X(:, xMask, :);
@@ -205,13 +218,13 @@ end
 
 % diagnostics to base
 assignin('base','Fig3_5a_SortIdx', sortIdx);
-assignin('base','Fig3_5a_PeakTimeHit', tPeakHit);
-assignin('base','Fig3_5a_PeakTimeMiss', tPeakMiss);
-assignin('base','Fig3_5a_DeltaPeak', deltaPeak);
+assignin('base','Fig3_5a_SortDelta1s_LearnedMinusMiss', delta1s);
+assignin('base','Fig3_5a_Learned1s', vLearn1s);
+assignin('base','Fig3_5a_TransferMiss1s', vMiss1s);
 
 %% --- local helpers
 
-function X = iGetNtats3D(S, laneOrder)
+function X = iGetNtats3D(S, ~)
 % Return numeric [nCell x nTime x nLane] NTATS in the requested lane order.
 % NtatsCellStrip may return a table (variables: CellUID, NTATS), where NTATS
 % is a MATLAB.DataTypes.NDTable array sized [nCell x nTime x nLane].
@@ -247,16 +260,16 @@ end
 error('Fig3_5a:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
 
-function [tPeak, ok] = iPeakTime_0to3(X, xsSec, xMask)
-% X: [nCell x nTime]
-Xw = X(:, xMask);
-finiteRow = any(isfinite(Xw), 2);
-[~, idxRel] = max(Xw, [], 2, 'omitnan');
-idxRel(~finiteRow) = 1;
-xsW = xsSec(xMask);
-	tPeak = xsW(idxRel);
-tPeak(~finiteRow) = NaN;
-ok = finiteRow;
+function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
+% Find index closest to tSec within tolSec.
+if isempty(xsSec) || ~isvector(xsSec)
+	idx = 1;
+	ok = false;
+	return;
+end
+
+[d, idx] = min(abs(xsSec(:) - tSec));
+ok = isfinite(d) && (d <= tolSec);
 end
 
 function y = iNiceLimit(x)
