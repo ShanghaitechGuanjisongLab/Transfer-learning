@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 逻辑网.svg Page-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="8.14474in" height="7.98726in"
+		viewBox="0 0 586.421 575.083" xml:space="preserve" color-interpolation-filters="sRGB" class="st6">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false">
+		<v:userDefs>
+			<v:ud v:nameU="msvSubprocessMaster" v:prompt="" v:val="VT4(Rectangle)"/>
+			<v:ud v:nameU="msvNoAutoConnect" v:val="VT0(1):26"/>
+		</v:userDefs>
+	</v:documentProperties>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#00ae00;stroke:#c7c8c8;stroke-width:0.25}
+		.st2 {fill:#feffff;font-family:Calibri;font-size:1.16666em}
+		.st3 {font-size:1em}
+		.st4 {fill:#ff0000;stroke:#0c445d;stroke-width:0.75}
+		.st5 {fill:#0000ff;stroke:#0c445d;stroke-width:0.75}
+		.st6 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<v:userDefs>
+			<v:ud v:nameU="msvThemeOrder" v:val="VT0(0):26"/>
+		</v:userDefs>
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="shape2-1" v:mID="2" v:groupContext="shape" transform="translate(236.518,-443.447)">
+			<title>圆形</title>
+			<desc>Reuse</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="518.39" width="99.22" height="85.0394"/>
+			<path d="M0 518.39 A56.6929 56.6929 0 0 1 113.39 518.39 A56.6929 56.6929 0 1 1 0 518.39 Z" class="st1"/>
+			<text x="39.51" y="522.59" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Reuse</text>		</g>
+		<g id="shape3-4" v:mID="3" v:groupContext="shape" transform="translate(236.518,-230.848)">
+			<title>圆形.3</title>
+			<desc>Transfer Pretrain</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="518.39" width="99.22" height="85.0394"/>
+			<path d="M0 518.39 A56.6929 56.6929 0 0 1 113.39 518.39 A56.6929 56.6929 0 1 1 0 518.39 Z" class="st1"/>
+			<text x="33.01" y="514.19" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Transfer <tspan
+						x="33.73" dy="1.2em" class="st3">Pretrain</tspan></text>		</g>
+		<g id="shape4-8" v:mID="4" v:groupContext="shape" transform="translate(18.25,-230.848)">
+			<title>圆形.4</title>
+			<desc>Performance</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="518.39" width="99.22" height="85.0394"/>
+			<path d="M0 518.39 A56.6929 56.6929 0 0 1 113.39 518.39 A56.6929 56.6929 0 1 1 0 518.39 Z" class="st1"/>
+			<text x="19.82" y="522.59" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Performance</text>		</g>
+		<g id="shape5-11" v:mID="5" v:groupContext="shape" transform="translate(454.785,-230.848)">
+			<title>圆形.5</title>
+			<desc>Hit/Miss</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="518.39" width="99.22" height="85.0394"/>
+			<path d="M0 518.39 A56.6929 56.6929 0 0 1 113.39 518.39 A56.6929 56.6929 0 1 1 0 518.39 Z" class="st1"/>
+			<text x="32.61" y="522.59" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Hit/Miss</text>		</g>
+		<g id="shape6-14" v:mID="6" v:groupContext="shape" transform="translate(236.518,-18.25)">
+			<title>圆形.6</title>
+			<desc>Naïve Pretrain</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="56.6929" cy="518.39" width="99.22" height="85.0394"/>
+			<path d="M0 518.39 A56.6929 56.6929 0 0 1 113.39 518.39 A56.6929 56.6929 0 1 1 0 518.39 Z" class="st1"/>
+			<text x="16.03" y="522.59" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Naïve Pretrain</text>		</g>
+		<g id="shape7-17" v:mID="7" v:groupContext="shape" transform="translate(131.636,-287.541)">
+			<title>普通双箭头</title>
+			<desc>(D)Correlation</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="52.4409" cy="575.083" width="104.89" height="0"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L93.54 569.41 L93.54 563.74 L104.88 575.08 L93.54 586.42 L93.54 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st4"/>
+			<text x="11.82" y="579.28" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(D)Correlation</text>		</g>
+		<g id="shape8-20" v:mID="8" v:groupContext="shape" transform="translate(868.293,131.636) rotate(90)">
+			<title>普通双箭头.8</title>
+			<desc>(B)Correlation</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="49.6063" cy="575.083" width="99.22" height="0" transform="rotate(180)"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L87.87 569.41 L87.87 563.74 L99.21 575.08 L87.87 586.42 L87.87 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st4"/>
+			<text x="-89.73" y="-570.88" transform="rotate(180)" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(B)Correlation</text>		</g>
+		<g id="shape9-23" v:mID="9" v:groupContext="shape" transform="translate(349.904,-287.541)">
+			<title>普通双箭头.9</title>
+			<desc>(F)Difference</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="52.4409" cy="575.083" width="104.89" height="0"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L93.54 569.41 L93.54 563.74 L104.88 575.08 L93.54 586.42 L93.54 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st5"/>
+			<text x="15.27" y="579.28" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(F)Difference</text>		</g>
+		<g id="shape10-26" v:mID="10" v:groupContext="shape" transform="translate(731.338,-300.04) rotate(43.7993)">
+			<title>普通双箭头.10</title>
+			<desc>(C)Difference</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="95.6548" cy="575.083" width="191.31" height="0"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L179.97 569.41 L179.97 563.74 L191.31 575.08 L179.97 586.42 L179.97 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st5"/>
+			<text x="57.96" y="579.28" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(C)Difference</text>		</g>
+		<g id="shape11-29" v:mID="11" v:groupContext="shape" transform="translate(-64.7307,44.9699) rotate(-43.7993)">
+			<title>普通双箭头.11</title>
+			<desc>(I)Difference</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="95.6548" cy="575.083" width="191.31" height="0" transform="rotate(360)"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L179.97 569.41 L179.97 563.74 L191.31 575.08 L179.97 586.42 L179.97 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st5"/>
+			<text x="59.93" y="579.28" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(I)Difference</text>		</g>
+		<g id="shape12-32" v:mID="12" v:groupContext="shape" transform="translate(868.293,344.234) rotate(90)">
+			<title>普通双箭头.12</title>
+			<desc>(H)Difference</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="49.6063" cy="575.083" width="99.22" height="0" transform="rotate(180)"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L87.87 569.41 L87.87 563.74 L99.21 575.08 L87.87 586.42 L87.87 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st5"/>
+			<text x="-87.92" y="-570.88" transform="rotate(180)" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(H)Difference</text>		</g>
+		<g id="shape13-35" v:mID="13" v:groupContext="shape" transform="translate(513.071,-87.442) rotate(43.7993)">
+			<title>普通双箭头.13</title>
+			<desc>(G)Correlation</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="95.6548" cy="575.083" width="191.31" height="0"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L179.97 569.41 L179.97 563.74 L191.31 575.08 L179.97 586.42 L179.97 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st4"/>
+			<text x="54.93" y="579.28" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(G)Correlation</text>		</g>
+		<g id="shape14-38" v:mID="14" v:groupContext="shape" transform="translate(-282.998,-167.628) rotate(-43.7993)">
+			<title>普通双箭头.14</title>
+			<desc>(A)Correlation</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="ArrowType" v:prompt="" v:val="VT0(3):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="95.6548" cy="575.083" width="191.31" height="0" transform="rotate(360)"/>
+			<path d="M0 575.08 L11.34 563.74 L11.34 569.41 L179.97 569.41 L179.97 563.74 L191.31 575.08 L179.97 586.42 L179.97 580.75
+						 L11.34 580.75 L11.34 586.42 L0 575.08 Z" class="st4"/>
+			<text x="55.29" y="579.28" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>(A)Correlation</text>		</g>
+	</g>
+</svg>
