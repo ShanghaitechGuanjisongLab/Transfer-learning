@@ -38,7 +38,7 @@ XTran  = TransferLearning.Fig36.iNtatsData(GTran.NTATS);
 Summary = TransferLearning.Fig36.iRSPdReuseSummary(RSP, GLearn, GTran, XLearn, XTran, xsSec, baseMask, winMask01);
 
 f = figure('Color','w', 'Name', 'Fig3.6c reuse vs performance');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+	MATLAB.Graphics.FigureAspectRatio(3,2,3/4);
 ax = axes(f);
 
 % Avoid exporting axes toolbar icons
@@ -98,5 +98,5 @@ catch
 end
 
 svgPath = fullfile(outDirUNC, svgName);
-exportgraphics(f, svgPath, 'ContentType','vector');
+TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

@@ -218,13 +218,13 @@ statsOut.N_AllLightWaterSessions = [sum(idxCtrlLW), sum(idxTHLW)];
 
 assignin('base', 'Fig3_5c_THInhibitVsCtrl_Stats', statsOut);
 
-% --- 5) Plot (2x2)
+% --- 5) Plot (1x3, behavior only)
 f = figure('Color','w', 'Name', 'Fig3.4c THInhibit vs Ctrl');
 try
-	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(3, 1, 1);
 catch
 end
-tlo = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
+tlo = tiledlayout(f, 1, 3, 'TileSpacing','compact', 'Padding','compact');
 
 % Colors
 try
@@ -260,51 +260,69 @@ catch
 end
 
 xlabel(ax1, 'Session');
-ylabel(ax1, 'Performance (LightWater)');
+ylabel(ax1, 'Performance');
 title(ax1, 'LightWater learning curve');
 grid(ax1,'on');
 box(ax1,'off');
 
-% 5.2 Mean calcium curve (ZScore)
+% 5.2 Transfer first session performance (behavior only)
+accCtrl = nan(0,1);
+accTH = nan(0,1);
+pAcc = nan;
+try
+	if ismember('Phase', B.Properties.VariableNames)
+		BT = B;
+		BT.Phase = string(BT.Phase);
+		BT = BT(BT.Phase == "Transfer", :);
+		if ~isempty(BT)
+			SessT = iSessionizeByDateTime(BT(:, ["Mouse","DateTime","Performance","Group"]));
+			SessT = sortrows(SessT, ["Mouse","DateTime"]);
+			[~, ia] = unique(string(SessT.Mouse), 'stable');
+			First = SessT(ia, :);
+			accCtrl = First.Performance(string(First.Group) == "Ctrl");
+			accTH   = First.Performance(string(First.Group) == "TH");
+		end
+	else
+		Sess0 = iSessionizeByDateTime(B(:, ["Mouse","DateTime","Performance","Group"]));
+		Sess0 = sortrows(Sess0, ["Mouse","DateTime"]);
+		[~, ia] = unique(string(Sess0.Mouse), 'stable');
+		First = Sess0(ia, :);
+		accCtrl = First.Performance(string(First.Group) == "Ctrl");
+		accTH   = First.Performance(string(First.Group) == "TH");
+	end
+	accCtrl = accCtrl(isfinite(accCtrl));
+	accTH   = accTH(isfinite(accTH));
+	pAcc = iRanksumSafe(accCtrl, accTH);
+catch
+	% keep robust
+end
+
 ax2 = nexttile(tlo, 2);
 hold(ax2,'on');
 iHideToolbar(ax2);
-[mC, sC] = iMeanSemCurves(rows.MeanCurve_ZScore(idxCtrl));
-[mT, sT] = iMeanSemCurves(rows.MeanCurve_ZScore(idxTH));
-iPlotMeanSem(ax2, xsSec, mC, sC, cols(1,:), 'Ctrl');
-iPlotMeanSem(ax2, xsSec, mT, sT, cols(2,:), 'TH');
-xlabel(ax2, 'Time (s)');
-ylabel(ax2, 'Z-score');
-title(ax2, 'Mean Ca trace (MOp5)');
-
+TransferLearning.Fig35.iSwarm2(ax2, accCtrl, accTH, ["Ctrl","TH"], 'Performance', pAcc);
+title(ax2, 'First transfer session');
 grid(ax2,'on');
-box(ax2,'off');
-lgd = legend(ax2, {'Ctrl','TH'}, 'Location','best');
+box(ax2,'on');
+
+% 5.3 Learning speed (session-level delta perf)
+dCtrl = nan(0,1);
+dTH = nan(0,1);
+pDelta = nan;
 try
-	lgd.AutoUpdate = 'off';
-catch
-end
-% Cue(:) and Water(|) timing lines MUST be after legend
-try
-	TransferLearning.DrawCueWaterLines(ax2);
+	Delta = TransferLearning.Fig35.iBuildSessionDeltaTable(SessAll);
+	dCtrl = Delta.DeltaPerf(string(Delta.Group) == "Ctrl");
+	dTH   = Delta.DeltaPerf(string(Delta.Group) == "TH");
+	pDelta = TransferLearning.Fig35.iRanksumSafe(dCtrl, dTH);
 catch
 end
 
-% 5.3 Reuse rate (per mouse)
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 iHideToolbar(ax3);
-iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxTH), {'Ctrl','TH'}, 'Reuse(1s) (MOp2/3)', pReuse);
-title(ax3, 'Reuse');
+TransferLearning.Fig35.iSwarm2(ax3, dCtrl, dTH, ["Ctrl","TH"], 'Learning speed (DeltaNext)', pDelta);
+title(ax3, 'Learning speed');
 grid(ax3,'on');
-
-% 5.4 Stability: SD across cells (DeltaF), MOp5 only (ALL LightWater sessions)
-ax4 = nexttile(tlo, 4);
-hold(ax4,'on');
-iHideToolbar(ax4);
-iSwarm2(ax4, rowsLW.SD_MOp5_1p5(idxCtrlLW), rowsLW.SD_MOp5_1p5(idxTHLW), {'Ctrl','TH'}, 'Inter-cell SD @1.5 s (MOp5)', pSD15_LW);
-title(ax4, 'Stability');
-grid(ax4,'on');
 
 % Hide axes toolbar overlays in SVG
 try
@@ -314,6 +332,12 @@ try
 			axAll(i).Toolbar.Visible = 'off';
 		end
 	end
+catch
+end
+
+% Unify Fig3.5 style
+try
+	TransferLearning.Fig35.iApplyFig35Style(f);
 catch
 end
 
@@ -327,7 +351,7 @@ end
 
 svgPath = fullfile(outDirUNC, 'Fig3_5c_THInhibitVsCtrl.svg');
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

@@ -97,7 +97,7 @@ nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
 % --- 4) Plot
 f = figure('Color','w', 'Name', 'Fig3.1b Learning curve (LightWater)'); %[output:17c93ed5]
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2); %[output:17c93ed5]
+MATLAB.Graphics.FigureAspectRatio(73,48,3/4); %[output:17c93ed5]
 ax = axes(f); %[output:17c93ed5]
 hold(ax,'on'); %[output:17c93ed5]
 axes(ax); %[output:17c93ed5]
@@ -157,7 +157,7 @@ try %[output:group:5b8c50e8]
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off'; %[output:17c93ed5]
 	end
-	exportgraphics(f, svgPath, 'ContentType','vector'); %[output:17c93ed5]
+	TransferLearning.PrintFigure(f, svgPath); %[output:17c93ed5]
 	fprintf('Wrote: %s\n', svgPath); %[output:8221b056]
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

@@ -110,7 +110,7 @@ Data.Inactive = vInactive;
 CompareGroup = table(["Active", "Inactive"], 'VariableNames', {'GroupPair'});
 
 f = figure('Color','w', 'Name', 'Fig3.5g NTATS@1s');
-MATLAB.Graphics.FigureAspectRatio(4,5,1/3);
+MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
 
@@ -136,8 +136,7 @@ end
 
 svgPath = fullfile(outDirUNC, svgName);
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
-	fprintf('Wrote: %s\n', svgPath);
+	TransferLearning.PrintFigure(f, svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end

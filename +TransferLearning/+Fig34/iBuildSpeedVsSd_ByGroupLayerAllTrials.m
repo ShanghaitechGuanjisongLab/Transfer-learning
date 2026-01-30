@@ -1,9 +1,9 @@
 function T = iBuildSpeedVsSd_ByGroupLayerAllTrials(targetSec)
 % Build session-step table for Fig3.3c/d:
-% inter-cell SD (by layer; all trials) vs forward-diff learning speed.
+% inter-cell SD (by layer; all trials) vs forward-diff learning increment (\DeltaHit).
 %
 % Returns one-row-per-session-step table with:
-%   Mouse, DateTime, Group, Performance, LearningSpeed_DeltaNext,
+%   Mouse, DateTime, Group, Performance (Hit), LearningSpeed_DeltaNext (DeltaHit),
 %   StdCells{sec}_MOp23, StdCells{sec}_MOp5
 %
 % Notes:

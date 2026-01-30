@@ -1,21 +1,26 @@
-% 图3.4a：复用率和 1s/1.5s 相关性都不能预测 Transfer 学习速率
+% 图3.4a：复用率和预训率 P(T|F) 都不能预测 Transfer 学习增量（控前会话命中率）
 %
 % Spec (from 论文大纲.md 3.3):
 % - Within Transfer cohort, show that:
-%     * Reuse(1s) does NOT significantly correlate with learning speed
-%     * CellCorr(1s,1.5s) does NOT significantly correlate with learning speed
+%     * Reuse(1s) does NOT significantly correlate with learning increment (\DeltaHit)
+%     * P(T|F) does NOT significantly correlate with learning increment (\DeltaHit)
 % - Stratify by layer: MOp2/3 vs MOp5 (4 subplots)
 %
 % Notes (2026-01-17 updated):
 % - One point = one session.
-% - Learning speed is DeltaNext = Perf(i+1) - Perf(i) within each mouse.
-% - Reuse and CellCorr are computed per session (Mouse×DateTime), not per mouse.
+% - Learning increment is forward difference: DeltaHit = Hit(i+1) - Hit(i) within each mouse.
+% - Reuse and P(T|F) are computed per session (Mouse×DateTime), not per mouse.
 %   * Reuse(session vs Learned) is computed within each LightWater session, referenced to
 %     Learned(AudioWater, Learned phase pooled) active cells.
-%   * CellCorr(session) is corr(Z(:,1s), Z(:,1.5s)) across cells within the same session.
+%   * P(T|F)(session) is P(Active_in_this_LW_session@1s | Final_LW_Active@1s), within mouse.
 % - Do NOT restrict Phase; use all phases in ALB.
-% - Exclude Performance==0; exclude ceiling segment (Perf==1 and later) plus the last step
-%   into ceiling; enforce 0<Perf<1.
+% - Do NOT exclude Performance==0.
+% - Exclude ceiling segment (Perf==1 and later) plus the last step into ceiling;
+%   enforce 0<=Perf<1.
+%
+% Stats:
+% - Report Spearman and partial Spearman controlling for previous-session hit rate
+%   (here: Hit1 of the current session, for DeltaHit forward difference).
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
@@ -24,7 +29,7 @@
 %   TransferLearning.Fig34.A_ReuseAndCellCorrCannotPredictLearningSpeed
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_4a_ReuseAndCellCorr_CannotPredictLearningSpeed_DeltaNext.svg";
+svgName = "Fig3_4a_ReuseAndPTgivenF_vs_LearningSpeed_DeltaNext_CtrlHit1.svg";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -42,7 +47,7 @@ try
 catch
 end
 
-% --- 1) Time indices / baseline mask (Reuse + CellCorr)
+% --- 1) Time indices / baseline mask (Reuse + P(T|F))
 xs = TransferLearning.Xs;
 xsSec = seconds(xs);
 baseMask = (xsSec >= -3) & (xsSec < 0);
@@ -61,24 +66,25 @@ end
 
 layerNames = ["MOp2/3","MOp5"];
 
-% --- 2) Session-level learning speed (DeltaNext) over ALL phases
+% --- 2) Session-level learning increment (DeltaHit forward difference) over ALL phases
 DS = TransferLearning.AudioLightBaseline();
 Sess0 = iTransferTrajectorySessions(DS);
 assignin('base', 'Fig3_3a_SessionsRaw', Sess0);
 
-[Sess, diag] = iFilterSessions_Exclude0AndCeiling(Sess0);
+[Sess, diag] = iFilterSessions_Keep0ExcludeCeiling(Sess0);
 assignin('base', 'Fig3_3a_SessionsFiltered', Sess);
 assignin('base', 'Fig3_3a_FilterDiag', diag);
 
 SessSpeed = iSessionDeltaNextTable(Sess);
 assignin('base', 'Fig3_3a_SessionSpeed', SessSpeed);
 
-fprintf('Fig3.3a (DeltaNext, session-level): sessions raw=%d, after filter=%d (rm0=%d, rmCeiling=%d), DeltaNext points=%d\n', ...
-	height(Sess0), height(Sess), diag.Rm0, diag.RmCeiling, height(SessSpeed));
+fprintf('Fig3.4a (DeltaHit forward diff, session-level): sessions raw=%d, after filter=%d (n0=%d, rmCeiling=%d), DeltaHit points=%d\n', ...
+	height(Sess0), height(Sess), diag.N0, diag.RmCeiling, height(SessSpeed));
 
-% --- 3) Session-specific Reuse + CellCorr (one value per session×layer)
+% --- 3) Session-specific Reuse + P(T|F) (one value per session×layer)
 learnedCell = iLearnedActiveByCell(DS, baseMask, idx1);
-SessMetric = iSessionReuseAndCellCorr(DS, SessSpeed, learnedCell, baseMask, idx1, idx2, layerNames);
+finalCell = iFinalActiveByCell(DS, baseMask, idx1);
+SessMetric = iSessionReuseAndPTgivenF(DS, SessSpeed, learnedCell, finalCell, baseMask, idx1, idx2, layerNames);
 assignin('base', 'Fig3_3a_SessionMetrics', SessMetric);
 
 % Join: one point = one session(DateTime) × one layer
@@ -87,9 +93,9 @@ J = innerjoin(SessMetric, SessSpeed(:, {'Mouse','DateTime','DateTimeNext','Perfo
 assignin('base', 'Fig3_3a_Joined', J);
 
 % --- 3) Plot
-f = figure('Color','w', 'Name', 'Fig3.3a reuse/cellcorr vs learning speed');
+f = figure('Color','w', 'Name', 'Fig3.4a Reuse/P(T|F) vs learning increment (Ctrl Hit1)');
 try
-	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(3, 2, 3/4);
 catch
 end
 
@@ -102,21 +108,21 @@ for iL = 1:numel(layers)
 	zl = layers(iL);
 	R = J(J.ZLayer == zl, :);
 
-	% Left: Reuse(session vs Learned) vs DeltaNext
+	% Left: Reuse(session vs Learned) vs learning increment
 	ax = nexttile(tl, (iL-1)*2 + 1);
 	axs(iL,1) = ax;
-	iScatter(ax, R.Reuse_SessionVsLearned, R.Speed_DeltaNext);
+	iScatter(ax, R.Reuse_SessionVsLearned, R.Speed_DeltaNext, R.Performance);
 	if iL == 1
 		title(ax, 'Reuse', 'Interpreter','none');
 	end
 	ylabel(ax, zl, 'Interpreter','none');
 
-	% Right: CellCorr(session) vs DeltaNext
+	% Right: P(T|F)(session) vs learning increment
 	ax = nexttile(tl, (iL-1)*2 + 2);
 	axs(iL,2) = ax;
-	iScatter(ax, R.CellCorr_1s1p5s, R.Speed_DeltaNext);
+	iScatter(ax, R.PTgivenF_SessionVsFinal_1s, R.Speed_DeltaNext, R.Performance);
 	if iL == 1
-		title(ax, 'CellCorr', 'Interpreter','none');
+		title(ax, 'P(T|F)', 'Interpreter','none');
 	end
 	% Hide right-column y axis
 	ax.YTickLabel = [];
@@ -131,17 +137,17 @@ axs(1,2).XLabel.String = '';
 
 % Bottom-row x labels
 xlabel(axs(2,1), 'Reuse', 'Interpreter','none');
-xlabel(axs(2,2), 'CellCorr', 'Interpreter','none');
+xlabel(axs(2,2), 'P(T|F)', 'Interpreter','none');
 
 % Global y label (move from per-axes)
-% NOTE: Learning speed is forward difference DeltaNext = Perf(i+1)-Perf(i) within mouse.
-ylabel(tl, 'Learning speed (DeltaNext)', 'Interpreter','none');
+% NOTE: Learning increment is forward difference: DeltaHit = Hit(i+1)-Hit(i) within mouse.
+ylabel(tl, 'Learning increment (\DeltaHit)', 'Interpreter','tex');
 
 % Unify X limits (by column)
 iUnifyX(axs(:,1));
 iUnifyX(axs(:,2));
 
-sgtitle(tl, 'Reuse/CellCorr vs learning speed (DeltaNext)', 'Interpreter','none');
+sgtitle(tl, 'Learning increment vs reuse / P(T|F)', 'Interpreter','none');
 tl.Title.String = '';
 
 % --- 4) Export SVG
@@ -154,7 +160,7 @@ end
 
 svgPath = fullfile(outDirUNC, svgName);
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	print(f, svgPath, '-dsvg', '-painters');
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -162,9 +168,10 @@ end
 
 %% ---- local helpers
 
-function iScatter(ax, x, y)
+function iScatter(ax, x, y, hit1)
 	x = double(x);
 	y = double(y);
+	hit1 = double(hit1);
 	use = isfinite(x) & isfinite(y);
 
 	hold(ax,'on');
@@ -187,8 +194,9 @@ function iScatter(ax, x, y)
 		plot(ax, xLine, yLine, 'k-', 'LineWidth', 1);
 	end
 
-	[rho, p] = iSpearman(x(use), y(use));
-	subtitle(ax, sprintf('\\rho=%.2f, p=%.3g', rho, p), 'Interpreter','tex');
+	[~, ~, ~] = iSpearman(x, y);
+	[rhoC, pC, ~] = iPartialSpearmanCtrl(x, y, hit1);
+	subtitle(ax, sprintf('\\rho=%.2f, p=%.3g', rhoC, pC), 'Interpreter','tex');
 end
 
 function iUnifyX(axs)
@@ -210,17 +218,54 @@ function iUnifyX(axs)
 	end
 end
 
-function [rho, p] = iSpearman(x, y)
-	rho = NaN; p = NaN;
-	if numel(x) < 4 || numel(y) < 4
+function [rho, p, n] = iSpearman(x, y)
+	rho = NaN;
+	p = NaN;
+	x = double(x(:));
+	y = double(y(:));
+	use = isfinite(x) & isfinite(y);
+	n = nnz(use);
+	if n < 5
 		return;
 	end
-	if std(x,'omitnan') <= 0 || std(y,'omitnan') <= 0
+	if std(x(use),'omitnan') <= 0 || std(y(use),'omitnan') <= 0
 		return;
 	end
 	try
-		[rho, p] = corr(double(x(:)), double(y(:)), 'Type','Spearman', 'Rows','complete');
+		[rho, p] = corr(x(use), y(use), 'Type','Spearman');
 	catch
+		rho = NaN;
+		p = NaN;
+	end
+end
+
+function [rho, p, n] = iPartialSpearmanCtrl(x, y, z)
+	% Partial Spearman correlation controlling for z (Hit1 / Perf_i).
+	% Implemented as: rank-transform then correlate residuals after regressing
+	% out rank(z) from rank(x) and rank(y).
+	rho = NaN;
+	p = NaN;
+	x = double(x(:));
+	y = double(y(:));
+	z = double(z(:));
+	use = isfinite(x) & isfinite(y) & isfinite(z);
+	n = nnz(use);
+	if n < 5
+		return;
+	end
+	try
+		rx = tiedrank(x(use));
+		ry = tiedrank(y(use));
+		rz = tiedrank(z(use));
+		X = [ones(n,1), rz];
+		bx = X \ rx;
+		by = X \ ry;
+		ex = rx - X*bx;
+		ey = ry - X*by;
+		[rho, p] = corr(ex, ey, 'Type','Pearson');
+	catch
+		rho = NaN;
+		p = NaN;
 	end
 end
 
@@ -251,20 +296,18 @@ function Sess = iTransferTrajectorySessions(DS)
 	Sess = iAddSessionIndex(Sess);
 end
 
-function [SessOut, diag] = iFilterSessions_Exclude0AndCeiling(SessIn)
+function [SessOut, diag] = iFilterSessions_Keep0ExcludeCeiling(SessIn)
 	SessOut = SessIn;
-	diag = struct('Rm0',0,'RmCeiling',0);
+	diag = struct('N0',0,'RmCeiling',0);
 	if isempty(SessOut)
 		return;
 	end
 	SessOut.Mouse = string(SessOut.Mouse);
 	SessOut = sortrows(SessOut, {'Mouse','DateTime'});
 
-	% Exclude Perf==0 (0%)
+	% Keep Perf==0 (0%) sessions; just count them for diagnostics.
 	perf = double(SessOut.Performance);
-	rm0 = isfinite(perf) & (perf <= 1e-12);
-	diag.Rm0 = nnz(rm0);
-	SessOut(rm0,:) = [];
+	diag.N0 = nnz(isfinite(perf) & (perf <= 1e-12));
 
 	% Exclude ceiling segment: Perf==1 (100%) and later, plus last step into ceiling
 	if isempty(SessOut)
@@ -289,14 +332,14 @@ function [SessOut, diag] = iFilterSessions_Exclude0AndCeiling(SessIn)
 	diag.RmCeiling = nnz(remove);
 	SessOut(remove,:) = [];
 
-	% Enforce 0<Perf<1
+	% Enforce 0<=Perf<1
 	perf = double(SessOut.Performance);
-	keep = isfinite(perf) & (perf > 1e-12) & (perf < (1 - 1e-12));
+	keep = isfinite(perf) & (perf >= -1e-12) & (perf < (1 - 1e-12));
 	SessOut = SessOut(keep, :);
 end
 
 function SessSpeed = iSessionDeltaNextTable(Sess)
-	% One point per session: DeltaNext = Perf(i+1) - Perf(i)
+	% One point per session: forward difference (DeltaHit) = Hit(i+1) - Hit(i)
 	SessSpeed = table(string.empty(0,1), NaT(0,1), nan(0,1), NaT(0,1), nan(0,1), nan(0,1), ...
 		'VariableNames', {'Mouse','DateTime','Performance','DateTimeNext','PerformanceNext','Speed_DeltaNext'});
 	if isempty(Sess)
@@ -357,14 +400,39 @@ function learnedCell = iLearnedActiveByCell(DS, baseMask, idx1)
 	learnedCell.ZLayer = string(learnedCell.ZLayer);
 end
 
-function Tout = iSessionReuseAndCellCorr(DS, SessSpeed, learnedCell, baseMask, idx1, idx2, layerNames)
+function finalCell = iFinalActiveByCell(DS, baseMask, idx1)
+	% FinalActive is per mouse (Final, LightWater, pooled), per cell
+	% NOTE: For P(T|F) we only use FinalActive within each mouse.
+	kSigma = 3;
+	try
+		G = DS.QueryNTATS(struct('Stimulus','LightWater','Phase','Final'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	catch ME
+		error('Fig3_3a:FinalQueryFailed', 'QueryNTATS Final(LightWater) failed: %s', ME.message);
+	end
+	if isempty(G) || ~all(ismember(["CellUID","NTATS"], string(G.Properties.VariableNames)))
+		error('Fig3_3a:FinalEmpty', 'QueryNTATS Final(LightWater) empty.');
+	end
+	X = iNtatsData(G.NTATS);
+	act = iActiveAt1s(X, baseMask, idx1, kSigma);
+	C = DS.Cells;
+	finalCell = table(uint64(G.CellUID), logical(act), 'VariableNames', {'CellUID','FinalActive'});
+	finalCell = innerjoin(finalCell, C(:,{'CellUID','Mouse','ZLayer'}), 'Keys','CellUID');
+	finalCell.Mouse = string(finalCell.Mouse);
+	finalCell.ZLayer = string(finalCell.ZLayer);
+end
+
+function Tout = iSessionReuseAndPTgivenF(DS, SessSpeed, learnedCell, finalCell, baseMask, idx1, ~, layerNames)
 	% Compute per session×layer:
-	% - Reuse_SessionVsLearned: P(Active_in_this_LW_session | LearnedActive)
-	% - CellCorr_1s1p5s: corr(Z(:,1s),Z(:,1.5s)) across cells within this session
+	% - Reuse_SessionVsLearned: P(Active_in_this_LW_session@1s | LearnedActive@1s)
+	% - PTgivenF_SessionVsFinal_1s: P(Active_in_this_LW_session@1s | FinalActive@1s)
 	kSigma = 3;
 	if isempty(SessSpeed)
-		Tout = table(string.empty(0,1), string.empty(0,1), NaT(0,1), nan(0,1), nan(0,1), nan(0,1), nan(0,1), ...
-			'VariableNames', {'Mouse','ZLayer','DateTime','NCellsReuse','Reuse_SessionVsLearned','NCellsCorr','CellCorr_1s1p5s'});
+		Tout = table(string.empty(0,1), string.empty(0,1), NaT(0,1), ...
+			nan(0,1), nan(0,1), nan(0,1), nan(0,1), ...
+			nan(0,1), nan(0,1), ...
+			'VariableNames', {'Mouse','ZLayer','DateTime', ...
+			'NCellsReuse','Reuse_SessionVsLearned', ...
+			'NCellsPTgivenF','PTgivenF_SessionVsFinal_1s'});
 		return;
 	end
 
@@ -402,18 +470,15 @@ function Tout = iSessionReuseAndCellCorr(DS, SessSpeed, learnedCell, baseMask, i
 		LT.Mouse = string(LT.Mouse);
 		LT.ZLayer = string(LT.ZLayer);
 		LT = LT(LT.Mouse == m, :);
-		if isempty(LT)
+
+		FT = innerjoin(finalCell(:,{'CellUID','Mouse','ZLayer','FinalActive'}), tranCell, 'Keys','CellUID');
+		FT.Mouse = string(FT.Mouse);
+		FT.ZLayer = string(FT.ZLayer);
+		FT = FT(FT.Mouse == m, :);
+
+		if isempty(LT) || isempty(FT)
 			continue;
 		end
-
-		% Pre-join cells table for corr-by-layer
-		C = DS.Cells;
-		C.CellUID = uint64(C.CellUID);
-		CZ = innerjoin(table(uid, 'VariableNames', {'CellUID'}), C(:,{'CellUID','ZLayer'}), 'Keys','CellUID');
-		zlAll = string(CZ.ZLayer);
-
-		v1 = double(M(:, idx1));
-		v2 = double(M(:, idx2));
 
 		for iZ = 1:numel(layerNames)
 			zl = string(layerNames(iZ));
@@ -429,18 +494,19 @@ function Tout = iSessionReuseAndCellCorr(DS, SessSpeed, learnedCell, baseMask, i
 			end
 			reuse = mean(double(TA(den)), 'omitnan');
 
-			% CellCorr within this session, within this layer
-			uidLayer = uint64(CZ.CellUID(zlAll == zl));
-			inLayer = ismember(uid, uidLayer);
-			mask = inLayer & isfinite(v1) & isfinite(v2);
-			nCell = nnz(mask);
-			r = NaN;
-			if nCell >= 3 && std(v1(mask))>0 && std(v2(mask))>0
-				r = corr(v1(mask), v2(mask), 'Type','Pearson');
-			end
+				idxF = (FT.ZLayer == zl);
+				FA = logical(FT.FinalActive(idxF));
+				TA2 = logical(FT.TransferActive(idxF));
+				den2 = FA;
+				if nnz(den2) < 1
+					continue;
+				end
+				pt = mean(double(TA2(den2)), 'omitnan');
 
-			rows = [rows; table(m, zl, dt, nnz(idxL), reuse, nCell, r, ...
-				'VariableNames', {'Mouse','ZLayer','DateTime','NCellsReuse','Reuse_SessionVsLearned','NCellsCorr','CellCorr_1s1p5s'})]; %#ok<AGROW>
+				rows = [rows; table(m, zl, dt, nnz(idxL), reuse, nnz(idxF), pt, ...
+					'VariableNames', {'Mouse','ZLayer','DateTime', ...
+					'NCellsReuse','Reuse_SessionVsLearned', ...
+					'NCellsPTgivenF','PTgivenF_SessionVsFinal_1s'})]; %#ok<AGROW>
 		end
 	end
 

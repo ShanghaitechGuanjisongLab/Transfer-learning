@@ -1,4 +1,4 @@
-% 图3.6a：RSPd NTATS 热图（Learned AudioWater vs Transfer LightWater，全细胞，不分层）
+% 图3.6a：RSPd NTATS 热图（Learned AudioWater vs Transfer LightWater Hit/Miss，全细胞，不分层）
 %
 % 每脚本一张子图（A），SVG only -> \\Data-Server-2\个人数据\张天夫\202601
 %
@@ -6,7 +6,7 @@
 %   TransferLearning.Fig36.A_TaskDiscrimination
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_6a_RSPd_TaskDiscrimination_Peak01s.svg";
+svgName = "Fig3_6a_RSPd_TaskDiscrimination_Learned_vs_TransferHitMiss_Peak01s.svg";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -37,25 +37,54 @@ if nnz(xMask) < 5
 	error('Fig3_6a:BadTimeMask', 'Too few samples in 0~3s window.');
 end
 
-% --- 2) Query 2 lanes (Median ZScore NTATS)
+% --- 1b) Active@1s (used to filter cells)
+kSigma = 3;
+baseMask = (xsSec >= -3) & (xsSec < 0);
+if nnz(baseMask) < 3
+	error('Fig3_6a:BadBaselineMask', 'Baseline window (-3~0s) has too few samples in TransferLearning.Xs.');
+end
+
+[dtMin1, idx1] = min(abs(xsSec - 1));
+if isempty(idx1) || ~isfinite(dtMin1) || dtMin1 > 0.25
+	error('Fig3_6a:No1sSample', 'Cannot find a sample close to 1s in TransferLearning.Xs.');
+end
+
+% --- 2) Query 3 lanes (Median ZScore NTATS): Learned(AudioWater) + Transfer(LightWater) Hit/Miss
 qLearnedAudio = struct('Phase','Learned','Stimulus','AudioWater','Design','AudioWater');
-qTransferLW   = struct('Phase','Transfer','Stimulus','LightWater','Design','LightWater');
+
+QT_HM = table(categorical({'Hit';'Miss'}), categorical({'Transfer';'Transfer'}), categorical({'LightWater';'LightWater'}), categorical({'LightWater';'LightWater'}), {1;0}, ...
+	'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior'});
 
 G = struct();
 G.LearnedAudio = RSP.QueryNTATS(qLearnedAudio, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-G.TransferLW   = RSP.QueryNTATS(qTransferLW,   UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.TransferHit  = RSP.QueryNTATS(QT_HM(1,:),   UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.TransferMiss = RSP.QueryNTATS(QT_HM(2,:),   UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 % --- 3) Unify cells across lanes (keep identical cell order)
 S = UniExp.NtatsCellStrip(G);
-X = iGetNtats3D(S);
+XFull = iGetNtats3D(S);
 
-% --- 4) Sort cells by peak time in Transfer lane within 0~3s
-XTr = squeeze(X(:,:,2));
-[tPeakTr, okTr] = iPeakTime_0to3(XTr, xsSec, xMask);
-tPeakTr(~okTr) = NaN;
-[~, sortIdx] = sort(tPeakTr, 'ascend', 'MissingPlacement','last');
+% Filter: remove cells inactive at 1s in ALL 3 lanes
+act = false(size(XFull,1), size(XFull,3));
+for iLane = 1:size(XFull,3)
+	Xi = double(XFull(:,:,iLane));
+	baseMu = mean(Xi(:, baseMask), 2, 'omitnan');
+	baseSd = std(Xi(:, baseMask), 0, 2, 'omitnan');
+	val1 = Xi(:, idx1);
+	act(:, iLane) = val1 > (baseMu + kSigma .* baseSd);
+end
+keepCell = any(act, 2) & any(isfinite(XFull(:, idx1, :)), 3);
+XFull = XFull(keepCell, :, :);
 
-laneData = X(sortIdx, xMask, :);
+% --- 4) Sort cells by (Learned - TransferMiss) difference at 1s
+XL = squeeze(XFull(:,:,1));
+XMiss = squeeze(XFull(:,:,3));
+
+diffLM = double(XL(:, idx1)) - double(XMiss(:, idx1));
+diffLM(~isfinite(diffLM)) = NaN;
+[~, sortIdx] = sort(diffLM, 'descend', 'MissingPlacement','last');
+
+laneData = XFull(sortIdx, xMask, :);
 
 % Color limits (NON-symmetric): sqrt-scale magnitude for lower/upper separately
 negV = min(laneData, [], 'all', 'omitnan');
@@ -72,12 +101,12 @@ CLim = [-climLowAbs, climHighAbs];
 % --- 5) Plot (match Fig3.5AB style)
 f = figure('Color','w', 'Name', 'Fig3.6a RSPd heatmap (0~3s)');
 try
-	MATLAB.Graphics.FigureAspectRatio(8,5, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(3,2,3/4);
 catch
 end
 
-Layout = tiledlayout(f, 1, 2, 'TileSpacing','none', 'Padding','tight');
-subTitles = ["Learned 🔊💧", "Tr 💡💧"]; % keep emoji like Fig3.5AB
+Layout = tiledlayout(f, 1, 3, 'TileSpacing','none', 'Padding','tight');
+subTitles = ["Learned 🔊💧", "Tr Hit 💡💧", "Tr Miss 💡💧"]; % keep emoji like Fig3.5AB
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...
@@ -126,7 +155,7 @@ catch
 end
 
 svgPath = fullfile(outDirUNC, svgName);
-exportgraphics(f, svgPath, 'ContentType','vector');
+TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 %% --- local helpers
@@ -159,17 +188,6 @@ if isnumeric(nt)
 end
 
 error('Fig3_6a:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
-end
-
-function [tPeak, ok] = iPeakTime_0to3(X, xsSec, xMask)
-Xw = X(:, xMask);
-finiteRow = any(isfinite(Xw), 2);
-[~, idxRel] = max(Xw, [], 2, 'omitnan');
-idxRel(~finiteRow) = 1;
-xsW = xsSec(xMask);
-tPeak = xsW(idxRel);
-tPeak(~finiteRow) = NaN;
-ok = finiteRow;
 end
 
 function y = iNiceLimit(x)

@@ -2,8 +2,8 @@
 %
 % Plot: per-mouse growth slope (one dot per mouse), baseline-adjusted via
 % residualization against baseline performance.
-% P-value annotation on figure MUST use LME p-value (via MATLAB.Graphics.PLine).
-% (Ranksum p-values are still computed and saved to statsOut for reference.)
+% P-value annotation on figure uses a simplified per-mouse model (via MATLAB.Graphics.PLine).
+% (LME and ranksum p-values are still computed and saved to statsOut for reference.)
 % LME:
 %   Perf ~ 1 + Session + Group + Session:Group + BaselinePerf + Session:BaselinePerf + (1+Session|Mouse)
 %
@@ -108,14 +108,14 @@ mdlT = mdlT(keep, :);
 formula = 'Performance ~ 1 + Session + Group + Session:Group + BaselinePerf + Session:BaselinePerf + (1+Session|Mouse)';
 lme = fitlme(mdlT, formula);
 
-[beta, ci, pval, coefName] = iGetInteractionEffect(lme);
+[beta, ci, pLME, coefName] = iGetInteractionEffect(lme);
 
 statsOut = struct( ...
 	'Formula', string(formula), ...
 	'Coefficient', string(coefName), ...
 	'Estimate', beta, ...
 	'CI', ci, ...
-	'PValue', pval, ...
+	'PValue', pLME, ...
 	'NRows', height(mdlT), ...
 	'NMouse', numel(categories(mdlT.Mouse)));
 
@@ -163,11 +163,43 @@ end
 
 statsOut.SlopeP = pSwarm;
 statsOut.SlopeAdjP = pSwarmAdj;
+
+% --- 4.5) Simplified per-mouse model (requested): Slope ~ 1 + Group + BaselinePerf
+% This tests group difference while controlling for first-session performance.
+statsOut.SimpleModel = struct('Formula', "", 'Coefficient', "", 'Estimate', nan, 'CI', [nan nan], 'PValue', nan, 'NMouse', 0);
+try
+	Tm = perMouse(:, {'Mouse','Group','Slope','BaselinePerf'});
+	Tm.Mouse = categorical(string(Tm.Mouse));
+	Tm.Group = categorical(string(Tm.Group));
+	Tm.Slope = double(Tm.Slope);
+	Tm.BaselinePerf = double(Tm.BaselinePerf);
+	okM = isfinite(Tm.Slope) & isfinite(Tm.BaselinePerf) & ~isundefined(Tm.Group);
+	Tm = Tm(okM, :);
+	if ~isempty(Tm)
+		simpleFormula = 'Slope ~ 1 + Group + BaselinePerf';
+		lmSimple = fitlm(Tm, simpleFormula);
+		ciSimple = coefCI(lmSimple);
+		C = lmSimple.Coefficients;
+		idx = find(strcmp(string(C.Properties.RowNames), 'Group_Transfer'), 1);
+		if isempty(idx)
+			idx = find(startsWith(string(C.Properties.RowNames), 'Group_'), 1);
+		end
+		if ~isempty(idx)
+			statsOut.SimpleModel.Formula = string(simpleFormula);
+			statsOut.SimpleModel.Coefficient = string(C.Properties.RowNames{idx});
+			statsOut.SimpleModel.Estimate = C.Estimate(idx);
+			statsOut.SimpleModel.CI = ciSimple(idx, :);
+			statsOut.SimpleModel.PValue = C.pValue(idx);
+			statsOut.SimpleModel.NMouse = height(Tm);
+		end
+	end
+catch
+end
 %% 
 
 % --- 5) Plot
 f = figure('Color','w', 'Name', 'Fig3.1d Growth slope');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+MATLAB.Graphics.FigureAspectRatio(73,48,3/4);
 ax = axes('Parent', f);
 hold(ax,'on');
 
@@ -190,8 +222,9 @@ title(ax, 'Growth slope (LightWater, baseline-adjusted)');
 box(ax,'on');
 
 
-% p-value line (via MATLAB.Graphics.PLine) — MUST be LME p-value
-if isfinite(pval) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
+% p-value line (via MATLAB.Graphics.PLine) — use simplified model group-effect p-value
+pAnnot = statsOut.SimpleModel.PValue;
+if isfinite(pAnnot) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
 	S = scatter(ax, [ones(numel(xNaiveAdj),1); 2*ones(numel(xTranAdj),1)], [xNaiveAdj(:); xTranAdj(:)], ...
 		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 	try
@@ -200,7 +233,7 @@ if isfinite(pval) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
 		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 	catch
 	end
-	Descriptors = table(S, 0, 0, "LME p=" + sprintf('%.3g', pval), 0, ...
+	Descriptors = table(S, 0, 0, "ANCOVA p=" + sprintf('%.3g', pAnnot), 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 	try
 		MATLAB.Graphics.PLine(Descriptors);
@@ -224,7 +257,7 @@ end
 
 svgPath = fullfile(outDirUNC, 'Fig3_1d_GrowthSlope.svg');
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

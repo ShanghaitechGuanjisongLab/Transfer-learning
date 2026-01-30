@@ -468,14 +468,14 @@ end
 svgName = "Fig3_2a_RepresentativeCellReuse.svg";
 figTitle = sprintf('Representative Cell (Mouse=%s, CellUID=%d, %s)', picked.Mouse, picked.CellUID, picked.ZLayer);
 f = figure('Color','w', 'Name', figTitle);
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+MATLAB.Graphics.FigureAspectRatio(71,46,3/4);
 
 TL = tiledlayout(2,2,'TileSpacing','compact','Padding','compact');
 
 titles = [
-	"Naive AudioWater (inactive)",
-	"Learned AudioWater (active)",
-	"Transfer LightWater Hit (active)",
+	"Naive AudioWater (inactive)";
+	"Learned AudioWater (active)";
+	"Transfer LightWater Hit (active)";
 	"Transfer LightWater Miss (inactive)" ];
 
 dataCells = {plotSets.NaiveAudio, plotSets.LearnedAudio, plotSets.TransferHit, plotSets.TransferMiss};
@@ -540,8 +540,7 @@ end
 
 svgPath = fullfile(outDirUNC, svgName);
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
-	fprintf('Wrote: %s\n', svgPath);
+	TransferLearning.PrintFigure(f, svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end

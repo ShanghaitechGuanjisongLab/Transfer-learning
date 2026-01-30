@@ -106,7 +106,7 @@ assignin('base','Fig3_5f', Fig3_5f);
 % --- 5) Plot
 f = figure('Color','w', 'Name', 'Fig3.5f Mean NTATS');
 try
-	MATLAB.Graphics.FigureAspectRatio(4,5, 1/3);
+	MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
 catch
 end
 ax = axes('Parent', f);
@@ -163,8 +163,7 @@ end
 
 svgPath = fullfile(outDirUNC, svgName);
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
-	fprintf('Wrote: %s\n', svgPath);
+	TransferLearning.PrintFigure(f, svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end

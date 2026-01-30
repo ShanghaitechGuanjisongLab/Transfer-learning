@@ -87,7 +87,7 @@ thresholds = [0.80 0.90];
 
 % --- 4) Plot Kaplan–Meier (1 - S(t))
 f = figure('Color','w', 'Name', 'Fig3.1c Time-to-criterion (LightWater)'); %[output:5b85fc52]
-MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow); %[output:5b85fc52]
+MATLAB.Graphics.FigureAspectRatio(73,48,3/4); %[output:5b85fc52]
 tlo = tiledlayout(f, 1, numel(thresholds), 'TileSpacing','compact', 'Padding','compact'); %[output:5b85fc52]
 
 statsOut = struct();
@@ -158,7 +158,7 @@ try %[output:group:4ea5a36e]
 			axAll(i).Toolbar.Visible = 'off'; %[output:5b85fc52]
 		end
 	end
-	exportgraphics(f, svgPath, 'ContentType','vector'); %[output:5b85fc52] %[output:266f7848]
+	TransferLearning.PrintFigure(f, svgPath); %[output:5b85fc52] %[output:266f7848]
 	disp("Wrote: " + string(svgPath)); %[output:6431746d]
 catch ME
 	warning(struct(...

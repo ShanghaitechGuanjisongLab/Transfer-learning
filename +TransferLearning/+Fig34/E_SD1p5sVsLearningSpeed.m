@@ -1,18 +1,23 @@
-% 图3.4e：1.5s（反馈）SD 与学习速率的关系（Naive vs Transfer，分 2/5 层）
+% 图3.4e：初始光水相邻会话对中，ΔHit vs Corr(prev session, Learned)@1.5s（控 Hit1）
 %
-% Implementation:
-% - Use session-level table from:
-%     TransferLearning.Fig34.iBuildSpeedVsSd_ByGroupLayerAllTrials(1.5)
-% - Plot Spearman correlations for LearningSpeed_DeltaNext.
+% 要求：
+% - 复用 Fig3.7K(Fig37K) 的相邻会话对与 100% cutoff 口径。
+% - 仅使用 Initial (Naive→Learned) LightWater 相邻会话对（排除 100% 及以后）。
+% - 指标：Corr(prev A, correct Learned)@targetAtSec（= Fig37K SignalCorr in PrevA mode）。
+% - 统计：Spearman 以及 partial Spearman（控制 Hit1）。
 %
 % Output:
-% - SVG only to \\Data-Server-2\个人数据\张天夫\202601
+% - SVG + CSV (UNC only)
 %
 % Execution:
 %   TransferLearning.Fig34.E_SD1p5sVsLearningSpeed
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_4e_SD1p5s_vs_LearningSpeed.svg";
+targetAtSec = 1.5;
+
+svgName = "Fig3_4e_Initial_DeltaHit_vs_CorrPrevVsLearned_1p5s_CtrlHit1.svg";
+csvPairsName = "Fig3_4e_Initial_DeltaHit_vs_CorrPrevVsLearned_1p5s_Pairs.csv";
+csvSummaryName = "Fig3_4e_Initial_DeltaHit_vs_CorrPrevVsLearned_1p5s_Summary.csv";
 
 % --- Ensure project loaded (for UniExp)
 try
@@ -30,65 +35,68 @@ try
 catch
 end
 
-T = TransferLearning.Fig34.iBuildSpeedVsSd_ByGroupLayerAllTrials(1.5);
-if isempty(T)
-	error('Fig3_4e:Empty', 'Speed-vs-SD table is empty.');
+% Build adjacent-session pairs using Fig37 builder (PrevA mode means Corr(prev, correct)).
+actualSignalMode = "PrevA";
+excludeZeroHit = false;
+subtractAtSec = NaN;
+	[pairs, ~] = TransferLearning.Fig37.iBuildAdjPairs_DeltaHit_vs_TrainSignalMatchMetrics_ByLayer(...
+	'TargetAtSec', double(targetAtSec), 'ActualSignalMode', actualSignalMode, 'ExcludeZeroHit', logical(excludeZeroHit), 'SubtractAtSec', double(subtractAtSec)); %#ok<ASGLU>
+if isempty(pairs)
+	error('Fig3_4e:Empty', 'No valid adjacent session pairs from Fig37 builder.');
 end
-T.Group = string(T.Group);
 
-f = figure('Color','w', 'Name', 'Fig3.4e SD@1.5s vs learning speed');
+P = pairs(pairs.Stage == "Initial", :);
+if isempty(P)
+	error('Fig3_4e:EmptyInitial', 'No Initial-stage pairs available.');
+end
+
+% Plot: per layer (MOp23/MOp5)
+f = figure('Color','w', 'Name', 'Fig3.4e Initial: DeltaHit vs Corr(prev, Learned) @1.5s');
 try
-	MATLAB.Graphics.FigureAspectRatio(10, 6, 1/2);
+	MATLAB.Graphics.FigureAspectRatio(1, 1, 2/3);
 catch
 end
 
-tl = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
+tl = tiledlayout(f, 1, 2, 'TileSpacing','compact', 'Padding','compact');
+axs = gobjects(1,2);
 
-axs = gobjects(2,2);
+zKeys = ["MOp23","MOp5"];
+zLabels = ["MOp2/3","MOp5"];
+for iZ = 1:numel(zKeys)
+	zKey = zKeys(iZ);
+	ax = nexttile(tl, iZ);
+	axs(iZ) = ax;
+	R = P(P.ZKey == zKey, :);
+	iScatter(ax, double(R.SignalCorr), double(R.DeltaHit), double(R.Hit1));
+	title(ax, zLabels(iZ), 'Interpreter','none');
+end
 
-% Layout: rows = layer (MOp2/3, MOp5), cols = group (Naive, Transfer)
-rowLayers = ["MOp2/3","MOp5"];
-colGroups = ["Naive","Transfer"];
-sdVars = containers.Map;
-sdVars("MOp2/3") = "StdCells1p5_MOp23";
-sdVars("MOp5")   = "StdCells1p5_MOp5";
+% Hide right-panel Y axis
+try
+	axs(2).YTickLabel = [];
+	axs(2).YLabel.String = '';
+	axs(2).YTick = [];
+catch
+end
 
-for iR = 1:numel(rowLayers)
-	for iC = 1:numel(colGroups)
-		zl = rowLayers(iR);
-		grp = colGroups(iC);
-		ax = nexttile(tl, (iR-1)*2 + iC);
-		axs(iR,iC) = ax;
-		R = T(T.Group==grp, :);
-		iScatter(ax, R.(sdVars(zl)), R.LearningSpeed_DeltaNext);
-		if iR == 1
-			title(ax, grp, 'Interpreter','none');
+xlabel(tl, sprintf('Corr(prev session, Learned) @%.1fs', double(targetAtSec)), 'Interpreter','none');
+ylabel(tl, 'Learning increment (\DeltaHit)', 'Interpreter','tex');
+
+try
+	MATLAB.Graphics.UnifyAxesLims(axs, 'x');
+catch
+	try
+		xl = arrayfun(@(a) xlim(a), axs, 'UniformOutput', false);
+		xl = vertcat(xl{:});
+		xl = [min(xl(:,1),[],'omitnan') max(xl(:,2),[],'omitnan')];
+		for i = 1:numel(axs)
+			xlim(axs(i), xl);
 		end
-		if iC == 1
-			ylabel(ax, zl, 'Interpreter','none');
-		else
-			ax.YTickLabel = [];
-			ax.YLabel.String = '';
-		end
+	catch
 	end
 end
 
-% Hide top-row x axis
-axs(1,1).XTickLabel = [];
-axs(1,1).XLabel.String = '';
-axs(1,2).XTickLabel = [];
-axs(1,2).XLabel.String = '';
-
-% Global x label (on tiledlayout)
-xlabel(tl, 'Inter-cell SD @1.5s', 'Interpreter','none');
-
-% Global y label (move from per-axes)
-ylabel(tl, 'Learning speed (DeltaNext)', 'Interpreter','none');
-
-% Unify X limits (all subplots)
-iUnifyX(axs(:));
-
-sgtitle(tl, '1.5s inter-cell SD vs learning speed (session-level)', 'Interpreter','none');
+sgtitle(tl, 'Naive: \DeltaHit vs corr(prev, learned)', 'Interpreter','tex');
 
 try
 	if ~isfolder(outDirUNC)
@@ -97,25 +105,35 @@ try
 catch
 end
 
+% Export SVG
 svgPath = fullfile(outDirUNC, svgName);
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	print(f, svgPath, '-dsvg', '-painters');
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
+% NOTE: CSV export disabled by request.
+
 %% --- helpers
 
-function iScatter(ax, x, y)
+
+function iScatter(ax, x, y, hit1)
 	x = double(x);
 	y = double(y);
+	hit1 = double(hit1);
 	use = isfinite(x) & isfinite(y);
 	setappdata(ax, 'HasFiniteXY', nnz(use) > 0);
 
 	hold(ax,'on');
 	box(ax,'off');
 	grid(ax,'on');
+	try
+		ax.YGrid = 'off';
+		ax.YMinorGrid = 'off';
+	catch
+	end
 	try
 		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 			ax.Toolbar.Visible = 'off';
@@ -133,69 +151,106 @@ function iScatter(ax, x, y)
 		plot(ax, xLine, yLine, 'k-', 'LineWidth', 1);
 	end
 
-	[rho, p] = iSpearman(x(use), y(use));
-	subtitle(ax, sprintf('\\rho=%.2f, p=%.3g', rho, p), 'Interpreter','tex');
+	[~, ~, ~] = iSpearman(x, y);
+	[rhoC, pC, ~] = iPartialSpearmanCtrl(x, y, hit1);
+	subtitle(ax, sprintf('\\rho=%.2f, p=%.3g', rhoC, pC), 'Interpreter','tex');
 end
 
-function iUnifyX(axs)
-	axs = axs(isgraphics(axs));
-	if isempty(axs)
+
+function Summary = iSummarize(P)
+	Summary = table(string.empty(0,1), nan(0,1), nan(0,1), nan(0,1), nan(0,1), nan(0,1), nan(0,1), ...
+		'VariableNames', {'ZKey','N','Rho','P','NCtrlHit1','RhoCtrlHit1','PCtrlHit1'});
+	for zKey = ["MOp23","MOp5"]
+		T = P(P.ZKey == zKey, :);
+		x = double(T.SignalCorr);
+		y = double(T.DeltaHit);
+		z = double(T.Hit1);
+		[rho, p, n] = iSpearman(x, y);
+		[rhoC, pC, nC] = iPartialSpearmanCtrl(x, y, z);
+		Summary = [Summary; table(string(zKey), double(n), double(rho), double(p), double(nC), double(rhoC), double(pC), ...
+			'VariableNames', Summary.Properties.VariableNames)]; %#ok<AGROW>
+	end
+end
+
+function [rho, p, n] = iSpearman(x, y)
+	rho = NaN;
+	p = NaN;
+	x = double(x(:));
+	y = double(y(:));
+	use = isfinite(x) & isfinite(y);
+	n = nnz(use);
+	if n < 5
 		return;
 	end
-	% Only unify axes that actually have finite points.
-	has = false(numel(axs), 1);
-	for i = 1:numel(axs)
+	try
+		[rho, p] = corr(x(use), y(use), 'Type','Spearman');
+	catch
+		rho = NaN;
+		p = NaN;
+	end
+end
+
+function [rho, p, n] = iPartialSpearmanCtrl(x, y, z)
+	% Partial Spearman correlation controlling for z (Hit1).
+	% Implemented as: rank-transform then correlate residuals after regressing
+	% out rank(z) from rank(x) and rank(y).
+	rho = NaN;
+	p = NaN;
+	x = double(x(:));
+	y = double(y(:));
+	z = double(z(:));
+	use = isfinite(x) & isfinite(y) & isfinite(z);
+	n = nnz(use);
+	if n < 5
+		return;
+	end
+	try
+		rx = tiedrank(x(use));
+		ry = tiedrank(y(use));
+		rz = tiedrank(z(use));
+		X = [ones(n,1), rz];
+		bx = X \ rx;
+		by = X \ ry;
+		ex = rx - X*bx;
+		ey = ry - X*by;
+		[rho, p] = corr(ex, ey, 'Type','Pearson');
+	catch
+		rho = NaN;
+		p = NaN;
+	end
+end
+
+function outPath = iWriteTableWithRetry(T, outDir, fileName)
+	maxTry = 10;
+	lastME = [];
+	outPath = fullfile(outDir, fileName);
+	for k = 1:maxTry
+		[p, n, e] = fileparts(outPath);
+		if strlength(e) == 0
+			e = ".csv";
+		end
+		tmpPath = fullfile(p, n + ".tmp_" + string(feature('getpid')) + "_" + string(datetime('now','Format','yyyyMMdd_HHmmssSSS')) + e);
 		try
-			if isappdata(axs(i), 'HasFiniteXY')
-				has(i) = logical(getappdata(axs(i), 'HasFiniteXY'));
-			else
-				ch = axs(i).Children;
-				for k = 1:numel(ch)
-					if isprop(ch(k), 'XData')
-						xd = ch(k).XData;
-						if isnumeric(xd) && any(isfinite(xd(:)))
-							has(i) = true;
-							break;
-						end
-					end
-				end
+			writetable(T, tmpPath);
+			try
+				movefile(tmpPath, outPath, 'f');
+			catch ME2
+				% Likely target file is open/locked on UNC. Keep temp.
+				warning(ME2.identifier, 'Cannot overwrite %s (locked?). Kept temp: %s', outPath, tmpPath);
+				outPath = tmpPath;
+				return;
 			end
-		catch
-			has(i) = false;
+			return;
+		catch ME
+			lastME = ME;
+			try
+				if exist(tmpPath, 'file')
+					delete(tmpPath);
+				end
+			catch
+			end
+			pause(0.5 * k);
 		end
 	end
-	axUse = axs(has);
-	if numel(axUse) < 2
-		return;
-	end
-	try
-		MATLAB.Graphics.UnifyAxesLims(axUse, 'x');
-		return;
-	catch
-	end
-	try
-		xl = nan(numel(axUse),2);
-		for i = 1:numel(axUse)
-			xl(i,:) = xlim(axUse(i));
-		end
-		xl = [min(xl(:,1),[],'omitnan') max(xl(:,2),[],'omitnan')];
-		for i = 1:numel(axUse)
-			xlim(axUse(i), xl);
-		end
-	catch
-	end
-end
-
-function [rho, p] = iSpearman(x, y)
-	rho = NaN; p = NaN;
-	if numel(x) < 4 || numel(y) < 4
-		return;
-	end
-	if std(x,'omitnan') <= 0 || std(y,'omitnan') <= 0
-		return;
-	end
-	try
-		[rho, p] = corr(double(x(:)), double(y(:)), 'Type','Spearman', 'Rows','complete');
-	catch
-	end
+	throw(lastME);
 end

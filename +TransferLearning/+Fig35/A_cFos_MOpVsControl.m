@@ -186,10 +186,10 @@ thr = 0.80;
 [ttc, cens] = iTimeToCriterion(Sess, perMouse, thr);
 statsOut.TTCThreshold = thr;
 
-% --- 5) Plot (2x2)
+% --- 5) Plot (1x3)
 f = figure('Color','w', 'Name', 'Fig3.4a cFos Inhibited vs Control');
-MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
-tlo = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
+MATLAB.Graphics.FigureAspectRatio(3, 1, 1);
+tlo = tiledlayout(f, 1, 3, 'TileSpacing','compact', 'Padding','compact');
 
 % 5.1 learning curve
 ax1 = nexttile(tlo, 1);
@@ -203,46 +203,14 @@ lgdLabels = grpNames(:) + " n=" + string(curveN(:));
 legend(ax1, hLines, lgdLabels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(hLines));
 xlabel(ax1, 'Session');
 ylabel(ax1, 'Performance');
-title(ax1, 'Learning curve');
+title(ax1, 'LightWater learning curve');
 box(ax1,'off');
 
 % 5.2 accuracy day0
 ax2 = nexttile(tlo, 2);
 hold(ax2,'on');
-x1 = ones(numel(accCtrl),1);
-x2 = 2*ones(numel(accMOp),1);
-if ~isempty(accCtrl)
-	swarmchart(ax2, x1, accCtrl, 24, 'filled');
-end
-if ~isempty(accMOp)
-	swarmchart(ax2, x2, accMOp,  24, 'filled');
-end
-ax2.XLim = [0.5 2.5];
-ax2.XTick = [1 2];
-ax2.XTickLabel = {sprintf('Control (n=%d)', numel(accCtrl)), sprintf('Inhibited (n=%d)', numel(accMOp))};
-ylabel(ax2, 'Performance');
-title(ax2, 'First session');
-% p-value line (via MATLAB.Graphics.PLine)
-if isfinite(accP) && ~isempty(accCtrl) && ~isempty(accMOp)
-	S = scatter(ax2, [ones(numel(accCtrl),1); 2*ones(numel(accMOp),1)], [accCtrl(:); accMOp(:)], ...
-		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-	try
-		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-	catch
-	end
-	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', accP), 0, ...
-		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-	try
-		MATLAB.Graphics.PLine(Descriptors);
-	catch
-	end
-	try
-		delete(S);
-	catch
-	end
-end
+TransferLearning.Fig35.iSwarm2(ax2, accCtrl, accMOp, ["Control","Inhibited"], 'Performance', accP);
+title(ax2, 'First transfer session');
 box(ax2,'on');
 
 % 5.3 learning speed
@@ -250,53 +218,9 @@ ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 dCtrl = dCtrl(isfinite(dCtrl));
 dInhib = dInhib(isfinite(dInhib));
-if ~isempty(dCtrl)
-	swarmchart(ax3, ones(numel(dCtrl),1), dCtrl,  24, 'filled');
-end
-if ~isempty(dInhib)
-	swarmchart(ax3, 2*ones(numel(dInhib),1), dInhib, 24, 'filled');
-end
-ax3.XLim = [0.5 2.5];
-ax3.XTick = [1 2];
-ax3.XTickLabel = {sprintf('Control (n=%d)', numel(dCtrl)), sprintf('Inhibited (n=%d)', numel(dInhib))};
- ylabel(ax3, 'Learning speed (DeltaNext)', 'Interpreter','none');
+TransferLearning.Fig35.iSwarm2(ax3, dCtrl, dInhib, ["Control","Inhibited"], 'Learning speed (DeltaNext)', speedP);
 title(ax3, 'Learning speed');
-% p-value line (via MATLAB.Graphics.PLine)
-if isfinite(speedP) && ~isempty(dCtrl) && ~isempty(dInhib)
-	S = scatter(ax3, [ones(numel(dCtrl),1); 2*ones(numel(dInhib),1)], [dCtrl(:); dInhib(:)], ...
-		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-	try
-		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-	catch
-	end
-	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', speedP), 0, ...
-		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-	try
-		MATLAB.Graphics.PLine(Descriptors);
-	catch
-	end
-	try
-		delete(S);
-	catch
-	end
-end
 box(ax3,'on');
-
-% 5.4 time-to-criterion (KM-style)
-ax4 = nexttile(tlo, 4);
-hold(ax4,'on');
-[sn, xn] = iKaplanMeier(ttc(idxCtrl), cens(idxCtrl));
-[sm, xm] = iKaplanMeier(ttc(idxMOp),  cens(idxMOp));
-stairs(ax4, [0; xn], [0; 1-sn], 'LineWidth', 1.8);
-stairs(ax4, [0; xm], [0; 1-sm], 'LineWidth', 1.8);
-ylim(ax4, [0 1]);
-xlabel(ax4, 'Session', 'Interpreter','none');
-ylabel(ax4, 'Fraction reached', 'Interpreter','none');
-title(ax4, sprintf('Reached criterion (%.0f%%)', thr*100), 'Interpreter','none');
-legend(ax4, {sprintf('Control (n=%d)', sum(idxCtrl)), sprintf('Inhibited (n=%d)', sum(idxMOp))}, 'Location','southeast');
-box(ax4,'off');
 
 % Hide axes toolbar overlays in SVG
 try
@@ -306,6 +230,12 @@ try
 			axAll(i).Toolbar.Visible = 'off';
 		end
 	end
+catch
+end
+
+% Unify Fig3.5 style
+try
+	TransferLearning.Fig35.iApplyFig35Style(f);
 catch
 end
 
@@ -320,7 +250,7 @@ end
 svgPath = fullfile(outDirUNC, 'Fig3_5a_cFos_MOpVsControl.svg');
 try
 	drawnow;
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Exportgraphics failed: %s', ME.message);

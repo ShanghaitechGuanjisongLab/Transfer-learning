@@ -183,13 +183,31 @@ statsOut.P_StdCells1p5 = pSD;
 statsOut.P_StdCells1p5_AllLightWaterSessions = pSD_LW;
 statsOut.N_AllLightWaterSessions = [sum(idxCtrlLW), sum(idxV7LW)];
 
-% --- 5) Plot (2x2)
-f = figure('Color','w', 'Name', 'Fig3.5d Vacation7 vs Ctrl');
+% --- 4c) Behavior-only panels (match Fig3.5a/b): first transfer session + learning speed
+pPerf = iRanksumSafe(rows.Performance(idxCtrl), rows.Performance(idxV7));
+
+dCtrl = nan(0,1);
+dV7 = nan(0,1);
+pDelta = nan;
 try
-	MATLAB.Graphics.FigureAspectRatio(8, 5, 1/2);
+	SessAll = TransferLearning.Fig35.iSessionizeByDateTime(B(:, intersect(B.Properties.VariableNames, {'Mouse','DateTime','Performance','Group'}, 'stable')));
+	SessAll = sortrows(SessAll, {'Group','Mouse','DateTime'});
+	SessAll = TransferLearning.Fig35.iAddSessionIndex(SessAll);
+	Delta = TransferLearning.Fig35.iBuildSessionDeltaTable(SessAll);
+	dCtrl = Delta.DeltaPerf(string(Delta.Group) == "Ctrl");
+	dV7   = Delta.DeltaPerf(string(Delta.Group) == "Vacation7");
+	pDelta = TransferLearning.Fig35.iRanksumSafe(dCtrl, dV7);
 catch
 end
-tlo = tiledlayout(f, 2, 2, 'TileSpacing','compact', 'Padding','compact');
+%% 
+
+% --- 5) Plot (1x3, behavior only)
+f = figure('Color','w', 'Name', 'Fig3.5d Vacation7 vs Ctrl');
+try
+	MATLAB.Graphics.FigureAspectRatio(3, 1, 1);
+catch
+end
+tlo = tiledlayout(f, 1, 3, 'TileSpacing','compact', 'Padding','compact');
 
 % Colors
 try
@@ -225,59 +243,27 @@ catch
 end
 
 xlabel(ax1, 'Session');
-ylabel(ax1, 'Performance (LightWater)');
+ylabel(ax1, 'Performance');
 ylim(ax1, [0 1]);
 title(ax1, 'LightWater learning curve');
 grid(ax1,'on');
 box(ax1,'off');
 
-% 5.2 Mean calcium curve (ZScore)
+% 5.2 Transfer first session performance
 ax2 = nexttile(tlo, 2);
 hold(ax2,'on');
 iHideToolbar(ax2);
-[mC, sC] = iMeanSemCurves(rows.MeanCurve_ZScore(idxCtrl));
-[mV, sV] = iMeanSemCurves(rows.MeanCurve_ZScore(idxV7));
-iPlotMeanSem(ax2, xsSec, mC, sC, cols(1,:), 'Ctrl');
-iPlotMeanSem(ax2, xsSec, mV, sV, cols(2,:), 'Vacation7');
-xlabel(ax2, 'Time (s)');
-ylabel(ax2, 'Z-score');
-title(ax2, 'Mean Ca (Transfer; filtered)');
+TransferLearning.Fig35.iSwarm2(ax2, rows.Performance(idxCtrl), rows.Performance(idxV7), ["Ctrl","Vacation7"], 'Performance', pPerf);
+title(ax2, 'First transfer session');
 grid(ax2,'on');
-box(ax2,'off');
-lgd = legend(ax2, 'Location','best');
-try
-	lgd.AutoUpdate = 'off';
-catch
-end
-% Cue(:) and Water(|) timing lines MUST be after legend
-try
-	TransferLearning.DrawCueWaterLines(ax2);
-catch
-end
 
-% 5.3 Reuse(1s) (MOp2/3)
+% 5.3 Learning speed (session-level delta perf)
 ax3 = nexttile(tlo, 3);
 hold(ax3,'on');
 iHideToolbar(ax3);
-iSwarm2(ax3, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), {'Ctrl','Vacation7'}, 'Reuse(1s) (MOp2/3)');
-title(ax3, 'Reuse');
-try
-	iPValuePLineScatter(ax3, 1, 2, rows.Reuse_1s(idxCtrl), rows.Reuse_1s(idxV7), pReuse);
-catch
-end
+[pLines_ax3, pTexts_ax3] = TransferLearning.Fig35.iSwarm2(ax3, dCtrl, dV7, ["Ctrl","Vacation7"], 'Learning speed (DeltaNext)', pDelta);
+title(ax3, 'Learning speed');
 grid(ax3,'on');
-
-% 5.4 Stability: StdCells@1.5s
-ax4 = nexttile(tlo, 4);
-hold(ax4,'on');
-iHideToolbar(ax4);
-iSwarm2(ax4, rowsLW.StdCells1p5(idxCtrlLW), rowsLW.StdCells1p5(idxV7LW), {'Ctrl','Vacation7'}, 'Inter-cell SD @1.5 s (MOp5)');
-title(ax4, 'Stability');
-try
-	iPValuePLineScatter(ax4, 1, 2, rowsLW.StdCells1p5(idxCtrlLW), rowsLW.StdCells1p5(idxV7LW), pSD_LW);
-catch
-end
-grid(ax4,'on');
 
 % Hide axes toolbar overlays in SVG
 try
@@ -287,6 +273,12 @@ try
 			axAll(i).Toolbar.Visible = 'off';
 		end
 	end
+catch
+end
+
+% Unify Fig3.5 style
+try
+	TransferLearning.Fig35.iApplyFig35Style(f);
 catch
 end
 
@@ -301,7 +293,7 @@ end
 svgPathUNC = fullfile(outDirUNC, 'Fig3_5d_Vacation7VsCtrl.svg');
 
 try
-	exportgraphics(f, svgPathUNC, 'ContentType','vector');
+	TransferLearning.PrintFigure(f, svgPathUNC);
 	fprintf('Wrote: %s\n', svgPathUNC);
 catch ME
 	warning(ME.identifier, 'UNC export failed: %s', ME.message);

@@ -87,7 +87,7 @@ nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
 % --- 4) Plot
 f = figure('Color','w', 'Name', 'Fig3.1f Learning curve (AudioWater)');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/3);
+MATLAB.Graphics.FigureAspectRatio(73,48,3/4);
 ax = axes(f);
 hold(ax,'on');
 axes(ax);
@@ -138,7 +138,7 @@ try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';
 	end
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

@@ -42,7 +42,7 @@ if ~ismember('ReuseRate_Hit', Summary.Properties.VariableNames)
 end
 
 f = figure('Color','w', 'Name', 'Fig3.6d hit vs miss reuse');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+	MATLAB.Graphics.FigureAspectRatio(3,2,3/4);
 ax = axes(f);
 
 % Avoid exporting axes toolbar icons
@@ -121,5 +121,5 @@ catch
 end
 
 svgPath = fullfile(outDirUNC, svgName);
-exportgraphics(f, svgPath, 'ContentType','vector');
+TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

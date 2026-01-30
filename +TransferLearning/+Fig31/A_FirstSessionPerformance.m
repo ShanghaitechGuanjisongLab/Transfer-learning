@@ -98,7 +98,7 @@ end
 
 % --- 4) Plot (one point per mouse)
 f = figure('Color','w', 'Name', 'Fig3.1a First session performance');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/3);
+MATLAB.Graphics.FigureAspectRatio(73,48,3/4);
 ax = axes('Parent', f);
 hold(ax,'on');
 
@@ -165,7 +165,7 @@ iDeleteIfExists(csvRaw);
 iDeleteIfExists(csvSum);
 
 try
-	exportgraphics(f, svgPath, 'ContentType','vector');
+	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', char(svgPath));
 catch ME
 	warning('TransferLearningFig31:ExportFailed', char("Export failed: " + string(ME.message)));

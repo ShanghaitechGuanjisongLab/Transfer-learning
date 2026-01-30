@@ -40,7 +40,7 @@ semRSP  = std(XRSP, 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XRSP), 1)));
 semMOp  = std(XMOp, 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XMOp), 1)));
 
 f = figure('Color','w', 'Name', 'Fig3.6b mean NTATS overlay');
-MATLAB.Graphics.FigureAspectRatio(8,5,1/2);
+	MATLAB.Graphics.FigureAspectRatio(3,2,3/4);
 ax = axes(f);
 
 % Avoid exporting axes toolbar icons
@@ -80,6 +80,6 @@ catch
 end
 
 svgPath = fullfile(outDirUNC, svgName);
-exportgraphics(f, svgPath, 'ContentType','vector');
+TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
