@@ -6,10 +6,9 @@
 % 3) Transfer LightWater Miss
 %
 % Data source:
-% - Reuse the exact NTATS definition and active-cell criterion used by Fig3.2b
-%   (Median ZScore NTATS; active cells only).
-% - If Fig3.2b has already been run in the same MATLAB session, this script
-%   will reuse Fig3_2b_CellStrip + Fig3_2b_ActiveMask from base workspace.
+% - Median ZScore NTATS; Learned-active cells only.
+% - Active-cell criterion: NTATS@1s > mean(-3~0s) + 3*std(-3~0s), on Learned lane ONLY.
+% - Does NOT reuse Fig3.2b data; always computes independently for consistency with Fig3.2D.
 %
 % Plot:
 % - MATLAB.Graphics.MultiShadowedLines
@@ -51,52 +50,46 @@ if nnz(xMask) < 5
 	error('Fig3_2c:BadTimeMask', 'Too few samples in 0~3s window.');
 end
 
-% --- 2) Get NTATS (prefer reusing Fig3.2b outputs)
+% --- 2) Get NTATS (always compute independently; do NOT reuse Fig3.2b)
 laneOrder = ["NaiveAudio","LearnedAudio","TransferHit","TransferMiss"];
-[S, activeMask] = iMaybeReuseFromFig32B();
 
-if isempty(S)
-	DS = TransferLearning.AudioLightBaseline();
+DS = TransferLearning.AudioLightBaseline();
 
-	% Active-cell criterion (Learned lane only): max(0~1s) > mean(-3~0s) + 3*std(-3~0s)
-	baseMask = (xsSec >= -3) & (xsSec < 0);
-	respMask = (xsSec >= 0) & (xsSec <= 1);
-	if nnz(baseMask) < 5 || nnz(respMask) < 2
-		error('Fig3_2c:BadActiveMasks', 'Too few samples in baseline/response window for active-cell criterion.');
-	end
-	kSigma = 3;
-
-	qNaiveAudio   = struct('Phase','Naive',   'Stimulus','AudioWater');
-	qLearnedAudio = struct('Phase','Learned', 'Stimulus','AudioWater');
-	qTHit         = struct('Phase','Transfer','Stimulus','LightWater','Behavior',1);
-	qTMiss        = struct('Phase','Transfer','Stimulus','LightWater','Behavior',0);
-
-	G = struct();
-	G.NaiveAudio   = DS.QueryNTATS(qNaiveAudio,   UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	G.LearnedAudio = DS.QueryNTATS(qLearnedAudio, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	G.TransferHit  = DS.QueryNTATS(qTHit,         UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	G.TransferMiss = DS.QueryNTATS(qTMiss,        UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-
-	S = UniExp.NtatsCellStrip(G);
-	X = iGetNtats3D(S, laneOrder);
-
-	XLearned = squeeze(X(:,:,2));
-	baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
-	baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
-	respMax = max(XLearned(:, respMask), [], 2, 'omitnan');
-	activeMask = isfinite(respMax) & isfinite(baseMu) & isfinite(baseSd) & (respMax > (baseMu + kSigma*baseSd));
-
-	assignin('base','Fig3_2c_CellStrip', S);
-	assignin('base','Fig3_2c_ActiveMask', activeMask);
-else
-	X = iGetNtats3D(S, laneOrder);
-	if isempty(activeMask)
-		activeMask = true(size(X,1), 1);
-	end
-	if numel(activeMask) ~= size(X,1)
-		error('Fig3_2c:BadReuse', 'Fig3_2b_ActiveMask size mismatch with Fig3_2b_CellStrip NTATS.');
-	end
+% Active-cell criterion (Learned lane only): NTATS@1s > mean(-3~0s) + 3*std(-3~0s)
+baseMask = (xsSec >= -3) & (xsSec < 0);
+if nnz(baseMask) < 5
+	error('Fig3_2c:BadActiveMasks', 'Too few samples in baseline window for active-cell criterion.');
 end
+kSigma = 3;
+
+% Find sample index closest to 1s
+[~, idx1] = min(abs(xsSec - 1));
+if abs(xsSec(idx1) - 1) > 0.25
+	error('Fig3_2c:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
+end
+
+qNaiveAudio   = struct('Phase','Naive',   'Stimulus','AudioWater');
+qLearnedAudio = struct('Phase','Learned', 'Stimulus','AudioWater');
+qTHit         = struct('Phase','Transfer','Stimulus','LightWater','Behavior',1);
+qTMiss        = struct('Phase','Transfer','Stimulus','LightWater','Behavior',0);
+
+G = struct();
+G.NaiveAudio   = DS.QueryNTATS(qNaiveAudio,   UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.LearnedAudio = DS.QueryNTATS(qLearnedAudio, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.TransferHit  = DS.QueryNTATS(qTHit,         UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.TransferMiss = DS.QueryNTATS(qTMiss,        UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+
+S = UniExp.NtatsCellStrip(G);
+X = iGetNtats3D(S, laneOrder);
+
+XLearned = squeeze(X(:,:,2));
+baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
+baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
+v1s = XLearned(:, idx1);
+activeMask = isfinite(v1s) & isfinite(baseMu) & isfinite(baseSd) & (v1s > (baseMu + kSigma*baseSd));
+
+assignin('base','Fig3_2c_CellStrip', S);
+assignin('base','Fig3_2c_ActiveMask', activeMask);
 
 X = X(activeMask, :, :);
 
@@ -177,24 +170,6 @@ catch ME
 end
 
 %% --- local helpers
-
-function [S, activeMask] = iMaybeReuseFromFig32B()
-S = [];
-activeMask = [];
-try
-	hasS = evalin('base', "exist('Fig3_2b_CellStrip','var')");
-	hasM = evalin('base', "exist('Fig3_2b_ActiveMask','var')");
-	if hasS
-		S = evalin('base','Fig3_2b_CellStrip');
-	end
-	if hasM
-		activeMask = evalin('base','Fig3_2b_ActiveMask');
-	end
-catch
-	S = [];
-	activeMask = [];
-end
-end
 
 function [mu, se, nEff] = iMeanSemAcrossCells(X2)
 % X2: [nCell x nTime]

@@ -42,8 +42,13 @@ end
 xsSec = seconds(xs);
 
 baseMask = (xsSec >= -3) & (xsSec < 0);
-respMask = (xsSec >= 0) & (xsSec <= 1);
 kSigma = 3;
+
+% Find sample index closest to 1s
+[~, idx1] = min(abs(xsSec - 1));
+if abs(xsSec(idx1) - 1) > 0.25
+	error('Fig3_2d:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
+end
 
 qNaiveAudio   = struct('Phase','Naive',   'Stimulus','AudioWater');
 qLearnedAudio = struct('Phase','Learned', 'Stimulus','AudioWater');
@@ -62,14 +67,12 @@ X = iGetNtats3D(S, laneOrder);
 XLearned = squeeze(X(:,:,2));
 baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
 baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
-respMax = max(XLearned(:, respMask), [], 2, 'omitnan');
-activeMask = isfinite(respMax) & isfinite(baseMu) & isfinite(baseSd) & (respMax > (baseMu + kSigma*baseSd));
+v1s = XLearned(:, idx1);
+activeMask = isfinite(v1s) & isfinite(baseMu) & isfinite(baseSd) & (v1s > (baseMu + kSigma*baseSd));
 
 X = X(activeMask, :, :);
 
-% --- Extract 1s value (nearest sample to 1s)
-[~, idx1] = min(abs(xsSec - 1));
-
+% --- Extract 1s value
 vLearn = X(:, idx1, 2);
 vHit  = X(:, idx1, 3);
 vMiss = X(:, idx1, 4);
