@@ -47,53 +47,35 @@ Transfer LightWater showed higher first-session hit rate and elevated learning c
 
 Learning is fundamentally a process of information acquisition, storage, and processing. Transfer learning represents a special form of learning that achieves optimized behavioral output with fewer samples by leveraging knowledge from prior tasks. Understanding how the nervous system supports such efficient knowledge transfer remains a central question in neuroscience.
 
-### Behavioral Definition and Significance of Transfer Learning
-
 Transfer is typically defined as the influence of prior learning on subsequent learning or performance in new contexts, which may manifest as facilitation, interference, or near-zero effect (Thorndike and Woodworth, 1901; Perkins and Salomon, 1992/1994). From a behavioral perspective, the key issue is not how well the old task was learned, but whether old task experience enables faster acquisition of effective behavior in an untrained new task or achieves the same criterion with fewer samples. Transfer research commonly operationalizes effects as first-session baseline advantages, reduced time-to-criterion, and systematic changes in learning curve height or growth rate (Bransford and Schwartz, 1999; Barnett and Ceci, 2002).
 
 Transfer phenomena are classified along multiple dimensions: by effect direction (positive, negative, or zero transfer) and by similarity or "transfer distance" between old and new contexts (near vs. far transfer). Notably, transfer differs from generalization: generalization emphasizes direct extension to novel stimuli within the same rule or task family, often observable with little or no additional training, whereas transfer emphasizes whether behavioral baseline and learning dynamics measurably change when transitioning from old to new tasks.
 
 A closely related phenomenon is learning-to-learn (learning set), whereby individuals show faster subsequent learning after accumulating multi-task experience (Harlow, 1949). This concept provides an important reference: transfer advantages may not arise entirely from specific representation reuse but may also involve more general changes in learning rate, strategy updating, or plasticity gating.
 
-### The Critical Tension: From Behavioral Phenomenon to Mechanistic Question
-
 A commonly overlooked but critical tension in transfer research is that behavioral "faster/higher" does not necessarily equate to "stronger learning mechanisms." Cognitive and learning research repeatedly emphasizes that "learning" (retainable, transferable capacity change) and "performance" (observable output strongly influenced by state and context) can be significantly dissociated; better short-term performance sometimes fails to predict better long-term retention or transfer, and vice versa (Soderstrom and Bjork, 2015).
 
-Transfer-stage behavioral advantages may have at least three potential sources. First, **representation/strategy-level reuse**: task-relevant cell assemblies, population subspaces, or strategy structures formed during the old task are directly invoked in the new task, thereby elevating first-session baseline or shortening exploration to effective behavior. Second, **non-specific factors**: arousal, attention, fatigue, stress, or experimental conditions may alter perceptual gain, response threshold, and behavioral output stability in ways that "look better/worse" but whose mechanisms are not necessarily task-specific learning traces. Third, more abstract **general learning rate or strategy updating mechanisms**: cross-task experience may alter plasticity gating, exploration-exploitation strategies, or form learning-to-learn "meta-level" advantages that accelerate subsequent learning (Harlow, 1949).
+Transfer-stage behavioral advantages may have at least three potential sources. First, representation/strategy-level reuse: task-relevant cell assemblies, population subspaces, or strategy structures formed during the old task are directly invoked in the new task, thereby elevating first-session baseline or shortening exploration to effective behavior. Second, non-specific factors: arousal, attention, fatigue, stress, or experimental conditions may alter perceptual gain, response threshold, and behavioral output stability in ways that "look better/worse" but whose mechanisms are not necessarily task-specific learning traces. Third, more abstract general learning rate or strategy updating mechanisms: cross-task experience may alter plasticity gating, exploration-exploitation strategies, or form learning-to-learn "meta-level" advantages that accelerate subsequent learning (Harlow, 1949).
 
 Based on these considerations, "transfer advantage" should not be viewed as a single phenomenon but decomposed into distinguishable, statistically alignable behavioral components (e.g., first-session baseline, overall learning curve height, growth rate/criterion attainment speed), with their possible neural mechanism sources discussed separately.
 
-### Scientific Significance and Methodological Advantages
+At the neural level, accumulating evidence supports the existence of reusable representational structures that may underlie transfer. Studies on memory engrams demonstrate that learning recruits specific neuronal ensembles whose reactivation is necessary and sufficient for memory expression; critically, overlapping ensemble allocation across experiences can link distinct memories and support generalization (Tonegawa et al., 2015; Josselyn and Tonegawa, 2020; Cai et al., 2016; Yokose et al., 2017). In motor cortex, two-photon imaging reveals that skill learning induces fine-scale reorganization of neuronal ensembles, with task-relevant cells becoming more correlated while maintaining stable population-level structure (Komiyama et al., 2010; Peters et al., 2014). Population-level analyses further show that neural activity during movement can be captured by low-dimensional manifolds, and learning-related changes may occur through remapping within existing manifolds rather than requiring entirely new activity patterns—a constraint that may accelerate certain forms of adaptation while limiting others (Sadtler et al., 2014; Gallego et al., 2017; Perich et al., 2018). Higher-order thalamic nuclei, particularly the posterior nucleus (PO), form reciprocal connections with motor and somatosensory cortices and are positioned to relay feedback signals that may gate cortical plasticity (Halassa and Sherman, 2019; Shepherd and Yamawaki, 2021). Despite these advances, how ensemble reuse and feedback pathway dynamics jointly contribute to different components of transfer—baseline versus learning speed—remains poorly understood.
 
 Transfer learning is scientifically significant partly because it converts the abstract question of "whether the learning system possesses reusable structure" into measurable behavioral dynamics differences: through what neural mechanisms does old task experience affect new task first-session baseline and subsequent growth/criterion attainment speed? At the neural level, this corresponds to at least two types of potential computational components—one more related to "availability/retrieval," i.e., task-relevant cell assemblies or population structures formed during the old task are directly invoked in the new task; another more related to "learning rate/gating," i.e., modulation of input pathways and plasticity processes that accelerate subsequent updating.
 
 Methodologically, this study aims to combine "population representation traceability" with "causal manipulation." Two-photon calcium imaging with high-sensitivity calcium indicators enables recording neural population activity at single-cell resolution during behavior, allowing tracking of population dynamics and cell assembly composition changes across learning and transfer stages within the same animal (Chen et al., 2013; Girven and Sparta, 2017). Activity-dependent tagging and chemogenetics enable advancement from correlational description to causal testing for "reuse-related cell assemblies/pathways." TRAP and other IEG-based strategies can achieve permanent genetic access to active cells within specific time windows for subsequent recording, tracking, and manipulation (Guenthner et al., 2013); DREADDs provide reversible inhibition/activation of specific cell populations during free behavior, suitable for testing necessity of those populations for transfer-stage performance components (Roth, 2016).
 
-### Current Research Gaps
-
 Despite extensive behavioral and theoretical work on transfer, several gaps remain. First, transfer advantages are often compressed into summary metrics, potentially obscuring the fact that "first-session baseline" and "subsequent growth/criterion speed" may be subject to different constraints. Second, "reuse" itself is not a single-level concept—single-cell activity can significantly rearrange across days/conditions while population covariance structure, low-dimensional subspaces, or dynamical scaffolds may show certain preservation. Third, mechanistic discrimination is often limited by scarcity and fragmentation of causal evidence: many studies remain at the correlational level between behavioral curves and neural indicators, or lack simultaneous recording of neural representation changes during manipulations.
 
-### Research Objectives and Hypotheses
-
-This study addresses the following core questions:
-
-**Q1**: Is transfer-stage LightWater behavioral improvement significant and robust? Are first-session performance and subsequent learning speed completely linked or partly independent?
-
-**Q2**: Are task-relevant cell assemblies from learned AudioWater reused during transfer? Does reuse extent predict behavioral advantage?
-
-**Q3**: What factors relate to transfer learning growth speed? Are there mechanisms similar to those in machine learning?
-
-We hypothesize a multi-component mechanism: transfer advantages can be decomposed into baseline availability and subsequent plasticity, respectively associated with cell assembly reuse and feedback-related stability.
-
----
+Here we address these gaps using a cross-modal transfer paradigm in head-fixed mice: animals first learn an auditory-cued water reward task (AudioWater) to criterion, then switch to a visual-cued task (LightWater), with comparison to a naive LightWater control group. Combining longitudinal two-photon calcium imaging in primary motor cortex (MOp; layers 2/3 and 5) with behavioral learning curve analysis, we find that transfer elevates both first-session hit rate and absolute learning speed. Neurally, cells active during learned AudioWater are preferentially reactivated during transfer, and reuse rate correlates with first-session performance but not with subsequent learning increments. Instead, learning speed is predicted by training signal fidelity—the correlation between each session's post-reward population activity and the final learned state—particularly in MOp layer 5. Perturbation experiments provide causal support: chemogenetic inhibition of activity-tagged MOp ensembles primarily reduces transfer baseline, whereas inhibition of the posterior thalamic feedback pathway primarily slows learning speed; a 7-day interval manipulation further dissociates retrieval-related and updating-related components. Together, these findings support a multi-component framework in which baseline advantages relate to ensemble reuse while learning speed relates to feedback-associated signal fidelity.
 
 ## Results
 
 ### Transfer LightWater Behavioral Performance Exceeds Naive LightWater
 
-![Figure 1](整合/图1.svg)
+![Figure 1](图1.svg)
 
-The cross-modal transfer paradigm is illustrated in Figure 1A. We first examined transfer versus naive performance on the LightWater task. Transfer LightWater showed significantly higher first-session hit rate than naive (Figure 1C), learning curves that remained elevated throughout training (Figure 1B), and higher proportions of mice reaching 80% or 90% criterion at any given session (Figure 1D, time-to-criterion analysis).
+The cross-modal transfer paradigm is illustrated in Figure 1A. We first examined transfer versus naive performance on the LightWater task. Transfer LightWater showed significantly higher first-session hit rate than naive (Figure 1C), learning curves that remained elevated throughout training (Figure 1B), and faster learning speed (slope) after controlling for first-session differences using ANCOVA (Figure 1D).
 
 A classic concept similar to transfer learning is “generalization” - in contextual fear conditioning, mice show fear-like freezing to contexts different from training, as if “mistaking” the new context for the old or “generalizing” the old memory to the new context (Josselyn and Tonegawa, 2020). Like transfer learning, generalization requires similarity between old and new task contexts/cues and produces performance elevated above untrained animals. The key difference is that generalization experiments typically only test memory retrieval in the new task without further training, whereas transfer learning additionally emphasizes that learning speed in the new task is faster than naive learning, not just higher baseline.
 
@@ -105,7 +87,7 @@ We also examined whether reused subpopulations within learned AudioWater had spe
 
 ### Reuse Rate and Pre-activation Rate
 
-![Figure 2](+TransferLearning/+Fig33/图3.svg)
+![Figure 2](图2.svg)
 
 Naive LightWater lacks the concept of reuse rate per se, preventing direct comparison with transfer. We sought an intermediate metric that could link to reuse rate while being comparable between naive and transfer conditions. We found that a substantial portion of the "correct answer population"—cells active at 100% learned LightWater—were already pre-activated during transfer LightWater (Figure 3A); but during naive LightWater this population was mostly silent, with naive-active cells showing almost no overlap with learned-active cells (Figure 3B). Inter-mouse first-session hit rate variability correlated with each mouse's "pre-activation rate" of final correct cells (Figures 3C-D), with hit-trial pre-activation significantly higher than miss-trial (Figures 3E, G). These findings indicate pre-activation rate as a good unified predictor of behavior in both naive and transfer stages.
 
@@ -113,7 +95,7 @@ Transfer-stage pre-activation rate was significantly higher than naive only in M
 
 ### Learning Rate Correlates with MOp5 Layer 1.5 s Signal Fidelity
 
-![Figure 3](+TransferLearning/+Fig34/图4.svg)
+![Figure 3](图3.svg)
 
 However, neither reuse rate nor pre-activation rate predicted learning speed—they even showed reverse prediction (Figure 4A), suggesting that 1 s decision-phase output and reinforcement training may be two relatively independent processes. Indeed, previous research has highlighted the importance of “feedback training” phases after task decision windows for learning progression (Krakauer et al., 2019; Shadmehr and Krakauer, 2008). We found appreciable inter-cell correlation between transfer and final stages at 1.5 s signals (Figure 4B), while naive and learned stages showed minimal correlation (Figure 4C), with statistically significant differences between them (Figure 4F).
 
@@ -123,7 +105,7 @@ Transfer-stage 1.5 s training signal's higher fidelity also showed good associat
 
 ### Causal Evidence: Manipulating Relevant Cell Assemblies/Pathways Alters Transfer Performance
 
-![Figure 4](+TransferLearning/+Fig35/图5.svg)
+![Figure 4](图4.svg)
 
 Several manipulation experiments attempted to causalize the correlations described above. Using cFos to tag cells active during learned AudioWater in MOp, then inhibiting them during transfer LightWater, we observed learning curve downward shift with somewhat reduced first-session hit rate, but learning rate did not appear to decrease (Figure 5A). Direct broad hM4D(Gi) non-specific inhibition of MOp had almost no effect (Figure 5B).
 
@@ -135,7 +117,7 @@ In summary, MOp2/3 local cell reuse between AudioWater and LightWater tasks can 
 
 ### RSPd: A Potential Light-Signal-Specific Upstream
 
-![Figure 5](+TransferLearning/+Fig36/图6.svg)
+![Figure 5](图5.svg)
 
 From cortical topology, RSP directly connects VIS and MO cortical regions, while being distant from AUD, suggesting RSP should be an important intermediate for visual signals traveling from visual to motor cortex on the cortical surface, i.e., an upstream input to MOp. Imaging calcium signals in RSP during transfer learning confirmed that RSP indeed showed highly specific responses to visual signals regardless of hit or miss, while responses to auditory signals were weak, consistent with its cortical topological characteristics (Figure 6A). In terms of temporal features, RSP's response to visual signals during transfer was rapid and clean, clearly stronger and faster than MO (Figure 6B).
 
