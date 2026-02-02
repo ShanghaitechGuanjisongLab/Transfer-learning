@@ -122,7 +122,7 @@ CLim = [-climLowAbs, climHighAbs];
 % --- 8) Plot
 f = figure('Color','w', 'Name', 'English Fig2A Lane heatmap');
 f.Units = 'centimeters';
-f.Position(3:4) = [6, 4.5]; % 60mm x 45mm
+f.Position(3:4) = [12, 9]; % 120mm x 90mm
 
 Layout = tiledlayout(f, 1, 2, 'TileSpacing','none', 'Padding','tight');
 subTitles = ["Transfer 💡💧", "💡💧100%"];
@@ -137,14 +137,14 @@ xsPlot = xsSec(xMask);
 	ImagescStyle={'XData', [xsPlot(1), xsPlot(end)]}, ...
 	LMHColor=[0,0,1;1,1,1;1,0,0]);
 
-xlabel(Layout, 'Time', 'FontSize', 6);
-ylabel(Layout, sprintf('Overall pre-activation: %.1f%%', preActivationRate), 'FontSize', 6);
+xlabel(Layout, 'Time', 'FontSize', 12);
+ylabel(Layout, sprintf('Overall pre-activation: %.1f%%', preActivationRate), 'FontSize', 12);
 
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
-CB.Label.FontSize = 6;
-CB.FontSize = 6;
+CB.Label.FontSize = 12;
+CB.FontSize = 12;
 
 % xtick/xticklabel: 只保留 0→💡, 1→💧
 for iA = 1:numel(Axes)
@@ -152,7 +152,7 @@ for iA = 1:numel(Axes)
 	if ~isgraphics(A)
 		continue;
 	end
-	A.FontSize = 6;
+	A.FontSize = 12;
 	xline(A, 0, ':k');
 	xline(A, 1, '-k');
 	A.TickDir = 'in';
@@ -174,11 +174,11 @@ end
 for iA = 1:numel(Axes)
 	A = Axes(iA);
 	if isgraphics(A) && ~isempty(A.Title)
-		A.Title.FontSize = 6;
+		A.Title.FontSize = 12;
 	end
 end
 
-Layout.Title.FontSize = 6;
+Layout.Title.FontSize = 12;
 
 % --- 9) Export
 try
