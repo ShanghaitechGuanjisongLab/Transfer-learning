@@ -175,6 +175,14 @@ CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
 
+% Font size
+for iA = 1:numel(Axes)
+	if isgraphics(Axes(iA))
+		Axes(iA).FontSize = 6;
+	end
+end
+CB.FontSize = 6;
+
 for iA = 1:numel(Axes)
 	A = Axes(iA);
 	if ~isgraphics(A)

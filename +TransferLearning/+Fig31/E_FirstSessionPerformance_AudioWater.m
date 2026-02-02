@@ -109,8 +109,7 @@ swarmchart(ax, x2, xTran,  24, 'filled');
 
 ax.XLim = [0.5 2.5];
 ax.XTick = [1 2];
-ax.XTickLabel = {sprintf('Naive (n=%d)', numel(xNaive)), sprintf('Transfer (n=%d)', numel(xTran))};
-ylim(ax, [0 1]);
+ax.XTickLabel = {sprintf('Naive (n=%d)', numel(xNaive)), sprintf('Transfer (n=%d)', numel(xTran))};ax.FontSize = 6;ylim(ax, [0 1]);
 ylabel(ax, 'Performance');
 title(ax, 'First AudioWater session');
 box(ax,'on');
@@ -127,7 +126,10 @@ if isfinite(p) && ~isempty(xNaive) && ~isempty(xTran)
 	Descriptors = table(S, 0, 0, "p=" + sprintf('%.3g', p), 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 	try
-		MATLAB.Graphics.PLine(Descriptors);
+		[~, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+		for pt = pTexts(:)'
+			pt.FontSize = 6;
+		end
 	catch
 	end
 	try

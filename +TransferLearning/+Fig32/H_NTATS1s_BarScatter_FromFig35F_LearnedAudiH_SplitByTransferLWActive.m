@@ -115,10 +115,10 @@ tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
 
 UniExp.BarScatterCompare(Data, false, CompareGroup);
-ylabel('NTATS@1s (z-score)');
-title('NTATS at 1s');
-
 ax = gca;
+ax.FontSize = 6;
+ylabel(ax, 'z-score@1s');
+title(ax, 'Response@1s');
 try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';

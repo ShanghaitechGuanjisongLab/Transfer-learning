@@ -110,8 +110,7 @@ for k = 1:numel(thresholds)
 	
 	if k==1
 		ylabel(ax, 'Fraction reached (Perf > Criterion)');
-	end
-	ylim(ax, [0 1]);
+	end	ax.FontSize = 6;	ylim(ax, [0 1]);
 	box(ax, 'off');
 	
 	nNaive = sum(idxN);

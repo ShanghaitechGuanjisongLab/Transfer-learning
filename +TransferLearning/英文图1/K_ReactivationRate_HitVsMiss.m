@@ -1,14 +1,15 @@
-% Fig3.2E: Hit vs Miss difference in P(T|L) within Transfer session (split by layer)
+% 英文图1K: Hit vs Miss Reactivation rate (per mouse, split by layer)
 %
-% P(T_hit|L) and P(T_miss|L) computed using:
-%   L = Learned AudioWater active at 1s (last pure session)
-%   T_hit/T_miss = Transfer LightWater Hit/Miss active at 1s within first pure session
+% Reactivation rate = P(Transfer active | Learned active) at 1s
+%   L = Learned AudioWater active at 1s
+%   T_hit/T_miss = Transfer LightWater Hit/Miss active at 1s
 % Paired test: signrank(Hit > Miss)
 %
 % Execution:
-%   TransferLearning.Fig32.E_PTgivenLA_HitVsMiss
+%   TransferLearning.英文图1.K_ReactivationRate_HitVsMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+svgName = "English_Fig1K_ReactivationRate_HitVsMiss.svg";
 
 % --- ensure project loaded
 try
@@ -28,17 +29,18 @@ end
 
 R = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer();
 if isempty(R)
-	error('Fig32E:Empty', 'No valid mice for P(T|L) Hit/Miss.');
+	error('Fig1K:Empty', 'No valid mice for Reactivation rate Hit/Miss.');
 end
 
 layerNames = string(["MOp2/3","MOp5"]);
-outDir = iSelectOutDir(outDirUNC);
-svgName = "Fig3_2e_PTgivenLA_HitVsMiss_2panels.svg";
 
-f = figure('Color','w', 'Name','P(T|L) Hit vs Miss');
-MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
+f = figure('Color','w', 'Name','English Fig1K Reactivation rate Hit vs Miss');
+f.Units = 'centimeters';
+f.Position(3:4) = [4.5, 4.5]; % 45mm x 45mm
+
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
-ylabel(TL, 'P(T|L) at 1 s');
+ylabel(TL, 'Reactivation rate', 'FontSize', 6);
+xlabel(TL, '💡💧', 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
 
 axesList = gobjects(numel(layerNames), 1);
 
@@ -68,15 +70,16 @@ for iZ = 1:numel(layerNames)
 	end
 
 	Y = [hit(mask), miss(mask)];
-	plot(ax, Y', '-k', 'LineWidth', 0.75);
-	scatter(ax, ones(nnz(mask),1), hit(mask), 30, 'filled');
-	scatter(ax, 2*ones(nnz(mask),1), miss(mask), 30, 'filled');
+	plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', [0.5 0.5 0.5]);
+	scatter(ax, ones(nnz(mask),1), hit(mask), 15, [0 0.4470 0.7410], 'filled');
+	scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, [0 0.4470 0.7410], 'filled');
 	set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 	ylim(ax, [0 1]);
 	grid(ax,'on');
 	box(ax,'off');
-	title(ax, sprintf('%s  n=%d', zl, nnz(mask)), 'Interpreter','none');
-	% p-value line (paired signrank) via MATLAB.Graphics.PLine
+	title(ax, sprintf('%s n=%d', zl, nnz(mask)), 'FontSize', 6);
+	
+	% p-value line with asterisk (paired signrank) via MATLAB.Graphics.PLine
 	if isfinite(p)
 		S = scatter(ax, [ones(nnz(mask),1); 2*ones(nnz(mask),1)], [hit(mask); miss(mask)], ...
 			1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
@@ -86,12 +89,25 @@ for iZ = 1:numel(layerNames)
 			if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 		catch
 		end
-		Descriptors = table(S, 0, 0, ("p=" + sprintf('%.3g', p)), 0, ...
+		% Convert p to asterisk
+		if p < 0.001
+			pText = "***";
+		elseif p < 0.01
+			pText = "**";
+		elseif p < 0.05
+			pText = "*";
+		else
+			pText = "n.s.";
+		end
+		Descriptors = table(S, 0, 0, pText, 0, ...
 			'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 		try
-			MATLAB.Graphics.PLine(Descriptors);
+			[~, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+			for pt = pTexts(:)'
+				pt.FontSize = 6;
+			end
 		catch ME
-			error('Fig32:E:PLineFailed', 'MATLAB.Graphics.PLine failed:\n%s', getReport(ME, 'extended', 'hyperlinks','off'));
+			warning('Fig1K:PLineFailed', 'MATLAB.Graphics.PLine failed:\n%s', getReport(ME, 'extended', 'hyperlinks','off'));
 		end
 		try
 			delete(S);
@@ -107,29 +123,25 @@ for iZ = 1:numel(layerNames)
 	end
 end
 
-sgtitle(TL, 'P(T|L) Hit vs Miss (paired)', 'Interpreter','none');
+title(TL, 'Reactivation (per mouse)', 'FontSize', 6);
 
 % Font size
 for iA = 1:numel(axesList)
 	axesList(iA).FontSize = 6;
 end
 
-svgPath = fullfile(outDir, svgName);
+% Export
 try
-	TransferLearning.PrintFigure(f, svgPath);
-catch ME
-	rethrow(ME);
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
 end
 
-%% local helpers
-
-function outDir = iSelectOutDir(outDirUNC)
-	outDir = outDirUNC;
-	try
-		if ~isfolder(outDir)
-			mkdir(outDir);
-		end
-	catch ME
-		error('Fig32:UNCUnreachable', 'UNC path not accessible: %s\n%s', outDirUNC, ME.message);
-	end
+svgPath = fullfile(outDirUNC, svgName);
+try
+	TransferLearning.PrintFigure(f, svgPath);
+	fprintf('Wrote: %s\n', svgPath);
+catch ME
+	warning(ME.identifier, 'Export failed: %s', ME.message);
 end

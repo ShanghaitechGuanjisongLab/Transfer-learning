@@ -1,14 +1,13 @@
-% Fig3.2C：Learned AudioWater vs Transfer LightWater (Hit/Miss) 平均NTATS±SEM
+% 英文图1I：Learned 🔊💧 vs Transfer 💡💧 (Hit/Miss) 平均 z-score ± SEM
 %
 % Curves (overlay):
-% 1) Learned AudioWater
-% 2) Transfer LightWater Hit
-% 3) Transfer LightWater Miss
+% 1) Learned 🔊💧
+% 2) Transfer 💡💧 Hit
+% 3) Transfer 💡💧 Miss
 %
 % Data source:
-% - Median ZScore NTATS; Learned-active cells only.
-% - Active-cell criterion: NTATS@1s > mean(-3~0s) + 3*std(-3~0s), on Learned lane ONLY.
-% - Does NOT reuse Fig3.2b data; always computes independently for consistency with Fig3.2D.
+% - Median z-score NTATS; Learned-active cells only.
+% - Active-cell criterion: z-score@1s > mean(-3~0s) + 3*std(-3~0s), on Learned lane ONLY.
 %
 % Plot:
 % - MATLAB.Graphics.MultiShadowedLines
@@ -18,10 +17,10 @@
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.Fig32.C_MeanNTATS_LearnedAudio_TransferHitMiss
+%   TransferLearning.英文图1.I_MeanZScore
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2c_MeanNTATS_LearnedAudio_TransferHitMiss_0to3.svg";
+svgName = "English_Fig1I_MeanZScore.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -39,7 +38,7 @@ try
 catch
 end
 
-% --- 1) Time window 0~3s (match Fig3.2b)
+% --- 1) Time window 0~3s
 xs = TransferLearning.Xs;
 if ~isduration(xs)
 	xs = seconds(xs);
@@ -47,25 +46,25 @@ end
 xsSec = seconds(xs);
 xMask = (xsSec >= 0) & (xsSec <= 3);
 if nnz(xMask) < 5
-	error('Fig3_2c:BadTimeMask', 'Too few samples in 0~3s window.');
+	error('Fig1I:BadTimeMask', 'Too few samples in 0~3s window.');
 end
 
-% --- 2) Get NTATS (always compute independently; do NOT reuse Fig3.2b)
+% --- 2) Get z-score data
 laneOrder = ["NaiveAudio","LearnedAudio","TransferHit","TransferMiss"];
 
 DS = TransferLearning.AudioLightBaseline();
 
-% Active-cell criterion (Learned lane only): NTATS@1s > mean(-3~0s) + 3*std(-3~0s)
+% Active-cell criterion (Learned lane only): z-score@1s > mean(-3~0s) + 3*std(-3~0s)
 baseMask = (xsSec >= -3) & (xsSec < 0);
 if nnz(baseMask) < 5
-	error('Fig3_2c:BadActiveMasks', 'Too few samples in baseline window for active-cell criterion.');
+	error('Fig1I:BadActiveMasks', 'Too few samples in baseline window for active-cell criterion.');
 end
 kSigma = 3;
 
 % Find sample index closest to 1s
 [~, idx1] = min(abs(xsSec - 1));
 if abs(xsSec(idx1) - 1) > 0.25
-	error('Fig3_2c:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
+	error('Fig1I:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
 end
 
 qNaiveAudio   = struct('Phase','Naive',   'Stimulus','AudioWater');
@@ -88,10 +87,12 @@ baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
 v1s = XLearned(:, idx1);
 activeMask = isfinite(v1s) & isfinite(baseMu) & isfinite(baseSd) & (v1s > (baseMu + kSigma*baseSd));
 
-assignin('base','Fig3_2c_CellStrip', S);
-assignin('base','Fig3_2c_ActiveMask', activeMask);
+assignin('base','Fig1I_CellStrip', S);
+assignin('base','Fig1I_ActiveMask', activeMask);
 
 X = X(activeMask, :, :);
+nActiveCells = sum(activeMask);
+fprintf('Active cells (🔊💧): %d / %d\n', nActiveCells, numel(activeMask));
 
 % --- 3) Build mean±SEM curves (cell-average)
 X0to3 = X(:, xMask, :);
@@ -100,17 +101,15 @@ X0to3 = X(:, xMask, :);
 [muHit,  seHit,  nHit]  = iMeanSemAcrossCells(squeeze(X0to3(:,:,3)));
 [muMiss, seMiss, nMiss] = iMeanSemAcrossCells(squeeze(X0to3(:,:,4)));
 
-assignin('base','Fig3_2c_NCells', struct('LearnedAudio', nLearn, 'TransferHit', nHit, 'TransferMiss', nMiss));
+assignin('base','Fig1I_NCells', struct('LearnedAudio', nLearn, 'TransferHit', nHit, 'TransferMiss', nMiss));
 
 meanCells = {muLearn(:), muHit(:), muMiss(:)};
 semCells  = {seLearn(:), seHit(:),  seMiss(:)};
 
 % --- 4) Plot
-f = figure('Color','w', 'Name', 'Fig3.2c Mean NTATS ± SEM');
-try
-	MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
-catch
-end
+f = figure('Color','w', 'Name', 'English Fig1I Mean z-score ± SEM');
+f.Units = 'centimeters';
+f.Position(3:4) = [4.5, 4.5]; % 45mm x 45mm
 ax = axes('Parent', f);
 hold(ax, 'on');
 
@@ -122,12 +121,15 @@ end
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, X=xsSec(xMask), EdgeColors=edgeColors(1:3,:));
 
+% Legend with emoji
 try
 	lgd = legend(ax, Patches(1:3), { ...
-		'Learned AudioWater', ...
-		'Transfer LightWater Hit', ...
-		'Transfer LightWater Miss' ...
+		'🔊💧100%', ...
+		'💡💧 Hit', ...
+		'💡💧 Miss' ...
 		}, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:3)));
+	lgd.FontSize = 6;
+	lgd.FontName = 'Segoe UI Emoji';
 	try
 		lgd.AutoUpdate = 'off';
 	catch
@@ -142,9 +144,21 @@ catch
 end
 
 ax.FontSize = 6;
-xlabel(ax, 'Time (s)');
-ylabel(ax, 'z-score');
-title(ax, 'Mean response');
+ax.FontName = 'Segoe UI Emoji';
+% 保留默认 xticks，仅替换 0s 和 1s 处的标签为 emoji
+currentTicks = ax.XTick;
+currentLabels = arrayfun(@num2str, currentTicks, 'UniformOutput', false);
+for i = 1:numel(currentTicks)
+	if currentTicks(i) == 0
+		currentLabels{i} = '🔊/💡';
+	elseif currentTicks(i) == 1
+		currentLabels{i} = '💧';
+	end
+end
+ax.XTickLabel = currentLabels;
+xlabel(ax, 'Time (s)', 'FontSize', 6);
+ylabel(ax, 'z-score', 'FontSize', 6);
+title(ax, sprintf('🔊💧 active (%d cells)', nActiveCells), 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
 box(ax,'off');
 grid(ax,'on');
 
@@ -166,6 +180,7 @@ end
 svgPath = fullfile(outDirUNC, svgName);
 try
 	TransferLearning.PrintFigure(f, svgPath);
+	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
@@ -197,7 +212,7 @@ end
 end
 
 function X = iGetNtats3D(S, ~)
-% Return numeric [nCell x nTime x nLane] NTATS.
+% Return numeric [nCell x nTime x nLane] z-score.
 
 if istable(S)
 	nt = S.NTATS;
@@ -218,11 +233,11 @@ end
 
 if isnumeric(nt)
 	if ndims(nt) ~= 3
-		error('Fig3_2c:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('Fig1I:BadNTATS', 'Expected z-score to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-error('Fig3_2c:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+error('Fig1I:BadNTATS', 'Unsupported z-score container type: %s', class(nt));
 end

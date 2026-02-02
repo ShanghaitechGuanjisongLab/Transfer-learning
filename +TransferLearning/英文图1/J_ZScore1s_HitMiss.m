@@ -1,19 +1,19 @@
-% Fig3.2D：比较三组在 1s 处的 NTATS（Learned AudioWater / Transfer Hit / Transfer Miss）
+% 英文图1J：比较 Transfer 💡💧 Hit/Miss 在 1s 处的 z-score
 %
 % Data source:
-% - Median ZScore NTATS; learned-active cells only (active defined on Learned lane).
+% - Median z-score; 🔊💧 active cells only (active defined on Learned lane).
 %
 % Plot:
-% - UniExp.BarScatterCompare
+% - UniExp.BarScatterCompare (Hit vs Miss only)
 %
 % Output:
 % - SVG only to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.Fig32.D_NTATS1s_LearnedAudio_TransferHitMiss_BarScatter
+%   TransferLearning.英文图1.J_ZScore1s_HitMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "Fig3_2d_NTATS1s_LearnedAudio_TransferHitMiss_BarScatter.svg";
+svgName = "English_Fig1J_ZScore1s_HitMiss.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -47,7 +47,7 @@ kSigma = 3;
 % Find sample index closest to 1s
 [~, idx1] = min(abs(xsSec - 1));
 if abs(xsSec(idx1) - 1) > 0.25
-	error('Fig3_2d:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
+	error('Fig1J:No1s', 'Cannot find sample close to 1s in TransferLearning.Xs.');
 end
 
 qNaiveAudio   = struct('Phase','Naive',   'Stimulus','AudioWater');
@@ -70,37 +70,49 @@ baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
 v1s = XLearned(:, idx1);
 activeMask = isfinite(v1s) & isfinite(baseMu) & isfinite(baseSd) & (v1s > (baseMu + kSigma*baseSd));
 
+nActiveCells = sum(activeMask);
+fprintf('Active cells (🔊💧): %d / %d\n', nActiveCells, numel(activeMask));
+
 X = X(activeMask, :, :);
 
 % --- Extract 1s value
-vLearn = X(:, idx1, 2);
 vHit  = X(:, idx1, 3);
 vMiss = X(:, idx1, 4);
 
-maskPair = isfinite(vLearn) & isfinite(vHit) & isfinite(vMiss);
-vLearn = vLearn(maskPair);
+maskPair = isfinite(vHit) & isfinite(vMiss);
 vHit  = vHit(maskPair);
 vMiss = vMiss(maskPair);
 
-assignin('base','Fig3_2d_NTATS1s', struct('LearnedAudio', vLearn, 'TransferHit', vHit, 'TransferMiss', vMiss, ...
-	'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair));
+assignin('base','Fig1J_ZScore1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, ...
+	'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'nActiveCells', nActiveCells));
 
-% --- Plot via UniExp.BarScatterCompare
-Data = array2table([double(vLearn(:)), double(vHit(:)), double(vMiss(:))], ...
-	'VariableNames', {'Learn','Hit','Miss'});
+% --- Plot via UniExp.BarScatterCompare (Hit vs Miss only)
+Data = array2table([double(vHit(:)), double(vMiss(:))], ...
+	'VariableNames', {'Hit','Miss'});
 
 CompareGroup = table(["Hit","Miss"], 'VariableNames', {'GroupPair'});
 
-f = figure('Color','w', 'Name', 'Fig3.2d NTATS@1s (BarScatterCompare)');
-MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
+f = figure('Color','w', 'Name', 'English Fig1J z-score at 1s (Hit vs Miss)');
+f.Units = 'centimeters';
+f.Position(3:4) = [3.0, 4.5]; % 30mm x 45mm
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
 
-UniExp.BarScatterCompare(Data, false, CompareGroup);
+[~, ~, Bars, ErrorBars] = UniExp.BarScatterCompare(Data, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax = gca;
 ax.FontSize = 6;
-ylabel(ax, 'z-score@1s');
-title(ax, 'Response@1s');
+
+% 设置条形和误差条边框粗细
+for b = Bars(:)'
+	b.LineWidth = 1;
+end
+for eb = ErrorBars.Object(:)'
+	eb.LineWidth = 1;
+end
+ax.FontName = 'Segoe UI Emoji';
+xlabel(ax, '💡💧', 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
+ylabel(ax, 'z-score at 1s', 'FontSize', 6);
+title(ax, sprintf('🔊💧 active (%d cells)', nActiveCells), 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
 try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';
@@ -119,6 +131,7 @@ end
 svgPath = fullfile(outDirUNC, svgName);
 try
 	TransferLearning.PrintFigure(f, svgPath);
+	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
@@ -144,11 +157,11 @@ end
 
 if isnumeric(nt)
 	if ndims(nt) ~= 3
-		error('Fig3_2d:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('Fig1J:BadZScore', 'Expected z-score to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-error('Fig3_2d:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+error('Fig1J:BadZScore', 'Unsupported z-score container type: %s', class(nt));
 end

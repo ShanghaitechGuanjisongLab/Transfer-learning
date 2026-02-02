@@ -516,7 +516,12 @@ end
 
 % One shared axis label set on tiledlayout
 xlabel(TL, 'Time from cue (s)');
-ylabel(TL, 'ZScore (baseline -3~0s)');
+ylabel(TL, 'z-score');
+
+% Font size
+for iA = 1:numel(axesList)
+	axesList(iA).FontSize = 6;
+end
 
 % Hide top-row X axes; hide right-column Y axes
 try

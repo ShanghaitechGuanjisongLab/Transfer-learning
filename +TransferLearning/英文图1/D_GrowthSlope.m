@@ -197,51 +197,51 @@ catch
 end
 %% 
 
-% --- 5) Plot
-f = figure('Color','w', 'Name', 'Fig3.1d Growth slope');
-MATLAB.Graphics.FigureAspectRatio(73,48,3/4);
-ax = axes('Parent', f);
-hold(ax,'on');
+% --- 5) Plot using UniExp.BarScatterCompare (1D syntax: struct, no legend)
+Groups = struct('N', {xNaiveAdj(:)}, 'T', {xTranAdj(:)});
 
-% Avoid exporting the axes toolbar overlay into SVG.
-try
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-		ax.Toolbar.Visible = 'off';
-	end
-catch
+f = figure('Color','w', 'Name', 'Fig3.1d Growth slope');
+set(f, 'Units', 'centimeters', 'Position', [5 5 3.0 4.5]); % 30mm x 45mm
+
+tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
+nexttile;
+
+% BarScatterCompare: struct input = 1D comparison, no legend
+[~, ~, Bars, ErrorBars] = UniExp.BarScatterCompare(Groups, false);
+
+ax = gca;
+ax.FontSize = 6;
+
+% 设置条形和误差条边框粗细
+for b = Bars(:)'
+	b.LineWidth = 1;
+end
+for eb = ErrorBars.Object(:)'
+	eb.LineWidth = 1;
 end
 
-swarmchart(ax, ones(size(xNaiveAdj)), xNaiveAdj, 24, 'filled');
-swarmchart(ax, 2*ones(size(xTranAdj)),  xTranAdj,  24, 'filled');
-
-ax.XLim = [0.5 2.5];
-ax.XTick = [1 2];
-ax.XTickLabel = {sprintf('Naive (n=%d)', numel(xNaive)), sprintf('Transfer (n=%d)', numel(xTran))};
-ylabel(ax, 'Baseline-adjusted per-mouse slope');
-title(ax, 'Growth slope (LightWater, baseline-adjusted)');
+ylabel(ax, 'Normalized slope', 'FontSize', 6);
+title(ax, '💡💧 slope', 'FontSize', 6);
 box(ax,'on');
 
-
-% p-value line (via MATLAB.Graphics.PLine) — use simplified model group-effect p-value
+% p-value line (via MATLAB.Graphics.PLine) — use ErrorBars as descriptor object
 pAnnot = statsOut.SimpleModel.PValue;
-if isfinite(pAnnot) && ~isempty(xNaiveAdj) && ~isempty(xTranAdj)
-	S = scatter(ax, [ones(numel(xNaiveAdj),1); 2*ones(numel(xTranAdj),1)], [xNaiveAdj(:); xTranAdj(:)], ...
-		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-	try
-		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-	catch
+if isfinite(pAnnot) && height(ErrorBars) >= 2
+	pText = "";
+	if pAnnot < 0.05
+		pText = "*";
 	end
-	Descriptors = table(S, 0, 0, "ANCOVA p=" + sprintf('%.3g', pAnnot), 0, ...
-		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-	try
-		MATLAB.Graphics.PLine(Descriptors);
-	catch
-	end
-	try
-		delete(S);
-	catch
+	if strlength(pText) > 0
+		% Use ErrorBars table: two different Objects, each with Index=1
+		Descriptors = table(ErrorBars.Object(1), ErrorBars.Object(2), 1, 1, pText, 0, ...
+			'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
+		try
+			[~, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+			for pt = pTexts(:)'
+				pt.FontSize = 6;
+			end
+		catch
+		end
 	end
 end
 
@@ -255,7 +255,7 @@ try
 catch
 end
 
-svgPath = fullfile(outDirUNC, 'Fig3_1d_GrowthSlope.svg');
+svgPath = fullfile(outDirUNC, 'English_Fig1D_GrowthSlope.svg');
 try
 	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', svgPath);

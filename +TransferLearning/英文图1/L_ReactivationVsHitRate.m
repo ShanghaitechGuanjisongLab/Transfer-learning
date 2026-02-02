@@ -1,15 +1,16 @@
-% Fig3.2F: P(T|L) vs Transfer hit rate (split by layer)
+% 英文图1L: Reactivation rate vs Transfer hit rate (split by layer)
 %
-% P(T|L): Transfer LightWater active at 1s | Learned AudioWater active at 1s
+% Reactivation rate = P(Transfer active | Learned active) at 1s
 % Sessions (pure):
-% - Learned AudioWater: last pure session (forbid LightWater)
-% - Transfer LightWater: first pure session (forbid AudioWater)
-% Behavior: Transfer hit rate in the chosen Transfer session (trial-level)
+% - Learned AudioWater: last pure session
+% - Transfer LightWater: first pure session
+% Behavior: Transfer hit rate in the chosen Transfer session
 %
 % Execution:
-%   TransferLearning.Fig32.F_PTgivenLA_vsTransferHitRate
+%   TransferLearning.英文图1.L_ReactivationVsHitRate
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+svgName = "English_Fig1L_ReactivationVsHitRate.svg";
 
 % --- ensure project loaded
 try
@@ -29,17 +30,15 @@ end
 
 R = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer();
 if isempty(R)
-	error('Fig32F:Empty', 'No valid mice for P(T|L).');
+	error('Fig1L:Empty', 'No valid mice for Reactivation rate.');
 end
 
 layerNames = string(["MOp2/3","MOp5"]);
 
-% UNC must be reachable; no fallback
-outDir = iSelectOutDir(outDirUNC);
-svgName = "Fig3_2f_PTgivenLA_vsTransferHitRate_2panels.svg";
+f = figure('Color','w', 'Name','English Fig1L Reactivation vs Hit rate');
+f.Units = 'centimeters';
+f.Position(3:4) = [6.0, 4.5]; % 60mm x 45mm
 
-f = figure('Color','w', 'Name','P(T|L) vs Transfer hit rate');
-MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 axesList = gobjects(numel(layerNames), 1);
 
@@ -68,21 +67,29 @@ for iZ = 1:numel(layerNames)
 		[rho, p] = corr(x(mask), y(mask), 'type','Spearman');
 	end
 
-	scatter(ax, x(mask), y(mask), 50, 'filled');
+	scatter(ax, x(mask), y(mask), 15, [0 0.4470 0.7410], 'filled');
 	if nnz(mask) >= 2 && std(x(mask)) > 0
 		pFit = polyfit(x(mask), y(mask), 1);
 		xFit = [min(x(mask)) max(x(mask))];
 		yFit = polyval(pFit, xFit);
-		plot(ax, xFit, yFit, '-', 'LineWidth', 1.5);
+		plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
 	end
 	grid(ax,'on');
 	box(ax,'off');
-	xlim(ax, [0 1]);
-	ylim(ax, [0 1]);
-	title(ax, sprintf('%s  n=%d', zl, nnz(mask)), 'Interpreter','none');
+	title(ax, sprintf('%s n=%d', zl, nnz(mask)), 'FontSize', 6);
 	if isfinite(p)
-		text(ax, 0.02, 0.98, sprintf('rho=%.2f\np=%.3g', rho, p), 'Units','normalized', ...
-			'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6, 'Interpreter','none');
+		% Convert p to asterisk
+		if p < 0.001
+			pText = "***";
+		elseif p < 0.01
+			pText = "**";
+		elseif p < 0.05
+			pText = "*";
+		else
+			pText = "";
+		end
+		text(ax, 0.02, 0.98, sprintf('r=%.2f%s', rho, pText), 'Units','normalized', ...
+			'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
 	end
 	if iZ == 2
 		try
@@ -93,37 +100,34 @@ for iZ = 1:numel(layerNames)
 	end
 end
 
+% Unify axes limits
 try
 	MATLAB.Graphics.UnifyAxesLims(axesList, @xlim);
 	MATLAB.Graphics.UnifyAxesLims(axesList, @ylim);
 catch
 end
 
-xlabel(TL, 'P(T|L) at 1 s');
-ylabel(TL, 'Transfer hit rate (first pure session)');
-sgtitle(TL, 'P(T|L) vs Transfer hit rate', 'Interpreter','none');
+xlabel(TL, 'Reactivation rate', 'FontSize', 6);
+ylabel(TL, '💡💧 hit rate', 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
+title(TL, 'Reactivation vs behavior', 'FontSize', 6);
 
 % Font size
 for iA = 1:numel(axesList)
 	axesList(iA).FontSize = 6;
 end
 
-svgPath = fullfile(outDir, svgName);
+% Export
 try
-	TransferLearning.PrintFigure(f, svgPath);
-catch ME
-	rethrow(ME);
+	if ~isfolder(outDirUNC)
+		mkdir(outDirUNC);
+	end
+catch
 end
 
-%% local helpers
-
-function outDir = iSelectOutDir(outDirUNC)
-	outDir = outDirUNC;
-	try
-		if ~isfolder(outDir)
-			mkdir(outDir);
-		end
-	catch ME
-		error('Fig32:UNCUnreachable', 'UNC path not accessible: %s\n%s', outDirUNC, ME.message);
-	end
+svgPath = fullfile(outDirUNC, svgName);
+try
+	TransferLearning.PrintFigure(f, svgPath);
+	fprintf('Wrote: %s\n', svgPath);
+catch ME
+	warning(ME.identifier, 'Export failed: %s', ME.message);
 end

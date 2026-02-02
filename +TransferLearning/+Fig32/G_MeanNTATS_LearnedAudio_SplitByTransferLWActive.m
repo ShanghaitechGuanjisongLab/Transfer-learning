@@ -140,9 +140,10 @@ try
 catch
 end
 
+ax.FontSize = 6;
 xlabel(ax, 'Time (s)');
-ylabel(ax, 'NTATS (z-score)');
-title(ax, 'Mean NTATS');
+ylabel(ax, 'z-score');
+title(ax, 'Mean response');
 box(ax,'off');
 grid(ax,'on');
 
