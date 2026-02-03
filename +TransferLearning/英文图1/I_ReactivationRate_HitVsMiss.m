@@ -9,7 +9,6 @@
 %   TransferLearning.英文图1.K_ReactivationRate_HitVsMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1K_ReactivationRate_HitVsMiss.svg";
 
 % --- ensure project loaded
 try
@@ -42,6 +41,8 @@ miss5 = R.ProbMiss5;
 hit = nanmean([hit23, hit5], 2);
 miss = nanmean([miss23, miss5], 2);
 mask = isfinite(hit) & isfinite(miss);
+%% 
+svgName = "English_Fig1I_ReactivationRate_HitVsMiss.svg";
 
 f = figure('Color','w', 'Name','English Fig1K Reactivation rate Hit vs Miss');
 f.Units = 'centimeters';
@@ -67,7 +68,7 @@ scatter(ax, ones(nnz(mask),1), hit(mask), 15, [0 0.4470 0.7410], 'filled');
 scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, [0 0.4470 0.7410], 'filled');
 set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 ylim(ax, [0 1]);
-grid(ax,'on');
+grid(ax,'off');
 box(ax,'off');
 ax.FontSize = 6;
 ylabel(ax, 'Reactivation rate', 'FontSize', 6);
