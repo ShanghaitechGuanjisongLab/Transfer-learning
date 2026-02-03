@@ -37,17 +37,15 @@ catch
     error('AE_Combined:MissingE', 'Could not find Fig3_1e_FirstSessionPerformance_AudioWater_Raw in base workspace. Run E_FirstSessionPerformance_AudioWater first.');
 end
 
-% Extract per-mouse performance vectors
+% Extract per-mouse performance vectors (keep only LightWater)
 naiveA = double(rawA.FirstPerformance(rawA.Group=="Naive"));
 tranA  = double(rawA.FirstPerformance(rawA.Group=="Transfer"));
-naiveE = double(rawE.FirstPerformance(rawE.Group=="Naive"));
-tranE  = double(rawE.FirstPerformance(rawE.Group=="Transfer"));
 
 % Build Groups table for UniExp.BarScatterCompare (rows = Stimulus)
-% RowNames use emoji: LightWater -> 💡💧, AudioWater -> 🔊💧
-colNaive = {naiveA; naiveE};
-colTran  = {tranA;  tranE};
-stimNames = ["💡💧"; "🔊💧"];
+% RowNames use emoji: LightWater -> 💡💧 (only LightWater kept)
+colNaive = {naiveA};
+colTran  = {tranA};
+stimNames = ["💡💧"];
 Groups = table(colNaive, colTran, 'VariableNames', {'Naive','Transfer'}, 'RowNames', cellstr(stimNames));
 Groups.Properties.DimensionNames = {'Stimulus','Cohort'};
 
@@ -67,12 +65,20 @@ nexttile;
 % 使用 AsteriskThreshold 自动将 p<0.05 显示为星号
 [~, Optional] = UniExp.BarScatterCompare(Groups, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax = gca;
-ax.FontSize = 6;
+ax.FontSize = 12;
+
+% Use X axis to label Naive/Transfer and remove legend if present
+try
+    ax.XTick = [1, 2];
+    ax.XTickLabel = {'Naive', 'Transfer'};
+    legend(ax, 'off');
+catch
+end
 
 % 设置星号字体为 6pt
 if isfield(Optional, 'MultiCompare') && ismember('PText', Optional.MultiCompare.Properties.VariableNames)
     for pt = Optional.MultiCompare.PText(:)'
-        pt.FontSize = 6;
+        pt.FontSize = 12;
     end
 end
 
@@ -87,8 +93,8 @@ for eb = errorBars(:)'
 end
 
 % Cosmetic
-ylabel(ax, 'Hit rate', 'FontSize', 6);
-title(ax, 'Session#1 hit rate', 'FontSize', 6);
+ylabel(ax, 'Hit rate', 'FontSize', 12);
+title(ax, 'Session#1 hit rate', 'FontSize', 12);
 box(ax,'on');
 
 % Export SVG

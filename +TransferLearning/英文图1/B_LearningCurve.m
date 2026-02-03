@@ -98,9 +98,9 @@ nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 % --- 4) Plot
 f = figure('Color','w', 'Name', 'Fig3.1b Learning curve (LightWater)'); %[output:5c266b7f]
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5, 4.5]; % 30mm x 45mm %[output:5c266b7f]
+f.Position(3:4) = [9, 9]; % doubled size (was 4.5 x 4.5 cm)
 ax = axes(f); %[output:5c266b7f]
-ax.FontSize = 6; %[output:5c266b7f]
+ax.FontSize = 12; %[output:5c266b7f]
 hold(ax,'on'); %[output:5c266b7f]
 axes(ax); %[output:5c266b7f]
 
@@ -117,18 +117,18 @@ y1_at2 = meanMat(2, 1); % Naive at session 2
 y2_at2 = meanMat(2, 2); % Transfer at session 2
 yMid = (y1_at2 + y2_at2) / 2;
 yHalfLen = abs(y1_at2 - y2_at2) / 4; % 竖线长度减半
-plot(ax, [2 2], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off'); %[output:5c266b7f]
-text(ax, 2.1, yMid, '*', 'FontSize', 6, ... %[output:5c266b7f]
-	'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'HandleVisibility', 'off'); %[output:5c266b7f]
+	plot(ax, [2 2], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off'); %[output:5c266b7f]
+	text(ax, 2.1, yMid, '*', 'FontSize', 12, ... %[output:5c266b7f]
+		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'HandleVisibility', 'off'); %[output:5c266b7f]
 
 labels = {'Naive', 'Transfer'};
-if numel(Patches) >= 2
-	lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2))); %[output:5c266b7f]
-	lg.FontSize = 6; %[output:5c266b7f]
-else
-	lg = legend(ax, labels, 'Location', 'best');
-	lg.FontSize = 6;
-end
+    if numel(Patches) >= 2
+    	lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2))); %[output:5c266b7f]
+    	lg.FontSize = 12; %[output:5c266b7f]
+    else
+    	lg = legend(ax, labels, 'Location', 'best');
+    	lg.FontSize = 12;
+    end
 
 % Set legend title to emoji (remove figure main title)
 try
@@ -138,8 +138,8 @@ catch
     % older MATLAB may not support lg.Title
 end
 
-xlabel(ax, 'Session', 'FontSize', 6); %[output:5c266b7f]
-ylabel(ax, 'Hit rate', 'FontSize', 6); %[output:5c266b7f]
+xlabel(ax, 'Session', 'FontSize', 12); %[output:5c266b7f]
+ylabel(ax, 'Hit rate', 'FontSize', 12); %[output:5c266b7f]
 ylim(ax, [0 1]); %[output:5c266b7f]
 box(ax, 'off'); %[output:5c266b7f]
 % title removed per user request

@@ -198,10 +198,11 @@ end
 %% 
 
 % --- 5) Plot using UniExp.BarScatterCompare (1D syntax: struct, no legend)
-Groups = struct('N', {xNaiveAdj(:)}, 'T', {xTranAdj(:)});
+% Use descriptive group fields and label as Naive / Trans.
+Groups = struct('Naive', {xNaiveAdj(:)}, 'Trans', {xTranAdj(:)});
 
 f = figure('Color','w', 'Name', 'Fig3.1d Growth slope');
-set(f, 'Units', 'centimeters', 'Position', [5 5 3.0 4.5]); % 30mm x 45mm
+set(f, 'Units', 'centimeters', 'Position', [5 5 3.0 2.25]); % keep width, height halved (was 4.5 cm)
 
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
@@ -211,6 +212,12 @@ nexttile;
 
 ax = gca;
 ax.FontSize = 6;
+% Use explicit XTick labels instead of single-letter abbreviations
+try
+	ax.XTick = 1:2;
+	ax.XTickLabel = {'Naive', 'Trans.'};
+catch
+end
 
 % 设置条形和误差条边框粗细
 for b = Bars(:)'

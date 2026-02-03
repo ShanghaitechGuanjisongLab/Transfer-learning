@@ -139,13 +139,11 @@ xsPlot = xsSec(xMask);
 
 xlabel(Layout, 'Time', 'FontSize', 12);
 ylabel(Layout, sprintf('Overall pre-activation: %.1f%%', preActivationRate), 'FontSize', 12);
-
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
 CB.Label.FontSize = 12;
 CB.FontSize = 12;
-
 % xtick/xticklabel: 只保留 0→💡, 1→💧
 for iA = 1:numel(Axes)
 	A = Axes(iA);
