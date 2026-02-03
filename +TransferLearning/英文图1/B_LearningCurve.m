@@ -98,7 +98,7 @@ nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 % --- 4) Plot
 f = figure('Color','w', 'Name', 'Fig3.1b Learning curve (LightWater)'); %[output:5c266b7f]
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 9]; % doubled size (was 4.5 x 4.5 cm)
+f.Position(3:4) = [9, 8]; % 90mm x 80mm
 ax = axes(f); %[output:5c266b7f]
 ax.FontSize = 12; %[output:5c266b7f]
 hold(ax,'on'); %[output:5c266b7f]

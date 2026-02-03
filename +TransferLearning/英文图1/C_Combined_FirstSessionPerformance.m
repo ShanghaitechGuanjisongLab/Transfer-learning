@@ -41,31 +41,26 @@ end
 naiveA = double(rawA.FirstPerformance(rawA.Group=="Naive"));
 tranA  = double(rawA.FirstPerformance(rawA.Group=="Transfer"));
 
-% Build Groups table for UniExp.BarScatterCompare (rows = Stimulus)
-% RowNames use emoji: LightWater -> 💡💧 (only LightWater kept)
-colNaive = {naiveA};
-colTran  = {tranA};
-stimNames = ["💡💧"];
-Groups = table(colNaive, colTran, 'VariableNames', {'Naive','Transfer'}, 'RowNames', cellstr(stimNames));
-Groups.Properties.DimensionNames = {'Stimulus','Cohort'};
+% Prepare data as a simple cell array (one cell per cohort) so BarScatterCompare
+% draws a single comparison line between group 1 (Naive) and group 2 (Transfer).
+DataCell = {naiveA, tranA}; % {Naive, Transfer}
 
-% CompareGroup: compare Naive vs Transfer within each stimulus (2D pairs)
-stimPairs = [stimNames, stimNames];
-cohortPairs = repmat(["Naive","Transfer"], numel(stimNames), 1);
-groupPair2D = table(stimPairs, cohortPairs, 'VariableNames', Groups.Properties.DimensionNames);
-CompareGroup = table(groupPair2D, 'VariableNames', {'GroupPair'});
+% CompareGroup: numeric pair comparing group 1 vs 2 (ensures a single P-line)
+CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+%% 
 
 % --- Plot
 f = figure('Color','w', 'Name', 'Fig3.1a/e First session performance (combined)');
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5, 4.5]; % 45 x 45 mm
+f.Position(3:4) = [3.0, 2.0]; % 30 x 20 mm
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
 
 % 使用 AsteriskThreshold 自动将 p<0.05 显示为星号
-[~, Optional] = UniExp.BarScatterCompare(Groups, false, CompareGroup, 'AsteriskThreshold', 0.05);
+% Capture Bars/ErrorBars so we can style colors and spacing to match Fig1B
+[~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax = gca;
-ax.FontSize = 12;
+ax.FontSize = 6;
 
 % Use X axis to label Naive/Transfer and remove legend if present
 try
@@ -78,25 +73,54 @@ end
 % 设置星号字体为 6pt
 if isfield(Optional, 'MultiCompare') && ismember('PText', Optional.MultiCompare.Properties.VariableNames)
     for pt = Optional.MultiCompare.PText(:)'
-        pt.FontSize = 12;
+        pt.FontSize = 6;
     end
 end
 
-% 设置条形和误差条边框粗细
-bars = findobj(ax, 'Type', 'Bar');
-for b = bars(:)'
-    b.LineWidth = 1;
+% 设置条形颜色与间距以匹配 Fig1B 线条颜色（红色=Naive，蓝色=Transfer）
+colorNaive = [1 0 0]; % 红色，与B图 Naive 线条一致
+colorTrans = [0 0 1]; % 蓝色，与B图 Transfer 线条一致
+try
+    if numel(Bars) == 1
+        Bars.FaceColor = 'flat';
+        nBars = numel(Bars.YData); % number of bars drawn
+        % Build CData by repeating the two colors
+        reps = ceil(nBars/2);
+        Bars.CData = repmat([colorNaive; colorTrans], reps, 1);
+        Bars.CData = Bars.CData(1:nBars, :);
+        Bars.BarWidth = 0.5; % narrower bars -> visually more space
+        Bars.LineWidth = 0.5;
+        Bars.FaceAlpha = 1/3; % 透明度
+    else
+        % If Bars is array, assign colors per series
+        if numel(Bars) >= 2
+            Bars(1).FaceColor = colorNaive;
+            Bars(2).FaceColor = colorTrans;
+            Bars(1).LineWidth = 0.5;
+            Bars(2).LineWidth = 0.5;
+            Bars(1).FaceAlpha = 1/3;
+            Bars(2).FaceAlpha = 1/3;
+        else
+            Bars.FaceColor = colorNaive;
+            Bars.LineWidth = 0.5;
+            Bars.FaceAlpha = 1/3;
+        end
+    end
+catch
 end
-errorBars = findobj(ax, 'Type', 'ErrorBar');
-for eb = errorBars(:)'
-    eb.LineWidth = 1;
+% set errorbar linewidths
+for eb = ErrorBars.Object(:)'
+    eb.LineWidth = 0.5;
+end
+% expand x-limits slightly to increase inter-bar spacing appearance
+try
+    ax.XLim = [0.5, 2.5];
 end
 
 % Cosmetic
-ylabel(ax, 'Hit rate', 'FontSize', 12);
-title(ax, 'Session#1 hit rate', 'FontSize', 12);
-box(ax,'on');
-
+ylabel(ax, 'Hit rate', 'FontSize', 6);
+title(ax, 'Block#1', 'FontSize', 6);
+box off
 % Export SVG
 svgPath = fullfile(outDirUNC, 'English_Fig1C_FirstSessionPerformance.svg');
 try

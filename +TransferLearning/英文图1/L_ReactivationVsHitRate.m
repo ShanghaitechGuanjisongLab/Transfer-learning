@@ -1,4 +1,4 @@
-% 英文图1L: Reactivation rate vs Transfer hit rate (split by layer)
+% 英文图1L: Reactivation rate vs Transfer hit rate (layers merged)
 %
 % Reactivation rate = P(Transfer active | Learned active) at 1s
 % Sessions (pure):
@@ -33,87 +33,60 @@ if isempty(R)
 	error('Fig1L:Empty', 'No valid mice for Reactivation rate.');
 end
 
-layerNames = string(["MOp2/3","MOp5"]);
+% 合并2/3和5层数据：取各鼠每层的均值
+x23 = R.Prob23;
+x5 = R.Prob5;
+x = nanmean([x23, x5], 2);
+y = R.TransferHitRate;
+mask = isfinite(x) & isfinite(y);
 
 f = figure('Color','w', 'Name','English Fig1L Reactivation vs Hit rate');
 f.Units = 'centimeters';
-f.Position(3:4) = [6.0, 4.5]; % 60mm x 45mm
+f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
 
-TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
-axesList = gobjects(numel(layerNames), 1);
-
-for iZ = 1:numel(layerNames)
-	zl = layerNames(iZ);
-	ax = nexttile(TL, iZ);
-	axesList(iZ) = ax;
-	hold(ax,'on');
-	try
-		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-			ax.Toolbar.Visible = 'off';
-		end
-	catch
-	end
-
-	if zl == "MOp2/3"
-		x = R.Prob23;
-	else
-		x = R.Prob5;
-	end
-	y = R.TransferHitRate;
-	mask = isfinite(x) & isfinite(y);
-
-	rho = NaN; p = NaN;
-	if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
-		[rho, p] = corr(x(mask), y(mask), 'type','Spearman');
-	end
-
-	scatter(ax, x(mask), y(mask), 15, [0 0.4470 0.7410], 'filled');
-	if nnz(mask) >= 2 && std(x(mask)) > 0
-		pFit = polyfit(x(mask), y(mask), 1);
-		xFit = [min(x(mask)) max(x(mask))];
-		yFit = polyval(pFit, xFit);
-		plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
-	end
-	grid(ax,'on');
-	box(ax,'off');
-	title(ax, sprintf('%s n=%d', zl, nnz(mask)), 'FontSize', 6);
-	if isfinite(p)
-		% Convert p to asterisk
-		if p < 0.001
-			pText = "***";
-		elseif p < 0.01
-			pText = "**";
-		elseif p < 0.05
-			pText = "*";
-		else
-			pText = "";
-		end
-		text(ax, 0.02, 0.98, sprintf('r=%.2f%s', rho, pText), 'Units','normalized', ...
-			'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
-	end
-	if iZ == 2
-		try
-			ax.YAxis.Visible = 'off';
-		catch
-			ax.YTickLabel = [];
-		end
-	end
-end
-
-% Unify axes limits
+ax = axes(f);
+hold(ax,'on');
 try
-	MATLAB.Graphics.UnifyAxesLims(axesList, @xlim);
-	MATLAB.Graphics.UnifyAxesLims(axesList, @ylim);
+	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+		ax.Toolbar.Visible = 'off';
+	end
 catch
 end
 
-xlabel(TL, 'Reactivation rate', 'FontSize', 6);
-ylabel(TL, '💡💧 hit rate', 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
-title(TL, 'Reactivation vs behavior', 'FontSize', 6);
+rho = NaN; p = NaN;
+if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
+	[rho, p] = corr(x(mask), y(mask), 'type','Spearman');
+end
 
-% Font size
-for iA = 1:numel(axesList)
-	axesList(iA).FontSize = 6;
+% 散点：空心圆，边框0.2
+scatter(ax, x(mask), y(mask), 15, [0 0.4470 0.7410], 'LineWidth', 0.2);
+
+% 拟合线：虚线
+if nnz(mask) >= 2 && std(x(mask)) > 0
+	pFit = polyfit(x(mask), y(mask), 1);
+	xFit = [min(x(mask)) max(x(mask))];
+	yFit = polyval(pFit, xFit);
+	plot(ax, xFit, yFit, '--', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
+end
+grid(ax,'on');
+box(ax,'off');
+ax.FontSize = 6;
+xlabel(ax, 'Reactivation rate', 'FontSize', 6);
+ylabel(ax, 'Hit rate', 'FontSize', 6);
+
+if isfinite(p)
+	% Convert p to asterisk
+	if p < 0.001
+		pText = "***";
+	elseif p < 0.01
+		pText = "**";
+	elseif p < 0.05
+		pText = "*";
+	else
+		pText = "";
+	end
+	text(ax, 0.02, 0.98, sprintf('r=%.2f%s n=%d', rho, pText, nnz(mask)), 'Units','normalized', ...
+		'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
 end
 
 % Export

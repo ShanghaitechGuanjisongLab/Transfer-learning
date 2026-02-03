@@ -202,7 +202,7 @@ end
 Groups = struct('Naive', {xNaiveAdj(:)}, 'Trans', {xTranAdj(:)});
 
 f = figure('Color','w', 'Name', 'Fig3.1d Growth slope');
-set(f, 'Units', 'centimeters', 'Position', [5 5 3.0 2.25]); % keep width, height halved (was 4.5 cm)
+set(f, 'Units', 'centimeters', 'Position', [5 5 3.0 2.0]); % 30mm x 20mm
 
 tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
 nexttile;
@@ -215,20 +215,34 @@ ax.FontSize = 6;
 % Use explicit XTick labels instead of single-letter abbreviations
 try
 	ax.XTick = 1:2;
-	ax.XTickLabel = {'Naive', 'Trans.'};
+	ax.XTickLabel = {'Naive', 'Transfer'};
 catch
 end
 
 % 设置条形和误差条边框粗细
 for b = Bars(:)'
-	b.LineWidth = 1;
+	b.LineWidth = 0.5;
 end
 for eb = ErrorBars.Object(:)'
-	eb.LineWidth = 1;
+	eb.LineWidth = 0.5;
 end
 
 ylabel(ax, 'Normalized slope', 'FontSize', 6);
-title(ax, '💡💧 slope', 'FontSize', 6);
+% remove main title (user requested)
+% title removed
+% Match bar colors to Fig1B lines (red/blue)
+colorNaive = [1, 0, 0];  % red
+colorTrans = [0, 0, 1];  % blue
+try
+	if numel(Bars) == 1
+		Bars.FaceColor = 'flat';
+		Bars.CData = [colorNaive; colorTrans];
+		Bars.BarWidth = 0.5; % narrower bars for larger gap
+		Bars.FaceAlpha = 1/3; % 透明度
+	end
+	ax.XLim = [0.5, 2.5];
+catch
+end
 box(ax,'on');
 
 % p-value line (via MATLAB.Graphics.PLine) — use ErrorBars as descriptor object
@@ -263,6 +277,7 @@ catch
 end
 
 svgPath = fullfile(outDirUNC, 'English_Fig1D_GrowthSlope.svg');
+box off
 try
 	TransferLearning.PrintFigure(f, svgPath);
 	fprintf('Wrote: %s\n', svgPath);

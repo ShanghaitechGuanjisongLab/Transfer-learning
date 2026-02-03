@@ -1,4 +1,4 @@
-% 英文图1K: Hit vs Miss Reactivation rate (per mouse, split by layer)
+% 英文图1K: Hit vs Miss Reactivation rate (per mouse, layers merged)
 %
 % Reactivation rate = P(Transfer active | Learned active) at 1s
 %   L = Learned AudioWater active at 1s
@@ -32,103 +32,83 @@ if isempty(R)
 	error('Fig1K:Empty', 'No valid mice for Reactivation rate Hit/Miss.');
 end
 
-layerNames = string(["MOp2/3","MOp5"]);
+% 合并2/3和5层数据：取各鼠每层的均值
+hit23 = R.ProbHit23;
+miss23 = R.ProbMiss23;
+hit5 = R.ProbHit5;
+miss5 = R.ProbMiss5;
+
+% 对每只鼠取两层均值（忽略NaN）
+hit = nanmean([hit23, hit5], 2);
+miss = nanmean([miss23, miss5], 2);
+mask = isfinite(hit) & isfinite(miss);
 
 f = figure('Color','w', 'Name','English Fig1K Reactivation rate Hit vs Miss');
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5, 4.5]; % 45mm x 45mm
+f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
 
-TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
-ylabel(TL, 'Reactivation rate', 'FontSize', 6);
-xlabel(TL, '💡💧', 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
+ax = axes(f);
+hold(ax,'on');
+try
+	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+		ax.Toolbar.Visible = 'off';
+	end
+catch
+end
 
-axesList = gobjects(numel(layerNames), 1);
+p = NaN;
+if nnz(mask) >= 4
+	p = signrank(hit(mask), miss(mask), 'tail','right');
+end
 
-for iZ = 1:numel(layerNames)
-	zl = layerNames(iZ);
-	ax = nexttile(TL, iZ);
-	axesList(iZ) = ax;
-	hold(ax,'on');
+Y = [hit(mask), miss(mask)];
+plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', [0.5 0.5 0.5]);
+scatter(ax, ones(nnz(mask),1), hit(mask), 15, [0 0.4470 0.7410], 'filled');
+scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, [0 0.4470 0.7410], 'filled');
+set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
+ylim(ax, [0 1]);
+grid(ax,'on');
+box(ax,'off');
+ax.FontSize = 6;
+ylabel(ax, 'Reactivation rate', 'FontSize', 6);
+
+% p-value line with asterisk (paired signrank) via MATLAB.Graphics.PLine
+if isfinite(p)
+	S = scatter(ax, [ones(nnz(mask),1); 2*ones(nnz(mask),1)], [hit(mask); miss(mask)], ...
+		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
 	try
-		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-			ax.Toolbar.Visible = 'off';
-		end
+		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 	catch
 	end
-
-	if zl == "MOp2/3"
-		hit = R.ProbHit23;
-		miss = R.ProbMiss23;
+	% Convert p to asterisk
+	if p < 0.001
+		pText = "***";
+	elseif p < 0.01
+		pText = "**";
+	elseif p < 0.05
+		pText = "*";
 	else
-		hit = R.ProbHit5;
-		miss = R.ProbMiss5;
+		pText = "n.s.";
 	end
-	mask = isfinite(hit) & isfinite(miss);
-	p = NaN;
-	if nnz(mask) >= 4
-		p = signrank(hit(mask), miss(mask), 'tail','right');
+	Descriptors = table(S, 0, 0, pText, 0, ...
+		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
+	try
+		[~, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+		for pt = pTexts(:)'
+			pt.FontSize = 6;
+		end
+	catch ME
+		warning('Fig1K:PLineFailed', 'MATLAB.Graphics.PLine failed:\n%s', getReport(ME, 'extended', 'hyperlinks','off'));
 	end
-
-	Y = [hit(mask), miss(mask)];
-	plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', [0.5 0.5 0.5]);
-	scatter(ax, ones(nnz(mask),1), hit(mask), 15, [0 0.4470 0.7410], 'filled');
-	scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, [0 0.4470 0.7410], 'filled');
-	set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
-	ylim(ax, [0 1]);
-	grid(ax,'on');
-	box(ax,'off');
-	title(ax, sprintf('%s n=%d', zl, nnz(mask)), 'FontSize', 6);
-	
-	% p-value line with asterisk (paired signrank) via MATLAB.Graphics.PLine
-	if isfinite(p)
-		S = scatter(ax, [ones(nnz(mask),1); 2*ones(nnz(mask),1)], [hit(mask); miss(mask)], ...
-			1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-		try
-			if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-			if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-			if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-		catch
-		end
-		% Convert p to asterisk
-		if p < 0.001
-			pText = "***";
-		elseif p < 0.01
-			pText = "**";
-		elseif p < 0.05
-			pText = "*";
-		else
-			pText = "n.s.";
-		end
-		Descriptors = table(S, 0, 0, pText, 0, ...
-			'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-		try
-			[~, pTexts] = MATLAB.Graphics.PLine(Descriptors);
-			for pt = pTexts(:)'
-				pt.FontSize = 6;
-			end
-		catch ME
-			warning('Fig1K:PLineFailed', 'MATLAB.Graphics.PLine failed:\n%s', getReport(ME, 'extended', 'hyperlinks','off'));
-		end
-		try
-			delete(S);
-		catch
-		end
-	end
-	if iZ == 2
-		try
-			ax.YAxis.Visible = 'off';
-		catch
-			ax.YTickLabel = [];
-		end
+	try
+		delete(S);
+	catch
 	end
 end
 
-title(TL, 'Reactivation (per mouse)', 'FontSize', 6);
-
-% Font size
-for iA = 1:numel(axesList)
-	axesList(iA).FontSize = 6;
-end
+title(ax, sprintf('n=%d', nnz(mask)), 'FontSize', 6);
 
 % Export
 try
