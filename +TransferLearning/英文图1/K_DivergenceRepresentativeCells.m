@@ -50,12 +50,7 @@ Ttrans.DateTime.TimeZone = '';
 dtTransT = groupsummary(Ttrans, "Mouse", "min", "DateTime");
 dtTransT.Properties.VariableNames{end} = 'DateTimeTransfer';
 
-% Get cells
-Cmeta = DS.Cells(:, ["CellUID","Mouse"]);
-Cmeta.Mouse = string(Cmeta.Mouse);
-
-% TrialSignals
-Ts = DS.TrialSignals;
+% Use QueryNTS DeltaF (per-trial signals)
 
 % --- 3) Calculate per-cell divergence and find best examples
 allCellDiv = [];
@@ -72,44 +67,78 @@ for iM = 1:height(dtTransT)
 		continue;
 	end
 	
-	% Get cells for this mouse
-	cellUIDs = uint64(Cmeta.CellUID(Cmeta.Mouse == m));
+	% Query per-trial DeltaF for this mouse/session
+	nts = [];
+	try
+		ntsCell = DS.QueryNTS(struct('Phase', 'Transfer', 'Stimulus', 'LightWater', 'Mouse', string(m)), UniExp.Flags.DeltaF, 1:24);
+		nts = ntsCell{1};
+	catch
+		nts = [];
+	end
+	if isempty(nts), continue; end
+	
+	% Keep only trials in this session
+	try
+		inTrial = ismember(uint64(nts.TrialUID), trialUIDs);
+		nts = nts(inTrial, :);
+	catch
+		continue;
+	end
+	if isempty(nts), continue; end
+	
+	cellUIDs = unique(uint64(nts.CellUID));
 	if isempty(cellUIDs), continue; end
 	
 	for iC = 1:numel(cellUIDs)
 		cid = cellUIDs(iC);
-		
-		% Extract signals for this cell
-		maskTs = (uint64(Ts.CellUID) == cid) & ismember(uint64(Ts.TrialUID), trialUIDs);
-		if sum(maskTs) < 4
+		rowsC = (uint64(nts.CellUID) == cid);
+		if sum(rowsC) < 4
 			continue;
 		end
 		
-		sig = double(Ts.ResampledSignal(maskTs, :));
-		uid = uint64(Ts.TrialUID(maskTs));
+		uid = uint64(nts.TrialUID(rowsC));
+		sig = double(nts.TrialSignal(rowsC, :));
 		
-		% Z-score normalize
-		mu = mean(sig(:, baseMask), 2, 'omitnan');
-		sd = std(sig(:, baseMask), 0, 2, 'omitnan');
-		sd(sd < eps) = 1;
-		Z = (sig - mu) ./ sd;
+		[tf, loc] = ismember(trialUIDs, uid);
+		if nnz(tf) < 4
+			continue;
+		end
 		
-		% Calculate divergence for this cell at 1s
-		vals1s = Z(:, idx1s);
+		% Use only trials present for this cell (ordered by trialUIDs)
+		sigOrdered = sig(loc(tf), :);
+		usedTrialUIDs = trialUIDs(tf);
+		if any(~isfinite(sigOrdered), 'all')
+			continue;
+		end
+		
+		vals1s = sigOrdered(:, idx1s);
 		if any(~isfinite(vals1s))
 			continue;
 		end
 		
-		% 排除：必须有至少一个回合在1s处超过基线+3σ（即Z>3）
-		if max(vals1s) <= kSigma
+		% Active threshold: baseline mean + 3*std (baseline = 1:24)
+		baseVals = sigOrdered(:, 1:24);
+		baseMu = mean(baseVals(:), 'omitnan');
+		baseSd = std(baseVals(:), 0, 'omitnan');
+		if ~isfinite(baseMu) || ~isfinite(baseSd)
+			continue;
+		end
+		if baseSd < eps
+			baseSd = 1;
+		end
+		thresh = baseMu + kSigma * baseSd;
+		if max(vals1s) <= thresh
 			continue;
 		end
 		
-		% Cell divergence = std across trials at 1s
-		cellDiv = std(vals1s, 'omitnan');
+		% Divergence for this cell using 3D input
+		cellDiv = TransferLearning.Divergence(reshape(sigOrdered, [1, size(sigOrdered, 1), size(sigOrdered, 2)]));
+		if ~isfinite(cellDiv)
+			continue;
+		end
 		
 		allCellDiv(end+1) = cellDiv;
-		allCellData{end+1} = struct('CellUID', cid, 'Mouse', m, 'Z', Z, 'Vals1s', vals1s, 'TrialUIDs', uid);
+		allCellData{end+1} = struct('CellUID', cid, 'Mouse', m, 'Z', sigOrdered, 'Vals1s', vals1s, 'TrialUIDs', usedTrialUIDs);
 	end
 end
 

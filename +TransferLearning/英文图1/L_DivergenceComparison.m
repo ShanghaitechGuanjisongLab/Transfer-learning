@@ -1,8 +1,9 @@
 % 英文图1L：Naive vs Transfer 散度比较
 %
 % 条形图比较初始光水（Naive）和迁移光水（Transfer）的散度
+% Naive 组：LightAudioBaseline + LAInterspersed（剔除 Naive 阶段掺 AudioWater 的鼠）
 % 以鼠为单位，合并2/3层和5层
-% 排除1s处没有任何回合超过基线+3σ的细胞
+% 不筛选活跃细胞，使用最新散度算法
 %
 % Execution:
 %   run('D:\Users\张天夫\Documents\MATLAB\Transfer-learning\+TransferLearning\英文图1\L_DivergenceComparison.m')
@@ -44,14 +45,39 @@ if isempty(idx1s)
 	[~, idx1s] = min(abs(xsSec - 1));
 end
 
-% --- 1) Compute divergence for Naive LightWater (from LightAudioBaseline)
-DS_naive = TransferLearning.LightAudioBaseline();
-[naive_mice, naive_per_mouse] = iComputeDivergencePerMouse(DS_naive, "Naive", "LightWater", baseMask, idx1s, kSigma);
+%% --- 1) Prepare data (run once)
+if ~exist('LData', 'var') || ~isstruct(LData)
+	LData = struct();
+end
+
+if ~isfield(LData, 'NaiveA') || ~isfield(LData, 'NaiveB') || ~isfield(LData, 'Transfer')
+	DS_naive = TransferLearning.LightAudioBaseline();
+	LData.NaiveA = iPrepareMouseCellTrials(DS_naive, "Naive", "LightWater", string.empty(0,1));
+
+	DS_lai = TransferLearning.LAInterspersed();
+	badMiceLAI = iFindMiceWithAudioWaterInPhase(DS_lai, "Naive");
+	LData.BadMiceLAI = badMiceLAI;
+	if ~isempty(badMiceLAI)
+		fprintf('Fig1L: LAInterspersed excluded %d mice with AudioWater mixed into Naive phase.\n', numel(badMiceLAI));
+		fprintf('  Excluded mice: %s\n', char(strjoin(string(badMiceLAI), ', ')));
+	end
+	LData.NaiveB = iPrepareMouseCellTrials(DS_lai, "Naive", "LightWater", badMiceLAI);
+
+	DS_transfer = TransferLearning.AudioLightBaseline();
+	LData.Transfer = iPrepareMouseCellTrials(DS_transfer, "Transfer", "LightWater", string.empty(0,1));
+end
+
+%% --- 2) Compute divergence (fast re-run)
+[naive_mice_a, naive_per_mouse_a] = iComputeDivergenceFromPrepared(LData.NaiveA);
+[naive_mice_b, naive_per_mouse_b] = iComputeDivergenceFromPrepared(LData.NaiveB);
+
+% Combine and collapse by mouse (mean if duplicates)
+naive_mice_all = [naive_mice_a; naive_mice_b];
+naive_vals_all = [naive_per_mouse_a; naive_per_mouse_b];
+[naive_mice, naive_per_mouse] = iCollapseByMouse(naive_mice_all, naive_vals_all);
 fprintf('Naive: n=%d mice, mean=%.4f, std=%.4f\n', numel(naive_mice), mean(naive_per_mouse,'omitnan'), std(naive_per_mouse,'omitnan'));
 
-% --- 2) Compute divergence for Transfer LightWater (from AudioLightBaseline)
-DS_transfer = TransferLearning.AudioLightBaseline();
-[transfer_mice, transfer_per_mouse] = iComputeDivergencePerMouse(DS_transfer, "Transfer", "LightWater", baseMask, idx1s, kSigma);
+[transfer_mice, transfer_per_mouse] = iComputeDivergenceFromPrepared(LData.Transfer);
 fprintf('Transfer: n=%d mice, mean=%.4f, std=%.4f\n', numel(transfer_mice), mean(transfer_per_mouse,'omitnan'), std(transfer_per_mouse,'omitnan'));
 
 % Remove NaN
@@ -165,10 +191,10 @@ assignin('base', 'Fig1L_DivergenceSummary', Summary);
 
 %% --- Local helper functions
 
-function [mice, divPerMouse] = iComputeDivergencePerMouse(DS, phaseName, stimulusName, baseMask, idx1s, kSigma)
-% Compute divergence per mouse, only using cells with at least one trial > kSigma at 1s
-	mice = string([]);
-	divPerMouse = [];
+function dataOut = iPrepareMouseCellTrials(DS, phaseName, stimulusName, excludeMice)
+% Prepare per-mouse CellTrialTimes tensors for divergence
+	dataOut = struct('Mice', string.empty(0,1), 'CellTrialTimes', {{}}, 'Source', class(DS));
+	excludeMice = string(excludeMice);
 	
 	% Get trials for this phase/stimulus
 	try
@@ -180,6 +206,10 @@ function [mice, divPerMouse] = iComputeDivergencePerMouse(DS, phaseName, stimulu
 		return;
 	end
 	T.Mouse = string(T.Mouse);
+	if ~isempty(excludeMice)
+		keep = ~ismember(T.Mouse, excludeMice);
+		T = T(keep, :);
+	end
 	T.DateTime = datetime(T.DateTime);
 	T.DateTime.TimeZone = '';
 	
@@ -187,12 +217,7 @@ function [mice, divPerMouse] = iComputeDivergencePerMouse(DS, phaseName, stimulu
 	dtT = groupsummary(T, "Mouse", "min", "DateTime");
 	dtT.Properties.VariableNames{end} = 'DateTimeTarget';
 	
-	% Get cells
-	Cmeta = DS.Cells(:, ["CellUID","Mouse"]);
-	Cmeta.Mouse = string(Cmeta.Mouse);
-	
-	% TrialSignals
-	Ts = DS.TrialSignals;
+	% Use QueryNTS to get per-trial DeltaF signals
 	
 	for iM = 1:height(dtT)
 		m = dtT.Mouse(iM);
@@ -204,65 +229,113 @@ function [mice, divPerMouse] = iComputeDivergencePerMouse(DS, phaseName, stimulu
 		if numel(trialUIDs) < 2
 			continue;
 		end
+		trialUIDs = unique(trialUIDs(:));
+		trialUIDs = sort(trialUIDs);
 		
-		% Get cells for this mouse
-		cellUIDs = uint64(Cmeta.CellUID(Cmeta.Mouse == m));
-		if isempty(cellUIDs)
+		% Build cell x trial x time tensor (DeltaF)
+		cellTraces = {};
+		try
+			ntsCell = DS.QueryNTS(struct('Stimulus', string(stimulusName), 'Mouse', string(m)), UniExp.Flags.DeltaF, 1:24);
+			nts = ntsCell{1};
+		catch
+			nts = [];
+		end
+		if isempty(nts)
 			continue;
 		end
 		
-		% Collect Z-scored values at 1s for active cells
-		allCellVals1s = [];
+		try
+			inTrial = ismember(uint64(nts.TrialUID), trialUIDs);
+			nts = nts(inTrial, :);
+		catch
+			continue;
+		end
+		if isempty(nts)
+			continue;
+		end
 		
+		cellUIDs = unique(uint64(nts.CellUID));
 		for iC = 1:numel(cellUIDs)
 			cid = cellUIDs(iC);
-			
-			% Extract signals for this cell
-			maskTs = (uint64(Ts.CellUID) == cid) & ismember(uint64(Ts.TrialUID), trialUIDs);
-			if sum(maskTs) < 2
+			rowsC = (uint64(nts.CellUID) == cid);
+			if sum(rowsC) < numel(trialUIDs)
 				continue;
 			end
 			
-			sig = double(Ts.ResampledSignal(maskTs, :));
+			uid = uint64(nts.TrialUID(rowsC));
+			sig = double(nts.TrialSignal(rowsC, :));
 			
-			% Z-score normalize
-			mu = mean(sig(:, baseMask), 2, 'omitnan');
-			sd = std(sig(:, baseMask), 0, 2, 'omitnan');
-			sd(sd < eps) = 1;
-			Z = (sig - mu) ./ sd;
-			
-			% Get values at 1s
-			vals1s = Z(:, idx1s);
-			if any(~isfinite(vals1s))
+			[~, loc] = ismember(trialUIDs, uid);
+			if any(loc == 0)
 				continue;
 			end
 			
-			% Filter: at least one trial > kSigma
-			if max(vals1s) <= kSigma
+			sigOrdered = sig(loc, :);
+			if any(~isfinite(sigOrdered), 'all')
 				continue;
 			end
-			
-			allCellVals1s = [allCellVals1s; vals1s'];  % each row = one cell, cols = trials
+			cellTraces{end+1, 1} = sigOrdered; % [nTrials x nTime]
 		end
 		
-		if size(allCellVals1s, 1) < 5  % need at least 5 active cells
+		if isempty(cellTraces)
 			continue;
 		end
 		
-		% Compute divergence using TransferLearning.Divergence formula
-		% D = sqrt(mean(var(CellTrials,[],2))) / norm(mean(CellTrials,2))
-		cellVar = var(allCellVals1s, 0, 2, 'omitnan');
-		absDiv = sqrt(mean(cellVar, 'omitnan'));
-		centroid = mean(allCellVals1s, 2, 'omitnan');
-		d0 = norm(centroid);
+		nCells = numel(cellTraces);
+		nTrials = size(cellTraces{1}, 1);
+		nTime = size(cellTraces{1}, 2);
+		CellTrialTimes = nan(nCells, nTrials, nTime);
+		for iC = 1:nCells
+			CellTrialTimes(iC, :, :) = cellTraces{iC};
+		end
 		
-		if isfinite(absDiv) && isfinite(d0) && d0 > 0
-			div = absDiv / d0;
-			mice(end+1) = m;
-			divPerMouse(end+1) = div;
+		dataOut.Mice(end+1, 1) = m;
+		dataOut.CellTrialTimes{end+1, 1} = CellTrialTimes;
+	end
+end
+
+function [miceOut, divOut] = iComputeDivergenceFromPrepared(dataIn)
+% Compute per-mouse divergence from prepared tensors
+	miceOut = string([]);
+	divOut = [];
+	if ~isstruct(dataIn) || ~isfield(dataIn, 'Mice') || ~isfield(dataIn, 'CellTrialTimes')
+		return;
+	end
+	for i = 1:numel(dataIn.Mice)
+		ct = dataIn.CellTrialTimes{i};
+		if isempty(ct)
+			continue;
+		end
+		div = TransferLearning.Divergence(ct);
+		if isfinite(div)
+			miceOut(end+1, 1) = dataIn.Mice(i);
+			divOut(end+1, 1) = div;
 		end
 	end
-	
-	mice = mice(:);
-	divPerMouse = divPerMouse(:);
+end
+
+function [miceOut, valsOut] = iCollapseByMouse(miceIn, valsIn)
+	% Collapse duplicates by mouse using mean
+	miceIn = string(miceIn(:));
+	valsIn = valsIn(:);
+	if isempty(miceIn)
+		miceOut = string.empty(0,1);
+		valsOut = [];
+		return;
+	end
+	[grp, miceOut] = findgroups(miceIn);
+	valsOut = splitapply(@(x) mean(x, 'omitnan'), valsIn, grp);
+end
+
+function badMice = iFindMiceWithAudioWaterInPhase(DS, phaseName)
+	% 在给定 Phase 内，只要出现过 AudioWater（Stimulus 或 Design），就判定该鼠混入并剔除
+	badMice = string.empty(0,1);
+	try
+		Ta = DS.TableQuery("Mouse", Stimulus="AudioWater", Phase=phaseName);
+		if ~isempty(Ta) && ismember("Mouse", string(Ta.Properties.VariableNames))
+			badMice = unique(string(Ta.Mouse));
+			return;
+		end
+	catch
+	end
 end
