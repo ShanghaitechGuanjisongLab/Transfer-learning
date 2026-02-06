@@ -1,14 +1,12 @@
-% 英文图1S1：复用细胞占比（饼图）
+% 英文图1H：复用细胞占比（饼图）
 %
 % 复用细胞定义：Learned AudioWater 与 Transfer LightWater 在1s处均活跃
 % 活跃判定：1s处 > baseline + 3*std（baseline = -3~0s）
-% 统计范围：全体细胞合并
 %
-% Execution:
-%   TransferLearning.英文图1.S1_ReusedCellsPie
+% 分母定义（按用户要求与英文图1F一致）：
+%   只统计“被选入F图”的细胞（F图筛选：四泳道中任一泳道在1s处活跃）
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1S1_ReusedCellsPie.svg";
 
 % --- 0) Ensure project loaded
 try
@@ -39,41 +37,47 @@ if ~ok1s
 	error('Fig1S1:No1s', 'Cannot find sample close to 1s.');
 end
 
-% Query NTATS (Median ZScore)
-qLearned = struct('Phase', 'Learned', 'Stimulus', 'AudioWater');
-qTransfer = struct('Phase', 'Transfer', 'Stimulus', 'LightWater');
+% Query NTATS (Median ZScore) -- align cell universe with Fig1F selection.
+% Four lanes: Naive AudioOnly, Naive LightOnly, Learned AudioWater, Transfer LightWater
+qNaiveAudioOnly = struct('Stimulus', 'AudioOnly');
+qNaiveLightOnly = struct('Stimulus', 'LightOnly');
+qLearnedAudio   = struct('Phase', 'Learned',  'Stimulus', 'AudioWater');
+qTransferLight  = struct('Phase', 'Transfer', 'Stimulus', 'LightWater');
 
 G = struct();
-G.Learned = DS.QueryNTATS(qLearned, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-G.Transfer = DS.QueryNTATS(qTransfer, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.NaiveAudioOnly = DS.QueryNTATS(qNaiveAudioOnly, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.NaiveLightOnly = DS.QueryNTATS(qNaiveLightOnly, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.LearnedAudio   = DS.QueryNTATS(qLearnedAudio,   UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.TransferLight  = DS.QueryNTATS(qTransferLight,  UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 S = UniExp.NtatsCellStrip(G);
-X = iGetNtats3D(S); % [nCell x nTime x 2]
+X = iGetNtats3D(S); % [nCell x nTime x 4]
 
-% Active at 1s
+% Active at 1s (baseline -3~0s) for each lane
 kSigma = 3;
-XL = squeeze(X(:, :, 1));
-XT = squeeze(X(:, :, 2));
+nLanes = size(X, 3);
+activeByLane = false(size(X, 1), nLanes);
+for iL = 1:nLanes
+	XLane = squeeze(X(:, :, iL));
+	baseMu = mean(XLane(:, baseMask), 2, 'omitnan');
+	baseSd = std(XLane(:, baseMask), 0, 2, 'omitnan');
+	v1 = XLane(:, idx1s);
+	activeByLane(:, iL) = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
+end
 
-baseMuL = mean(XL(:, baseMask), 2, 'omitnan');
-baseSdL = std(XL(:, baseMask), 0, 2, 'omitnan');
-baseMuT = mean(XT(:, baseMask), 2, 'omitnan');
-baseSdT = std(XT(:, baseMask), 0, 2, 'omitnan');
+% Fig1F selected cells: any lane active at 1s
+selectedMask = any(activeByLane, 2);
 
-v1L = XL(:, idx1s);
-v1T = XT(:, idx1s);
+% Reuse cells: LearnedAudio (lane 3) and TransferLight (lane 4) both active at 1s
+reuseMask = activeByLane(:, 3) & activeByLane(:, 4);
 
-activeL = isfinite(v1L) & isfinite(baseMuL) & isfinite(baseSdL) & (v1L > (baseMuL + kSigma * baseSdL));
-activeT = isfinite(v1T) & isfinite(baseMuT) & isfinite(baseSdT) & (v1T > (baseMuT + kSigma * baseSdT));
-
-reuseMask = activeL & activeT;
-
-nTotal = size(X, 1);
-nReuse = sum(reuseMask);
+nTotal = sum(selectedMask);
+nReuse = sum(reuseMask & selectedMask);
 nNon = nTotal - nReuse;
 
 % --- Plot
-f = figure('Color', 'w', 'Name', 'English Fig1S1 Reused Cells Pie');
+svgName = "English_Fig1H_ReusedCellsPie.svg";
+f = figure('Color', 'w', 'Name', 'English Fig1H Reused Cells Pie');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5, 4.0]; % 45mm x 40mm
 ax = axes(f);
@@ -106,7 +110,7 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'Fig1S1_ReusedCounts', table(nReuse, nNon, nTotal));
+assignin('base', 'Fig1H_ReusedCounts', table(nReuse, nNon, nTotal));
 
 %% --- Local helpers
 
@@ -130,13 +134,13 @@ end
 
 if isnumeric(nt)
 	if ndims(nt) ~= 3
-		error('Fig1S1:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('Fig1H:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-error('Fig1S1:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+error('Fig1H:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
