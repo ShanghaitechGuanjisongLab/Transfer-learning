@@ -3,8 +3,8 @@
 % 复用细胞定义：Learned AudioWater 与 Transfer LightWater 在1s处均活跃
 % 活跃判定：1s处 > baseline + 3*std（baseline = -3~0s）
 %
-% 分母定义（按用户要求与英文图1F一致）：
-%   只统计“被选入F图”的细胞（F图筛选：四泳道中任一泳道在1s处活跃）
+% 分母定义（按用户要求）：
+%   只统计“🔊💧Active”的细胞（即英文图1F第3个泳道：Learned AudioWater 在1s处活跃）
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -65,8 +65,8 @@ for iL = 1:nLanes
 	activeByLane(:, iL) = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
 end
 
-% Fig1F selected cells: any lane active at 1s
-selectedMask = any(activeByLane, 2);
+% Denominator: 🔊💧Active (lane 3: Learned AudioWater active at 1s)
+selectedMask = activeByLane(:, 3);
 
 % Reuse cells: LearnedAudio (lane 3) and TransferLight (lane 4) both active at 1s
 reuseMask = activeByLane(:, 3) & activeByLane(:, 4);
@@ -75,11 +75,12 @@ nTotal = sum(selectedMask);
 nReuse = sum(reuseMask & selectedMask);
 nNon = nTotal - nReuse;
 
+%% 
 % --- Plot
 svgName = "English_Fig1H_ReusedCellsPie.svg";
 f = figure('Color', 'w', 'Name', 'English Fig1H Reused Cells Pie');
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5, 4.0]; % 45mm x 40mm
+f.Position(3:4) = [3, 4.0]; % 45mm x 40mm
 ax = axes(f);
 try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
@@ -88,9 +89,34 @@ try
 catch
 end
 
-pie(ax, [nReuse, nNon], {'Reuse', 'Non-reuse'});
-colormap(ax, [0.85 0.325 0.098; 0.6 0.6 0.6]);
 ax.FontSize = 6;
+
+if nTotal > 0
+	pReuse = 100 * (nReuse / nTotal);
+	pNon = 100 * (nNon / nTotal);
+else
+	pReuse = NaN;
+	pNon = NaN;
+end
+
+labels = [
+	sprintf("🔊💡\nreactive\n%.1f%%", pReuse)
+	sprintf("🔊💧\nactive\n%.1f%%", pNon)
+];
+
+pie(ax, [nReuse, nNon], labels);
+
+% Same-hue light/dark palette
+cDark = [0.16 0.36 0.64];
+cLight = [0.72 0.83 0.95];
+colormap(ax, [cDark; cLight]);
+
+% Ensure all labels are 6pt (pie creates text objects)
+try
+	set(findobj(ax, 'Type', 'text'), 'FontSize', 6);
+catch
+end
+
 axis(ax, 'equal');
 box(ax, 'off');
 

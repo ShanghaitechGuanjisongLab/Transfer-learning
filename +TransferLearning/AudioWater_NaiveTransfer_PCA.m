@@ -1,4 +1,4 @@
-function AudioWater_NaiveTransfer_PCA()
+% Script: AudioWater_NaiveTransfer_PCA
 % TransferLearning.AudioWater_NaiveTransfer_PCA
 %
 % Make PCA trajectory plots (like distanceAndPcaRe) for AudioWater pooled across mice:
@@ -8,6 +8,12 @@ function AudioWater_NaiveTransfer_PCA()
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202601
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+
+% Time (s) to use as PCA origin after cropping (0 = cue time).
+originSec = 0.0;
+
+% Toggle late-peak cell filtering (false = use all cells)
+useCellFilter = false;
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -32,26 +38,75 @@ DSList = {
 };
 
 % --- 2) Super mouse from QueryNTS (DeltaF), no replenish, drop cells <30 trials
-[G_naive, info_naive] = iNtsSuperMouse(DSList, "Naive", "AudioWater", 30);
-[G_learn, info_learn] = iNtsSuperMouse(DSList, "Learned", "AudioWater", 30);
+[G_naive, info_naive] = iNtsSuperMouse(DSList, "Naive", "AudioWater", 30, useCellFilter);
+[G_learn, info_learn] = iNtsSuperMouse(DSList, "Learned", "AudioWater", 30, useCellFilter);
+
+% For plotting: average adjacent trials so that certain panels have 10 lines.
+% Learned AudioWater: 30 trials -> 10 lines (average each 3 adjacent trials)
+G_learn_plot = iAverageAdjacentTrials(G_learn, 3);
+
+% --- 2b) Additional PCA: Naive AudioOnly (allow fewer trials)
+G_audioOnly = [];
+info_audioOnly = table();
+hasAudioOnly = false;
+try
+	[G_audioOnly, info_audioOnly] = iNtsSuperMouse(DSList, "Naive", "AudioOnly", 20, useCellFilter);
+	hasAudioOnly = true;
+catch ME
+	warning('AudioWaterPCA:AudioOnlyUnavailable', 'Naive AudioOnly PCA skipped: %s', ME.message);
+end
+
+G_audioOnly_plot = [];
+if hasAudioOnly
+	% Naive AudioOnly: 20 trials -> 10 lines (average each 2 adjacent trials)
+	G_audioOnly_plot = iAverageAdjacentTrials(G_audioOnly, 2);
+end
 
 % --- 4) Plot + export
-[fNaive, axNaive] = iPlotPca(G_naive, sprintf('Naive AudioWater  (SuperMouse, nCell=%d, nTrial=%d)', info_naive.NCells, info_naive.NTrials));
-[fLearn, axLearn] = iPlotPca(G_learn, sprintf('Learned AudioWater  (SuperMouse, nCell=%d, nTrial=%d)', info_learn.NCells, info_learn.NTrials));
+[fNaive, axNaive] = iPlotPca(G_naive, sprintf('Naive AudioWater  (SuperMouse, nCell=%d, nTrial=%d)', info_naive.NCells, info_naive.NTrials), originSec);
+[fLearn, axLearn] = iPlotPca(G_learn_plot, sprintf('Learned AudioWater  (SuperMouse, nCell=%d, nLine=%d)', info_learn.NCells, iGetNTrials(G_learn_plot)), originSec);
+
+fAudioOnly = [];
+axAudioOnly = [];
+if hasAudioOnly
+	[fAudioOnly, axAudioOnly] = iPlotPca(G_audioOnly_plot, sprintf('Naive AudioOnly  (SuperMouse, nCell=%d, nLine=%d)', info_audioOnly.NCells, iGetNTrials(G_audioOnly_plot)), originSec);
+end
 
 % Unify axis ranges across Naive vs Learned/Transfer
 try
-	MATLAB.Graphics.UnifyAxesLims([axNaive, axLearn], @xlim);
-	MATLAB.Graphics.UnifyAxesLims([axNaive, axLearn], @ylim);
+	axAll = [axNaive, axLearn];
+	if ~isempty(axAudioOnly)
+		axAll = [axAll, axAudioOnly];
+	end
+	MATLAB.Graphics.UnifyAxesLims(axAll, @xlim);
+	MATLAB.Graphics.UnifyAxesLims(axAll, @ylim);
 catch
 end
 
 TransferLearning.PrintFigure(fNaive, fullfile(outDirUNC, "AudioWater_Naive_PCA.svg"));
 TransferLearning.PrintFigure(fLearn, fullfile(outDirUNC, "AudioWater_Learned_PCA.svg"));
 
+if hasAudioOnly
+	TransferLearning.PrintFigure(fAudioOnly, fullfile(outDirUNC, "AudioOnly_Naive_PCA.svg"));
 end
 
-function [GroupNtats, info] = iNtsSuperMouse(DSList, phaseName, stimulusName, minTrials)
+% --- 5) PC1 CV comparison (trial as unit, at 1s)
+try
+	pc1Naive = iPc1TrialsAt1s(G_naive, originSec);
+	pc1Learn = iPc1TrialsAt1s(G_learn, originSec);
+	pc1Naive = pc1Naive(:);
+	pc1Learn = pc1Learn(:);
+	pc1Naive = pc1Naive(isfinite(pc1Naive));
+	pc1Learn = pc1Learn(isfinite(pc1Learn));
+	pc1Naive = pc1Naive ./ mean(pc1Naive, 'omitnan');
+	pc1Learn = pc1Learn ./ mean(pc1Learn, 'omitnan');
+	[~, pVartest] = vartest2(pc1Naive, pc1Learn);
+	fprintf('PC1 trial CV (1s) Naive vs Learned: p=%.6g\n', pVartest);
+catch ME
+	fprintf('PC1 trial CV (1s) failed: %s\n', ME.message);
+end
+
+function [GroupNtats, info] = iNtsSuperMouse(DSList, phaseName, stimulusName, minTrials, useCellFilter)
 % Pool all mice into one "super mouse" using QueryNTS (DeltaF).
 % Drop cells with < minTrials trials, then take first minTrials for PCA.
 
@@ -70,9 +125,21 @@ for iDS = 1:numel(DSList)
 		continue;
 	end
 
+	if useCellFilter
+		keepUids = iQueryNtatsKeepUids(DS, phaseName, stimulusName);
+		if isempty(keepUids)
+			continue;
+		end
+	else
+		keepUids = uint64([]);
+	end
+
 	cellUIDs = unique(uint64(nts.CellUID));
 	for iC = 1:numel(cellUIDs)
 		cid = cellUIDs(iC);
+		if useCellFilter && ~ismember(cid, keepUids)
+			continue;
+		end
 		rowsC = (uint64(nts.CellUID) == cid);
 		if sum(rowsC) < minTrials
 			continue;
@@ -88,6 +155,7 @@ for iDS = 1:numel(DSList)
 		if any(~isfinite(sig), 'all')
 			continue;
 		end
+
 		cellTraces{end+1, 1} = sig; %#ok<AGROW>
 		if isempty(nTime)
 			nTime = size(sig, 2);
@@ -120,7 +188,71 @@ GroupNtats = table(ntats, 'VariableNames', "NTATS");
 info = table(nCells, nTrials, 'VariableNames', ["NCells","NTrials"]);
 end
 
-function [f, ax] = iPlotPca(GroupNtats, titleText)
+function keepUids = iQueryNtatsKeepUids(DS, phaseName, stimulusName)
+keepUids = uint64([]);
+
+queryStruct = struct('Stimulus', string(stimulusName), 'Phase', string(phaseName));
+try
+	ntatsGroup = DS.QueryNTATS(queryStruct, UniExp.Flags.DeltaF, 1:24, UniExp.Flags.Median);
+catch
+	ntatsGroup = [];
+end
+
+keepUids = iSelectLatePeakCellsNtatsGroup(ntatsGroup);
+end
+
+function keepUids = iSelectLatePeakCellsNtatsGroup(ntatsGroup)
+keepUids = uint64([]);
+if isempty(ntatsGroup) || ~istable(ntatsGroup) || height(ntatsGroup) == 0
+	return
+end
+
+if ~ismember('CellUID', ntatsGroup.Properties.VariableNames) || ~ismember('NTATS', ntatsGroup.Properties.VariableNames)
+	return
+end
+
+cellUIDs = uint64(ntatsGroup.CellUID);
+keepMask = false(numel(cellUIDs), 1);
+
+try
+	nGroups = size(ntatsGroup.NTATS, 3);
+catch
+	nGroups = 1;
+end
+
+sampleRate = 8;
+idxCue0 = 3 * sampleRate;
+
+for g = 1:nGroups
+	try
+		data = ntatsGroup.NTATS{:,:, g};
+	catch
+		continue
+	end
+	data = squeeze(data);
+	if ~ismatrix(data)
+		continue
+	end
+	idx0 = max(1, min(size(data, 2), idxCue0));
+	sigNtats = data - data(:, idx0);
+
+	idx0_1 = idxCue0:(idxCue0 + sampleRate);
+	idx1_2 = (idxCue0 + sampleRate):(idxCue0 + 2 * sampleRate);
+	idx0_1 = idx0_1(idx0_1 >= 1 & idx0_1 <= size(sigNtats, 2));
+	idx1_2 = idx1_2(idx1_2 >= 1 & idx1_2 <= size(sigNtats, 2));
+	if isempty(idx0_1) || isempty(idx1_2)
+		continue
+	end
+
+	peak0_1 = max(sigNtats(:, idx0_1), [], 2);
+	peak1_2 = max(sigNtats(:, idx1_2), [], 2);
+	keepMask = keepMask | (peak1_2 > peak0_1);
+end
+
+keepUids = cellUIDs(keepMask);
+end
+
+function [f, ax] = iPlotPca(GroupNtats, titleText, originSec)
 PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2);
 PcaLines = PcaTable.Score;
 
@@ -136,13 +268,21 @@ PcaDataAll = PcaLines.Data;
 nTime = size(PcaDataAll, 2);
 sampleRate = 8;
 idxCue0 = 3 * sampleRate;
-idxWater1 = 4 * sampleRate;
+idxWater1 = idxCue0 + round(1.0 * sampleRate);
+idxStart = idxCue0;
 
 idxCue0 = max(1, min(nTime, idxCue0));
 idxWater1 = max(1, min(nTime, idxWater1));
-idxPlotTime = idxCue0:idxWater1;
+idxStart = max(1, min(nTime, idxStart));
+idxPlotTime = idxStart:idxWater1;
 
 PcaData = PcaDataAll(:, idxPlotTime, :);
+
+% Shift each trajectory so the originSec point is at the origin.
+originIdx = 1 + round(originSec * sampleRate);
+originIdx = max(1, min(size(PcaData, 2), originIdx));
+baseline = PcaData(:, originIdx, :);
+PcaData = PcaData - baseline;
 
 f = figure('Color', 'w');
 MATLAB.Graphics.FigureAspectRatio(45, 40, 1);
@@ -184,6 +324,82 @@ try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';
 	end
+catch
+end
+end
+
+function pc1Trials = iPc1TrialsAt1s(GroupNtats, originSec)
+PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2);
+PcaLines = PcaTable.Score;
+
+PcaDataAll = PcaLines.Data;
+nTime = size(PcaDataAll, 2);
+sampleRate = 8;
+idxCue0 = 3 * sampleRate;
+idxWater1 = idxCue0 + round(1.0 * sampleRate);
+idxStart = idxCue0;
+
+idxCue0 = max(1, min(nTime, idxCue0));
+idxWater1 = max(1, min(nTime, idxWater1));
+idxStart = max(1, min(nTime, idxStart));
+idxPlotTime = idxStart:idxWater1;
+
+PcaData = PcaDataAll(:, idxPlotTime, :);
+
+originIdx = 1 + round(originSec * sampleRate);
+originIdx = max(1, min(size(PcaData, 2), originIdx));
+baseline = PcaData(:, originIdx, :);
+PcaData = PcaData - baseline;
+
+pc1Trials = squeeze(PcaData(1, end, :));
+pc1Trials = pc1Trials(:);
+end
+
+function GroupNtatsOut = iAverageAdjacentTrials(GroupNtatsIn, groupSize)
+% Average adjacent trials (3rd dim of NTATS NDTable) to reduce number of lines.
+% Input/Output table format: table with variable NTATS being MATLAB.DataTypes.NDTable.
+if isempty(GroupNtatsIn) || ~istable(GroupNtatsIn) || height(GroupNtatsIn) == 0
+	GroupNtatsOut = GroupNtatsIn;
+	return;
+end
+if ~ismember('NTATS', GroupNtatsIn.Properties.VariableNames)
+	GroupNtatsOut = GroupNtatsIn;
+	return;
+end
+
+X = GroupNtatsIn.NTATS{:,:,:};
+if ndims(X) ~= 3
+	GroupNtatsOut = GroupNtatsIn;
+	return;
+end
+
+nTrial = size(X, 3);
+nKeep = floor(nTrial / groupSize) * groupSize;
+if nKeep < groupSize
+	GroupNtatsOut = GroupNtatsIn;
+	return;
+end
+if nKeep ~= nTrial
+	X = X(:, :, 1:nKeep);
+end
+
+nGroup = nKeep / groupSize;
+Xr = reshape(X, size(X,1), size(X,2), groupSize, nGroup);
+Xg = mean(Xr, 3, 'omitnan');
+
+% mean() keeps the reduced dimension, so Xg is [nCell x nTime x 1 x nGroup].
+% Reshape back to 3D [nCell x nTime x nGroup] for UniExp.LinearPca.
+Xg = reshape(Xg, size(X,1), size(X,2), nGroup);
+
+ntats = MATLAB.DataTypes.NDTable(Xg);
+GroupNtatsOut = table(ntats, 'VariableNames', "NTATS");
+end
+
+function n = iGetNTrials(GroupNtats)
+n = nan;
+try
+	X = GroupNtats.NTATS{:,:,:};
+	n = size(X, 3);
 catch
 end
 end
