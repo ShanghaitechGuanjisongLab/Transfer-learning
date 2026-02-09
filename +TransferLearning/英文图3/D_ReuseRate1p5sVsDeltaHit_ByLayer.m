@@ -1,27 +1,28 @@
-% 英文图3B：1s复用率 vs 命中率增量（2/5层细胞合并）
+% 英文图3D：Corr(LW session, Learned AW)@1.5s vs ΔHit，分2/3层和5层
 %
-% Data scope (ref: Fig3.4D):
+% Data scope (same session pairs as Fig3B):
 % - All pure-LightWater sessions in AudioLightBaseline (Transfer → Final).
 % - Exclude sessions with hit rate ≥ 100% and all subsequent sessions.
 % - One point = one adjacent session pair (session k → session k+1).
-% - ΔHit = Hit(k+1) - Hit(k), where Hit = session-level LightWater hit rate.
-% - Reuse rate at 1s (of session k) = P(TransferActive@1s | LearnedActive@1s).
-%   LearnedActive pooled from Learned(AudioWater), TransferActive computed per LightWater session.
-% - Cells merged across layers: MOp2/3 + MOp5 (cell-level merge, not averaging two probabilities).
+% - ΔHit = Hit(k+1) − Hit(k).
+% - x = Pearson corr of cell activity vectors @1.5s between session k+1 (LightWater)
+%   and the Learned AudioWater phase, computed per layer (MOp2/3, MOp5).
+%   Cell activity = median across trials of ZScore signal at 1.5s timepoint.
+%   (Uses the LATER session in each adjacent pair.)
 %
-% Style: mimic English Fig1J (scatter + fit line + Spearman annotation).
+% Layout: tiledlayout(1,2) — left MOp2/3, right MOp5 (ref Fig3.4D).
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3B_ReuseRateVsDeltaHit.svg";
+svgName = "English_Fig3D_CorrToLearned1p5sVsDeltaHit_ByLayer.svg";
 
 % --- Preconditions
 if ~exist('UniExp.DataSet', 'class')
-	error('EnglishFig3A:MissingUniExp', 'UniExp is not on path; load the project first.');
+	error('EnglishFig3D:MissingUniExp', 'UniExp is not on path; load the project first.');
 end
 
 DS = TransferLearning.AudioLightBaseline();
 
-% --- Time axis, baseline, 1s index
+% --- Time axis, baseline, 1.5s index
 xs = TransferLearning.Xs;
 if isduration(xs)
 	xsSec = seconds(xs);
@@ -30,78 +31,104 @@ else
 end
 baseMask = (xsSec >= -3) & (xsSec < 0);
 if ~any(baseMask)
-	error('EnglishFig3A:BadBaseline', 'Baseline(-3~0s) has no samples.');
+	error('EnglishFig3D:BadBaseline', 'Baseline(-3~0s) has no samples.');
 end
 
-[dtMin1, idx1s] = min(abs(xsSec - 1));
-if isempty(idx1s) || ~isfinite(dtMin1) || dtMin1 > 0.25
-	error('EnglishFig3A:No1sSample', 'Cannot find a sample close to 1s.');
+[dtMin, idxT] = min(abs(xsSec - 1.5));
+if isempty(idxT) || ~isfinite(dtMin) || dtMin > 0.25
+	error('EnglishFig3D:NoSample', 'Cannot find a sample close to 1.5s.');
 end
 
-% --- Session table: pure LightWater (Transfer→Final), ceiling excluded, adjacent pairs
+% --- Session table: pure LightWater, ceiling excluded, adjacent pairs
 Sess = iLightWaterSessions(DS);
 Sess = iKeepPureLightWater(DS, Sess);
 Sess = iExcludeCeiling(Sess);
 SessSpeed = iSessionDeltaNextTable(Sess);
 
-% --- Learned active (pooled) by cell
-learnedCell = iLearnedActiveByCell(DS, baseMask, idx1s);
+% --- Learned AudioWater: cell activity vector @1.5s (with layer info)
+learnedVec = iLearnedVecAt1p5s(DS, idxT);
 
-% --- Per-session reuse rate (2/5 layer cells merged)
-ReuseSess = iSessionReuse_SessionVsLearned_LayersMerged25(DS, SessSpeed(:, {'Mouse','DateTime'}), learnedCell, baseMask, idx1s);
+% --- Per-session correlation with Learned, split by layer (compute for session k+1)
+NextSessKeys = SessSpeed(:, {'Mouse','DateTimeNext'});
+NextSessKeys.Properties.VariableNames{'DateTimeNext'} = 'DateTime';
+CorrSess = iSessionCorrToLearned_ByLayer(DS, NextSessKeys, learnedVec, baseMask, idxT);
 
-% Join with ΔHit
-J = innerjoin(ReuseSess, SessSpeed(:, {'Mouse','DateTime','Performance','PerformanceNext','Speed_DeltaNext'}), 'Keys', {'Mouse','DateTime'});
-assignin('base', 'EnglishFig3B_Joined', J);
+% Join: CorrSess.DateTime matches SessSpeed.DateTimeNext
+CorrSess.Properties.VariableNames{'DateTime'} = 'DateTimeNext';
+J = innerjoin(CorrSess, SessSpeed(:, {'Mouse','DateTimeNext','DateTime','Performance','PerformanceNext','Speed_DeltaNext'}), 'Keys', {'Mouse','DateTimeNext'});
+assignin('base', 'EnglishFig3D_Joined', J);
 
-x = double(J.Reuse_1s_L25_Merged);
-y = double(J.Speed_DeltaNext);
-mask = isfinite(x) & isfinite(y);
-
-% --- Plot
-f = figure('Color','w', 'Name', 'English Fig3B Reuse vs ΔHit');
+% --- Plot: tiledlayout 1×2
+f = figure('Color','w', 'Name', 'English Fig3D Corr(session,Learned)@1.5s vs ΔHit by layer');
 f.Units = 'centimeters';
-f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
+f.Position(3:4) = [6.0, 4.0]; % 60mm × 40mm
 
-ax = axes(f);
-hold(ax, 'on');
-box(ax, 'off');
-grid(ax, 'off');
-ax.FontSize = 6;
+tl = tiledlayout(f, 1, 2, 'TileSpacing','compact', 'Padding','compact');
+axs = gobjects(1,2);
 
-% Spearman correlation
-rho = NaN; p = NaN;
-if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
-	[rho, p] = corr(x(mask), y(mask), 'Type', 'Spearman');
-end
+zLabels = ["MOp2/3","MOp5"];
+corrVars = ["Corr_1p5s_MOp23","Corr_1p5s_MOp5"];
 
-% Scatter: hollow circle, thin edge
-scatter(ax, x(mask), y(mask), 8, [0 0.4470 0.7410], 'LineWidth', 0.2);
+for iZ = 1:2
+	ax = nexttile(tl, iZ);
+	axs(iZ) = ax;
+	hold(ax, 'on');
+	box(ax, 'off');
+	grid(ax, 'off');
+	ax.FontSize = 6;
 
-% Fit line (linear)
-if nnz(mask) >= 2 && std(x(mask)) > 0
-	pFit = polyfit(x(mask), y(mask), 1);
-	xFit = [min(x(mask)) max(x(mask))];
-	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
-end
+	x = double(J.(corrVars(iZ)));
+	y = double(J.Speed_DeltaNext);
+	mask = isfinite(x) & isfinite(y);
 
-xlabel(ax, 'Reactivation');
-ylabel(ax, 'ΔHit');
+	% Scatter
+	scatter(ax, x(mask), y(mask), 15, [0 0.4470 0.7410], 'LineWidth', 0.2);
 
-if isfinite(p)
-	if p < 0.001
-		pText = "***";
-	elseif p < 0.01
-		pText = "**";
-	elseif p < 0.05
-		pText = "*";
-	else
-		pText = "";
+	% Fit line
+	if nnz(mask) >= 2 && std(x(mask)) > 0
+		pFit = polyfit(x(mask), y(mask), 1);
+		xFit = [min(x(mask)) max(x(mask))];
+		yFit = polyval(pFit, xFit);
+		plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
 	end
-	text(ax, 0.02, 0.98, sprintf('r=%.2f%s n=%d', rho, pText, nnz(mask)), ...
-		'Units','normalized', 'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
+
+	% Spearman
+	rho = NaN; p = NaN;
+	if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
+		[rho, p] = corr(x(mask), y(mask), 'Type', 'Spearman');
+	end
+
+	if isfinite(p)
+		if p < 0.001
+			pText = "***";
+		elseif p < 0.01
+			pText = "**";
+		elseif p < 0.05
+			pText = "*";
+		else
+			pText = "";
+		end
+		text(ax, 0.02, 0.98, sprintf('r=%.2f%s n=%d', rho, pText, nnz(mask)), ...
+			'Units','normalized', 'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
+	end
+
+	title(ax, zLabels(iZ), 'FontSize', 6);
 end
+
+xlabel(tl, 'Corr(session, Learned AW) @1.5s');
+ylabel(tl, '\DeltaHit');
+
+% Unify Y axes
+try
+	MATLAB.Graphics.UnifyAxesLims(axs, 'y');
+catch
+	yl = cell2mat(arrayfun(@(a) ylim(a), axs, 'UniformOutput', false)');
+	ylAll = [min(yl(:,1)) max(yl(:,2))];
+	for k = 1:2, ylim(axs(k), ylAll); end
+end
+
+% Hide right-panel Y tick labels
+axs(2).YTickLabel = [];
 
 % --- Export SVG
 if ~isfolder(outDirUNC)
@@ -111,7 +138,7 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-%% ---- local helpers (no try-catch)
+%% ---- local helpers
 
 function Sess = iLightWaterSessions(DS)
 vars = ["Mouse","DateTime","BlockUID","Phase"];
@@ -121,16 +148,7 @@ if isempty(Tblk)
 		'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession'});
 	return;
 end
-
-if ~isprop(DS, 'Trials')
-	error('EnglishFig3A:MissingTrials', 'DataSet has no Trials table.');
-end
 Tr = DS.Trials;
-need = {'BlockUID','Stimulus','Behavior'};
-if ~all(ismember(need, Tr.Properties.VariableNames))
-	error('EnglishFig3A:TrialsMissingFields', 'Trials table lacks required fields.');
-end
-
 TrStim = string(Tr.Stimulus);
 TrLW = Tr(TrStim == "LightWater", {'BlockUID','Behavior'});
 if isempty(TrLW)
@@ -138,7 +156,6 @@ if isempty(TrLW)
 		'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession'});
 	return;
 end
-
 [G, bu] = findgroups(uint64(TrLW.BlockUID));
 lwPerf = splitapply(@(x) mean(double(x),'omitnan'), TrLW.Behavior, G);
 perfByBlock = table(uint64(bu), lwPerf, 'VariableNames', {'BlockUID64','LWPerf'});
@@ -148,13 +165,11 @@ Tblk.DateTime = datetime(Tblk.DateTime);
 if isdatetime(Tblk.DateTime) && ~isempty(Tblk.DateTime.TimeZone)
 	Tblk.DateTime.TimeZone = '';
 end
-
 blkUID64 = uint64(Tblk.BlockUID);
 [tf, loc] = ismember(blkUID64, perfByBlock.BlockUID64);
 Tblk = Tblk(tf, :);
 Tblk.LWPerf = perfByBlock.LWPerf(loc(tf));
 
-% sessionize by Mouse×DateTime
 [G2, mouse, dt] = findgroups(string(Tblk.Mouse), Tblk.DateTime);
 perf = splitapply(@(x) mean(double(x),'omitnan'), Tblk.LWPerf, G2);
 nBlocks = splitapply(@numel, Tblk.LWPerf, G2);
@@ -163,8 +178,8 @@ Sess = sortrows(Sess, {'Mouse','DateTime'});
 end
 
 function SessOut = iKeepPureLightWater(DS, SessIn)
-% Exclude sessions that also contain AudioWater blocks (mixed Transfer sessions).
-% Note: StartMonitor/StopMonitor are monitoring markers, not behavioral stimuli; keep those.
+% Exclude sessions that also contain AudioWater blocks.
+% StartMonitor/StopMonitor are monitoring markers, not behavioral stimuli; keep those.
 SessOut = SessIn;
 if isempty(SessOut)
 	return;
@@ -205,7 +220,6 @@ for mi = 1:numel(mice)
 end
 SessOut(remove,:) = [];
 
-% Safety: enforce 0<=Perf<1
 perf = double(SessOut.Performance);
 keep = isfinite(perf) & (perf >= -1e-12) & (perf < (1 - 1e-12));
 SessOut = SessOut(keep, :);
@@ -252,25 +266,25 @@ SessSpeed = table(outMouse, outDT, outPerf, outDT2, outPerf2, outDN, ...
 	'VariableNames', {'Mouse','DateTime','Performance','DateTimeNext','PerformanceNext','Speed_DeltaNext'});
 end
 
-function learnedCell = iLearnedActiveByCell(DS, baseMask, idx1s)
-kSigma = 3;
+function learnedVec = iLearnedVecAt1p5s(DS, idxT)
+% Get per-cell NTATS value @1.5s for Learned AudioWater, with layer info.
 G = DS.QueryNTATS(struct('Stimulus','AudioWater','Phase','Learned'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 if isempty(G) || ~all(ismember(["CellUID","NTATS"], string(G.Properties.VariableNames)))
-	error('EnglishFig3A:LearnedEmpty', 'QueryNTATS Learned(AudioWater) is empty.');
+	error('EnglishFig3D:LearnedEmpty', 'QueryNTATS Learned(AudioWater) is empty.');
 end
 X = iNtatsData(G.NTATS);
-act = iActiveAt1s(X, baseMask, idx1s, kSigma);
+v = double(X(:, idxT));
 C = DS.Cells;
-learnedCell = table(uint64(G.CellUID), logical(act), 'VariableNames', {'CellUID','LearnedActive'});
-learnedCell = innerjoin(learnedCell, C(:, {'CellUID','Mouse','ZLayer'}), 'Keys', 'CellUID');
-learnedCell.Mouse = string(learnedCell.Mouse);
-learnedCell.ZLayer = string(learnedCell.ZLayer);
+learnedVec = table(uint64(G.CellUID), v, 'VariableNames', {'CellUID','LearnedVal'});
+learnedVec = innerjoin(learnedVec, C(:, {'CellUID','Mouse','ZLayer'}), 'Keys', 'CellUID');
+learnedVec.Mouse = string(learnedVec.Mouse);
+learnedVec.ZLayer = string(learnedVec.ZLayer);
 end
 
-function Tout = iSessionReuse_SessionVsLearned_LayersMerged25(DS, SessKey, learnedCell, baseMask, idx1s)
-% One row per session: reuse rate merged across L2/3+L5 cells.
-layerKeep = ["MOp2/3", "MOp5"];
-kSigma = 3;
+function Tout = iSessionCorrToLearned_ByLayer(DS, SessKey, learnedVec, baseMask, idxT)
+% One row per session: Pearson corr of cell vectors @1.5s vs Learned, per layer.
+% Uses NTS (trial-level): median across trials for per-cell value.
+minCells = 5;
 
 SessKey.Mouse = string(SessKey.Mouse);
 SessKey.DateTime = datetime(SessKey.DateTime);
@@ -281,14 +295,15 @@ SessKey = unique(SessKey(:, {'Mouse','DateTime'}), 'rows');
 
 outMouse = strings(0,1);
 outDT = NaT(0,1);
-outN = nan(0,1);
-outReuse = nan(0,1);
+outCorr23 = nan(0,1);
+outCorr5 = nan(0,1);
+outN23 = nan(0,1);
+outN5 = nan(0,1);
 
 for i = 1:height(SessKey)
 	m = string(SessKey.Mouse(i));
 	dt = SessKey.DateTime(i);
 
-	% Use NTS (trial-level) to avoid QueryNTATS empty-group errors for some sessions.
 	q = struct('Mouse', m, 'DateTime', dt, 'Stimulus', 'LightWater');
 	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24);
 	if isempty(ntsCell) || isempty(ntsCell{1})
@@ -299,35 +314,49 @@ for i = 1:height(SessKey)
 		continue;
 	end
 
-	[uid, tranAct] = iTransferActiveFromNtsMedian(nts, baseMask, idx1s, kSigma);
+	% Per-cell median signal, take value at idxT
+	[uid, sessVal] = iSessionVecFromNtsMedian(nts, idxT);
 	if isempty(uid)
 		continue;
 	end
-	tranCell = table(uid, logical(tranAct), 'VariableNames', {'CellUID','TransferActive'});
+	sessCell = table(uid, sessVal, 'VariableNames', {'CellUID','SessVal'});
 
-	LT = innerjoin(learnedCell(:, {'CellUID','Mouse','ZLayer','LearnedActive'}), tranCell, 'Keys', 'CellUID');
-	LT.Mouse = string(LT.Mouse);
-	LT.ZLayer = string(LT.ZLayer);
-	LT = LT(LT.Mouse == m, :);
-	LT = LT(ismember(LT.ZLayer, layerKeep), :);
-	if isempty(LT)
+	% Join with learnedVec (common cells)
+	LJ = innerjoin(learnedVec(learnedVec.Mouse == m, :), sessCell, 'Keys', 'CellUID');
+	if isempty(LJ)
 		continue;
 	end
 
-	den = logical(LT.LearnedActive);
-	if nnz(den) < 1
+	% MOp2/3
+	L23 = LJ(LJ.ZLayer == "MOp2/3", :);
+	use23 = isfinite(L23.LearnedVal) & isfinite(L23.SessVal);
+	r23 = NaN; n23 = nnz(use23);
+	if n23 >= minCells && std(L23.LearnedVal(use23)) > 0 && std(L23.SessVal(use23)) > 0
+		r23 = corr(L23.LearnedVal(use23), L23.SessVal(use23), 'Type', 'Pearson');
+	end
+
+	% MOp5
+	L5 = LJ(LJ.ZLayer == "MOp5", :);
+	use5 = isfinite(L5.LearnedVal) & isfinite(L5.SessVal);
+	r5 = NaN; n5 = nnz(use5);
+	if n5 >= minCells && std(L5.LearnedVal(use5)) > 0 && std(L5.SessVal(use5)) > 0
+		r5 = corr(L5.LearnedVal(use5), L5.SessVal(use5), 'Type', 'Pearson');
+	end
+
+	if ~isfinite(r23) && ~isfinite(r5)
 		continue;
 	end
-	reuse = mean(double(LT.TransferActive(den)), 'omitnan');
 
 	outMouse(end+1,1) = m; %#ok<AGROW>
 	outDT(end+1,1) = dt; %#ok<AGROW>
-	outN(end+1,1) = nnz(den); %#ok<AGROW>
-	outReuse(end+1,1) = reuse; %#ok<AGROW>
+	outCorr23(end+1,1) = r23; %#ok<AGROW>
+	outCorr5(end+1,1) = r5; %#ok<AGROW>
+	outN23(end+1,1) = n23; %#ok<AGROW>
+	outN5(end+1,1) = n5; %#ok<AGROW>
 end
 
-Tout = table(outMouse, outDT, outN, outReuse, ...
-	'VariableNames', {'Mouse','DateTime','NCellsLearnedActive_L25','Reuse_1s_L25_Merged'});
+Tout = table(outMouse, outDT, outN23, outCorr23, outN5, outCorr5, ...
+	'VariableNames', {'Mouse','DateTime','NCells_MOp23','Corr_1p5s_MOp23','NCells_MOp5','Corr_1p5s_MOp5'});
 end
 
 function X = iNtatsData(NT)
@@ -339,20 +368,10 @@ end
 X = squeeze(X);
 end
 
-function act = iActiveAt1s(X, baseMask, idx1s, kSigma)
-base = X(:, baseMask);
-mu = mean(base, 2, 'omitnan');
-sd = std(base, 0, 2, 'omitnan');
-thr = mu + kSigma .* sd;
-v = X(:, idx1s);
-act = v > thr;
-end
-
-function [cellUIDs, active] = iTransferActiveFromNtsMedian(nts, baseMask, idx1s, kSigma)
-% Compute per-cell active@1s from trial-level signals by taking the median across trials.
-% nts table must contain: CellUID, TrialSignal (nTrial x nTime)
+function [cellUIDs, vals] = iSessionVecFromNtsMedian(nts, idxT)
+% Per-cell value @idxT from trial-level signals, median across trials.
 cellUIDs = unique(uint64(nts.CellUID));
-active = false(numel(cellUIDs), 1);
+vals = nan(numel(cellUIDs), 1);
 
 for iC = 1:numel(cellUIDs)
 	cid = cellUIDs(iC);
@@ -367,15 +386,8 @@ for iC = 1:numel(cellUIDs)
 	end
 
 	med = median(sig, 1, 'omitnan');
-	if any(~isfinite(med(baseMask)))
-		continue;
-	end
-
-	mu = mean(med(baseMask), 2, 'omitnan');
-	sd = std(med(baseMask), 0, 2, 'omitnan');
-	v1 = med(idx1s);
-	if isfinite(v1) && isfinite(mu) && isfinite(sd)
-		active(iC) = (v1 > (mu + kSigma * sd));
+	if size(med, 2) >= idxT
+		vals(iC) = med(idxT);
 	end
 end
 end

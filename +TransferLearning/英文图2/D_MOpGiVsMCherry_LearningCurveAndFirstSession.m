@@ -191,7 +191,8 @@ for eb = ErrorBars2.Object(:)'
 end
 ax2.XLim = [0.5, 2.5];
 
-title(ax2, 'Block#1');
+ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
+title(ax2, 'First block');
 box(ax2, 'off');
 
 svgFS = fullfile(outDirUNC, 'English_Fig2D_FirstSessionHitRate.svg');

@@ -247,7 +247,7 @@ end
 ax2.XLim = [0.5, 2.5];
 
 ylabel(ax2, 'Hit rate');
-title(ax2, 'Block#1');
+title(ax2, 'First block');
 box(ax2, 'off');
 
 % Export SVG (transparent)
