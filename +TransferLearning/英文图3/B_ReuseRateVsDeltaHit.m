@@ -87,7 +87,7 @@ if nnz(mask) >= 2 && std(x(mask)) > 0
 	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
 end
 
-xlabel(ax, 'Reuse rate (1s, L2/3+L5 merged)');
+xlabel(ax, 'Reactivation rate');
 ylabel(ax, '\DeltaHit rate');
 
 if isfinite(p)
@@ -279,15 +279,21 @@ for i = 1:height(SessKey)
 		continue;
 	end
 
+	% Use NTS (trial-level) to avoid QueryNTATS empty-group errors for some sessions.
 	q = struct('Mouse', m, 'DateTime', dt, 'Stimulus', 'LightWater');
-	G = DS.QueryNTATS(q, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	if isempty(G) || ~all(ismember(["CellUID","NTATS"], string(G.Properties.VariableNames)))
+	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24);
+	if isempty(ntsCell) || isempty(ntsCell{1})
+		continue;
+	end
+	nts = ntsCell{1};
+	if ~istable(nts) || height(nts) == 0 || ~all(ismember(["CellUID","TrialSignal"], string(nts.Properties.VariableNames)))
 		continue;
 	end
 
-	M = iNtatsData(G.NTATS);
-	uid = uint64(G.CellUID);
-	tranAct = iActiveAt1s(M, baseMask, idx1s, kSigma);
+	[uid, tranAct] = iTransferActiveFromNtsMedian(nts, baseMask, idx1s, kSigma);
+	if isempty(uid)
+		continue;
+	end
 	tranCell = table(uid, logical(tranAct), 'VariableNames', {'CellUID','TransferActive'});
 
 	LT = innerjoin(learnedCell(:, {'CellUID','Mouse','ZLayer','LearnedActive'}), tranCell, 'Keys', 'CellUID');
@@ -331,4 +337,36 @@ sd = std(base, 0, 2, 'omitnan');
 thr = mu + kSigma .* sd;
 v = X(:, idx1s);
 act = v > thr;
+end
+
+function [cellUIDs, active] = iTransferActiveFromNtsMedian(nts, baseMask, idx1s, kSigma)
+% Compute per-cell active@1s from trial-level signals by taking the median across trials.
+% nts table must contain: CellUID, TrialSignal (nTrial x nTime)
+cellUIDs = unique(uint64(nts.CellUID));
+active = false(numel(cellUIDs), 1);
+
+for iC = 1:numel(cellUIDs)
+	cid = cellUIDs(iC);
+	rows = (uint64(nts.CellUID) == cid);
+	if nnz(rows) < 1
+		continue;
+	end
+
+	sig = double(nts.TrialSignal(rows, :));
+	if isempty(sig) || ~ismatrix(sig)
+		continue;
+	end
+
+	med = median(sig, 1, 'omitnan');
+	if any(~isfinite(med(baseMask)))
+		continue;
+	end
+
+	mu = mean(med(baseMask), 2, 'omitnan');
+	sd = std(med(baseMask), 0, 2, 'omitnan');
+	v1 = med(idx1s);
+	if isfinite(v1) && isfinite(mu) && isfinite(sd)
+		active(iC) = (v1 > (mu + kSigma * sd));
+	end
+end
 end
