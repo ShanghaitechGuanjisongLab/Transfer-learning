@@ -1,4 +1,6 @@
-% English Fig2G: Vacation7 vs Control — Reactivation Rate P(T|L)
+% English Fig2J: Vacation7 vs Control — Reactivation Rate P(T|L)
+%
+% v6 Panel J (sub-panel): Vacation7 复用率 P(T|L) 条形图
 %
 % P(T|L) = P(Transfer LightWater active@1s | Learned AudioWater active@1s)
 % Combined across layers (MOp2/3 + MOp5), weighted by # learned-active cells.
@@ -9,10 +11,10 @@
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.英文图2.G_Vacation7VsCtrl_ReactivationRate
+%   TransferLearning.英文图2.J_Vacation7VsCtrl_ReactivationRate
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName   = "English_Fig2G_Vacation7VsCtrl_ReactivationRate.svg";
+svgName   = "English_Fig2J_Vacation7VsCtrl_ReactivationRate.svg";
 
 % --- 1) Load datasets
 CtrlDS = TransferLearning.AudioLightBaseline();
@@ -25,7 +27,7 @@ RV7 = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLay
 	'DataSet', V7DS, 'Source', "Vacation7");
 
 if isempty(RCtrl) || isempty(RV7)
-	error('English_Fig2G:EmptyBuild', 'Empty rows from P(T|L) builder.');
+	error('English_Fig2J:EmptyBuild', 'Empty rows from P(T|L) builder.');
 end
 
 RCtrl.Group = repmat("Control",   height(RCtrl), 1);
@@ -63,7 +65,7 @@ fprintf('Wilcoxon rank-sum: p=%.4g\n', pRS);
 DataCell     = {double(xCtrl(:)), double(xV7(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-f = figure('Color', 'w', 'Name', 'English Fig2G Vacation7 Reactivation');
+f = figure('Color', 'w', 'Name', 'English Fig2J Vacation7 Reactivation');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0];
 
@@ -123,5 +125,5 @@ TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 % --- 6) Save to workspace
-assignin('base', 'English_Fig2G_R', R);
-assignin('base', 'English_Fig2G_P_Ranksum', pRS);
+assignin('base', 'English_Fig2J_R', R);
+assignin('base', 'English_Fig2J_P_Ranksum', pRS);

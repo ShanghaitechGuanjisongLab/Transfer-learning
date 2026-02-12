@@ -1,4 +1,4 @@
-% 英文图1L: Reactivation rate vs Transfer hit rate (layers merged)
+% 英文图1K: Reactivation rate vs Transfer hit rate (layers merged)
 %
 % Reactivation rate = P(Transfer active | Learned active) at 1s
 % Sessions (pure):
@@ -39,9 +39,9 @@ y = R.TransferHitRate;
 mask = isfinite(x) & isfinite(y);
 %% 
 
-svgName = "English_Fig1J_ReactivationVsHitRate.svg";
+svgName = "English_Fig1K_ReactivationVsHitRate.svg";
 
-f = figure('Color','w', 'Name','English Fig1L Reactivation vs Hit rate');
+f = figure('Color','w', 'Name','English Fig1K Reactivation vs Hit rate');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
 

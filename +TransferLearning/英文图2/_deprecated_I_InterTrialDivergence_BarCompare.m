@@ -1,3 +1,5 @@
+% [DEPRECATED] 已被 v6 设计文档 Panel E (E_DivergenceBarCompare_Dual) 替代
+%
 % 英文图1L：Inter-trial divergence（Bar compare）
 %
 % Compare two groups (paired by mouse):
@@ -15,7 +17,7 @@
 %   TransferLearning.英文图1.L_InterTrialDivergence_BarCompare
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1L_InterTrialDivergence_BarCompare.svg";
+svgName = "English_Fig2I_InterTrialDivergence_BarCompare.svg";
 
 stimulusLearned = "AudioWater";
 stimulusNaiveAO = "AudioOnly";
@@ -92,7 +94,7 @@ end
 DataCell = {naiveAO, learnedAW};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-f = figure('Color','w', 'Name', 'English Fig1L Inter-trial divergence');
+f = figure('Color','w', 'Name', 'English Fig2I Inter-trial divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 20mm
 

@@ -1,9 +1,10 @@
-% English Fig2D: hM4D(Gi) inhibition vs mCherry control
+% English Fig2H: cFos activity-dependent inhibition vs Control
 %
-% Data source: Fig3.5B (TransferLearning.Fig35.B_MOpVsMCherry)
+% v6 Panel H: cFos-MOp 精准抑制（学习曲线 + 首会话命中率）
+% Data source: Fig3.5A (TransferLearning.Fig35.A_cFos_MOpVsControl)
 % Outputs (SVG):
-%   - English_Fig2D_LearningCurve.svg
-%   - English_Fig2D_FirstSessionHitRate.svg
+%   - English_Fig2H_cFos_LearningCurve.svg
+%   - English_Fig2H_cFos_FirstSessionHitRate.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -27,38 +28,69 @@ try
 catch
 end
 
-% --- 1) Load datasets
-inhibPath  = "\\Data-Server-2\个人数据\张天夫\202601\Mop-Gi运动皮层化学遗传学抑制 声水转光水.v3.mat";
-ctrlPath   = "\\Data-Server-2\个人数据\张天夫\202601\Mop-Gi运动皮层化学遗传学抑制声光（无功能对照）.v2.mat";
+% --- 1) Load cFos database
+matPath = "\\Data-Server-2\个人数据\张天夫\202601\cFos合集.v2.mat";
+DS = UniExp.DataSet(matPath);
 
-DS_Inh  = UniExp.DataSet(inhibPath);
-DS_Ctrl = UniExp.DataSet(ctrlPath);
-
-% --- 2) Query LightWater behavior blocks
-BInh  = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Inh,  true);
-BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Ctrl, true);
-if isempty(BInh) || isempty(BCtrl)
-	error('English_Fig2D:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
+% --- 2) Build group table (Mouse -> Group)
+S = DS.Mice;
+if isempty(S)
+	error('English_Fig2H:EmptyMiceTable', 'DS.Mice is empty.');
 end
 
-BInh.Group  = repmat("Inhibited", height(BInh), 1);
-BCtrl.Group = repmat("Control",   height(BCtrl), 1);
+if ~ismember('Mouse', S.Properties.VariableNames)
+	if ~isempty(S.Properties.RowNames)
+		S.Mouse = string(S.Properties.RowNames);
+	else
+		error('English_Fig2H:MissingMouse', 'DS.Mice has no Mouse column or RowNames.');
+	end
+end
+S.Mouse = string(S.Mouse);
 
-BInh.Mouse = string(BInh.Mouse);
-BCtrl.Mouse = string(BCtrl.Mouse);
-BInh.DateTime  = TransferLearning.Fig35.iNormalizeDateTime(BInh.DateTime);
-BCtrl.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BCtrl.DateTime);
+needVars = ["ExpressedBrain","MarkTimes"];
+for k = 1:numel(needVars)
+	if ~ismember(needVars(k), string(S.Properties.VariableNames))
+		error('English_Fig2H:MissingMiceVar', 'DS.Mice lacks required var: %s', needVars(k));
+	end
+end
 
-J = [BCtrl; BInh];
+S.Group = string(S.ExpressedBrain);
+S.Group(~logical(S.MarkTimes)) = "Control";
+
+% Remove weird labels with >1 spaces (match reference behavior)
+try
+	bad = arrayfun(@(g) nnz(char(g) == ' ') > 1, S.Group);
+	S = S(~bad, :);
+catch
+end
+
+% Keep only MOp vs Control
+S = S(ismember(S.Group, ["Control","MOp"]), :);
+[~, ia] = unique(S.Mouse, 'stable');
+S = S(ia, :);
+if isempty(S)
+	error('English_Fig2H:EmptyGroups', 'No mice left after filtering to Control/MOp.');
+end
+
+% --- 3) Query LightWater behavior blocks
+B = TransferLearning.Fig35.iQueryLightWaterBlocks(DS, false);
+if isempty(B)
+	error('English_Fig2H:EmptyBehavior', 'No LightWater behavior rows found.');
+end
+B.Mouse = string(B.Mouse);
+B.DateTime = TransferLearning.Fig35.iNormalizeDateTime(B.DateTime);
+
+% Join group labels
+J = innerjoin(B, S(:, {'Mouse','Group'}), 'Keys', 'Mouse');
 J.Group = string(J.Group);
 
-% --- 3) Sessionize and add session index
+% --- 4) Sessionize and add session index
 vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable');
 Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
 Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
 
-% --- 4) Learning curve summary
+% --- 5) Learning curve summary (UniExp.LearningSummarize)
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
 sessionForSummary.Group = string(sessionForSummary.Group);
 
@@ -69,7 +101,8 @@ catch
 	SummaryL = UniExp.LearningSummarize(sessionForSummary);
 end
 
-grpOrder = ["Control","Inhibited"];
+grpOrder = ["Control","MOp"]; % data group keys
+grpLabels = ["Control","Inhibited"]; % figure labels
 
 SummaryPlot = SummaryL;
 try
@@ -82,15 +115,11 @@ semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', 
 
 % n per group is intentionally NOT shown in legend (match request)
 
-% --- 5) Plot learning curve (like English Fig1B)
-f = figure('Color','w', 'Name', 'English Fig2D Learning curve');
-try
-	f.Units = 'centimeters';
-	f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
-	try, f.PaperPositionMode = 'auto'; catch, end
-catch
-	MATLAB.Graphics.FigureAspectRatio(90, 80, 1);
-end
+% --- 6) Plot learning curve (like English Fig1B)
+f = figure('Color','w', 'Name', 'English Fig2H cFos Learning curve');
+f.Units = 'centimeters';
+f.Position(3:4) = [12, 8]; % 90mm x 80mm (match English Fig1B)
+f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax,'on');
 
@@ -101,10 +130,11 @@ catch
 end
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
-labels = {char(grpOrder(1)), char(grpOrder(2))};
+
+labels = {char(grpLabels(1)), char(grpLabels(2))};
 try
 	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2)));
+		lg = legend(ax, Patches(1:2), labels, 'Location', 'northeastoutside');
 	else
 		lg = legend(ax, labels, 'Location', 'best');
 	end
@@ -114,12 +144,12 @@ end
 
 ax.FontSize = 12;
 xlabel(ax, 'Session', 'FontSize', 12);
-ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
-svgLC = fullfile(outDirUNC, 'English_Fig2D_LearningCurve.svg');
+% Export learning curve
+svgLC = fullfile(outDirUNC, 'English_Fig2H_cFos_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -132,12 +162,29 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-% --- 6) First transfer session hit-rate bar compare
+% --- 7) First transfer session hit-rate bar compare (Control vs Inhibited)
 perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
 perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
 
 xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
-xInh  = perMouse.TransferFirstPerf(perMouse.Group=="Inhibited");
+xInh  = perMouse.TransferFirstPerf(perMouse.Group=="MOp");
+
+% Fallback if Phase/Transfer not available
+if ~any(isfinite(xCtrl)) || ~any(isfinite(xInh))
+	xCtrl = nan(height(perMouse),1);
+	xInh  = nan(height(perMouse),1);
+	for i = 1:height(perMouse)
+		m = perMouse.Mouse(i);
+		S1 = Sess(Sess.Mouse==m, :);
+		S1 = sortrows(S1, 'Session');
+		p1 = double(S1.Performance(find(S1.Session==1,1,'first')));
+		if perMouse.Group(i)=="Control"
+			xCtrl(i) = p1;
+		else
+			xInh(i) = p1;
+		end
+	end
+end
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xInh  = xInh(isfinite(xInh));
@@ -145,9 +192,9 @@ xInh  = xInh(isfinite(xInh));
 
 DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
-%% 
 
-f2 = figure('Color','none', 'Name', 'English Fig2D First transfer session');
+%% 
+f2 = figure('Color','none', 'Name', 'English Fig2H cFos First transfer session');
 try
 	f2.Units = 'centimeters';
 	f2.Position(3:4) = [4, 3];
@@ -195,7 +242,7 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
 title(ax2, 'First block');
 box(ax2, 'off');
 
-svgFS = fullfile(outDirUNC, 'English_Fig2D_FirstSessionHitRate.svg');
+svgFS = fullfile(outDirUNC, 'English_Fig2H_cFos_FirstSessionHitRate.svg');
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 	TransferLearning.PrintFigure(f2, svgFS);
@@ -204,6 +251,6 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'English_Fig2D_Sessions', Sess);
-assignin('base', 'English_Fig2D_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2D_FirstSessionP', pFS);
+assignin('base', 'English_Fig2H_Sessions', Sess);
+assignin('base', 'English_Fig2H_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2H_FirstSessionP', pFS);

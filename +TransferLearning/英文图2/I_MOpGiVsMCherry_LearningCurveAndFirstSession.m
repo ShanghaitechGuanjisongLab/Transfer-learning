@@ -1,9 +1,10 @@
-% English Fig2F: 7-day homecage interval (Vacation7 vs Control)
+% English Fig2I: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
 %
-% Data source: Fig3.5D (TransferLearning.Fig35.D_Vacation7VsCtrl)
+% v6 Panel I: DREADD MOp 全局抑制（学习曲线 + 首会话命中率）
+% Data source: Fig3.5B (TransferLearning.Fig35.B_MOpVsMCherry)
 % Outputs (SVG):
-%   - English_Fig2F_LearningCurve.svg
-%   - English_Fig2F_FirstSessionHitRate.svg
+%   - English_Fig2I_DREADD_LearningCurve.svg
+%   - English_Fig2I_DREADD_FirstSessionHitRate.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -28,25 +29,28 @@ catch
 end
 
 % --- 1) Load datasets
-CtrlDS = TransferLearning.AudioLightBaseline();
-V7DS   = TransferLearning.Vacation7();
+inhibPath  = "\\Data-Server-2\个人数据\张天夫\202601\Mop-Gi运动皮层化学遗传学抑制 声水转光水.v3.mat";
+ctrlPath   = "\\Data-Server-2\个人数据\张天夫\202601\Mop-Gi运动皮层化学遗传学抑制声光（无功能对照）.v2.mat";
+
+DS_Inh  = UniExp.DataSet(inhibPath);
+DS_Ctrl = UniExp.DataSet(ctrlPath);
 
 % --- 2) Query LightWater behavior blocks
-BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(CtrlDS, false);
-BV7   = TransferLearning.Fig35.iQueryLightWaterBlocks(V7DS,   false);
-if isempty(BCtrl) || isempty(BV7)
-	error('English_Fig2F:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
+BInh  = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Inh,  true);
+BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Ctrl, true);
+if isempty(BInh) || isempty(BCtrl)
+	error('English_Fig2I:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
 
-BCtrl.Group = repmat("Control",    height(BCtrl), 1);
-BV7.Group   = repmat("Vacation7",  height(BV7),   1);
+BInh.Group  = repmat("Inhibited", height(BInh), 1);
+BCtrl.Group = repmat("Control",   height(BCtrl), 1);
 
+BInh.Mouse = string(BInh.Mouse);
 BCtrl.Mouse = string(BCtrl.Mouse);
-BV7.Mouse   = string(BV7.Mouse);
+BInh.DateTime  = TransferLearning.Fig35.iNormalizeDateTime(BInh.DateTime);
 BCtrl.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BCtrl.DateTime);
-BV7.DateTime   = TransferLearning.Fig35.iNormalizeDateTime(BV7.DateTime);
 
-J = [BCtrl; BV7];
+J = [BCtrl; BInh];
 J.Group = string(J.Group);
 
 % --- 3) Sessionize and add session index
@@ -66,7 +70,7 @@ catch
 	SummaryL = UniExp.LearningSummarize(sessionForSummary);
 end
 
-grpOrder = ["Control","Vacation7"];
+grpOrder = ["Control","Inhibited"];
 
 SummaryPlot = SummaryL;
 try
@@ -77,13 +81,16 @@ end
 meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', false);
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
 
-% --- 5) Plot learning curve (like English Fig2B)
-f = figure('Color','w', 'Name', 'English Fig2F Learning curve');
+% n per group is intentionally NOT shown in legend (match request)
+
+% --- 5) Plot learning curve (like English Fig1B)
+f = figure('Color','w', 'Name', 'English Fig2I DREADD Learning curve');
 try
 	f.Units = 'centimeters';
-	f.Position(3:4) = [9, 8];
+	f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
 	try, f.PaperPositionMode = 'auto'; catch, end
 catch
+	MATLAB.Graphics.FigureAspectRatio(90, 80, 1);
 end
 ax = axes(f);
 hold(ax,'on');
@@ -113,7 +120,7 @@ ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
-svgLC = fullfile(outDirUNC, 'English_Fig2F_LearningCurve.svg');
+svgLC = fullfile(outDirUNC, 'English_Fig2I_DREADD_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -131,17 +138,17 @@ perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
 perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
 
 xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
-xV7   = perMouse.TransferFirstPerf(perMouse.Group=="Vacation7");
+xInh  = perMouse.TransferFirstPerf(perMouse.Group=="Inhibited");
 
 xCtrl = xCtrl(isfinite(xCtrl));
-xV7   = xV7(isfinite(xV7));
-[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xV7);
+xInh  = xInh(isfinite(xInh));
+[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xInh);
 
-DataCell = {double(xCtrl(:)), double(xV7(:))};
+DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
-%%
+%% 
 
-f2 = figure('Color','none', 'Name', 'English Fig2F First transfer session');
+f2 = figure('Color','none', 'Name', 'English Fig2I DREADD First transfer session');
 try
 	f2.Units = 'centimeters';
 	f2.Position(3:4) = [4, 3];
@@ -158,7 +165,7 @@ ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
 
-% Bar styling (match English Fig2B)
+% Bar styling (match English Fig1B)
 colorA = [1 0 0];
 colorB = [0 0 1];
 if isscalar(Bars2)
@@ -189,7 +196,7 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
 title(ax2, 'First block');
 box(ax2, 'off');
 
-svgFS = fullfile(outDirUNC, 'English_Fig2F_FirstSessionHitRate.svg');
+svgFS = fullfile(outDirUNC, 'English_Fig2I_DREADD_FirstSessionHitRate.svg');
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 	TransferLearning.PrintFigure(f2, svgFS);
@@ -198,6 +205,6 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'English_Fig2F_Sessions', Sess);
-assignin('base', 'English_Fig2F_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2F_FirstSessionP', pFS);
+assignin('base', 'English_Fig2I_Sessions', Sess);
+assignin('base', 'English_Fig2I_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2I_FirstSessionP', pFS);

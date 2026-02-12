@@ -1,4 +1,4 @@
-% 英文图1H：复用细胞占比（饼图）
+% 英文图1I：复用细胞占比（饼图）
 %
 % 复用细胞定义：Learned AudioWater 与 Transfer LightWater 在1s处均活跃
 % 活跃判定：1s处 > baseline + 3*std（baseline = -3~0s）
@@ -34,7 +34,7 @@ end
 baseMask = (xsSec >= -3) & (xsSec < 0);
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('Fig1S1:No1s', 'Cannot find sample close to 1s.');
+	error('Fig1I:No1s', 'Cannot find sample close to 1s.');
 end
 
 % Query NTATS (Median ZScore) -- align cell universe with Fig1F selection.
@@ -77,48 +77,37 @@ nNon = nTotal - nReuse;
 
 %% 
 % --- Plot
-svgName = "English_Fig1H_ReusedCellsPie.svg";
-f = figure('Color', 'w', 'Name', 'English Fig1H Reused Cells Pie');
+svgName = "English_Fig1I_ReusedCellsPie.svg";
+f = figure('Color', 'w', 'Name', 'English Fig1I Reused Cells Pie');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4.0]; % 45mm x 40mm
-ax = axes(f);
-try
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-		ax.Toolbar.Visible = 'off';
-	end
-catch
-end
-
-ax.FontSize = 6;
+f.Position(3:4) = [3, 4]; % 50mm x 50mm
 
 if nTotal > 0
-	pReuse = 100 * (nReuse / nTotal);
-	pNon = 100 * (nNon / nTotal);
+	pReuse = nReuse / nTotal;
+	pNon   = nNon / nTotal;
 else
 	pReuse = NaN;
-	pNon = NaN;
+	pNon   = NaN;
 end
-
-labels = [
-	sprintf("🔊💡\nreactive\n%.1f%%", pReuse)
-	sprintf("🔊💧\nactive\n%.1f%%", pNon)
-];
-
-pie(ax, [nReuse, nNon], labels);
 
 % Same-hue light/dark palette
-cDark = [0.16 0.36 0.64];
-cLight = [0.72 0.83 0.95];
-colormap(ax, [cDark; cLight]);
+cDark  = [231,188,198]/255;
+cLight = [253,207,158]/255;
 
-% Ensure all labels are 6pt (pie creates text objects)
-try
-	set(findobj(ax, 'Type', 'text'), 'FontSize', 6);
-catch
-end
+ax = axes(f);
+h = MATLAB.Graphics.NestedPie( ...
+	{[pReuse, pNon]}, ...
+	WedgeColors={[cDark; cLight]}, ...
+	LabelText=[string(sprintf('🔊💡\nreactive\ncells')), string(sprintf('🔊💧\nactive\ncells'))], ...
+	PercentStatus="on", ...
+	PercentFontColor='k', ...
+	RhoLower=0.4, ...
+	LineWidth=0.5, ...
+	LabelOffset=0, ...
+	AxesHandle=ax);
 
-axis(ax, 'equal');
-box(ax, 'off');
+% Set all text to 6pt
+set(findobj(f, 'Type', 'text'), 'FontSize', 6);
 
 % --- Export
 try
@@ -136,7 +125,7 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'Fig1H_ReusedCounts', table(nReuse, nNon, nTotal));
+assignin('base', 'Fig1I_ReusedCounts', table(nReuse, nNon, nTotal));
 
 %% --- Local helpers
 
@@ -160,13 +149,13 @@ end
 
 if isnumeric(nt)
 	if ndims(nt) ~= 3
-		error('Fig1H:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('Fig1I:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-error('Fig1H:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+error('Fig1I:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)

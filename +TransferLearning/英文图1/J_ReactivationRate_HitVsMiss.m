@@ -1,4 +1,4 @@
-% 英文图1K: Hit vs Miss Reactivation rate (per mouse, layers merged)
+% 英文图1J: Hit vs Miss Reactivation rate (per mouse, layers merged)
 %
 % Reactivation rate = P(Transfer active | Learned active) at 1s
 %   L = Learned AudioWater active at 1s
@@ -42,9 +42,9 @@ hit = nanmean([hit23, hit5], 2);
 miss = nanmean([miss23, miss5], 2);
 mask = isfinite(hit) & isfinite(miss);
 %% 
-svgName = "English_Fig1I_ReactivationRate_HitVsMiss.svg";
+svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
 
-f = figure('Color','w', 'Name','English Fig1K Reactivation rate Hit vs Miss');
+f = figure('Color','w', 'Name','English Fig1J Reactivation rate Hit vs Miss');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
 
@@ -109,7 +109,8 @@ if isfinite(p)
 	end
 end
 
-title(ax, sprintf('n=%d', nnz(mask)), 'FontSize', 6);
+text(ax, 0.02, 0.98, sprintf('n=%d', nnz(mask)), 'Units','normalized', ...
+	'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
 
 % Export
 try

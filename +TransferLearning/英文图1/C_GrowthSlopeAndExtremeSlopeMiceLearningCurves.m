@@ -289,8 +289,8 @@ ax2=gca;
 hold(ax2, 'on');
 cols = lines(2);
 
-iPlotMouseCurve(ax2, allSessionsPlot, mouseMax, cols(1,:), "High slope mouse");
-iPlotMouseCurve(ax2, allSessionsPlot, mouseMin, cols(2,:), "Low slope mouse");
+iPlotMouseCurve(ax2, allSessionsPlot, mouseMax, cols(1,:), "A transfer mouse");
+iPlotMouseCurve(ax2, allSessionsPlot, mouseMin, cols(2,:), "A naive mouse");
 
 xlabel(ax2, 'Block');
 ylabel(ax2, 'Hit rate');

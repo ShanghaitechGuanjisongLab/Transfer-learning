@@ -1,4 +1,4 @@
-% 英文图1H：代表性细胞信号曲线
+% 英文图1G：代表性细胞信号曲线
 %
 % 挑选一个细胞满足以下条件：
 % - 在1s处：Learned AudioWater > Transfer LightWater > 两个Naive泳道
@@ -10,10 +10,10 @@
 % 子图2：Learned & Transfer（AudioWater, LightWater）- 两条曲线offset分开
 %
 % Execution:
-%   TransferLearning.英文图1.H_RepresentativeCell
+%   TransferLearning.英文图1.G_RepresentativeCell
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1H_RepresentativeCell.svg";
+svgName = "English_Fig1G_RepresentativeCell.svg";
 
 % --- 0) Ensure project loaded
 try
@@ -81,7 +81,7 @@ Sess = innerjoin(Sess, dtLearnedT(:, ["Mouse","DateTimeLearned"]), 'Keys', 'Mous
 Sess = innerjoin(Sess, dtTransT(:, ["Mouse","DateTimeTransfer"]), 'Keys', 'Mouse');
 
 if isempty(Sess)
-	error('Fig1H:NoMice', 'No mice have all 4 required conditions.');
+	error('Fig1G:NoMice', 'No mice have all 4 required conditions.');
 end
 
 % Collect trial UIDs for each condition
@@ -269,7 +269,7 @@ for iS = 1:height(Sess)
 end
 
 if picked.CellUID == 0
-	error('Fig1H:NoCellFound', 'No cell found satisfying all activity criteria.');
+	error('Fig1G:NoCellFound', 'No cell found satisfying all activity criteria.');
 end
 
 fprintf('Selected: Mouse=%s, CellUID=%d\n', picked.Mouse, picked.CellUID);
@@ -343,7 +343,7 @@ if maxLO_shifted >= minAO_shifted - gap
 end
 
 % --- 5) Plot
-f = figure('Color','w', 'Name', 'English Fig1H Representative Cell');
+f = figure('Color','w', 'Name', 'English Fig1G Representative Cell');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5, 4.0]; % 45mm x 40mm
 
@@ -432,7 +432,7 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'Fig1H_Picked', picked);
+assignin('base', 'Fig1G_Picked', picked);
 
 %% --- Local helper functions
 

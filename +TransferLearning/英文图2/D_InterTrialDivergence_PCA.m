@@ -1,4 +1,6 @@
-% 英文图1K：Inter-trial divergence（PCA trajectories, 2 tiles）
+% 英文图2D：Inter-trial divergence PCA（2 tiles）
+%
+% v6 Panel D: PCA 散度图 — Naive AO (散) vs Learned AW (聚)
 %
 % 两个 tile 来自 PCA 图：
 %   - Naive AudioOnly（相邻 2 回合平均 -> 10 条线）
@@ -8,10 +10,10 @@
 % 大标题写：Inter-trial divergence
 %
 % Execution:
-%   TransferLearning.英文图1.K_InterTrialDivergence
+%   TransferLearning.英文图2.D_InterTrialDivergence_PCA
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1K_InterTrialDivergence.svg";
+svgName = "English_Fig2D_InterTrialDivergence_PCA.svg";
 
 % Time (s) to use as PCA origin after cropping (0 = cue time).
 originSec = 0.0;
@@ -50,8 +52,9 @@ G_learn_plot = iAverageAdjacentTrials(G_learn, 3);
 [G_audioOnly, info_audioOnly] = iNtsSuperMouse(DSList, "Naive", "AudioOnly", 20, useCellFilter);
 G_audioOnly_plot = iAverageAdjacentTrials(G_audioOnly, 2);
 
+%% 
 % --- 3) Plot (two tiles)
-f = figure('Color', 'w', 'Name', 'English Fig1K Inter-trial divergence');
+f = figure('Color', 'w', 'Name', 'English Fig2D Inter-trial divergence PCA');
 f.Units = 'centimeters';
 f.Position(3:4) = [6.0, 4.0]; % 60mm x 40mm
 
@@ -87,8 +90,8 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig1K_Info_Learned', info_learn);
-assignin('base', 'Fig1K_Info_AudioOnly', info_audioOnly);
+assignin('base', 'Fig2D_Info_Learned', info_learn);
+assignin('base', 'Fig2D_Info_AudioOnly', info_audioOnly);
 
 function [GroupNtats, info] = iNtsSuperMouse(DSList, phaseName, stimulusName, minTrials, useCellFilter)
 % Pool all mice into one "super mouse" using QueryNTS (DeltaF).
@@ -148,7 +151,7 @@ for iDS = 1:numel(DSList)
 end
 
 if isempty(cellTraces)
-	error('Fig1K:EmptySuperMouse', 'No cells found after pooling for Phase=%s Stimulus=%s.', phaseName, stimulusName);
+	error('Fig2D:EmptySuperMouse', 'No cells found after pooling for Phase=%s Stimulus=%s.', phaseName, stimulusName);
 end
 
 nCells = numel(cellTraces);

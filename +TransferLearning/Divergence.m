@@ -7,4 +7,8 @@ function D=Divergence(CellTrialTimes)
 
 % 候选散度算法，不零一化，更不显著
 D=sqrt(sum(var(CellTrialTimes(:,:,32),[],2),1)./sum(mean(CellTrialTimes(:,:,32),2).^2));
+
+%主成分协方差行列式算法
+% [~,D]=pca(CellTrialTimes(:,:,32).',Centered='off',NumComponents=2);
+% D=sqrt(det(cov(D)))./norm(mean(D,1));
 end

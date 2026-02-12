@@ -1,9 +1,10 @@
-% English Fig2B: cFos inhibition vs Control
+% English Fig2J: 7-day homecage interval (Vacation7 vs Control)
 %
-% Data source: Fig3.5A (TransferLearning.Fig35.A_cFos_MOpVsControl)
+% v6 Panel J: Vacation7 时间对照（学习曲线 + 首会话命中率）
+% Data source: Fig3.5D (TransferLearning.Fig35.D_Vacation7VsCtrl)
 % Outputs (SVG):
-%   - English_Fig2B_LearningCurve.svg
-%   - English_Fig2B_FirstSessionHitRate.svg
+%   - English_Fig2J_Vacation7_LearningCurve.svg
+%   - English_Fig2J_Vacation7_FirstSessionHitRate.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -27,69 +28,35 @@ try
 catch
 end
 
-% --- 1) Load cFos database
-matPath = "\\Data-Server-2\个人数据\张天夫\202601\cFos合集.v2.mat";
-DS = UniExp.DataSet(matPath);
+% --- 1) Load datasets
+CtrlDS = TransferLearning.AudioLightBaseline();
+V7DS   = TransferLearning.Vacation7();
 
-% --- 2) Build group table (Mouse -> Group)
-S = DS.Mice;
-if isempty(S)
-	error('English_Fig2B:EmptyMiceTable', 'DS.Mice is empty.');
+% --- 2) Query LightWater behavior blocks
+BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(CtrlDS, false);
+BV7   = TransferLearning.Fig35.iQueryLightWaterBlocks(V7DS,   false);
+if isempty(BCtrl) || isempty(BV7)
+	error('English_Fig2J:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
 
-if ~ismember('Mouse', S.Properties.VariableNames)
-	if ~isempty(S.Properties.RowNames)
-		S.Mouse = string(S.Properties.RowNames);
-	else
-		error('English_Fig2B:MissingMouse', 'DS.Mice has no Mouse column or RowNames.');
-	end
-end
-S.Mouse = string(S.Mouse);
+BCtrl.Group = repmat("Control",    height(BCtrl), 1);
+BV7.Group   = repmat("Vacation7",  height(BV7),   1);
 
-needVars = ["ExpressedBrain","MarkTimes"];
-for k = 1:numel(needVars)
-	if ~ismember(needVars(k), string(S.Properties.VariableNames))
-		error('English_Fig2B:MissingMiceVar', 'DS.Mice lacks required var: %s', needVars(k));
-	end
-end
+BCtrl.Mouse = string(BCtrl.Mouse);
+BV7.Mouse   = string(BV7.Mouse);
+BCtrl.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BCtrl.DateTime);
+BV7.DateTime   = TransferLearning.Fig35.iNormalizeDateTime(BV7.DateTime);
 
-S.Group = string(S.ExpressedBrain);
-S.Group(~logical(S.MarkTimes)) = "Control";
-
-% Remove weird labels with >1 spaces (match reference behavior)
-try
-	bad = arrayfun(@(g) nnz(char(g) == ' ') > 1, S.Group);
-	S = S(~bad, :);
-catch
-end
-
-% Keep only MOp vs Control
-S = S(ismember(S.Group, ["Control","MOp"]), :);
-[~, ia] = unique(S.Mouse, 'stable');
-S = S(ia, :);
-if isempty(S)
-	error('English_Fig2B:EmptyGroups', 'No mice left after filtering to Control/MOp.');
-end
-
-% --- 3) Query LightWater behavior blocks
-B = TransferLearning.Fig35.iQueryLightWaterBlocks(DS, false);
-if isempty(B)
-	error('English_Fig2B:EmptyBehavior', 'No LightWater behavior rows found.');
-end
-B.Mouse = string(B.Mouse);
-B.DateTime = TransferLearning.Fig35.iNormalizeDateTime(B.DateTime);
-
-% Join group labels
-J = innerjoin(B, S(:, {'Mouse','Group'}), 'Keys', 'Mouse');
+J = [BCtrl; BV7];
 J.Group = string(J.Group);
 
-% --- 4) Sessionize and add session index
+% --- 3) Sessionize and add session index
 vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable');
 Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
 Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
 
-% --- 5) Learning curve summary (UniExp.LearningSummarize)
+% --- 4) Learning curve summary
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
 sessionForSummary.Group = string(sessionForSummary.Group);
 
@@ -100,8 +67,7 @@ catch
 	SummaryL = UniExp.LearningSummarize(sessionForSummary);
 end
 
-grpOrder = ["Control","MOp"]; % data group keys
-grpLabels = ["Control","Inhibited"]; % figure labels
+grpOrder = ["Control","Vacation7"];
 
 SummaryPlot = SummaryL;
 try
@@ -112,13 +78,14 @@ end
 meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', false);
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
 
-% n per group is intentionally NOT shown in legend (match request)
-
-% --- 6) Plot learning curve (like English Fig1B)
-f = figure('Color','w', 'Name', 'English Fig2B Learning curve');
-f.Units = 'centimeters';
-f.Position(3:4) = [12, 8]; % 90mm x 80mm (match English Fig1B)
-f.PaperPositionMode = 'auto';
+% --- 5) Plot learning curve (like English Fig2B)
+f = figure('Color','w', 'Name', 'English Fig2J Vacation7 Learning curve');
+try
+	f.Units = 'centimeters';
+	f.Position(3:4) = [9, 8];
+	try, f.PaperPositionMode = 'auto'; catch, end
+catch
+end
 ax = axes(f);
 hold(ax,'on');
 
@@ -129,11 +96,10 @@ catch
 end
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
-
-labels = {char(grpLabels(1)), char(grpLabels(2))};
+labels = {char(grpOrder(1)), char(grpOrder(2))};
 try
 	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', 'northeastoutside');
+		lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2)));
 	else
 		lg = legend(ax, labels, 'Location', 'best');
 	end
@@ -143,12 +109,12 @@ end
 
 ax.FontSize = 12;
 xlabel(ax, 'Session', 'FontSize', 12);
+ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
-% Export learning curve
-svgLC = fullfile(outDirUNC, 'English_Fig2B_LearningCurve.svg');
+svgLC = fullfile(outDirUNC, 'English_Fig2J_Vacation7_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -161,39 +127,22 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-% --- 7) First transfer session hit-rate bar compare (Control vs Inhibited)
+% --- 6) First transfer session hit-rate bar compare
 perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
 perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
 
 xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
-xInh  = perMouse.TransferFirstPerf(perMouse.Group=="MOp");
-
-% Fallback if Phase/Transfer not available
-if ~any(isfinite(xCtrl)) || ~any(isfinite(xInh))
-	xCtrl = nan(height(perMouse),1);
-	xInh  = nan(height(perMouse),1);
-	for i = 1:height(perMouse)
-		m = perMouse.Mouse(i);
-		S1 = Sess(Sess.Mouse==m, :);
-		S1 = sortrows(S1, 'Session');
-		p1 = double(S1.Performance(find(S1.Session==1,1,'first')));
-		if perMouse.Group(i)=="Control"
-			xCtrl(i) = p1;
-		else
-			xInh(i) = p1;
-		end
-	end
-end
+xV7   = perMouse.TransferFirstPerf(perMouse.Group=="Vacation7");
 
 xCtrl = xCtrl(isfinite(xCtrl));
-xInh  = xInh(isfinite(xInh));
-[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xInh);
+xV7   = xV7(isfinite(xV7));
+[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xV7);
 
-DataCell = {double(xCtrl(:)), double(xInh(:))};
+DataCell = {double(xCtrl(:)), double(xV7(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+%%
 
-%% 
-f2 = figure('Color','none', 'Name', 'English Fig2B First transfer session');
+f2 = figure('Color','none', 'Name', 'English Fig2J Vacation7 First transfer session');
 try
 	f2.Units = 'centimeters';
 	f2.Position(3:4) = [4, 3];
@@ -210,7 +159,7 @@ ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
 
-% Bar styling (match English Fig1B)
+% Bar styling (match English Fig2B)
 colorA = [1 0 0];
 colorB = [0 0 1];
 if isscalar(Bars2)
@@ -241,7 +190,7 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
 title(ax2, 'First block');
 box(ax2, 'off');
 
-svgFS = fullfile(outDirUNC, 'English_Fig2B_FirstSessionHitRate.svg');
+svgFS = fullfile(outDirUNC, 'English_Fig2J_Vacation7_FirstSessionHitRate.svg');
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 	TransferLearning.PrintFigure(f2, svgFS);
@@ -250,6 +199,6 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'English_Fig2B_Sessions', Sess);
-assignin('base', 'English_Fig2B_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2B_FirstSessionP', pFS);
+assignin('base', 'English_Fig2J_Sessions', Sess);
+assignin('base', 'English_Fig2J_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2J_FirstSessionP', pFS);
