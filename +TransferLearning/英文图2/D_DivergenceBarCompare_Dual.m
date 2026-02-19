@@ -1,23 +1,22 @@
-% 英文图2E：散度条形图（双比较）
+% 英文图2D：散度条形图（双比较）
 %
-% 左面板：Naive AudioOnly vs Learned AudioWater（配对 signrank，全细胞）
+% 上面板：Naive AudioOnly vs Learned AudioWater（配对 signrank，全细胞）
 %   — 学习使群体 trial 轨迹从分散压缩为聚敛
-% 右面板：L2/3 Naive LightWater vs Transfer LightWater（非配对 ranksum）
-%   — Transfer 组在 L2/3 层保持了学习带来的低散度
+% 下面板：All cells Div(继承) vs Div(非继承)（配对 signrank）
+%   — 消融继承细胞后 Div 显著升高
 %
 % 数据来源：
-%   配对: AudioLightBaseline + ALInterspersed（Naive AO first session, Learned AW last session）
-%   非配对 Naive LW: LightAudioBaseline + LAInterspersed（Phase=Naive, 排除含AudioWater的会话）
-%   非配对 Transfer LW: AudioLightBaseline（Phase=Transfer, Stimulus=LightWater）
+%   配对AO-AW: AudioLightBaseline + ALInterspersed（Naive AO first session, Learned AW last session）
+%   Div分解: AudioLightBaseline（Transfer LW 首会话，继承组=Learned AW 末会话活跃细胞 3σ）
 %
 % 预期统计：
-%   左: NaiveAO vs LearnedAW signrank 显著
-%   右: L2/3 NaiveLW vs TransferLW ranksum p ≈ 0.046
+%   上: NaiveAO vs LearnedAW signrank 显著
+%   下: All-cell Div(Inherited) vs Div(Non-inherited) signrank 显著
 %
 % 输出: SVG to \\Data-Server-2\个人数据\张天夫\202601
 %
 % Execution:
-%   TransferLearning.英文图2.E_DivergenceBarCompare_Dual
+%   TransferLearning.英文图2.D_DivergenceBarCompare_Dual
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
 
@@ -112,143 +111,100 @@ divAO = divAO_all(kPaired);
 divAW = divAW_all(kPaired);
 
 pPaired = signrank(divAO, divAW);
-fprintf('\n=== Panel E Left: NaiveAO vs LearnedAW Div (paired signrank) ===\n');
+fprintf('\n=== Panel D Left: NaiveAO vs LearnedAW Div (paired signrank) ===\n');
 fprintf('  NaiveAO:    %.3f ± %.3f (n=%d)\n', mean(divAO), std(divAO)/sqrt(numel(divAO)), numel(divAO));
 fprintf('  LearnedAW:  %.3f ± %.3f (n=%d)\n', mean(divAW), std(divAW)/sqrt(numel(divAW)), numel(divAW));
 fprintf('  signrank p = %.4g\n', pPaired);
 
-%% ===== Part 2: L2/3 NaiveLW vs TransferLW (非配对) =====
+%% ===== Part 2: Inherited vs Non-inherited Div (All cells, paired signrank) =====
 
-% --- Naive LW: LightAudioBaseline + LAInterspersed ---
-naiveDSList = {
-	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline())
-	builtin('struct', 'Name', "LAInterspersed",     'DS', TransferLearning.LAInterspersed())
-};
-
-maxN = 50;
-N_DivL23 = nan(maxN, 1);
-N_Mouse = strings(maxN, 1);
-nNaive = 0;
-
-for d = 1:numel(naiveDSList)
-	DS = naiveDSList{d}.DS;
-	CellTbl = DS.Cells;
-	CellTbl.ZLayer = string(CellTbl.ZLayer);
-	CellTbl.CellUID = uint64(CellTbl.CellUID);
-	CellTbl.Mouse = string(CellTbl.Mouse);
-
-	TnaiveAll = DS.TableQuery(["Mouse","DateTime","Stimulus","TrialUID","TrialIndex"], Phase="Naive");
-	if isempty(TnaiveAll), continue; end
-	TnaiveAll.Mouse = string(TnaiveAll.Mouse);
-	TnaiveAll.Stimulus = string(TnaiveAll.Stimulus);
-
-	mice = unique(TnaiveAll.Mouse);
-	for i = 1:numel(mice)
-		m = mice(i);
-		Tm = TnaiveAll(TnaiveAll.Mouse == m, :);
-		if isempty(Tm), continue; end
-
-		% Find first pure-LW Naive session (no AudioWater)
-		sess = sort(unique(Tm.DateTime), 'ascend');
-		isValid = false(numel(sess), 1);
-		for s = 1:numel(sess)
-			Ts = Tm(Tm.DateTime == sess(s), :);
-			if any(Ts.Stimulus == "LightWater") && ~any(Ts.Stimulus == "AudioWater")
-				isValid(s) = true;
-			end
-		end
-		validSess = sess(isValid);
-		if isempty(validSess), continue; end
-
-		dt = validSess(1);
-		Ts = Tm(Tm.DateTime == dt & Tm.Stimulus == "LightWater", :);
-		Ts = sortrows(Ts, "TrialIndex");
-		trialUIDs = unique(uint64(Ts.TrialUID), 'stable');
-		if numel(trialUIDs) < 2, continue; end
-
-		ntsLW = DS.QueryNTS(struct('Stimulus', "LightWater", 'Mouse', m), UniExp.Flags.DeltaF, 1:24);
-		if iscell(ntsLW), ntsLW = ntsLW{1}; end
-		if isempty(ntsLW), continue; end
-
-		[CTT, cellUIDs] = iLocalBuildCTT(ntsLW, trialUIDs, sampleRate);
-		if isempty(CTT) || size(CTT, 1) < 3, continue; end
-
-		% L2/3 cells only
-		mCell = CellTbl(CellTbl.Mouse == m, :);
-		[~, loc] = ismember(cellUIDs, mCell.CellUID);
-		cLayers = strings(numel(cellUIDs), 1);
-		cLayers(loc > 0) = mCell.ZLayer(loc(loc > 0));
-		mask = cLayers == "MOp2/3";
-
-		if sum(mask) < 3, continue; end
-
-		nNaive = nNaive + 1;
-		N_DivL23(nNaive) = iDivAtIdx(CTT(mask, :, :), idx1s);
-		N_Mouse(nNaive) = m;
-	end
-end
-N_DivL23 = N_DivL23(1:nNaive);
-N_Mouse = N_Mouse(1:nNaive);
-
-% --- Transfer LW: AudioLightBaseline ---
 DS_ALB = TransferLearning.AudioLightBaseline();
 CellTbl_ALB = DS_ALB.Cells;
-CellTbl_ALB.ZLayer = string(CellTbl_ALB.ZLayer);
 CellTbl_ALB.CellUID = uint64(CellTbl_ALB.CellUID);
 CellTbl_ALB.Mouse = string(CellTbl_ALB.Mouse);
 
-TtransLW = DS_ALB.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex"], Phase="Transfer", Stimulus="LightWater");
-TtransLW.Mouse = string(TtransLW.Mouse);
-TtransLW.DateTime = datetime(TtransLW.DateTime);
-TtransLW.DateTime.TimeZone = '';
+Ttrans = DS_ALB.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex"], Phase="Transfer", Stimulus="LightWater");
+Ttrans.Mouse = string(Ttrans.Mouse);
+Ttrans.DateTime = datetime(Ttrans.DateTime);
+Ttrans.DateTime.TimeZone = '';
 
-trMice = unique(TtransLW.Mouse);
+TlearnAW = DS_ALB.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex"], Phase="Learned", Stimulus="AudioWater");
+TlearnAW.Mouse = string(TlearnAW.Mouse);
+TlearnAW.DateTime = datetime(TlearnAW.DateTime);
+TlearnAW.DateTime.TimeZone = '';
+
+trMice = unique(Ttrans.Mouse);
 nT = numel(trMice);
-T_DivL23 = nan(nT, 1);
-T_Mouse = strings(nT, 1);
+Div_inhOnly = nan(nT, 1);
+Div_noInh = nan(nT, 1);
 
 for i = 1:nT
 	m = trMice(i);
-	T_Mouse(i) = m;
 
-	Tt = TtransLW(TtransLW.Mouse == m, :);
-	dtT = min(Tt.DateTime);
-	Tt = sortrows(Tt(Tt.DateTime == dtT, :), "TrialIndex");
-	trialT = unique(uint64(Tt.TrialUID), 'stable');
-	if numel(trialT) < 2, continue; end
+	Tm = Ttrans(Ttrans.Mouse == m, :);
+	dt = min(Tm.DateTime);
+	Ts = sortrows(Tm(Tm.DateTime == dt, :), "TrialIndex");
+	allUID = unique(uint64(Ts.TrialUID), 'stable');
+	if numel(allUID) < 2, continue; end
 
 	ntsLW = DS_ALB.QueryNTS(struct('Stimulus', "LightWater", 'Mouse', m), UniExp.Flags.DeltaF, 1:24);
+	ntsAW = DS_ALB.QueryNTS(struct('Stimulus', "AudioWater", 'Mouse', m), UniExp.Flags.DeltaF, 1:24);
 	if iscell(ntsLW), ntsLW = ntsLW{1}; end
+	if iscell(ntsAW), ntsAW = ntsAW{1}; end
 	if isempty(ntsLW), continue; end
 
-	[CTT, cellUIDs] = iLocalBuildCTT(ntsLW, trialT, sampleRate);
+	% Inherited definition: Learned AW last session active cells (3σ)
+	inhUID = uint64([]);
+	if ~isempty(ntsAW)
+		Ta = TlearnAW(TlearnAW.Mouse == m, :);
+		if ~isempty(Ta)
+			dtA = max(Ta.DateTime);
+			Ta = sortrows(Ta(Ta.DateTime == dtA, :), "TrialIndex");
+			trialA = unique(uint64(Ta.TrialUID), 'stable');
+			[CTT_A, uidA] = iLocalBuildCTT(ntsAW, trialA, sampleRate);
+			if ~isempty(CTT_A) && size(CTT_A, 1) >= 3
+				ntA = squeeze(mean(CTT_A, 2));
+				bsl = ntA(:, 1:idxCue);
+				activeA = ntA(:, idx1s) > mean(bsl, 2) + 3 * std(bsl, [], 2);
+				inhUID = uidA(activeA);
+			end
+		end
+	end
+
+	[CTT, uidLW] = iLocalBuildCTT(ntsLW, allUID, sampleRate);
 	if isempty(CTT) || size(CTT, 1) < 3, continue; end
 
-	mCell = CellTbl_ALB(CellTbl_ALB.Mouse == m, :);
-	[~, loc] = ismember(cellUIDs, mCell.CellUID);
-	cLayers = strings(numel(cellUIDs), 1);
-	cLayers(loc > 0) = mCell.ZLayer(loc(loc > 0));
-	mask = cLayers == "MOp2/3";
+	isInh = ismember(uidLW, inhUID);
+	nInh = sum(isInh);
+	nNon = sum(~isInh);
 
-	if sum(mask) < 3, continue; end
-	T_DivL23(i) = iDivAtIdx(CTT(mask, :, :), idx1s);
+	X = CTT(:, :, idx1s);  % Cell × Trial
+
+	if nInh >= 3
+		Div_inhOnly(i) = iDivFromX(X(isInh, :));
+	end
+	if nNon >= 3
+		Div_noInh(i) = iDivFromX(X(~isInh, :));
+	end
 end
 
-kN = isfinite(N_DivL23);
-kT = isfinite(T_DivL23);
-pUnpaired = ranksum(N_DivL23(kN), T_DivL23(kT));
-fprintf('\n=== Panel E Right: L2/3 NaiveLW vs TransferLW Div (unpaired ranksum) ===\n');
-fprintf('  NaiveLW L2/3:    %.3f ± %.3f (n=%d)\n', mean(N_DivL23(kN)), std(N_DivL23(kN))/sqrt(sum(kN)), sum(kN));
-fprintf('  TransferLW L2/3: %.3f ± %.3f (n=%d)\n', mean(T_DivL23(kT)), std(T_DivL23(kT))/sqrt(sum(kT)), sum(kT));
-fprintf('  ranksum p = %.4g\n', pUnpaired);
+kDecomp = isfinite(Div_inhOnly) & isfinite(Div_noInh);
+divI_all = Div_inhOnly(kDecomp);
+divN_all = Div_noInh(kDecomp);
+pDecomp = signrank(divI_all, divN_all);
+fprintf('\n=== Panel D Bottom: All-cell Div Inherited vs Non-inherited (paired signrank) ===\n');
+fprintf('  Inherited:     %.3f ± %.3f (n=%d)\n', mean(divI_all), std(divI_all)/sqrt(numel(divI_all)), numel(divI_all));
+fprintf('  Non-inherited: %.3f ± %.3f (n=%d)\n', mean(divN_all), std(divN_all)/sqrt(numel(divN_all)), numel(divN_all));
+fprintf('  signrank p = %.4g\n', pDecomp);
 
 %% ===== Plot =====
-f = figure('Color', 'w', 'Name', 'English Fig2E Divergence dual bar compare');
+f = figure('Color', 'w', 'Name', 'English Fig2D Divergence dual bar compare');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-ylabel(Layout, 'Divergence');
+yl = ylabel(Layout, 'Divergence');
+yl.FontSize = 6;
 
 colorNaive = [1 0 0];
 colorLearn = [0 0 1];
@@ -257,11 +213,12 @@ colorLearn = [0 0 1];
 nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare({divAO, divAW}, true);
 delete(findobj(gca, 'Type', 'Scatter'));
+for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
 ax1 = gca;
 ax1.FontSize = 6;
 ax1.FontName = 'Segoe UI Emoji';
 ax1.XTick = [1, 2];
-ax1.XTickLabel = {'Naive 🔊', 'Learned 🔊💧'};
+ax1.XTickLabel = {'🔊', '🔊💧'};
 legend(ax1, 'off');
 box(ax1, 'off');
 grid(ax1, 'off');
@@ -281,58 +238,62 @@ end
 
 star1 = iAsterisk(pPaired);
 if star1 ~= ""
-	Desc1 = table(EB1.Object(1), EB1.Object(2), 1, 1, star1, ...
-		'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text'});
+	Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
+		'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
 	[~, PT1] = MATLAB.Graphics.PLine(Desc1);
 	for t = PT1(:)', t.FontSize = 6; end
 end
 
-% --- Bottom: L2/3 NaiveLW vs TransferLW (unpaired) ---
+% --- Bottom: All cells Div(inherited) vs Div(non-inherited) (paired) ---
 nexttile(Layout, 2);
-[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({N_DivL23(kN), T_DivL23(kT)}, false);
+[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({divI_all, divN_all}, true);
 delete(findobj(gca, 'Type', 'Scatter'));
+for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
 ax2 = gca;
 ax2.FontSize = 6;
 ax2.FontName = 'Segoe UI Emoji';
 ax2.XTick = [1, 2];
-ax2.XTickLabel = {'Naive 💡💧', 'Transfer 💡💧'};
-title(ax2, 'L2/3');
+ax2.XTickLabel = {'Active', 'Inact.'};
+title(ax2, 'Cell subgroups of 💡💧');
+xlabel(ax2, '🔊💧');
 legend(ax2, 'off');
 box(ax2, 'off');
 grid(ax2, 'off');
 
+cInh = [0.8 0.2 0.2];
+cNon = [0.5 0.5 0.5];
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
-	Bars2.CData = [colorNaive; colorLearn];
+	Bars2.CData = [cInh; cNon];
 	Bars2.BarWidth = 0.5;
 	Bars2.LineWidth = 0.5;
 	Bars2.FaceAlpha = 1/3;
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorNaive; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
-		Bars2(2).FaceColor = colorLearn; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
+		Bars2(1).FaceColor = cInh; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
+		Bars2(2).FaceColor = cNon; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
 	end
 end
 
-star2 = iAsterisk(pUnpaired);
+star2 = iAsterisk(pDecomp);
 if star2 ~= ""
-	Desc2 = table(EB2.Object(1), EB2.Object(2), 1, 1, star2, ...
-		'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text'});
+	Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
+		'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
 	[~, PT2] = MATLAB.Graphics.PLine(Desc2);
 	for t = PT2(:)', t.FontSize = 6; end
 end
 
 % --- Export ---
-svgPath = fullfile(outDirUNC, "English_Fig2E_DivergenceBarCompare_Dual.svg");
+svgPath = fullfile(outDirUNC, "English_Fig2D_DivergenceBarCompare_Dual.svg");
 TransferLearning.PrintFigure(f, svgPath);
 
 % --- Summary to base workspace ---
-assignin('base', 'Fig2E_Paired_NaiveAO', divAO);
-assignin('base', 'Fig2E_Paired_LearnedAW', divAW);
-assignin('base', 'Fig2E_Paired_p', pPaired);
-assignin('base', 'Fig2E_Unpaired_NaiveLW_L23', N_DivL23(kN));
-assignin('base', 'Fig2E_Unpaired_TransferLW_L23', T_DivL23(kT));
-assignin('base', 'Fig2E_Unpaired_p', pUnpaired);
+assignin('base', 'Fig2D_Paired_NaiveAO', divAO);
+assignin('base', 'Fig2D_Paired_LearnedAW', divAW);
+assignin('base', 'Fig2D_Paired_p', pPaired);
+assignin('base', 'Fig2D_Decomp_DivInh', divI_all);
+assignin('base', 'Fig2D_Decomp_DivNon', divN_all);
+assignin('base', 'Fig2D_Decomp_p', pDecomp);
 
 %% ===== local functions =====
 
@@ -341,6 +302,17 @@ function div = iDivAtIdx(CTT, timeIdx)
 X = CTT(:, :, timeIdx);
 totalSignal = sum(mean(X, 2).^2);
 totalNoise = sum(var(X, [], 2));
+if totalSignal > 0
+	div = sqrt(totalNoise / totalSignal);
+else
+	div = NaN;
+end
+end
+
+function div = iDivFromX(X)
+% Divergence from Cell × Trial snapshot at a single time point
+totalSignal = sum(mean(X, 2).^2);
+totalNoise  = sum(var(X, [], 2));
 if totalSignal > 0
 	div = sqrt(totalNoise / totalSignal);
 else

@@ -1,10 +1,10 @@
-% English Fig2I: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
+% English Fig2J: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
 %
-% v6 Panel I: DREADD MOp 全局抑制（学习曲线 + 首会话命中率）
+% v6 Panel J: DREADD MOp 全局抑制（学习曲线 + 首会话命中率）
 % Data source: Fig3.5B (TransferLearning.Fig35.B_MOpVsMCherry)
 % Outputs (SVG):
-%   - English_Fig2I_DREADD_LearningCurve.svg
-%   - English_Fig2I_DREADD_FirstSessionHitRate.svg
+%   - English_Fig2J_DREADD_LearningCurve.svg
+%   - English_Fig2J_DREADD_FirstSessionHitRate.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -39,7 +39,7 @@ DS_Ctrl = UniExp.DataSet(ctrlPath);
 BInh  = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Inh,  true);
 BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Ctrl, true);
 if isempty(BInh) || isempty(BCtrl)
-	error('English_Fig2I:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
+	error('English_Fig2J:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
 
 BInh.Group  = repmat("Inhibited", height(BInh), 1);
@@ -84,7 +84,7 @@ semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', 
 % n per group is intentionally NOT shown in legend (match request)
 
 % --- 5) Plot learning curve (like English Fig1B)
-f = figure('Color','w', 'Name', 'English Fig2I DREADD Learning curve');
+f = figure('Color','w', 'Name', 'English Fig2J DREADD Learning curve');
 try
 	f.Units = 'centimeters';
 	f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
@@ -94,6 +94,7 @@ catch
 end
 ax = axes(f);
 hold(ax,'on');
+title(ax, 'Non-specific inhibition', 'FontSize', 8);
 
 try
 	edgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
@@ -120,7 +121,7 @@ ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
-svgLC = fullfile(outDirUNC, 'English_Fig2I_DREADD_LearningCurve.svg');
+svgLC = fullfile(outDirUNC, 'English_Fig2J_DREADD_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -148,7 +149,7 @@ DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 %% 
 
-f2 = figure('Color','none', 'Name', 'English Fig2I DREADD First transfer session');
+f2 = figure('Color','none', 'Name', 'English Fig2J DREADD First transfer session');
 try
 	f2.Units = 'centimeters';
 	f2.Position(3:4) = [4, 3];
@@ -196,7 +197,7 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
 title(ax2, 'First block');
 box(ax2, 'off');
 
-svgFS = fullfile(outDirUNC, 'English_Fig2I_DREADD_FirstSessionHitRate.svg');
+svgFS = fullfile(outDirUNC, 'English_Fig2J_DREADD_FirstSessionHitRate.svg');
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 	TransferLearning.PrintFigure(f2, svgFS);
@@ -205,6 +206,6 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'English_Fig2I_Sessions', Sess);
-assignin('base', 'English_Fig2I_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2I_FirstSessionP', pFS);
+assignin('base', 'English_Fig2J_Sessions', Sess);
+assignin('base', 'English_Fig2J_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2J_FirstSessionP', pFS);

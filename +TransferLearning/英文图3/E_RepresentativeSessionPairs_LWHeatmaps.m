@@ -1,24 +1,25 @@
-% 英文图3C：代表性相邻会话对（后一个会话）两泳道热图
+% 英文图3E：代表性相邻会话对（前后会话均值）两泳道热图
 %
 % 参考：英文图3 Z_* 探索代码（ΔHit / 1s SD）以及英文图1F 的热图样式。
 %
 % 目标：
 % - 自动从 LightWater 相邻会话对中挑选两个代表性会话对（两对可不同鼠）。
-% - 要求两对之间 ΔHit 差异尽可能大，且后一个会话的 1s inter-cell SD 差异尽可能大。
+% - 要求两对之间 ΔHit 差异尽可能大，且 1s inter-cell SD (前后会话均值) 差异尽可能大。
 % - 约束：1s SD 较大的泳道，其 ΔHit 必须也更大。
-% - 只画两个会话对的“后一个会话”(k+1) 的热图，做成两条泳道。
+% - 每个会话对取前后两个会话的共同细胞 NTATS 均值，做成两条泳道。
 % - 不做细胞对齐；每条泳道内部按 1s 信号值降序排序。
 % - 小标题标注 ΔHit。
+% - SD 指标 = mean(SD_k, SD_{k+1})，即前后两个会话细胞间 SD 的均值。
 %
 % Execution:
-%   TransferLearning.英文图3.C_RepresentativeSessionPairs_LWHeatmaps
+%   TransferLearning.英文图3.E_RepresentativeSessionPairs_LWHeatmaps
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3C_RepresentativeSessionPairs_LWHeatmaps.svg";
+svgName = "English_Fig3E_RepresentativeSessionPairs_LWHeatmaps.svg";
 
 % --- Preconditions (no try-catch)
 if ~exist('UniExp.DataSet', 'class')
-	error('EnglishFig3C:MissingUniExp', 'UniExp is not on path; load the project first.');
+	error('EnglishFig3E:MissingUniExp', 'UniExp is not on path; load the project first.');
 end
 
 DS = TransferLearning.AudioLightBaseline();
@@ -32,7 +33,7 @@ xsPlot = xsSec(xMask);
 
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('EnglishFig3C:No1s', 'Cannot find sample close to 1s.');
+	error('EnglishFig3E:No1s', 'Cannot find sample close to 1s.');
 end
 
 % --- Build session table (LightWater only)
@@ -42,42 +43,46 @@ Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iExcludeCeiling(Sess);
 
 if height(Sess) < 4
-	error('EnglishFig3C:TooFewSessions', 'Too few valid LightWater sessions after filtering.');
+	error('EnglishFig3E:TooFewSessions', 'Too few valid LightWater sessions after filtering.');
 end
 
 SessSpeed = iSessionDeltaNext(Sess);
 if isempty(SessSpeed)
-	error('EnglishFig3C:NoPairs', 'No adjacent session pairs found.');
+	error('EnglishFig3E:NoPairs', 'No adjacent session pairs found.');
 end
 
 nPairs = height(SessSpeed);
 deltaHit = double(SessSpeed.Speed_DeltaNext);
 
-% --- Compute SD@1s in session k+1 (inter-cell SD)
+% --- Compute SD@1s: mean of inter-cell SD across sessions k and k+1
 % Use per-cell median (NTATS) built from QueryNTS (ZScore), per session.
-sd1sK1 = nan(nPairs, 1);
-nCellK1 = nan(nPairs, 1);
+sd1sMean = nan(nPairs, 1);
+nCellMin = nan(nPairs, 1);
 
 for iP = 1:nPairs
+	dtK  = SessSpeed.DateTime(iP);
 	dtK1 = SessSpeed.DateTimeNext(iP);
+	[~, ntatsK]  = iSessionNTATS_QueryNTATS(DS, dtK);
 	[~, ntatsK1] = iSessionNTATS_QueryNTATS(DS, dtK1);
-	if isempty(ntatsK1)
+	if isempty(ntatsK) || isempty(ntatsK1)
 		continue;
 	end
-	v1 = double(ntatsK1(:, idx1s));
-	v1 = v1(isfinite(v1));
-	nCellK1(iP) = numel(v1);
-	if numel(v1) >= 3
-		sd1sK1(iP) = std(v1, 0, 1);
+	vK  = double(ntatsK(:, idx1s));
+	vK1 = double(ntatsK1(:, idx1s));
+	vK  = vK(isfinite(vK));
+	vK1 = vK1(isfinite(vK1));
+	nCellMin(iP) = min(numel(vK), numel(vK1));
+	if numel(vK) >= 3 && numel(vK1) >= 3
+		sd1sMean(iP) = (std(vK, 0, 1) + std(vK1, 0, 1)) / 2;
 	end
 end
 
 % --- Pick two representative pairs
-valid = isfinite(deltaHit) & isfinite(sd1sK1) & (nCellK1 >= 10);
+valid = isfinite(deltaHit) & isfinite(sd1sMean) & (nCellMin >= 10);
 valid = valid & (deltaHit > 0); % focus on performance gains
 
 if nnz(valid) < 2
-	error('EnglishFig3C:NoValidPairs', 'Not enough valid session pairs with finite ΔHit and SD@1s.');
+	error('EnglishFig3E:NoValidPairs', 'Not enough valid session pairs with finite ΔHit and SD@1s.');
 end
 
 bestHigh = NaN;
@@ -91,10 +96,10 @@ for i = 1:nPairs
 	for j = 1:nPairs
 		if i == j || ~valid(j), continue; end
 		% i is the high-SD lane; must also be higher ΔHit
-		if ~(sd1sK1(i) > sd1sK1(j) && deltaHit(i) > deltaHit(j))
+		if ~(sd1sMean(i) > sd1sMean(j) && deltaHit(i) > deltaHit(j))
 			continue;
 		end
-		sdDiff = sd1sK1(i) - sd1sK1(j);
+		sdDiff = sd1sMean(i) - sd1sMean(j);
 		dhDiff = deltaHit(i) - deltaHit(j);
 		if (sdDiff > bestSdDiff + epsTie) || (abs(sdDiff - bestSdDiff) <= epsTie && dhDiff > bestDhDiff)
 			bestHigh = i;
@@ -106,7 +111,7 @@ for i = 1:nPairs
 end
 
 if ~isfinite(bestHigh) || ~isfinite(bestLow)
-	error('EnglishFig3C:NoFeasibleSelection', 'Cannot find two pairs satisfying SD_high>SD_low and ΔHit_high>ΔHit_low.');
+	error('EnglishFig3E:NoFeasibleSelection', 'Cannot find two pairs satisfying SD_high>SD_low and ΔHit_high>ΔHit_low.');
 end
 
 pairsIdx = [bestHigh; bestLow];
@@ -118,33 +123,42 @@ laneSub = strings(1,2);
 
 for k = 1:2
 	iP = pairsIdx(k);
+	dtK  = SessSpeed.DateTime(iP);
 	dtK1 = SessSpeed.DateTimeNext(iP);
-	[uid, ntats] = iSessionNTATS_QueryNTATS(DS, dtK1);
-	if isempty(ntats)
-		error('EnglishFig3C:MissingNTATS', 'Selected session has no calcium data: %s', datestr(dtK1));
+	[uidK,  ntatsK]  = iSessionNTATS_QueryNTATS(DS, dtK);
+	[uidK1, ntatsK1] = iSessionNTATS_QueryNTATS(DS, dtK1);
+	if isempty(ntatsK) || isempty(ntatsK1)
+		error('EnglishFig3E:MissingNTATS', 'Selected session pair has no calcium data: %s / %s', datestr(dtK), datestr(dtK1));
 	end
 
-	X = double(ntats(:, xMask));
-	v1 = double(ntats(:, idx1s));
+	% Find common cells and average NTATS
+	[commonUID, locK, locK1] = intersect(uidK, uidK1);
+	if numel(commonUID) < 3
+		error('EnglishFig3E:TooFewCommon', 'Too few common cells (%d) in pair: %s / %s', numel(commonUID), datestr(dtK), datestr(dtK1));
+	end
+	ntatsAvg = (double(ntatsK(locK, :)) + double(ntatsK1(locK1, :))) / 2;
+
+	X = ntatsAvg(:, xMask);
+	v1 = ntatsAvg(:, idx1s);
 	v1(~isfinite(v1)) = -Inf;
 	[~, sIdx] = sort(v1, 'descend');
 	X = X(sIdx, :);
 	laneX{k} = X;
 	laneN(k) = size(X, 1);
-	laneSub(k) = sprintf('ΔHit=%+.0f%%\nSD=%.2f', 100 * double(deltaHit(iP)), double(sd1sK1(iP)));
+	laneSub(k) = sprintf('ΔHit=%+.0f%%\nSD=%.2f', 100 * double(deltaHit(iP)), double(sd1sMean(iP)));
 
-	fprintf('Selected pair #%d: Mouse=%s, k=%s, k+1=%s, ΔHit=%+.3f, SD@1s(k+1)=%.4f, nCells=%d\n', ...
+	fprintf('Selected pair #%d: Mouse=%s, k=%s, k+1=%s, ΔHit=%+.3f, meanSD@1s=%.4f, nCommonCells=%d\n', ...
 		k, string(SessSpeed.Mouse(iP)), ...
 		datestr(SessSpeed.DateTime(iP), 'yyyy-mm-dd HH:MM:SS'), ...
 		datestr(SessSpeed.DateTimeNext(iP), 'yyyy-mm-dd HH:MM:SS'), ...
-		double(deltaHit(iP)), double(sd1sK1(iP)), laneN(k));
+		double(deltaHit(iP)), double(sd1sMean(iP)), laneN(k));
 
-	assignin('base', sprintf('EnglishFig3C_UID_%d', k), uid(sIdx));
-	assignin('base', sprintf('EnglishFig3C_SortKey1s_%d', k), v1(sIdx));
+	assignin('base', sprintf('EnglishFig3E_UID_%d', k), commonUID(sIdx));
+	assignin('base', sprintf('EnglishFig3E_SortKey1s_%d', k), v1(sIdx));
 end
 
 if any(laneN < 1)
-	error('EnglishFig3C:EmptyHeatmap', 'Heatmap data is empty.');
+	error('EnglishFig3E:EmptyHeatmap', 'Heatmap data is empty.');
 end
 
 % --- Shared CLim (sqrt of actual positive/negative range, asymmetric)
@@ -158,7 +172,7 @@ CLim = [-sqrt(abs(negV)), sqrt(posV)];
 
 %% 
 % --- Plot
-f = figure('Color', 'w', 'Name', 'English Fig3C Representative Session Pairs (LW heatmaps)');
+f = figure('Color', 'w', 'Name', 'English Fig3E Representative Session Pairs (LW heatmaps)');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 
@@ -207,9 +221,9 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'EnglishFig3C_SelectedPairIdx', pairsIdx);
-assignin('base', 'EnglishFig3C_SessSpeed', SessSpeed);
-assignin('base', 'EnglishFig3C_SD1s_K1', sd1sK1);
+assignin('base', 'EnglishFig3E_SelectedPairIdx', pairsIdx);
+assignin('base', 'EnglishFig3E_SessSpeed', SessSpeed);
+assignin('base', 'EnglishFig3E_SD1s_Mean', sd1sMean);
 
 %% --- Local helpers (NO try-catch)
 
@@ -395,7 +409,7 @@ end
 des = unique(string(T.Design));
 des = des(~ismissing(des));
 if numel(des) ~= 1
-	error('EnglishFig3C:AmbiguousDesign', 'Expected exactly 1 LightWater Design in DateTime %s, got %d.', datestr(dt), numel(des));
+		error('EnglishFig3E:AmbiguousDesign', 'Expected exactly 1 LightWater Design in DateTime %s, got %d.', datestr(dt), numel(des));
 end
 
 G = DS.QueryNTATS(struct('DateTime', dt, 'Stimulus', 'LightWater', 'Design', char(des(1))), ...

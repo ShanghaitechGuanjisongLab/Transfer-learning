@@ -85,6 +85,14 @@ if isscalar(annoIdx)
 	annoIdx = [annoIdx, min(annoIdx+2, numel(yPerf)-1)];
 end
 
+% Assign Pair A (较大 ΔHit) and Pair B (较小 ΔHit)
+dHAnno = dH(annoIdx);
+if dHAnno(1) >= dHAnno(2)
+	pairLetters = ["A", "B"];
+else
+	pairLetters = ["B", "A"];
+end
+
 %% 
 % --- 4) Plot
 f = figure('Color', 'w', 'Name', 'English Fig3B ΔHit illustration');
@@ -104,8 +112,9 @@ plot(ax, xSess, yPerf, '-o', ...
 	'MarkerFaceColor', [0 0.4470 0.7410], ...
 	'LineWidth', 1);
 
-% Two annotation colors (same hue, different brightness)
-annoColors = [0.85 0.325 0.098; 0.55 0.18 0.04];
+% Pair colors — match Fig3G
+colorPairA = [0.8500 0.3250 0.0980]; % orange
+colorPairB = [0 0.4470 0.7410];      % blue
 
 % --- 5) Annotate each ΔHit pair
 for iA = 1:numel(annoIdx)
@@ -115,7 +124,11 @@ for iA = 1:numel(annoIdx)
 	yA1 = yPerf(ai);
 	yA2 = yPerf(ai + 1);
 	delta = yA2 - yA1;
-	aColor = annoColors(mod(iA-1, size(annoColors,1)) + 1, :);
+	if pairLetters(iA) == "A"
+		aColor = colorPairA;
+	else
+		aColor = colorPairB;
+	end
 
 	% Highlight sessions
 	scatter(ax, [xA1 xA2], [yA1 yA2], 25, aColor, 'filled');
@@ -135,13 +148,14 @@ for iA = 1:numel(annoIdx)
 	plot(ax, [xA1 xArrow], [yA1 yA1], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
 	plot(ax, [xA2 xArrow], [yA2 yA2], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
 
-	% Label with numeric value
+	% Label with pair letter and numeric value
 	yMid = (yA1 + yA2) / 2;
 	if delta >= 0
-		lblStr = sprintf('\\DeltaHit=+%.0f%%', delta * 100);
+		dhStr = sprintf('\\DeltaHit=+%.0f%%', delta * 100);
 	else
-		lblStr = sprintf('\\DeltaHit=%.0f%%', delta * 100);
+		dhStr = sprintf('\\DeltaHit=%.0f%%', delta * 100);
 	end
+	lblStr = {sprintf('Pair %s', pairLetters(iA)), dhStr};
 	text(ax, xArrow + 0.2, yMid, lblStr, ...
 		'FontSize', 5, 'Color', aColor, ...
 		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...

@@ -1,10 +1,10 @@
-% English Fig2J: 7-day homecage interval (Vacation7 vs Control)
+% English Fig2L: 7-day homecage interval (Vacation7 vs Control)
 %
-% v6 Panel J: Vacation7 时间对照（学习曲线 + 首会话命中率）
+% v6 Panel L: Vacation7 时间对照（学习曲线 + 首会话命中率）
 % Data source: Fig3.5D (TransferLearning.Fig35.D_Vacation7VsCtrl)
 % Outputs (SVG):
-%   - English_Fig2J_Vacation7_LearningCurve.svg
-%   - English_Fig2J_Vacation7_FirstSessionHitRate.svg
+%   - English_Fig2L_Vacation7_LearningCurve.svg
+%   - English_Fig2L_Vacation7_FirstSessionHitRate.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -36,7 +36,7 @@ V7DS   = TransferLearning.Vacation7();
 BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(CtrlDS, false);
 BV7   = TransferLearning.Fig35.iQueryLightWaterBlocks(V7DS,   false);
 if isempty(BCtrl) || isempty(BV7)
-	error('English_Fig2J:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
+	error('English_Fig2L:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
 
 BCtrl.Group = repmat("Control",    height(BCtrl), 1);
@@ -79,7 +79,7 @@ meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', 
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
 
 % --- 5) Plot learning curve (like English Fig2B)
-f = figure('Color','w', 'Name', 'English Fig2J Vacation7 Learning curve');
+f = figure('Color','w', 'Name', 'English Fig2L Vacation7 Learning curve');
 try
 	f.Units = 'centimeters';
 	f.Position(3:4) = [9, 8];
@@ -114,7 +114,7 @@ ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
-svgLC = fullfile(outDirUNC, 'English_Fig2J_Vacation7_LearningCurve.svg');
+svgLC = fullfile(outDirUNC, 'English_Fig2L_Vacation7_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -142,7 +142,7 @@ DataCell = {double(xCtrl(:)), double(xV7(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 %%
 
-f2 = figure('Color','none', 'Name', 'English Fig2J Vacation7 First transfer session');
+f2 = figure('Color','none', 'Name', 'English Fig2L Vacation7 First transfer session');
 try
 	f2.Units = 'centimeters';
 	f2.Position(3:4) = [4, 3];
@@ -190,7 +190,7 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
 title(ax2, 'First block');
 box(ax2, 'off');
 
-svgFS = fullfile(outDirUNC, 'English_Fig2J_Vacation7_FirstSessionHitRate.svg');
+svgFS = fullfile(outDirUNC, 'English_Fig2L_Vacation7_FirstSessionHitRate.svg');
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 	TransferLearning.PrintFigure(f2, svgFS);
@@ -199,6 +199,6 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-assignin('base', 'English_Fig2J_Sessions', Sess);
-assignin('base', 'English_Fig2J_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2J_FirstSessionP', pFS);
+assignin('base', 'English_Fig2L_Sessions', Sess);
+assignin('base', 'English_Fig2L_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2L_FirstSessionP', pFS);

@@ -1,14 +1,14 @@
-% 英文图2F：Div 分解 — 继承细胞是"净信号提供者" + 消融验证
+% 英文图2F：L2/3 & L5 NaiveLW vs TransferLW 散度对比
 %
-% 子面板 1: CellFrac / SignalFrac / NoiseFrac 条形图
-%   继承细胞仅占 ~15% 的细胞, 却贡献 ~40% 的信号功率
-%   SignalFrac vs CellFrac p ≈ 0.002
+% 上面板：L2/3 Naive LightWater vs Transfer LightWater（非配对 ranksum）
+%   — Transfer 组在 L2/3 层保持了学习带来的低散度
+% 下面板：L5 Naive LightWater vs Transfer LightWater（非配对 ranksum）
+%   — L5 层 Naive 与 Transfer 散度对比
 %
-% 子面板 2: Div(all) vs Div(noInh) 消融检验
-%   消融继承细胞后 Div 显著升高 (p ≈ 0.005)
-%
-% 数据来源: AudioLightBaseline (Transfer LW 首会话)
-% 继承组定义: Learned AW 末会话活跃细胞 (3σ, idx=32)
+% 数据来源:
+%   非配对 Naive LW: LightAudioBaseline + LAInterspersed（Phase=Naive, 排除含AudioWater的会话）
+%   非配对 Transfer LW + Div分解: AudioLightBaseline (Transfer LW 首会话)
+%   继承组定义: Learned AW 末会话活跃细胞 (3σ, idx=32)
 %
 % 输出: SVG to \\Data-Server-2\个人数据\张天夫\202601
 %
@@ -189,60 +189,183 @@ for iL = 1:nLay
 		mean(R.Div_noInh(k,iL)), std(R.Div_noInh(k,iL))/sqrt(n), p);
 end
 
+%% ===== Naive LW L2/3 Div (for top tile) =====
+naiveDSList = {
+	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline())
+	builtin('struct', 'Name', "LAInterspersed",     'DS', TransferLearning.LAInterspersed())
+};
+
+maxN = 50;
+N_DivL23 = nan(maxN, 1);
+N_DivL5  = nan(maxN, 1);
+nNaive_L23 = 0;
+nNaive_L5  = 0;
+
+for d = 1:numel(naiveDSList)
+	DSn = naiveDSList{d}.DS;
+	CellTblN = DSn.Cells;
+	CellTblN.ZLayer = string(CellTblN.ZLayer);
+	CellTblN.CellUID = uint64(CellTblN.CellUID);
+	CellTblN.Mouse = string(CellTblN.Mouse);
+
+	TnaiveAll = DSn.TableQuery(["Mouse","DateTime","Stimulus","TrialUID","TrialIndex"], Phase="Naive");
+	if isempty(TnaiveAll), continue; end
+	TnaiveAll.Mouse = string(TnaiveAll.Mouse);
+	TnaiveAll.Stimulus = string(TnaiveAll.Stimulus);
+
+	mice = unique(TnaiveAll.Mouse);
+	for i = 1:numel(mice)
+		m = mice(i);
+		Tm = TnaiveAll(TnaiveAll.Mouse == m, :);
+		if isempty(Tm), continue; end
+
+		% Find first pure-LW Naive session (no AudioWater)
+		sess = sort(unique(Tm.DateTime), 'ascend');
+		isValid = false(numel(sess), 1);
+		for s = 1:numel(sess)
+			Tsess = Tm(Tm.DateTime == sess(s), :);
+			if any(Tsess.Stimulus == "LightWater") && ~any(Tsess.Stimulus == "AudioWater")
+				isValid(s) = true;
+			end
+		end
+		validSess = sess(isValid);
+		if isempty(validSess), continue; end
+
+		dt = validSess(1);
+		Tsess = Tm(Tm.DateTime == dt & Tm.Stimulus == "LightWater", :);
+		Tsess = sortrows(Tsess, "TrialIndex");
+		trialUIDs = unique(uint64(Tsess.TrialUID), 'stable');
+		if numel(trialUIDs) < 2, continue; end
+
+		ntsLW = DSn.QueryNTS(struct('Stimulus', "LightWater", 'Mouse', m), UniExp.Flags.DeltaF, 1:24);
+		if iscell(ntsLW), ntsLW = ntsLW{1}; end
+		if isempty(ntsLW), continue; end
+
+		[CTTn, cellUIDsN] = iLocalBuildCTT(ntsLW, trialUIDs, sampleRate);
+		if isempty(CTTn) || size(CTTn, 1) < 3, continue; end
+
+		mCellN = CellTblN(CellTblN.Mouse == m, :);
+		[~, loc] = ismember(cellUIDsN, mCellN.CellUID);
+		cLayersN = strings(numel(cellUIDsN), 1);
+		cLayersN(loc > 0) = mCellN.ZLayer(loc(loc > 0));
+		maskL23 = cLayersN == "MOp2/3";
+		maskL5  = cLayersN == "MOp5";
+
+		if sum(maskL23) >= 3
+			nNaive_L23 = nNaive_L23 + 1;
+			N_DivL23(nNaive_L23) = iDivFromX(CTTn(maskL23, :, idx1s));
+		end
+		if sum(maskL5) >= 3
+			nNaive_L5 = nNaive_L5 + 1;
+			N_DivL5(nNaive_L5) = iDivFromX(CTTn(maskL5, :, idx1s));
+		end
+	end
+end
+N_DivL23 = N_DivL23(1:nNaive_L23);
+N_DivL5  = N_DivL5(1:nNaive_L5);
+
+% Transfer L2/3 & L5 Div from main loop
+kT_L23 = isfinite(R.Div_all(:, 2));
+T_DivL23 = R.Div_all(kT_L23, 2);
+kT_L5 = isfinite(R.Div_all(:, 3));
+T_DivL5 = R.Div_all(kT_L5, 3);
+
+kN = isfinite(N_DivL23);
+pUnpaired_L23 = ranksum(N_DivL23(kN), T_DivL23);
+fprintf('\n=== Panel F Top: L2/3 NaiveLW vs TransferLW Div (unpaired ranksum) ===\n');
+fprintf('  NaiveLW L2/3:    %.3f ± %.3f (n=%d)\n', mean(N_DivL23(kN)), std(N_DivL23(kN))/sqrt(sum(kN)), sum(kN));
+fprintf('  TransferLW L2/3: %.3f ± %.3f (n=%d)\n', mean(T_DivL23), std(T_DivL23)/sqrt(numel(T_DivL23)), numel(T_DivL23));
+fprintf('  ranksum p = %.4g\n', pUnpaired_L23);
+
+kN5 = isfinite(N_DivL5);
+pUnpaired_L5 = ranksum(N_DivL5(kN5), T_DivL5);
+fprintf('\n=== Panel F Bottom: L5 NaiveLW vs TransferLW Div (unpaired ranksum) ===\n');
+fprintf('  NaiveLW L5:    %.3f ± %.3f (n=%d)\n', mean(N_DivL5(kN5)), std(N_DivL5(kN5))/sqrt(sum(kN5)), sum(kN5));
+fprintf('  TransferLW L5: %.3f ± %.3f (n=%d)\n', mean(T_DivL5), std(T_DivL5)/sqrt(numel(T_DivL5)), numel(T_DivL5));
+fprintf('  ranksum p = %.4g\n', pUnpaired_L5);
+
 %% ===== 作图 =====
 f = figure('Color', 'w', 'Name', 'English Fig2F Div decomposition');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-ylabel(Layout, 'Divergence');
+yl = ylabel(Layout, 'Divergence');
+yl.FontSize = 6;
 
+colorNaive = [1 0 0];
+colorLearn = [0 0 1];
 cInh = [0.8 0.2 0.2];
 cNon = [0.5 0.5 0.5];
-tileLayers = [1, 2];
-tileLabels = ["All cells", "L2/3"];
 
-for iT = 1:2
-	iL = tileLayers(iT);
-	nexttile(Layout, iT);
+% --- Tile 1: L2/3 NaiveLW vs TransferLW (unpaired) ---
+nexttile(Layout, 1);
+[~, ~, Bars1, EB1] = UniExp.BarScatterCompare({N_DivL23(kN), T_DivL23}, false);  %#ok<*NASGU>
+delete(findobj(gca, 'Type', 'Scatter'));
+for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
+ax1 = gca;
+ax1.FontSize = 6;
+ax1.XTick = [1, 2];
+ax1.XTickLabel = {'Naive', 'Transfer'};
+title(ax1, 'L2/3 💡💧');
+legend(ax1, 'off');
+box(ax1, 'off');
+grid(ax1, 'off');
+ax1.XAxis.Visible = 'off';
 
-	k = isfinite(R.Div_inhOnly(:, iL)) & isfinite(R.Div_noInh(:, iL));
-	divI = R.Div_inhOnly(k, iL);
-	divN = R.Div_noInh(k, iL);
-
-	[~, ~, Bars, EB] = UniExp.BarScatterCompare({divI, divN}, true);
-	delete(findobj(gca, 'Type', 'Scatter'));
-	ax = gca;
-	ax.FontSize = 6;
-	ax.XTick = [1, 2];
-	ax.XTickLabel = {'Inherited', 'Non-inh.'};
-	title(ax, tileLabels(iT));
-	legend(ax, 'off');
-	box(ax, 'off');
-	grid(ax, 'off');
-
-	if isscalar(Bars)
-		Bars.FaceColor = 'flat';
-		Bars.CData = [cInh; cNon];
-		Bars.BarWidth = 0.5;
-		Bars.LineWidth = 0.5;
-		Bars.FaceAlpha = 1/3;
-	else
-		if numel(Bars) >= 2
-			Bars(1).FaceColor = cInh; Bars(1).FaceAlpha = 1/3; Bars(1).LineWidth = 0.5;
-			Bars(2).FaceColor = cNon; Bars(2).FaceAlpha = 1/3; Bars(2).LineWidth = 0.5;
-		end
-	end
-
-	pVal = signrank(divI, divN);
-	star = iAsterisk(pVal);
-	if star ~= ""
-		Desc = table(EB.Object(1), EB.Object(2), 1, 1, star, ...
-			'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text'});
-		[~, PT] = MATLAB.Graphics.PLine(Desc);
-		for t = PT(:)', t.FontSize = 6; end
+if isscalar(Bars1)
+	Bars1.FaceColor = 'flat';
+	Bars1.CData = [colorNaive; colorLearn];
+	Bars1.BarWidth = 0.5;
+	Bars1.LineWidth = 0.5;
+	Bars1.FaceAlpha = 1/3;
+else
+	if numel(Bars1) >= 2
+		Bars1(1).FaceColor = colorNaive; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 0.5;
+		Bars1(2).FaceColor = colorLearn; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 0.5;
 	end
 end
+
+star1 = iAsterisk(pUnpaired_L23);
+Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
+	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
+[~, PT1] = MATLAB.Graphics.PLine(Desc1);
+for t = PT1(:)', t.FontSize = 6; end
+
+% --- Tile 2: L5 NaiveLW vs TransferLW (unpaired) ---
+nexttile(Layout, 2);
+[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({N_DivL5(kN5), T_DivL5}, false);
+delete(findobj(gca, 'Type', 'Scatter'));
+for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
+ax2 = gca;
+ax2.FontSize = 6;
+ax2.FontName = 'Segoe UI Emoji';
+ax2.XTick = [1, 2];
+ax2.XTickLabel = {'Naive', 'Transfer'};
+title(ax2, 'L5 💡💧');
+xlabel(ax2, '');
+legend(ax2, 'off');
+box(ax2, 'off');
+grid(ax2, 'off');
+
+if isscalar(Bars2)
+	Bars2.FaceColor = 'flat';
+	Bars2.CData = [colorNaive; colorLearn];
+	Bars2.BarWidth = 0.5;
+	Bars2.LineWidth = 0.5;
+	Bars2.FaceAlpha = 1/3;
+else
+	if numel(Bars2) >= 2
+		Bars2(1).FaceColor = colorNaive; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
+		Bars2(2).FaceColor = colorLearn; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
+	end
+end
+
+star2 = iAsterisk(pUnpaired_L5);
+Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
+	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
+[~, PT2] = MATLAB.Graphics.PLine(Desc2);
+for t = PT2(:)', t.FontSize = 6; end
 
 % --- Export ---
 svgPath = fullfile(outDirUNC, "English_Fig2F_DivDecomposition.svg");
@@ -250,6 +373,12 @@ TransferLearning.PrintFigure(f, svgPath);
 
 % --- Summary to workspace ---
 assignin('base', 'Fig2F_R', R);
+assignin('base', 'Fig2F_NaiveLW_L23', N_DivL23(kN));
+assignin('base', 'Fig2F_TransferLW_L23', T_DivL23);
+assignin('base', 'Fig2F_pUnpaired_L23', pUnpaired_L23);
+assignin('base', 'Fig2F_NaiveLW_L5', N_DivL5(kN5));
+assignin('base', 'Fig2F_TransferLW_L5', T_DivL5);
+assignin('base', 'Fig2F_pUnpaired_L5', pUnpaired_L5);
 
 %% ===== local functions =====
 
@@ -315,6 +444,6 @@ elseif p < 0.01
 elseif p < 0.05
 	s = "*";
 else
-	s = "";
+	s = "n.s.";
 end
 end
