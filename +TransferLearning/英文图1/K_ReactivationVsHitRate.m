@@ -60,7 +60,7 @@ if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
 end
 
 % 散点：空心圆，边框0.2
-scatter(ax, x(mask), y(mask), 15, [0 0.4470 0.7410], 'LineWidth', 0.2);
+scatter(ax, x(mask), y(mask), 5, [0 0.4470 0.7410], 'LineWidth', 0.2);
 
 % 拟合线：实线
 if nnz(mask) >= 2 && std(x(mask)) > 0

@@ -1,4 +1,4 @@
-% 英文图3C：Inter-cell SD@1s (session k+1) vs ΔHit — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
+% 英文图3E：Inter-cell SD@1s (session k+1) vs ΔHit — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
 %
 % 与 Fig2G 布局一致：行=层(L2/3, L5), 列=组(Naive, Transfer)
 % 但使用学习过程中所有相邻会话对，而非仅首会话。
@@ -14,10 +14,10 @@
 % Style: scatter + fit line + Spearman (ref Fig2G).
 %
 % Execution:
-%   TransferLearning.英文图3.C_SD1sVsDeltaHit_ByLayer
+%   TransferLearning.英文图3.E_SD1sVsDeltaHit_ByLayer
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3C_SD1sVsDeltaHit_ByLayer.svg";
+svgName = "English_Fig3E_SD1sVsDeltaHit_ByLayer.svg";
 
 % --- Time axis
 xs = TransferLearning.Xs;
@@ -25,7 +25,7 @@ if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 
 [dtMin, idx1s] = min(abs(xsSec - 1));
 if isempty(idx1s) || ~isfinite(dtMin) || dtMin > 0.25
-	error('EnglishFig3C:No1s', 'Cannot find a sample close to 1s.');
+	error('EnglishFig3E:No1s', 'Cannot find a sample close to 1s.');
 end
 
 %% ===== Part 1: Transfer LW — AudioLightBaseline =====
@@ -38,6 +38,7 @@ CellTbl_ALB.ZLayer = string(CellTbl_ALB.ZLayer);
 SessT = iLightWaterSessions(DS_ALB);
 SessT = iKeepPureLW(DS_ALB, SessT);
 SessT = iExcludeCeiling(SessT);
+SessT = iExcludeFloor(SessT);
 PairsT = iSessionPairs(SessT);
 fprintf('Transfer LW: %d adjacent session pairs\n', height(PairsT));
 
@@ -78,6 +79,7 @@ naiveDSObjs   = {DS_LAB; DS_LAI};
 allNaiveSess = iGatherNaiveSessions(DS_LAB, DS_LAI);
 allNaiveSess = iExcludeAudioWaterSessions(allNaiveSess, DS_LAB, DS_LAI);
 allNaiveSess = iExcludeCeilingNaive(allNaiveSess);
+allNaiveSess = iExcludeFloor(allNaiveSess);
 
 PairsN = iSessionPairs(allNaiveSess);
 fprintf('Naive LW: %d adjacent session pairs (phase-based)\n', height(PairsN));
@@ -116,8 +118,8 @@ for iP = 1:nPN
 end
 
 %% ===== Statistics (2×2: Spearman, Pearson, Partial Spearman) =====
-fprintf('\n=== Panel C: SD@1s vs ΔHit (2×2: Layer × Group) ===\n');
-fprintf('  Ceiling (>=100%%) sessions excluded\n');
+fprintf('\n=== Panel E: SD@1s vs ΔHit (2×2: Layer × Group) ===\n');
+fprintf('  Ceiling (>=100%%) + Floor (<=0%%) sessions excluded\n');
 fprintf('  Simple Spearman | Simple Pearson | Partial Spearman (ctrl Hit_K)\n\n');
 
 kNL23 = isfinite(N_SD23) & isfinite(N_DH) & isfinite(N_HK);
@@ -171,7 +173,7 @@ rhoTL23_fig = prhoTL23; pTL23_fig = ppTL23;
 rhoTL5_fig  = prhoTL5;  pTL5_fig  = ppTL5;
 
 %% ===== Plot (2×2 tiledlayout) =====
-f = figure('Color', 'w', 'Name', 'English Fig3C SD@1s vs ΔHit 2x2');
+f = figure('Color', 'w', 'Name', 'English Fig3E SD@1s vs ΔHit 2x2');
 f.Units = 'centimeters';
 f.Position(3:4) = [6, 4];
 
@@ -206,7 +208,7 @@ for iR = 1:2
 		yd = dhData{iR, iC};
 		cc = colors{iR, iC};
 
-		scatter(ax, xd, yd, 5, cc, 'LineWidth', 0.2);
+		scatter(ax, xd, yd, 8, cc, 'LineWidth', 0.2);
 
 		% Fit line
 		if numel(xd) >= 2 && std(xd) > 0

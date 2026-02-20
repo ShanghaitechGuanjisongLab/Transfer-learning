@@ -5,7 +5,8 @@
 % - Exclude sessions with hit rate ≥ 100% and all subsequent sessions.
 % - One point = one adjacent session pair (session k → session k+1).
 % - ΔHit = Hit(k+1) - Hit(k), where Hit = session-level LightWater hit rate.
-% - Reuse rate at 1s (of session k) = P(TransferActive@1s | LearnedActive@1s).
+% - Reuse rate = mean(Reuse_session_k, Reuse_session_k+1) — 前后session均值.
+%   Reuse = P(TransferActive@1s | LearnedActive@1s).
 %   LearnedActive pooled from Learned(AudioWater), TransferActive computed per LightWater session.
 % - Cells merged across layers: MOp2/3 + MOp5 (cell-level merge, not averaging two probabilities).
 %
@@ -47,16 +48,38 @@ SessSpeed = iSessionDeltaNextTable(Sess);
 % --- Learned active (pooled) by cell
 learnedCell = iLearnedActiveByCell(DS, baseMask, idx1s);
 
-% --- Per-session reuse rate (2/5 layer cells merged)
-ReuseSess = iSessionReuse_SessionVsLearned_LayersMerged25(DS, SessSpeed(:, {'Mouse','DateTime'}), learnedCell, baseMask, idx1s);
+% --- Collect ALL unique sessions (both k and k+1) for reuse calculation
+allSessKeys = unique([SessSpeed(:, {'Mouse','DateTime'}); ...
+	table(SessSpeed.Mouse, SessSpeed.DateTimeNext, 'VariableNames', {'Mouse','DateTime'})], 'rows');
 
-% Join with ΔHit
-J = innerjoin(ReuseSess, SessSpeed(:, {'Mouse','DateTime','Performance','PerformanceNext','Speed_DeltaNext'}), 'Keys', {'Mouse','DateTime'});
+% --- Per-session reuse rate (2/5 layer cells merged)
+ReuseSess = iSessionReuse_SessionVsLearned_LayersMerged25(DS, allSessKeys, learnedCell, baseMask, idx1s);
+
+% --- Join to get reuse for session k and session k+1, then average
+ReuseK = ReuseSess;
+ReuseK.Properties.VariableNames{'Reuse_1s_L25_Merged'} = 'Reuse_K';
+ReuseK.Properties.VariableNames{'NCellsLearnedActive_L25'} = 'NCells_K';
+
+ReuseKp1 = ReuseSess;
+ReuseKp1.Properties.VariableNames{'DateTime'} = 'DateTimeNext';
+ReuseKp1.Properties.VariableNames{'Reuse_1s_L25_Merged'} = 'Reuse_Kp1';
+ReuseKp1.Properties.VariableNames{'NCellsLearnedActive_L25'} = 'NCells_Kp1';
+
+J = SessSpeed(:, {'Mouse','DateTime','DateTimeNext','Performance','PerformanceNext','Speed_DeltaNext'});
+J = outerjoin(J, ReuseK(:, {'Mouse','DateTime','Reuse_K','NCells_K'}), 'Keys', {'Mouse','DateTime'}, 'Type', 'left', 'MergeKeys', true);
+J = outerjoin(J, ReuseKp1(:, {'Mouse','DateTimeNext','Reuse_Kp1','NCells_Kp1'}), 'Keys', {'Mouse','DateTimeNext'}, 'Type', 'left', 'MergeKeys', true);
+
+% Average reuse rate of session k and k+1
+J.Reuse_Mean = (J.Reuse_K + J.Reuse_Kp1) / 2;
 assignin('base', 'EnglishFig3H_Joined', J);
 
-x = double(J.Reuse_1s_L25_Merged);
+x = double(J.Reuse_Mean);
 y = double(J.Speed_DeltaNext);
-mask = isfinite(x) & isfinite(y);
+z = double(J.Performance);  % Hit_K for partial correlation
+mask = isfinite(x) & isfinite(y) & isfinite(z);
+
+fprintf('\n=== Panel H: Reuse vs ΔHit (mean of k and k+1) ===\n');
+fprintf('Valid pairs: %d\n', nnz(mask));
 
 % --- Plot
 f = figure('Color','w', 'Name', 'English Fig3H Reuse vs ΔHit');
@@ -69,14 +92,14 @@ box(ax, 'off');
 grid(ax, 'off');
 ax.FontSize = 6;
 
-% Spearman correlation
+% Partial Spearman correlation (controlling for Hit_K)
 rho = NaN; p = NaN;
 if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
-	[rho, p] = corr(x(mask), y(mask), 'Type', 'Spearman');
+	[rho, p] = iPartialSpearmanWithPerm(x(mask), y(mask), z(mask), 10000);
 end
 
 % Scatter: hollow circle, thin edge
-scatter(ax, x(mask), y(mask), 8, [0 0.4470 0.7410], 'LineWidth', 0.2);
+scatter(ax, x(mask), y(mask), 5, [0 0.4470 0.7410], 'LineWidth', 0.2);
 
 % Fit line (linear)
 if nnz(mask) >= 2 && std(x(mask)) > 0
@@ -99,7 +122,7 @@ if isfinite(p)
 	else
 		pText = "";
 	end
-	text(ax, 0.02, 0.98, sprintf('\\rho=%.2f%s n=%d', rho, pText, nnz(mask)), ...
+	text(ax, 0.02, 0.98, sprintf('\\rho=%.2f%s', rho, pText), ...
 		'Units','normalized', 'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
 end
 
@@ -378,4 +401,37 @@ for iC = 1:numel(cellUIDs)
 		active(iC) = (v1 > (mu + kSigma * sd));
 	end
 end
+end
+
+function [rho, p] = iPartialSpearmanWithPerm(x, y, z, nPerm)
+% Partial Spearman correlation controlling for z, with permutation test
+% rho: partial Spearman coefficient
+% p: two-tailed permutation p-value
+
+rx = tiedrank(x(:));
+ry = tiedrank(y(:));
+rz = tiedrank(z(:));
+
+% Residuals of rx ~ rz
+bx = [ones(numel(rz),1), rz] \ rx;
+res_x = rx - [ones(numel(rz),1), rz] * bx;
+
+% Residuals of ry ~ rz
+by = [ones(numel(rz),1), rz] \ ry;
+res_y = ry - [ones(numel(rz),1), rz] * by;
+
+% Observed partial correlation
+rho = corr(res_x, res_y);
+
+% Permutation test
+rng(42);
+nullDist = zeros(nPerm, 1);
+for iPerm = 1:nPerm
+	perm = randperm(numel(y));
+	ry_perm = tiedrank(y(perm));
+	by_perm = [ones(numel(rz),1), rz] \ ry_perm;
+	res_y_perm = ry_perm - [ones(numel(rz),1), rz] * by_perm;
+	nullDist(iPerm) = corr(res_x, res_y_perm);
+end
+p = mean(abs(nullDist) >= abs(rho));
 end

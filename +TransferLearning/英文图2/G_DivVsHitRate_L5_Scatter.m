@@ -222,7 +222,7 @@ for iR = 1:2
 		yd = hrData{iR, iC};
 		cc = colors{iR, iC};
 
-		scatter(ax, xd, yd, 15, cc, 'LineWidth', 0.2);
+		scatter(ax, xd, yd, 5, cc, 'LineWidth', 0.2);
 
 		% Fit line
 		if numel(xd) >= 2 && std(xd) > 0
