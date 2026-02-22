@@ -7,7 +7,6 @@
 %   run('+TransferLearning/英文图3/B_DeltaHitIllustration.m')
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3A_DeltaHitIllustration.svg";
 
 % --- Preconditions
 if ~exist('UniExp.DataSet', 'class')
@@ -95,6 +94,7 @@ end
 
 %% 
 % --- 4) Plot
+svgName = "English_Fig3A_DeltaHitIllustration.svg";
 f = figure('Color', 'w', 'Name', 'English Fig3B ΔHit illustration');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4]; % 45mm x 35mm

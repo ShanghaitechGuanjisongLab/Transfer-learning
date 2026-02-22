@@ -9,7 +9,6 @@
 %   TransferLearning.英文图1.L_AllCellMeanLines_NaiveLO_TransferLW
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1L_AllCellMeanLines_NaiveLO_TransferLW.svg";
 
 DS = TransferLearning.AudioLightBaseline();
 
@@ -60,6 +59,7 @@ Y(:, 2) = mean(DT, 1, 'omitnan')';
 E(:, 2) = std(DT, 0, 1, 'omitnan')' / sqrt(nCellsT);
 
 % --- 5) Plot
+svgName = "English_Fig1L_AllCellMeanLines_NaiveLO_TransferLW.svg";
 f = figure('Color', 'w', 'Name', 'English Fig1L All Cell Mean Lines');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 7.6];

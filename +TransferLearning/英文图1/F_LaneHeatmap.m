@@ -7,7 +7,6 @@
 %   TransferLearning.英文图1.F_LaneHeatmap
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1F_LaneHeatmap.svg";
 
 % --- 0) Ensure project loaded
 try
@@ -118,6 +117,7 @@ CLim = [-climLowAbs, climHighAbs];
 %% 
 
 % --- 7) Plot
+svgName = "English_Fig1F_LaneHeatmap.svg";
 f = figure('Color', 'w', 'Name', 'English Fig1F Lane Heatmap');
 f.Units = 'centimeters';
 f.Position(3:4) = [12.0, 8.0]; % 120mm x 80mm

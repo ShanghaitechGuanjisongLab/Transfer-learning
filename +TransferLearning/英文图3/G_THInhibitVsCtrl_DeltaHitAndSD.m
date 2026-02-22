@@ -15,7 +15,6 @@
 %   TransferLearning.英文图3.I_THInhibitVsCtrl_DeltaHitAndSD
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3G_THInhibitVsCtrl_DeltaHitAndSD.svg";
 
 %% --- 0) Ensure project loaded
 try
@@ -132,6 +131,7 @@ fprintf('  ranksum p = %.4g\n', pSD);
 %% ======================================================================
 %  Plot (2×1 tiledlayout, bar only, style: English Fig2K)
 %  ======================================================================
+svgName = "English_Fig3G_THInhibitVsCtrl_DeltaHitAndSD.svg";
 
 f = figure('Color', 'w', 'Name', 'English Fig3G TH DeltaHit & SD');
 f.Units = 'centimeters';

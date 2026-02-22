@@ -12,7 +12,6 @@
 %   TransferLearning.英文图2.M_Vacation7VsCtrl_ReactivationRate
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName   = "English_Fig2M_Vacation7VsCtrl_Reactivation_Divergence.svg";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;
@@ -135,6 +134,7 @@ pDiv = ranksum(xDivCtrl, xDivV7);
 fprintf('  ranksum p=%.4g\n', pDiv);
 
 %% ===== 4) Plot (tiledlayout 2×1) =====
+svgName = "English_Fig2M_Vacation7VsCtrl_Reactivation_Divergence.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2M Vacation7 Reactivation + Divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];

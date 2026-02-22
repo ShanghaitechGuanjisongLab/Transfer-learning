@@ -13,7 +13,6 @@
 %   TransferLearning.英文图1.G_RepresentativeCell
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig1G_RepresentativeCell.svg";
 
 % --- 0) Ensure project loaded
 try
@@ -343,6 +342,7 @@ if maxLO_shifted >= minAO_shifted - gap
 end
 
 % --- 5) Plot
+svgName = "English_Fig1G_RepresentativeCell.svg";
 f = figure('Color','w', 'Name', 'English Fig1G Representative Cell');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5, 4.0]; % 45mm x 40mm

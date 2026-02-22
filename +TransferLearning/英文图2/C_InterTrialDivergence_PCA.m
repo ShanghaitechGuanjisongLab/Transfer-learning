@@ -13,7 +13,6 @@
 %   TransferLearning.英文图2.C_InterTrialDivergence_PCA
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig2C_InterTrialDivergence_PCA.svg";
 
 % Time (s) to use as PCA origin after cropping (0 = cue time).
 originSec = 0.0;
@@ -54,6 +53,7 @@ G_audioOnly_plot = iAverageAdjacentTrials(G_audioOnly, 2);
 
 %% 
 % --- 3) Plot (two tiles)
+svgName = "English_Fig2C_InterTrialDivergence_PCA.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2C Inter-trial divergence PCA');
 f.Units = 'centimeters';
 f.Position(3:4) = [6.0, 4.0]; % 60mm x 40mm

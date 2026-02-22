@@ -13,7 +13,6 @@
 % Style: mimic English Fig1J (scatter + fit line + Spearman annotation).
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3H_ReuseRateVsDeltaHit.svg";
 
 % --- Preconditions
 if ~exist('UniExp.DataSet', 'class')
@@ -82,6 +81,7 @@ fprintf('\n=== Panel H: Reuse vs ΔHit (mean of k and k+1) ===\n');
 fprintf('Valid pairs: %d\n', nnz(mask));
 
 % --- Plot
+svgName = "English_Fig3H_ReuseRateVsDeltaHit.svg";
 f = figure('Color','w', 'Name', 'English Fig3H Reuse vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm

@@ -14,7 +14,6 @@
 %   TransferLearning.英文图2.A_RepresentativeCellTraces
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig2A_RepresentativeCellTraces.svg";
 
 rng(42); % 固定随机种子，确保可复现
 
@@ -261,6 +260,7 @@ end
 
 %% 
 % --- Plot: 3 rows (cells) × 3 columns (phases)
+svgName = "English_Fig2A_RepresentativeCellTraces.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2A Representative Cell Traces');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];

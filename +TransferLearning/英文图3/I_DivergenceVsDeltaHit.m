@@ -10,7 +10,6 @@
 % Style: mimic English Fig3H (scatter + fit line + Spearman annotation).
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig3I_DivergenceVsDeltaHit.svg";
 
 % --- Constants
 sampleRate = 8;
@@ -72,6 +71,7 @@ end
 fprintf('Partial Spearman ρ=%.3f p=%.4g n=%d\n', rho, p, nnz(mask));
 
 % --- Plot
+svgName = "English_Fig3I_DivergenceVsDeltaHit.svg";
 f = figure('Color','w', 'Name', 'English Fig3I Divergence vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm

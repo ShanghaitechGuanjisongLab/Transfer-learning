@@ -9,7 +9,6 @@
 %   TransferLearning.英文图2.B_LanearHeatmap_Learned_TransferHit_TransferMiss
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
-svgName = "English_Fig2B_LanearHeatmap.svg";
 
 DS = TransferLearning.AudioLightBaseline();
 
@@ -90,6 +89,7 @@ if climHighAbs <= 0, climHighAbs = 1; end
 CLim = [-climLowAbs, climHighAbs];
 
 % --- 7) Plot
+svgName = "English_Fig2B_LanearHeatmap.svg";
 f = figure('Color','w', 'Name', 'English Fig2B Lane Heatmap');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
