@@ -1,0 +1,13 @@
+﻿openProject('Transferlearning.prj');
+pkg = char([33521 25991 22270 51]);
+TransferLearning.(pkg).C_SD1sVsDeltaHit_ByLayer;
+close all;
+TransferLearning.(pkg).D_SD1s_NaiveVsTransfer_ByLayer;
+close all;
+TransferLearning.(pkg).G_THInhibitVsCtrl_DeltaHitAndSD;
+close all;
+TransferLearning.(pkg).H_ReuseRateVsDeltaHit;
+close all;
+TransferLearning.(pkg).I_DivergenceVsDeltaHit;
+close all;
+fprintf('ALL_VERIFIED\n');
