@@ -1,4 +1,4 @@
-% 英文图3H：1s复用率 vs 命中率增量（2/5层细胞合并）
+% 英文图3I：1s复用率 vs 命中率增量（2/5层细胞合并）
 %
 % Data scope (ref: Fig3.4D):
 % - All pure-LightWater sessions in AudioLightBaseline (Transfer → Final).
@@ -12,7 +12,7 @@
 %
 % Style: mimic English Fig1J (scatter + fit line + Spearman annotation).
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- Preconditions
 if ~exist('UniExp.DataSet', 'class')
@@ -70,19 +70,19 @@ J = outerjoin(J, ReuseKp1(:, {'Mouse','DateTimeNext','Reuse_Kp1','NCells_Kp1'}),
 
 % Average reuse rate of session k and k+1
 J.Reuse_Mean = (J.Reuse_K + J.Reuse_Kp1) / 2;
-assignin('base', 'EnglishFig3H_Joined', J);
+assignin('base', 'EnglishFig3I_Joined', J);
 
 x = double(J.Reuse_Mean);
 y = double(J.Speed_DeltaNext);
 z = double(J.Performance);  % Hit_K for partial correlation
 mask = isfinite(x) & isfinite(y) & isfinite(z);
 
-fprintf('\n=== Panel H: Reuse vs ΔHit (mean of k and k+1) ===\n');
+fprintf('\n=== Panel I: Reuse vs ΔHit (mean of k and k+1) ===\n');
 fprintf('Valid pairs: %d\n', nnz(mask));
 
 % --- Plot
-svgName = "English_Fig3H_ReuseRateVsDeltaHit.svg";
-f = figure('Color','w', 'Name', 'English Fig3H Reuse vs ΔHit');
+svgName = "English_Fig3I_ReactivationVsDeltaHit.svg";
+f = figure('Color','w', 'Name', 'English Fig3I Reuse vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
 

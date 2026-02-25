@@ -115,14 +115,15 @@ semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', 
 
 % n per group is intentionally NOT shown in legend (match request)
 
+%% 
 % --- 6) Plot learning curve (like English Fig1B)
 f = figure('Color','w', 'Name', 'English Fig2I cFos Learning curve');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 8]; % 90mm x 80mm (match English Fig1B)
+f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
 f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax,'on');
-title(ax, 'cFos inhibition', 'FontSize', 8);
+title(ax, 'cFos-specific inhibition', 'FontSize', 8);
 
 try
 	edgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
@@ -132,10 +133,47 @@ end
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
+% --- 6b) Stats: draw overall learning-curve significance (like English Fig1B)
+% Use LME Group main effect (additive model): tests overall curve separation
+lmeTbl = table;
+lmeTbl.Performance = double(Sess.Performance);
+lmeTbl.Session = double(Sess.Session);
+lmeTbl.Group = categorical(string(Sess.Group));
+lmeTbl.Mouse = categorical(string(Sess.Mouse));
+lmeModel = fitlme(lmeTbl, 'Performance ~ Session + Group + (1|Mouse)');
+lmeAnova = anova(lmeModel);
+rowGrp = find(string(lmeAnova.Term) == "Group", 1);
+pCurve = NaN;
+if ~isempty(rowGrp)
+	pCurve = lmeAnova.pValue(rowGrp);
+end
+if isfinite(pCurve)
+	sessIdx = min(2, min(numel(meanCells{1}), numel(meanCells{2})));
+	y1 = meanCells{1}(sessIdx);
+	y2 = meanCells{2}(sessIdx);
+	yMid = (y1 + y2) / 2;
+	yHalfLen = abs(y1 - y2) / 4;
+	plot(ax, [sessIdx sessIdx], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
+	if pCurve < 0.001
+		astStr = '***';
+	elseif pCurve < 0.01
+		astStr = '**';
+	elseif pCurve < 0.05
+		astStr = '*';
+	else
+		astStr = 'n.s.';
+	end
+	ht = text(ax, sessIdx + 0.1, yMid, astStr, 'FontSize', 12, ...
+		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
+		'HandleVisibility', 'off');
+	ht.AffectAutoLimits = 'on';
+end
+fprintf('Learning curve overall p = %.4g\n', pCurve);
+
 labels = {char(grpLabels(1)), char(grpLabels(2))};
 try
 	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', 'northeastoutside');
+		lg = legend(ax, Patches(1:2), labels, 'Location', 'best');
 	else
 		lg = legend(ax, labels, 'Location', 'best');
 	end
@@ -163,6 +201,7 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
+%% 
 % --- 7) First transfer session hit-rate bar compare (Control vs Inhibited)
 perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
 perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);

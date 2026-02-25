@@ -13,12 +13,12 @@
 %
 % 会话选取参考 C 图 (C_RepresentativeSessionPairs_LWHeatmaps)。
 %
-% Output: SVG to \\Data-Server-2\个人数据\张天夫\202601
+% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
 %   TransferLearning.英文图3.G_RepresentativeSD_NTATSDistribution
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 DS = TransferLearning.AudioLightBaseline();
 

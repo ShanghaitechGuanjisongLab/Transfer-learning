@@ -18,12 +18,42 @@ GTran  = RSP.QueryNTATS(struct('Phase','Transfer','Stimulus','LightWater','Desig
 XLearn = TransferLearning.Fig36.iNtatsData(GLearn.NTATS);
 XTran  = TransferLearning.Fig36.iNtatsData(GTran.NTATS);
 
-Summary = TransferLearning.Fig36.iRSPdReuseSummary(RSP, GLearn, GTran, XLearn, XTran, xsSec, baseMask, winMask01);
-Summary.ZLayer = string(Summary.ZLayer);
+% --- Reactivation per mouse (all layers pooled)
+kSigma = 3;
+learnedBaseMu = mean(XLearn(:, baseMask), 2, 'omitnan');
+learnedBaseSd = std(XLearn(:, baseMask), 0, 2, 'omitnan');
+learnedWinMx  = max(XLearn(:, winMask01), [], 2, 'omitnan');
+learnedActive = learnedWinMx > (learnedBaseMu + kSigma .* learnedBaseSd);
 
-% --- Merge layers: pool all mouse×layer points
-x = double(Summary.ReuseRate);
-y = double(Summary.TransferPerformance);
+tranBaseMu = mean(XTran(:, baseMask), 2, 'omitnan');
+tranBaseSd = std(XTran(:, baseMask), 0, 2, 'omitnan');
+tranWinMx  = max(XTran(:, winMask01), [], 2, 'omitnan');
+tranActive = tranWinMx > (tranBaseMu + kSigma .* tranBaseSd);
+
+C = RSP.Cells;
+learnedCell = innerjoin(table(uint64(GLearn.CellUID), learnedActive, 'VariableNames', {'CellUID','LearnedActive'}), ...
+	C(:,{'CellUID','Mouse'}), 'Keys','CellUID');
+transferCell = table(uint64(GTran.CellUID), tranActive, 'VariableNames', {'CellUID','TransferActive'});
+medLT = innerjoin(learnedCell, transferCell, 'Keys','CellUID');
+medLT.Mouse = string(medLT.Mouse);
+
+PerfT = RSP.TableQuery(["Mouse","Performance"], Phase="Transfer", Design="LightWater");
+PerfT.Mouse = string(PerfT.Mouse);
+
+mice = unique(medLT.Mouse);
+x = nan(numel(mice), 1);
+y = nan(numel(mice), 1);
+for iM = 1:numel(mice)
+	m = mice(iM);
+	rows = medLT.Mouse == m;
+	LA = logical(medLT.LearnedActive(rows));
+	TA = logical(medLT.TransferActive(rows));
+	if nnz(LA) > 0
+		x(iM) = mean(double(TA(LA)), 'omitnan');
+	end
+	perf = PerfT.Performance(PerfT.Mouse == m);
+	y(iM) = mean(double(perf), 'omitnan');
+end
 use = isfinite(x) & isfinite(y);
 
 % --- Plot
@@ -60,8 +90,8 @@ end
 
 box(ax,'off');
 grid(ax,'off');
-xlabel(ax, 'Reuse rate', 'FontSize', 6);
-ylabel(ax, 'Transfer perf.', 'FontSize', 6);
+xlabel(ax, 'Reactivation', 'FontSize', 6);
+ylabel(ax, 'Transfer hit rate', 'FontSize', 6);
 
 % --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end

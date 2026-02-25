@@ -15,7 +15,7 @@
 % Execution:
 %   TransferLearning.英文图3.C_SD1sVsDeltaHit_ByLayer
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- Time axis
 xs = TransferLearning.Xs;

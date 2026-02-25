@@ -16,25 +16,52 @@ GLearn = RSP.QueryNTATS(struct('Phase','Learned','Stimulus','AudioWater','Design
 GTran  = RSP.QueryNTATS(struct('Phase','Transfer','Stimulus','LightWater','Design','LightWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 XLearn = TransferLearning.Fig36.iNtatsData(GLearn.NTATS);
-XTran  = TransferLearning.Fig36.iNtatsData(GTran.NTATS);
 
-Summary = TransferLearning.Fig36.iRSPdReuseSummary(RSP, GLearn, GTran, XLearn, XTran, xsSec, baseMask, winMask01);
+% --- Reactivation per mouse (all layers pooled, Hit vs Miss)
+kSigma = 3;
+learnedBaseMu = mean(XLearn(:, baseMask), 2, 'omitnan');
+learnedBaseSd = std(XLearn(:, baseMask), 0, 2, 'omitnan');
+learnedWinMx  = max(XLearn(:, winMask01), [], 2, 'omitnan');
+learnedActive = learnedWinMx > (learnedBaseMu + kSigma .* learnedBaseSd);
 
-if ~ismember('ReuseRate_Hit', Summary.Properties.VariableNames)
-	error('EnglishFig4E:NoHitMiss', 'Hit/Miss reuse not available.');
-end
+QT_HM = table(categorical({'Hit';'Miss'}), categorical({'Transfer';'Transfer'}), ...
+	categorical({'LightWater';'LightWater'}), categorical({'LightWater';'LightWater'}), {1;0}, ...
+	'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior'});
+GTranHM = RSP.QueryNTATS(QT_HM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+XTranHM = TransferLearning.Fig36.iNtatsData(GTranHM.NTATS);
+XTranHit = XTranHM(:,:,1);
+XTranMiss = XTranHM(:,:,2);
 
-% --- Merge layers: average 2/3 and 5 per mouse
-Summary.ZLayer = string(Summary.ZLayer);
-Summary.Mouse = string(Summary.Mouse);
-mice = unique(Summary.Mouse);
+tranHitBaseMu = mean(XTranHit(:, baseMask), 2, 'omitnan');
+tranHitBaseSd = std(XTranHit(:, baseMask), 0, 2, 'omitnan');
+tranHitWinMx  = max(XTranHit(:, winMask01), [], 2, 'omitnan');
+tranActiveHit = tranHitWinMx > (tranHitBaseMu + kSigma .* tranHitBaseSd);
+
+tranMissBaseMu = mean(XTranMiss(:, baseMask), 2, 'omitnan');
+tranMissBaseSd = std(XTranMiss(:, baseMask), 0, 2, 'omitnan');
+tranMissWinMx  = max(XTranMiss(:, winMask01), [], 2, 'omitnan');
+tranMissActive = tranMissWinMx > (tranMissBaseMu + kSigma .* tranMissBaseSd);
+
+C = RSP.Cells;
+learnedCell = innerjoin(table(uint64(GLearn.CellUID), learnedActive, 'VariableNames', {'CellUID','LearnedActive'}), ...
+	C(:,{'CellUID','Mouse'}), 'Keys','CellUID');
+hitCell = table(uint64(GTranHM.CellUID), tranActiveHit, 'VariableNames', {'CellUID','TransferActiveHit'});
+missCell = table(uint64(GTranHM.CellUID), tranMissActive, 'VariableNames', {'CellUID','TransferActiveMiss'});
+medLT = innerjoin(learnedCell, hitCell, 'Keys','CellUID');
+medLT = innerjoin(medLT, missCell, 'Keys','CellUID');
+medLT.Mouse = string(medLT.Mouse);
+
+mice = unique(medLT.Mouse);
 hitAll = nan(numel(mice), 1);
 missAll = nan(numel(mice), 1);
 for iM = 1:numel(mice)
 	m = mice(iM);
-	R = Summary(Summary.Mouse == m, :);
-	hitAll(iM) = mean(R.ReuseRate_Hit, 'omitnan');
-	missAll(iM) = mean(R.ReuseRate_Miss, 'omitnan');
+	rows = medLT.Mouse == m;
+	LA = logical(medLT.LearnedActive(rows));
+	if nnz(LA) > 0
+		hitAll(iM) = mean(double(medLT.TransferActiveHit(rows & medLT.LearnedActive)), 'omitnan');
+		missAll(iM) = mean(double(medLT.TransferActiveMiss(rows & medLT.LearnedActive)), 'omitnan');
+	end
 end
 mask = isfinite(hitAll) & isfinite(missAll);
 hit = hitAll(mask);
@@ -64,7 +91,7 @@ set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 
 grid(ax,'off');
 box(ax,'off');
-ylabel(ax, 'Reuse rate', 'FontSize', 6);
+ylabel(ax, 'Reactivation', 'FontSize', 6);
 
 % p-value asterisk via PLine (mimic Fig1J)
 if isfinite(p)

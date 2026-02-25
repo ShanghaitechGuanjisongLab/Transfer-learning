@@ -109,36 +109,34 @@ if any(okAdj)
 	end
 end
 
-xNaiveAdj = perMouseFull.SlopeAdj(string(perMouseFull.Group) == "Naive");
-xTranAdj  = perMouseFull.SlopeAdj(string(perMouseFull.Group) == "Transfer");
-xNaiveAdj = xNaiveAdj(isfinite(xNaiveAdj));
-xTranAdj  = xTranAdj(isfinite(xTranAdj));
+% Use raw slopes for bar chart (always positive), ANCOVA p for significance
+xNaiveRaw = perMouseFull.Slope(string(perMouseFull.Group) == "Naive");
+xTranRaw  = perMouseFull.Slope(string(perMouseFull.Group) == "Transfer");
+xNaiveRaw = xNaiveRaw(isfinite(xNaiveRaw));
+xTranRaw  = xTranRaw(isfinite(xTranRaw));
 
-% simplified per-mouse model (requested in D): Slope ~ 1 + Group + BaselinePerf
+% ANCOVA: Slope ~ 1 + Group + BaselinePerf (p-value for Group effect)
 pAnnot = nan;
-try
-	Tm = perMouseFull(:, {'Mouse','Group','Slope','BaselinePerf'});
-	Tm.Mouse = categorical(string(Tm.Mouse));
-	Tm.Group = categorical(string(Tm.Group));
-	Tm.Slope = double(Tm.Slope);
-	Tm.BaselinePerf = double(Tm.BaselinePerf);
-	okM = isfinite(Tm.Slope) & isfinite(Tm.BaselinePerf) & ~isundefined(Tm.Group);
-	Tm = Tm(okM, :);
-	if ~isempty(Tm)
-		lmSimple = fitlm(Tm, 'Slope ~ 1 + Group + BaselinePerf');
-		C = lmSimple.Coefficients;
-		idx = find(strcmp(string(C.Properties.RowNames), 'Group_Transfer'), 1);
-		if isempty(idx)
-			idx = find(startsWith(string(C.Properties.RowNames), 'Group_'), 1);
-		end
-		if ~isempty(idx)
-			pAnnot = C.pValue(idx);
-		end
+Tm = perMouseFull(:, {'Mouse','Group','Slope','BaselinePerf'});
+Tm.Mouse = categorical(string(Tm.Mouse));
+Tm.Group = categorical(string(Tm.Group));
+Tm.Slope = double(Tm.Slope);
+Tm.BaselinePerf = double(Tm.BaselinePerf);
+okM = isfinite(Tm.Slope) & isfinite(Tm.BaselinePerf) & ~isundefined(Tm.Group);
+Tm = Tm(okM, :);
+if ~isempty(Tm)
+	lmSimple = fitlm(Tm, 'Slope ~ 1 + Group + BaselinePerf');
+	C = lmSimple.Coefficients;
+	idx = find(strcmp(string(C.Properties.RowNames), 'Group_Transfer'), 1);
+	if isempty(idx)
+		idx = find(startsWith(string(C.Properties.RowNames), 'Group_'), 1);
 	end
-catch
+	if ~isempty(idx)
+		pAnnot = C.pValue(idx);
+	end
 end
 
-Groups = struct('Naive', {xNaiveAdj(:)}, 'Trans', {xTranAdj(:)});
+Groups = struct('Naive', {xNaiveRaw(:)}, 'Trans', {xTranRaw(:)});
 
 %%
 f1 = figure('Color','none', 'Name', 'English Fig1C Growth slope');
@@ -168,23 +166,14 @@ if isscalar(Bars)
 	Bars.FaceAlpha = 1/3;
 end
 ax.XLim = [0.5, 2.5];
-title('Normalized slope');
+title('Learning slope');
 
 
-% P-line annotation (asterisk) using simplified per-mouse model p-value
-if isfinite(pAnnot) && height(ErrorBars) >= 2
-	pText = "";
-	if pAnnot < 0.05
-		pText = "*";
-	end
-	if strlength(pText) > 0
-		Descriptors = table(ErrorBars.Object(1), ErrorBars.Object(2), 1, 1, pText, 0, ...
-			'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-		try
-			MATLAB.Graphics.PLine(Descriptors);
-		catch
-		end
-	end
+% P-line annotation (asterisk) using ANCOVA p-value
+if isfinite(pAnnot) && pAnnot < 0.05 && height(ErrorBars) >= 1
+	Descriptors = table(ErrorBars.Object(1), "*", ...
+		'VariableNames', {'ObjectA','Text'});
+	MATLAB.Graphics.PLine(Descriptors);
 end
 box off
 

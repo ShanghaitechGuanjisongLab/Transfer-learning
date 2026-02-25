@@ -6,7 +6,7 @@
 % 执行方式（脚本，直接 F5 或在 MATLAB Editor 中运行）：
 %   run('+TransferLearning/英文图3/B_DeltaHitIllustration.m')
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- Preconditions
 if ~exist('UniExp.DataSet', 'class')

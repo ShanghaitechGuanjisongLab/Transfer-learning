@@ -1,48 +1,43 @@
-% 英文图3D：SD 组间与组内比较（合层 2×1 tiledlayout）
+% 英文图3E：SD 组间 + 信号保留亚组（2×1 tiledlayout）
 %
-% 上 tile：Transfer vs Naive SD（合层，session pair 均值）
-% 下 tile：Transfer 内 AW-Responsive vs AW-Non-responsive SD（合层，首 LW 会话）
+% 上 tile：Transfer vs Naive inter-cell SD（BarScatterCompare + PLine）
+% 下 tile：AW-active vs AW-inactive 的 mean |LW z-score|
 %
-% SD 指标（上 tile）= mean(SD_session_k, SD_session_{k+1})，以相邻会话对为统计单位。
-% SD 指标（下 tile）= 首个 LW 会话中，AW 末 session abs(median NTATS@1s) top/bottom 50% 分组的 SD
-%
-% Naive LW 来源：LightAudioBaseline + LAInterspersed，全部 LW 会话（ceiling excluded）
-% Transfer LW 来源：AudioLightBaseline，全部 LW 会话（ceiling excluded）
-%
-% 样式参考：英文图2K（3×4cm, 2×1 tile，BarScatterCompare 无散点，PLine）
-%
-% Output: SVG to \\Data-Server-2\个人数据\张天夫\202601
+% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.D_SD1s_NaiveVsTransfer_ByLayer
+%   TransferLearning.英文图3.E_SignalRetentionQuantification
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+svgName = "English_Fig3E_SDAndSubgroup.svg";
 
 % --- Time axis
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [dtMin, idx1s] = min(abs(xsSec - 1));
 if isempty(idx1s) || ~isfinite(dtMin) || dtMin > 0.25
-	error('EnglishFig3D:No1s', 'Cannot find a sample close to 1s.');
+	error('EnglishFig3E:No1s', 'Cannot find a sample close to 1s.');
 end
 
-%% ===== Part 1: Transfer LW — AudioLightBaseline =====
+baseMask = 1:24;
+
+%% ===== Part 1: Transfer vs Naive inter-cell SD =====
+
+% Transfer LW — AudioLightBaseline
 DS_ALB = TransferLearning.AudioLightBaseline();
 
 SessT = iLightWaterSessions(DS_ALB);
 SessT = iExcludeCeiling(SessT);
 PairsT = iSessionPairs(SessT);
-
 fprintf('Transfer LW: %d adjacent session pairs\n', height(PairsT));
 
 allDTs_T = unique([PairsT.DateTime; PairsT.DateTimeNext]);
 q = struct('Stimulus', 'LightWater', 'DateTime', allDTs_T);
-ntsCell = DS_ALB.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+ntsCell = DS_ALB.QueryNTS(q, UniExp.Flags.ZScore, baseMask, 'ExtraColumns', ["DateTime"]);
 sdTbl_T = iBatchSD1s_All(ntsCell{1}, idx1s);
 
 maxP = height(PairsT);
 T_SD_All = nan(maxP, 1);
-
 for iP = 1:maxP
 	dtK  = PairsT.DateTime(iP);
 	dtK1 = PairsT.DateTimeNext(iP);
@@ -55,7 +50,7 @@ for iP = 1:maxP
 	end
 end
 
-%% ===== Part 2: Naive LW — LightAudioBaseline + LAInterspersed =====
+% Naive LW — LightAudioBaseline + LAInterspersed
 naiveDSList = {
 	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline())
 	builtin('struct', 'Name', "LAInterspersed",     'DS', TransferLearning.LAInterspersed())
@@ -88,7 +83,7 @@ for d = 1:numel(naiveDSList)
 	dts = unique([PairsN.DateTime(PairsN.Source == dsName); PairsN.DateTimeNext(PairsN.SourceNext == dsName)]);
 	if isempty(dts), continue; end
 	q = struct('Stimulus', 'LightWater', 'DateTime', dts);
-	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, baseMask, 'ExtraColumns', ["DateTime"]);
 	if ~isempty(ntsCell) && ~isempty(ntsCell{1})
 		tbl = iBatchSD1s_All(ntsCell{1}, idx1s);
 		naiveSD = [naiveSD; tbl]; %#ok<AGROW>
@@ -99,7 +94,6 @@ naiveSD = naiveSD(iU, :);
 
 maxPN = height(PairsN);
 N_SD_All = nan(maxPN, 1);
-
 for iP = 1:maxPN
 	dtK  = PairsN.DateTime(iP);
 	dtK1 = PairsN.DateTimeNext(iP);
@@ -112,8 +106,15 @@ for iP = 1:maxPN
 	end
 end
 
-%% ===== Part 3: AW-Responsive vs AW-Non-responsive SD (Transfer only, first LW) =====
-baseMask = 1:24;
+kN = isfinite(N_SD_All); kT = isfinite(T_SD_All);
+pNvsT = ranksum(N_SD_All(kN), T_SD_All(kT));
+fprintf('\n=== Transfer vs Naive inter-cell SD ===\n');
+fprintf('  Naive:    %.4f ± %.4f (n=%d)\n', mean(N_SD_All(kN)), std(N_SD_All(kN))/sqrt(sum(kN)), sum(kN));
+fprintf('  Transfer: %.4f ± %.4f (n=%d)\n', mean(T_SD_All(kT)), std(T_SD_All(kT))/sqrt(sum(kT)), sum(kT));
+fprintf('  ranksum p = %.4g\n', pNvsT);
+
+%% ===== Part 2: AW-active vs AW-inactive |LW z-score| (Transfer only) =====
+
 Blocks_ALB = DS_ALB.Blocks;
 Blocks_ALB.BlockUID = uint64(Blocks_ALB.BlockUID);
 Blocks_ALB.DateTime = datetime(Blocks_ALB.DateTime);
@@ -128,28 +129,28 @@ Trials_ALB = DS_ALB.Trials;
 Trials_ALB.BlockUID = uint64(Trials_ALB.BlockUID);
 
 mice_T = unique(DT_ALB.Mouse);
-SD_active = nan(numel(mice_T), 1);
-SD_inactive = nan(numel(mice_T), 1);
+meanAbsLW_active = nan(numel(mice_T), 1);
+meanAbsLW_inactive = nan(numel(mice_T), 1);
 
 for mi = 1:numel(mice_T)
 	m = mice_T(mi);
 	mouseDTs = DT_ALB.DateTime(DT_ALB.Mouse == m);
 
-	% Find AW sessions
+	% Find last AW session
 	awTrials = Trials_ALB(string(Trials_ALB.Stimulus) == "AudioWater", :);
 	awBlkDTs = innerjoin(awTrials(:,'BlockUID'), Blocks_ALB(:,{'BlockUID','DateTime'}), 'Keys','BlockUID');
 	awMouseDates = intersect(unique(awBlkDTs.DateTime), mouseDTs);
 	if isempty(awMouseDates), continue; end
 	lastAWdt = max(awMouseDates);
 
-	% Find LW sessions
+	% Find first LW session
 	lwTrials = Trials_ALB(string(Trials_ALB.Stimulus) == "LightWater", :);
 	lwBlkDTs = innerjoin(lwTrials(:,'BlockUID'), Blocks_ALB(:,{'BlockUID','DateTime'}), 'Keys','BlockUID');
 	lwMouseDates = intersect(unique(lwBlkDTs.DateTime), mouseDTs);
 	if isempty(lwMouseDates), continue; end
 	firstLWdt = min(lwMouseDates);
 
-	% Get ZScore for last AW session → classify cells
+	% Get per-cell AW response (last AW session)
 	qAW = struct('Stimulus', 'AudioWater', 'DateTime', lastAWdt);
 	ntsAW = DS_ALB.QueryNTS(qAW, UniExp.Flags.ZScore, baseMask, 'ExtraColumns', ["CellUID"]);
 	if isempty(ntsAW) || isempty(ntsAW{1}), continue; end
@@ -164,19 +165,7 @@ for mi = 1:numel(mice_T)
 		if numel(med) >= idx1s, medAW(ic) = med(idx1s); end
 	end
 
-	validAW = isfinite(medAW);
-	medAW_v = medAW(validAW);
-	awCells_v = awCells(validAW);
-	if numel(medAW_v) < 6, continue; end
-
-	% Sort by abs(median@1s), top 50% = responsive
-	absVals = abs(medAW_v);
-	nHalf = ceil(numel(medAW_v) / 2);
-	[~, sortIdx] = sort(absVals, 'descend');
-	activeCIDs = awCells_v(sortIdx(1:nHalf));
-	inactiveCIDs = awCells_v(sortIdx(nHalf+1:end));
-
-	% Get ZScore for first LW session → compute SD per group
+	% Get per-cell LW response (first LW session)
 	qLW = struct('Stimulus', 'LightWater', 'DateTime', firstLWdt);
 	ntsLW = DS_ALB.QueryNTS(qLW, UniExp.Flags.ZScore, baseMask, 'ExtraColumns', ["CellUID"]);
 	if isempty(ntsLW) || isempty(ntsLW{1}), continue; end
@@ -191,51 +180,45 @@ for mi = 1:numel(mice_T)
 		if numel(med) >= idx1s, medLW(ic) = med(idx1s); end
 	end
 
-	lwActiveVals = medLW(ismember(lwCells, activeCIDs));
-	lwInactiveVals = medLW(ismember(lwCells, inactiveCIDs));
-	lwActiveVals = lwActiveVals(isfinite(lwActiveVals));
-	lwInactiveVals = lwInactiveVals(isfinite(lwInactiveVals));
+	% Match cells
+	[~, idxAW, idxLW] = intersect(awCells, lwCells);
+	validAW = isfinite(medAW(idxAW));
+	medAW_v = medAW(idxAW(validAW));
+	if numel(medAW_v) < 6, continue; end
 
-	if numel(lwActiveVals) >= 3
-		SD_active(mi) = std(lwActiveVals);
-	end
-	if numel(lwInactiveVals) >= 3
-		SD_inactive(mi) = std(lwInactiveVals);
-	end
+	lwV = medLW(idxLW(validAW));
+	awV = medAW_v;
+
+	% Top 50% by |AW| = active
+	absAW = abs(awV);
+	nHalf = ceil(numel(awV) / 2);
+	[~, sortIdx] = sort(absAW, 'descend');
+	activeIdx = sortIdx(1:nHalf);
+	inactiveIdx = sortIdx(nHalf+1:end);
+	meanAbsLW_active(mi) = mean(abs(lwV(activeIdx)));
+	meanAbsLW_inactive(mi) = mean(abs(lwV(inactiveIdx)));
 end
 
-validMice = isfinite(SD_active) & isfinite(SD_inactive);
-pAI = signrank(SD_active(validMice), SD_inactive(validMice));
-fprintf('\nAW-Resp. vs AW-Non-r. SD (Transfer, first LW, merged layers):\n');
-fprintf('  Resp.:    %.4f ± %.4f (n=%d)\n', mean(SD_active(validMice)), std(SD_active(validMice))/sqrt(sum(validMice)), sum(validMice));
-fprintf('  Non-r.:   %.4f ± %.4f (n=%d)\n', mean(SD_inactive(validMice)), std(SD_inactive(validMice))/sqrt(sum(validMice)), sum(validMice));
-fprintf('  paired signrank p = %.4g\n', pAI);
-
-%% ===== Statistics =====
-kN = isfinite(N_SD_All); kT = isfinite(T_SD_All);
-pNvsT = ranksum(N_SD_All(kN), T_SD_All(kT));
-
-fprintf('\n=== Transfer vs Naive inter-cell SD (merged layers, mean of pair) ===\n');
-fprintf('  Naive:    %.4f ± %.4f (n=%d)\n', mean(N_SD_All(kN)), std(N_SD_All(kN))/sqrt(sum(kN)), sum(kN));
-fprintf('  Transfer: %.4f ± %.4f (n=%d)\n', mean(T_SD_All(kT)), std(T_SD_All(kT))/sqrt(sum(kT)), sum(kT));
-fprintf('  ranksum p = %.4g\n', pNvsT);
+vAI = isfinite(meanAbsLW_active) & isfinite(meanAbsLW_inactive);
+pAbsLW = signrank(meanAbsLW_active(vAI), meanAbsLW_inactive(vAI));
+fprintf('\n=== AW-active vs AW-inactive |LW z-score| ===\n');
+fprintf('  Active:   %.4f ± %.4f (n=%d)\n', mean(meanAbsLW_active(vAI)), std(meanAbsLW_active(vAI))/sqrt(sum(vAI)), sum(vAI));
+fprintf('  Inactive: %.4f ± %.4f (n=%d)\n', mean(meanAbsLW_inactive(vAI)), std(meanAbsLW_inactive(vAI))/sqrt(sum(vAI)), sum(vAI));
+fprintf('  signrank p = %.4g\n', pAbsLW);
 
 %% ===== Plot (2×1 tiledlayout) =====
-svgName = "English_Fig3D_SD_GroupAndSubgroup.svg";
-f = figure('Color', 'w', 'Name', 'English Fig3D SD Group & Subgroup');
+f = figure('Color', 'w', 'Name', 'English Fig3E SD & Subgroup');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-yl = ylabel(Layout, 'Inter-cell SD');
-yl.FontSize = 6;
 
 colorNaive = [1 0 0];
 colorTransfer = [0 0 1];
-colorActive = [0.4660 0.6740 0.1880];   % green
-colorInactive = [0.5 0.5 0.5];          % gray
+colorActive = [0.4660 0.6740 0.1880];
+colorInact = [0.5 0.5 0.5];
 
-% --- Tile 1: Transfer vs Naive SD (merged layers)
+% --- Tile 1: Transfer vs Naive SD
 nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare({N_SD_All(kN), T_SD_All(kT)}, false);
 delete(findobj(gca, 'Type', 'Scatter'));
@@ -245,7 +228,7 @@ ax1 = gca;
 ax1.FontSize = 6;
 ax1.XTick = [1 2];
 ax1.XTickLabel = {'Naive', 'Transfer'};
-
+ylabel(ax1, 'Inter-cell SD');
 legend(ax1, 'off');
 box(ax1, 'off');
 grid(ax1, 'off');
@@ -270,39 +253,36 @@ Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0
 [~, PT1] = MATLAB.Graphics.PLine(Desc1);
 for t = PT1(:)', t.FontSize = 6; end
 
-% --- Tile 2: AW-Resp. vs AW-Non-r. SD (Transfer only)
+% --- Tile 2: AW-active vs AW-inactive |LW z-score|
 nexttile(Layout, 2);
-[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({SD_active(validMice), SD_inactive(validMice)}, false);
+[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({meanAbsLW_active(vAI), meanAbsLW_inactive(vAI)}, false);
 delete(findobj(gca, 'Type', 'Scatter'));
 for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
 
 ax2 = gca;
 ax2.FontSize = 6;
-ax2.FontName = 'Segoe UI Emoji';
 ax2.XTick = [1 2];
-ax2.XTickLabel = {'Resp.', 'Non-r.'};
-title(ax2, 'Cell subgroups of 💡💧', 'FontSize', 6);
-xlabel(ax2, '🔊💧', 'FontSize', 6);
-legend(ax2, 'off');
+ax2.XTickLabel = {'Active', 'Inactive'};
+ylabel(ax2, '💡💧 z-score');
+title(ax2, '🔊💧 subgroups', 'FontSize', 6);
 box(ax2, 'off');
 grid(ax2, 'off');
+legend(ax2, 'off');
 ax2.Toolbar.Visible = 'off';
 
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
-	nB2 = numel(Bars2.YData);
-	Bars2.CData = repmat([colorActive; colorInactive], ceil(nB2/2), 1);
-	Bars2.CData = Bars2.CData(1:nB2, :);
+	Bars2.CData = [colorActive; colorInact];
 	Bars2.BarWidth = 0.5; Bars2.LineWidth = 0.5; Bars2.FaceAlpha = 1/3;
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorActive;   Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
-		Bars2(2).FaceColor = colorInactive; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
+		Bars2(1).FaceColor = colorActive; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
+		Bars2(2).FaceColor = colorInact;  Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
 	end
 end
 
-star2 = iAsterisk(pAI);
-Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
+starAI = iAsterisk(pAbsLW);
+Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), starAI, 0, ...
 	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
 [~, PT2] = MATLAB.Graphics.PLine(Desc2);
 for t = PT2(:)', t.FontSize = 6; end
@@ -313,52 +293,41 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig3D_Naive_SD',    N_SD_All(kN));
-assignin('base', 'Fig3D_Transfer_SD', T_SD_All(kT));
-assignin('base', 'Fig3D_pNvsT', pNvsT);
-assignin('base', 'Fig3D_SD_Active',   SD_active(validMice));
-assignin('base', 'Fig3D_SD_Inactive', SD_inactive(validMice));
-assignin('base', 'Fig3D_pAI', pAI);
+assignin('base', 'Fig3E_Naive_SD', N_SD_All(kN));
+assignin('base', 'Fig3E_Transfer_SD', T_SD_All(kT));
+assignin('base', 'Fig3E_pNvsT', pNvsT);
+assignin('base', 'Fig3E_AbsLW_Active', meanAbsLW_active(vAI));
+assignin('base', 'Fig3E_AbsLW_Inactive', meanAbsLW_inactive(vAI));
+assignin('base', 'Fig3E_pAbsLW', pAbsLW);
 
 %% ===== Local functions =====
 
 function sdTbl = iBatchSD1s_All(nts, idx1s)
-% Compute merged-layer inter-cell SD@1s per session (DateTime).
-% Returns table(DateTime, SD_All).
 minCells = 3;
-
 if isempty(nts) || ~istable(nts) || height(nts) == 0
 	sdTbl = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_All'});
 	return;
 end
-
 nts.CellUID = uint64(nts.CellUID);
 nts.DateTime = datetime(nts.DateTime);
 if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone = ''; end
-
 uDTs = unique(nts.DateTime);
 nDT = numel(uDTs);
 sdAll = nan(nDT, 1);
-
 for iDT = 1:nDT
 	dt = uDTs(iDT);
 	sessRows = nts(nts.DateTime == dt, :);
-
 	uCells = unique(sessRows.CellUID);
 	nC = numel(uCells);
 	vals = nan(nC, 1);
 	for iC = 1:nC
 		cRows = sessRows.TrialSignal(sessRows.CellUID == uCells(iC), :);
 		med = median(double(cRows), 1, 'omitnan');
-		if numel(med) >= idx1s
-			vals(iC) = med(idx1s);
-		end
+		if numel(med) >= idx1s, vals(iC) = med(idx1s); end
 	end
-
 	vAll = vals(isfinite(vals));
 	if numel(vAll) >= minCells, sdAll(iDT) = std(vAll, 0, 1); end
 end
-
 sdTbl = table(uDTs, sdAll, 'VariableNames', {'DateTime','SD_All'});
 end
 
@@ -374,12 +343,10 @@ else
 	Blocks.MustWarn = repmat("", height(Blocks), 1);
 end
 Blocks = Blocks(:, {'BlockUID','DateTime','MustWarn'});
-
 DT = DS.DateTimes(:, {'DateTime','Mouse'});
 DT.DateTime = datetime(DT.DateTime);
 if ~isempty(DT.DateTime.TimeZone), DT.DateTime.TimeZone = ''; end
 DT.Mouse = string(DT.Mouse);
-
 Tr = DS.Trials(:, {'BlockUID','Stimulus','Behavior'});
 Tr.BlockUID = uint64(Tr.BlockUID);
 TrLW = Tr(string(Tr.Stimulus) == "LightWater", :);
@@ -388,16 +355,13 @@ if isempty(TrLW)
 		'VariableNames', {'Mouse','DateTime','Performance'});
 	return;
 end
-
 [G, bu] = findgroups(uint64(TrLW.BlockUID));
 lwPerf = splitapply(@(x) mean(double(x), 'omitnan'), TrLW.Behavior, G);
 perfByBlock = table(uint64(bu), lwPerf, 'VariableNames', {'BlockUID','LWPerf'});
-
 T = innerjoin(perfByBlock, Blocks, 'Keys', 'BlockUID');
 keep = ismissing(T.MustWarn) | (T.MustWarn == "");
 T = T(keep, :);
 T = innerjoin(T, DT, 'Keys', 'DateTime');
-
 [G2, mouse, dt] = findgroups(T.Mouse, T.DateTime);
 perfSess = splitapply(@(x) mean(double(x), 'omitnan'), T.LWPerf, G2);
 Sess = table(mouse, dt, perfSess, 'VariableNames', {'Mouse','DateTime','Performance'});
@@ -431,9 +395,7 @@ for m = unique(SessOut.Mouse)'
 	rows = find(SessOut.Mouse == m);
 	p = double(SessOut.Performance(rows));
 	i100 = find(p >= 1 - 1e-12, 1, 'first');
-	if ~isempty(i100)
-		remove(rows(i100:end)) = true;
-	end
+	if ~isempty(i100), remove(rows(i100:end)) = true; end
 end
 SessOut(remove, :) = [];
 perf = double(SessOut.Performance);
