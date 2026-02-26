@@ -163,7 +163,7 @@ for iA = 1:numel(annoIdx)
 end
 
 title(ax, 'Representative mouse', 'FontSize', 6, 'FontWeight', 'normal');
-xlabel(ax, 'Session');
+xlabel(ax, 'Block');
 ylabel(ax, 'Hit rate');
 ylim(ax, [0 1]);
 xlim(ax, [0.5, max(xSess) + 2.5]);

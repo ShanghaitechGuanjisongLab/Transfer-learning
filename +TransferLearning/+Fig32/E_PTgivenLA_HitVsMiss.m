@@ -36,7 +36,6 @@ outDir = iSelectOutDir(outDirUNC);
 svgName = "Fig3_2e_PTgivenLA_HitVsMiss_2panels.svg";
 
 f = figure('Color','w', 'Name','P(T|L) Hit vs Miss');
-MATLAB.Graphics.FigureAspectRatio(46,46,1/2);
 TL = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 ylabel(TL, 'P(T|L) at 1 s');
 

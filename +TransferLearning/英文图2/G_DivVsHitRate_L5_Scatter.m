@@ -240,10 +240,9 @@ for iR = 1:2
 			ylabel(ax, rowTitle(iR));
 		end
 
-		% rho annotation
-		sig = iAsterisk(pVals(iR, iC));
-		text(ax, 0.05, 0.95, sprintf('\\rho=%.2f%s', rhoVals(iR, iC), sig), ...
-			'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top');
+		% p-value annotation (top-right corner)
+		text(ax, 0.95, 0.95, sprintf('p=%.2g', pVals(iR, iC)), ...
+			'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right');
 	end
 end
 
@@ -263,18 +262,6 @@ assignin('base', 'Fig2G_Stats', struct( ...
 	'rhoTL5',  rhoTL5,  'pTL5',  pTL5));
 
 %% ===== local functions =====
-
-function s = iAsterisk(p)
-if p < 0.001
-	s = "***";
-elseif p < 0.01
-	s = "**";
-elseif p < 0.05
-	s = "*";
-else
-	s = " n.s.";
-end
-end
 
 function div = iDivFromX(X)
 totalSignal = sum(mean(X, 2).^2);

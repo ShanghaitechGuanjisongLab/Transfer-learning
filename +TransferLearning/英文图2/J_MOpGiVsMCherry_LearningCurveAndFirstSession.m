@@ -152,7 +152,7 @@ catch
 end
 
 ax.FontSize = 12;
-xlabel(ax, 'Session', 'FontSize', 12);
+xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
