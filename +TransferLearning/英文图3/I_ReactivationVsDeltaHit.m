@@ -113,17 +113,8 @@ xlabel(ax, 'Reactivation');
 ylabel(ax, 'ΔHit');
 
 if isfinite(p)
-	if p < 0.001
-		pText = "***";
-	elseif p < 0.01
-		pText = "**";
-	elseif p < 0.05
-		pText = "*";
-	else
-		pText = "";
-	end
-	text(ax, 0.02, 0.98, sprintf('\\rho=%.2f%s', rho, pText), ...
-		'Units','normalized', 'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
+	text(ax, 0.95, 0.95, sprintf('p=%.2g', p), ...
+		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6);
 end
 
 % --- Export SVG

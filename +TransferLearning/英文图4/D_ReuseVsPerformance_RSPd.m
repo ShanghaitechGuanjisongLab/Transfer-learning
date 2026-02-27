@@ -79,13 +79,8 @@ end
 
 [rho, p] = TransferLearning.Fig36.iSpearman(x(use), y(use));
 if isfinite(p)
-	if p < 0.001, pText = "***";
-	elseif p < 0.01, pText = "**";
-	elseif p < 0.05, pText = "*";
-	else, pText = "n.s.";
-	end
-	text(ax, 0.02, 0.98, sprintf('r=%.2f%s n=%d', rho, pText, nnz(use)), ...
-		'Units','normalized', 'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
+	text(ax, 0.95, 0.95, sprintf('p=%.2g', p), ...
+		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6);
 end
 
 box(ax,'off');

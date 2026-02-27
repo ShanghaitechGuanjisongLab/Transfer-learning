@@ -129,10 +129,9 @@ grid(ax, 'off');
 xlabel(ax, '🔊💧 z-score');
 ylabel(ax, '💡💧 z-score');
 
-% Spearman annotation
-sig = iAsterisk(p);
-text(ax, 0.02, 0.98, sprintf('\\rho=%.2f%s', rho, sig), ...
-	'Units', 'normalized', 'FontSize', 6, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
+% p-value annotation (top-right corner)
+text(ax, 0.95, 0.95, sprintf('p=%.2g', p), ...
+	'Units', 'normalized', 'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
 
 %% ===== Export =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end

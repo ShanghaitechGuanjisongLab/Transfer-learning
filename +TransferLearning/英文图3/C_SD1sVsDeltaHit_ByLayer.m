@@ -162,10 +162,9 @@ for iC = 1:2
 
 	title(ax, colTitle(iC), 'FontSize', 6, 'FontWeight', 'normal');
 
-	% Spearman annotation
-	sig = iAsterisk(pVals(iC));
-	text(ax, 0.05, 0.95, sprintf('\\rho=%.2f%s', rhoVals(iC), sig), ...
-		'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top');
+	% p-value annotation (top-right corner)
+	text(ax, 0.95, 0.95, sprintf('p=%.2g', pVals(iC)), ...
+		'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right');
 end
 
 % Unify y-axes
