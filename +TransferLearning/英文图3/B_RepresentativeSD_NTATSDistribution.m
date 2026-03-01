@@ -234,9 +234,9 @@ for iR = 1:2
 			title(axH, colTitles(iC), 'FontSize', 6, 'FontWeight', 'bold');
 		end
 
-		% Row label + cell count (left column only)
+		% Row label (left column only)
 		if iC == 1
-			ylabel(axH, sprintf('%s\n%d cells', pairLabels(iR), nCells), 'FontSize', 6);
+			ylabel(axH, pairLabels(iR), 'FontSize', 6);
 			axH.YAxis.Visible = 'on';
 			axH.YTick = [];
 		else
