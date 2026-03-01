@@ -1,4 +1,4 @@
-% 英文图3H：TH 抑制组 vs 对照组 ΔHit 和 细胞间 SD（会话对平均）
+% 英文图3I：TH 抑制组 vs 对照组 ΔHit 和 细胞间 SD（会话对平均）
 %
 % 两个面板（上下 tiledlayout，参照英文图2K）：
 %   上: ΔHit — 前后会话命中率差值（iBuildSessionDeltaNextTable）
@@ -38,7 +38,7 @@ xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [dtMin, idx1s] = min(abs(xsSec - 1));
 if isempty(idx1s) || ~isfinite(dtMin) || dtMin > 0.25
-	error('EnglishFig3H:No1s', 'Cannot find a sample close to 1s.');
+	error('EnglishFig3I:No1s', 'Cannot find a sample close to 1s.');
 end
 
 minCells = 3;
@@ -131,9 +131,9 @@ fprintf('  ranksum p = %.4g\n', pSD);
 %% ======================================================================
 %  Plot (2×1 tiledlayout, bar only, style: English Fig2K)
 %  ======================================================================
-svgName = "English_Fig3H_THInhibitVsCtrl_DeltaHitAndSD.svg";
+svgName = "English_Fig3I_THInhibitVsCtrl_DeltaHitAndSD.svg";
 
-f = figure('Color', 'w', 'Name', 'English Fig3H TH DeltaHit & SD');
+f = figure('Color', 'w', 'Name', 'English Fig3I TH DeltaHit & SD');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
@@ -221,12 +221,12 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'English_Fig3H_DeltaHit_Ctrl', dCtrl);
-assignin('base', 'English_Fig3H_DeltaHit_TH',   dTH);
-assignin('base', 'English_Fig3H_SD_Ctrl', SD_Ctrl(kC));
-assignin('base', 'English_Fig3H_SD_TH',   SD_TH(kT));
-assignin('base', 'English_Fig3H_pDelta', pDelta);
-assignin('base', 'English_Fig3H_pSD',    pSD);
+assignin('base', 'English_Fig3I_DeltaHit_Ctrl', dCtrl);
+assignin('base', 'English_Fig3I_DeltaHit_TH',   dTH);
+assignin('base', 'English_Fig3I_SD_Ctrl', SD_Ctrl(kC));
+assignin('base', 'English_Fig3I_SD_TH',   SD_TH(kT));
+assignin('base', 'English_Fig3I_pDelta', pDelta);
+assignin('base', 'English_Fig3I_pSD',    pSD);
 
 %% ===== Local functions =====
 

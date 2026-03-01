@@ -1,19 +1,22 @@
-% 英文图3C：Inter-cell SD@1s (session k+1) vs ΔHit — 1×2 (Naive vs Transfer, merged L2/3+L5)
+% 英文图3D：Inter-cell SD@1s (Moderates only) vs ΔHit — N/T 合并
 %
-% 使用学习过程中所有相邻会话对，L2/3 与 L5 合并计算。
+% 仅使用 Moderates 细胞（z-score@1s ∈ [-1,1]）计算 SD。
+% 区分方法同 B 图。Naive 与 Transfer 合并为一张散点图。
 %
 % Data scope:
 % - Transfer: AudioLightBaseline，全部 LW 会话（ceiling excluded）
 % - Naive: LightAudioBaseline + LAInterspersed，纯 LW 会话（ceiling excluded）
 % - One point = one adjacent session pair (session k → session k+1).
 % - ΔHit = Hit(k+1) − Hit(k).
-% - x = inter-cell SD of median ZScore at 1s in session k+1, all layers merged.
+% - x = inter-cell SD of median ZScore at 1s in session k+1, Moderates cells only.
 %
-% Layout: tiledlayout(1,2) — Naive, Transfer (merged layers)
-% Style: scatter + fit line + Partial Spearman (ctrl Hit_K).
+% Layout: single axes
+% Style: scatter + fit line + simple Spearman.
+%
+% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.C_SD1sVsDeltaHit_ByLayer
+%   TransferLearning.英文图3.D_SD1sVsDeltaHit_Moderates
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
@@ -23,7 +26,7 @@ if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 
 [dtMin, idx1s] = min(abs(xsSec - 1));
 if isempty(idx1s) || ~isfinite(dtMin) || dtMin > 0.25
-	error('EnglishFig3C:No1s', 'Cannot find a sample close to 1s.');
+	error('EnglishFig3D:No1s', 'Cannot find a sample close to 1s.');
 end
 
 %% ===== Part 1: Transfer LW — AudioLightBaseline =====
@@ -35,9 +38,9 @@ SessT = iExcludeCeiling(SessT);
 PairsT = iSessionPairs(SessT);
 fprintf('Transfer LW: %d adjacent session pairs\n', height(PairsT));
 
-% Batch query merged-layer SD for session k+1
+% Batch query Moderates SD for session k+1
 allDTs_T = unique(PairsT.DateTimeNext);
-sdTbl_T = iBatchSD1s_All(DS_ALB, allDTs_T, idx1s);
+sdTbl_T = iBatchSD1s_Moderates(DS_ALB, allDTs_T, idx1s);
 
 % Build Transfer data vectors
 nPT = height(PairsT);
@@ -48,14 +51,13 @@ for iP = 1:nPT
 	dtK1 = PairsT.DateTimeNext(iP);
 	r = sdTbl_T(sdTbl_T.DateTime == dtK1, :);
 	if height(r) == 1
-		T_SD(iP) = r.SD_All;
+		T_SD(iP) = r.SD_Mod;
 	end
 	T_DH(iP) = PairsT.PerformanceNext(iP) - PairsT.Performance(iP);
 	T_HK(iP) = PairsT.Performance(iP);
 end
 
 %% ===== Part 2: Naive LW — LightAudioBaseline + LAInterspersed =====
-% Use phase-based session gathering (matching scratchDualSessionFeatures)
 DS_LAB = TransferLearning.LightAudioBaseline();
 DS_LAI = TransferLearning.LAInterspersed();
 
@@ -69,14 +71,14 @@ allNaiveSess = iExcludeCeilingNaive(allNaiveSess);
 PairsN = iSessionPairs(allNaiveSess);
 fprintf('Naive LW: %d adjacent session pairs (phase-based)\n', height(PairsN));
 
-% Batch query per-layer SD per source dataset
-naiveSD = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_All'});
+% Batch query Moderates SD per source dataset
+naiveSD = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_Mod'});
 for d = 1:numel(naiveDSObjs)
 	DS = naiveDSObjs{d};
 	dsName = naiveDSNames(d);
 	dts = unique(PairsN.DateTimeNext(PairsN.SourceNext == dsName));
 	if isempty(dts), continue; end
-	sdPart = iBatchSD1s_All(DS, dts, idx1s);
+	sdPart = iBatchSD1s_Moderates(DS, dts, idx1s);
 	if ~isempty(sdPart)
 		naiveSD = [naiveSD; sdPart]; %#ok<AGROW>
 	end
@@ -92,88 +94,50 @@ for iP = 1:nPN
 	dtK1 = PairsN.DateTimeNext(iP);
 	r = naiveSD(naiveSD.DateTime == dtK1, :);
 	if height(r) == 1
-		N_SD(iP) = r.SD_All;
+		N_SD(iP) = r.SD_Mod;
 	end
 	N_DH(iP) = PairsN.PerformanceNext(iP) - PairsN.Performance(iP);
 	N_HK(iP) = PairsN.Performance(iP);
 end
 
-%% ===== Statistics (1×2: Partial Spearman, merged layers) =====
-fprintf('\n=== Panel C: SD@1s vs ΔHit (1×2: merged layers) ===\n');
-fprintf('  Ceiling (>=100%%) sessions excluded\n');
-fprintf('  Partial Spearman (ctrl Hit_K)\n\n');
+%% ===== Statistics (merged N+T, simple Spearman) =====
+all_SD = [N_SD; T_SD];
+all_DH = [N_DH; T_DH];
 
-kN = isfinite(N_SD) & isfinite(N_DH) & isfinite(N_HK);
-[prhoN, ppN] = deal(NaN);
-if sum(kN) >= 6 && std(N_HK(kN))>0
-	[prhoN, ppN] = iPartialSpearman(N_SD(kN), N_DH(kN), N_HK(kN));
-end
-fprintf('Naive:    Partial rho=%+.3f p=%.4g (n=%d)\n', prhoN, ppN, sum(kN));
+k = isfinite(all_SD) & isfinite(all_DH);
+[rho, pVal] = corr(all_SD(k), all_DH(k), 'Type', 'Spearman');
+fprintf('\n=== Panel D: SD@1s (Moderates) vs ΔHit (merged N+T) ===\n');
+fprintf('  Simple Spearman: rho=%+.3f p=%.4g (n=%d)\n', rho, pVal, sum(k));
 
-kT = isfinite(T_SD) & isfinite(T_DH) & isfinite(T_HK);
-[prhoT, ppT] = deal(NaN);
-if sum(kT) >= 6 && std(T_HK(kT))>0
-	[prhoT, ppT] = iPartialSpearman(T_SD(kT), T_DH(kT), T_HK(kT));
-end
-fprintf('Transfer: Partial rho=%+.3f p=%.4g (n=%d)\n', prhoT, ppT, sum(kT));
-
-%% ===== Plot (1×2 tiledlayout, merged layers) =====
-svgName = "English_Fig3C_SD1sVsDeltaHit.svg";
-f = figure('Color', 'w', 'Name', 'English Fig3C SD@1s vs ΔHit');
+%% ===== Plot (single axes, 30mm wide) =====
+svgName = "English_Fig3D_SD1sVsDeltaHit_Moderates.svg";
+f = figure('Color', 'w', 'Name', 'English Fig3D SD@1s (Moderates) vs ΔHit');
 f.Units = 'centimeters';
-f.Position(3:4) = [6, 4];
+f.Position(3:4) = [3, 4];
 
-Layout = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
-xl = xlabel(Layout, 'Inter-cell SD');
-xl.FontSize = 6;
-yl = ylabel(Layout, '\DeltaHit');
-yl.FontSize = 6;
+ax = axes(f);
+hold(ax, 'on'); box(ax, 'off'); grid(ax, 'off');
+ax.FontSize = 6;
 
-colorNaive    = [0.8500 0.3250 0.0980]; % orange
-colorTransfer = [0 0.4470 0.7410];      % blue
+colorMerge = [0.4 0.4 0.4];
+scatter(ax, all_SD(k), all_DH(k), 5, colorMerge, 'LineWidth', 0.2);
 
-sdData = {N_SD(kN), T_SD(kT)};
-dhData = {N_DH(kN), T_DH(kT)};
-rhoVals = [prhoN, prhoT];
-pVals = [ppN, ppT];
-colors = {colorNaive, colorTransfer};
-colTitle = ["Naive", "Transfer"];
-
-axs = gobjects(1, 2);
-for iC = 1:2
-	ax = nexttile(Layout, iC);
-	axs(iC) = ax;
-	hold(ax, 'on'); box(ax, 'off'); grid(ax, 'off');
-	ax.FontSize = 6;
-
-	xd = sdData{iC};
-	yd = dhData{iC};
-	cc = colors{iC};
-
-	scatter(ax, xd, yd, 5, cc, 'LineWidth', 0.2);
-
-	% Fit line
-	if numel(xd) >= 2 && std(xd) > 0
-		pFit = polyfit(xd, yd, 1);
-		xFit = [min(xd), max(xd)];
-		yFit = polyval(pFit, xFit);
-		plot(ax, xFit, yFit, '-', 'Color', cc, 'LineWidth', 1);
-	end
-
-	title(ax, colTitle(iC), 'FontSize', 6, 'FontWeight', 'normal');
-
-	% p-value annotation (top-right corner)
-	text(ax, 0.95, 0.95, sprintf('p=%.2g', pVals(iC)), ...
-		'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right');
+% Fit line
+xd = all_SD(k); yd = all_DH(k);
+if numel(xd) >= 2 && std(xd) > 0
+	pFit = polyfit(xd, yd, 1);
+	xFit = [min(xd), max(xd)];
+	yFit = polyval(pFit, xFit);
+	plot(ax, xFit, yFit, '-', 'Color', [0.85 0.325 0.098], 'LineWidth', 1);
 end
+hold(ax, 'off');
 
-% Unify y-axes
-yl1 = ylim(axs(1)); yl2 = ylim(axs(2));
-ylAll = [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))];
-if ylAll(1) < ylAll(2)
-	ylim(axs(1), ylAll); ylim(axs(2), ylAll);
-end
-axs(2).YTickLabel = [];
+xlabel(ax, 'Inter-cell SD (Moderates)');
+ylabel(ax, 'ΔHit');
+
+% p-value annotation
+text(ax, 0.95, 0.95, sprintf('p=%.2g', pVal), ...
+	'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right');
 
 % --- Export SVG
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
@@ -183,9 +147,10 @@ fprintf('Wrote: %s\n', svgPath);
 
 %% ===== Local functions =====
 
-function sdTbl = iBatchSD1s_All(DS, dts, idx1s)
-% Batch compute merged-layer inter-cell SD@1s for a list of sessions.
-% Returns table(DateTime, SD_All).
+function sdTbl = iBatchSD1s_Moderates(DS, dts, idx1s)
+% Batch compute Moderates-only inter-cell SD@1s for a list of sessions.
+% Moderates: per-cell median z-score@1s ∈ [-1,1]
+% Returns table(DateTime, SD_Mod).
 minCells = 3;
 
 q = struct('Stimulus', 'LightWater', 'DateTime', dts);
@@ -193,7 +158,7 @@ ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]
 nts = ntsCell{1};
 
 if isempty(nts) || ~istable(nts) || height(nts) == 0
-	sdTbl = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_All'});
+	sdTbl = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_Mod'});
 	return;
 end
 
@@ -203,7 +168,7 @@ if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone = ''; end
 
 uDTs = unique(nts.DateTime);
 nDT = numel(uDTs);
-sdAll = nan(nDT, 1);
+sdMod = nan(nDT, 1);
 
 for iDT = 1:nDT
 	dt = uDTs(iDT);
@@ -220,11 +185,12 @@ for iDT = 1:nDT
 		end
 	end
 
-	vAll = vals(isfinite(vals));
-	if numel(vAll) >= minCells, sdAll(iDT) = std(vAll, 0, 1); end
+	% Moderates only: [-1, 1]
+	vMod = vals(isfinite(vals) & vals >= -1 & vals <= 1);
+	if numel(vMod) >= minCells, sdMod(iDT) = std(vMod, 0, 1); end
 end
 
-sdTbl = table(uDTs, sdAll, 'VariableNames', {'DateTime','SD_All'});
+sdTbl = table(uDTs, sdMod, 'VariableNames', {'DateTime','SD_Mod'});
 end
 
 function s = iAsterisk(p)
@@ -249,7 +215,6 @@ end
 
 function AllSess = iGatherNaiveSessions(LAB, LAI)
 % Gather Naive learning sessions from LAB + LAI (phase-based range selection).
-% Matches scratchDualSessionFeatures approach.
 AllSess = table(strings(0,1), NaT(0,1), nan(0,1), strings(0,1), ...
 	'VariableNames', {'Mouse','DateTime','Performance','Source'});
 
@@ -367,24 +332,6 @@ perf = double(AllSess.Performance);
 AllSess = AllSess(isfinite(perf) & perf >= -1e-12 & perf < 1-1e-12, :);
 end
 
-function SessOut = iExcludeFloor(SessIn)
-% Exclude last 0% session and all sessions before it (per mouse).
-SessOut = SessIn;
-if isempty(SessOut), return; end
-SessOut.Mouse = string(SessOut.Mouse);
-SessOut = sortrows(SessOut, {'Mouse','DateTime'});
-remove = false(height(SessOut), 1);
-for m = unique(SessOut.Mouse)'
-	rows = find(SessOut.Mouse == m);
-	p = double(SessOut.Performance(rows));
-	i0 = find(p <= 1e-12, 1, 'last');
-	if ~isempty(i0)
-		remove(rows(1:i0)) = true;
-	end
-end
-SessOut(remove, :) = [];
-end
-
 function tf = iHasStimulus(DS, mouseName, dt, stim)
 tf = false;
 Tdt = DS.TableQuery("Stimulus", Mouse=string(mouseName), DateTime=dt);
@@ -394,24 +341,21 @@ tf = any(st == string(stim));
 end
 
 function Sess = iLightWaterSessions(DS)
-% Build per-session LW performance (all sessions, no phase filter).
 Blocks = DS.Blocks;
+blkVars = string(Blocks.Properties.VariableNames);
 Blocks.BlockUID = uint64(Blocks.BlockUID);
 Blocks.DateTime = datetime(Blocks.DateTime);
 if ~isempty(Blocks.DateTime.TimeZone), Blocks.DateTime.TimeZone = ''; end
-blkVars = string(Blocks.Properties.VariableNames);
 if ismember("MustWarn", blkVars)
 	Blocks.MustWarn = string(Blocks.MustWarn);
 else
 	Blocks.MustWarn = repmat("", height(Blocks), 1);
 end
 Blocks = Blocks(:, {'BlockUID','DateTime','MustWarn'});
-
 DT = DS.DateTimes(:, {'DateTime','Mouse'});
 DT.DateTime = datetime(DT.DateTime);
 if ~isempty(DT.DateTime.TimeZone), DT.DateTime.TimeZone = ''; end
 DT.Mouse = string(DT.Mouse);
-
 Tr = DS.Trials(:, {'BlockUID','Stimulus','Behavior'});
 Tr.BlockUID = uint64(Tr.BlockUID);
 TrLW = Tr(string(Tr.Stimulus) == "LightWater", :);
@@ -420,16 +364,13 @@ if isempty(TrLW)
 		'VariableNames', {'Mouse','DateTime','Performance'});
 	return;
 end
-
 [G, bu] = findgroups(uint64(TrLW.BlockUID));
 lwPerf = splitapply(@(x) mean(double(x), 'omitnan'), TrLW.Behavior, G);
 perfByBlock = table(uint64(bu), lwPerf, 'VariableNames', {'BlockUID','LWPerf'});
-
 T = innerjoin(perfByBlock, Blocks, 'Keys', 'BlockUID');
 keep = ismissing(T.MustWarn) | (T.MustWarn == "");
 T = T(keep, :);
 T = innerjoin(T, DT, 'Keys', 'DateTime');
-
 [G2, mouse, dt] = findgroups(T.Mouse, T.DateTime);
 perfSess = splitapply(@(x) mean(double(x), 'omitnan'), T.LWPerf, G2);
 Sess = table(mouse, dt, perfSess, 'VariableNames', {'Mouse','DateTime','Performance'});
@@ -437,19 +378,16 @@ Sess = sortrows(Sess, {'Mouse','DateTime'});
 end
 
 function SessOut = iKeepPureLW(DS, SessIn)
-% Exclude sessions that contain any AudioWater trials.
 SessOut = SessIn;
 if isempty(SessOut), return; end
 Blocks = DS.Blocks(:, {'BlockUID','DateTime'});
 Blocks.BlockUID = uint64(Blocks.BlockUID);
 Blocks.DateTime = datetime(Blocks.DateTime);
 if ~isempty(Blocks.DateTime.TimeZone), Blocks.DateTime.TimeZone = ''; end
-
 Tr = DS.Trials(:, {'BlockUID','Stimulus'});
 Tr.BlockUID = uint64(Tr.BlockUID);
 TrAW = Tr(string(Tr.Stimulus) == "AudioWater", :);
 if isempty(TrAW), return; end
-
 blkAW = unique(uint64(TrAW.BlockUID));
 TAW = innerjoin(table(blkAW, 'VariableNames', {'BlockUID'}), Blocks, 'Keys', 'BlockUID');
 dtAW = unique(TAW.DateTime);
@@ -466,9 +404,7 @@ for m = unique(SessOut.Mouse)'
 	rows = find(SessOut.Mouse == m);
 	p = double(SessOut.Performance(rows));
 	i100 = find(p >= 1 - 1e-12, 1, 'first');
-	if ~isempty(i100)
-		remove(rows(i100:end)) = true;
-	end
+	if ~isempty(i100), remove(rows(i100:end)) = true; end
 end
 SessOut(remove, :) = [];
 perf = double(SessOut.Performance);
@@ -476,17 +412,14 @@ SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end
 
 function Pairs = iSessionPairs(Sess)
-% Build adjacent session pair table. One row per pair (k, k+1).
 Sess = sortrows(Sess, {'Mouse','DateTime'});
 Sess.Mouse = string(Sess.Mouse);
 mice = unique(Sess.Mouse);
-
 nTotal = 0;
 for mi = 1:numel(mice)
 	nS = nnz(Sess.Mouse == mice(mi));
 	if nS >= 2, nTotal = nTotal + nS - 1; end
 end
-
 outMouse = strings(nTotal, 1);
 outDT    = NaT(nTotal, 1);
 outPerf  = nan(nTotal, 1);
@@ -497,7 +430,6 @@ if hasSrc
 	outSrc  = strings(nTotal, 1);
 	outSrc2 = strings(nTotal, 1);
 end
-
 pos = 0;
 for mi = 1:numel(mice)
 	m = mice(mi);
@@ -523,7 +455,6 @@ for mi = 1:numel(mice)
 	end
 	pos = pos + n;
 end
-
 Pairs = table(outMouse(1:pos), outDT(1:pos), outPerf(1:pos), outDT2(1:pos), outPerf2(1:pos), ...
 	'VariableNames', {'Mouse','DateTime','Performance','DateTimeNext','PerformanceNext'});
 if hasSrc

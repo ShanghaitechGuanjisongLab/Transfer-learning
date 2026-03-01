@@ -1,15 +1,16 @@
-% 英文图3D：信号保留全细胞散点（所有鼠合并，AW z-score vs LW z-score）
+% 英文图3E：信号保留全细胞散点（Moderates only）
 %
 % 将所有鼠的最后 AW 和首 LW 的逐细胞中位响应@1s 合并为一个散点图。
-% 样式与 Fig3C 一致：scatter + 拟合线 + Spearman 标注。
+% 仅保留两个会话都是 Moderates 的细胞（AW 和 LW 中位 z-score@1s 均 ∈ [-1,1]）。
+% 样式：scatter + 拟合线 + Spearman 标注。
 %
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.D_SignalRetention_CellScatter
+%   TransferLearning.英文图3.E_SignalRetention_CellScatter_Moderates
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
-svgName = "English_Fig3D_SignalRetention_CellScatter.svg";
+svgName = "English_Fig3E_SignalRetention_CellScatter_Moderates.svg";
 
 DS = TransferLearning.AudioLightBaseline();
 
@@ -91,28 +92,34 @@ for mi = 1:nMice
 
 	% Match cells
 	[~, idxAW, idxLW] = intersect(awCells, lwCells);
-	valid = isfinite(medAW_1s(idxAW)) & isfinite(medLW_1s(idxLW));
+	awMatched = medAW_1s(idxAW);
+	lwMatched = medLW_1s(idxLW);
+
+	% Keep only both-Moderates for scatter
+	valid = isfinite(awMatched) & isfinite(lwMatched) ...
+		& awMatched >= -1 & awMatched <= 1 ...
+		& lwMatched >= -1 & lwMatched <= 1;
 	if sum(valid) < 3, continue; end
 
-	allAW.Append(medAW_1s(idxAW(valid)));
-	allLW.Append(medLW_1s(idxLW(valid)));
+	allAW.Append(awMatched(valid));
+	allLW.Append(lwMatched(valid));
 end
 
 awAll = allAW.Harvest;
 lwAll = allLW.Harvest;
 [rho, p] = corr(awAll, lwAll, 'Type', 'Spearman');
-fprintf('All-cell signal retention: ρ=%.3f, p=%.4g, n=%d cells\n', rho, p, numel(awAll));
+fprintf('Moderates-cell signal retention: ρ=%.3f, p=%.4g, n=%d cells\n', rho, p, numel(awAll));
 
 %% ===== Plot =====
-colorD = [0 0.4470 0.7410]; % blue
+colorE = [0 0.4470 0.7410]; % blue
 
-f = figure('Color', 'w', 'Name', 'English Fig3D Signal Retention Cell Scatter');
+f = figure('Color', 'w', 'Name', 'English Fig3E Signal Retention (Moderates)');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
 ax = axes(f);
 hold(ax, 'on');
-scatter(ax, awAll, lwAll, 5, colorD, 'LineWidth', 0.2);
+scatter(ax, awAll, lwAll, 5, colorE, 'LineWidth', 0.2);
 
 % Fit line
 if numel(awAll) >= 2 && std(awAll) > 0
@@ -128,26 +135,21 @@ box(ax, 'off');
 grid(ax, 'off');
 xlabel(ax, '🔊💧 z-score');
 ylabel(ax, '💡💧 z-score');
+title(ax, 'Moderates', 'FontSize', 6);
 
 % p-value annotation (top-right corner)
-text(ax, 0.95, 0.95, sprintf('p=%.2g', p), ...
+if p == 0 || p < 1e-10
+	pStr = 'p<10^{-10}';
+elseif p < 0.001
+	pStr = sprintf('p=%.1e', p);
+else
+	pStr = sprintf('p=%.2g', p);
+end
+text(ax, 0.95, 0.95, pStr, ...
 	'Units', 'normalized', 'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
 
-%% ===== Export =====
+%% ===== Export Part 1 =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-
-%% ===== Local functions =====
-function s = iAsterisk(p)
-if p < 0.001
-	s = "***";
-elseif p < 0.01
-	s = "**";
-elseif p < 0.05
-	s = "*";
-else
-	s = "n.s.";
-end
-end

@@ -1,4 +1,4 @@
-% 英文图3J：回合间散度 vs ΔHit（2/5层细胞合并）
+% 英文图3K：回合间散度 vs ΔHit（2/5层细胞合并）
 %
 % Data scope:
 % - All pure-LightWater sessions in AudioLightBaseline (Transfer → Final).
@@ -60,7 +60,7 @@ y = double(J.DeltaHit);
 z = double(J.Performance);  % Hit_K for partial correlation
 mask = isfinite(x) & isfinite(y) & isfinite(z);
 
-fprintf('\n=== Panel J: Divergence vs ΔHit (L2/3+L5 merged) ===\n');
+fprintf('\n=== Panel K: Divergence vs ΔHit (L2/3+L5 merged) ===\n');
 fprintf('Valid pairs: %d\n', nnz(mask));
 
 % --- Partial Spearman correlation (controlling for Hit_K)
@@ -71,8 +71,8 @@ end
 fprintf('Partial Spearman ρ=%.3f p=%.4g n=%d\n', rho, p, nnz(mask));
 
 % --- Plot
-svgName = "English_Fig3J_DivergenceVsDeltaHit.svg";
-f = figure('Color','w', 'Name', 'English Fig3J Divergence vs ΔHit');
+svgName = "English_Fig3K_DivergenceVsDeltaHit.svg";
+f = figure('Color','w', 'Name', 'English Fig3K Divergence vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
 
@@ -110,7 +110,7 @@ TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 % --- Save to workspace
-assignin('base', 'EnglishFig3J_Data', J);
+assignin('base', 'EnglishFig3K_Data', J);
 
 %% ===== Local Functions =====
 

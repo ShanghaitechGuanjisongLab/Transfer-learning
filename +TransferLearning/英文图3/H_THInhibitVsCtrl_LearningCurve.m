@@ -1,4 +1,4 @@
-% 英文图3G：TH 抑制组 vs 对照组 LightWater 学习曲线 + 首会话命中率
+% 英文图3H：TH 抑制组 vs 对照组 LightWater 学习曲线 + 首会话命中率
 %
 % 数据源（模仿 Fig3.5C）：
 % - 对照组：TransferLearning.AudioLightBaseline
@@ -11,11 +11,11 @@
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.B_THInhibitVsCtrl_LearningCurve
+%   TransferLearning.英文图3.H_THInhibitVsCtrl_LearningCurve
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
-svgNameLC = "English_Fig3G_THInhibitVsCtrl_LearningCurve.svg";
-svgNameFS = "English_Fig3G_THInhibitVsCtrl_FirstSessionHitRate.svg";
+svgNameLC = "English_Fig3H_THInhibitVsCtrl_LearningCurve.svg";
+svgNameFS = "English_Fig3H_THInhibitVsCtrl_FirstSessionHitRate.svg";
 
 %% --- 0) Ensure project loaded
 try
@@ -102,7 +102,7 @@ meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', 
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
 
 %% --- 5) Plot learning curve (style: English Fig2J)
-f = figure('Color', 'w', 'Name', 'English Fig3G TH Learning curve');
+f = figure('Color', 'w', 'Name', 'English Fig3H TH Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperPositionMode = 'auto';
@@ -183,7 +183,7 @@ fprintf('  ranksum p = %.4g\n', pFS);
 DataCell = {double(xCtrl(:)), double(xTH(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-f2 = figure('Color', 'none', 'Name', 'English Fig3G TH First transfer session');
+f2 = figure('Color', 'none', 'Name', 'English Fig3H TH First transfer session');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 3];
 f2.PaperPositionMode = 'auto';
@@ -232,6 +232,6 @@ svgPathFS = fullfile(outDirUNC, svgNameFS);
 TransferLearning.PrintFigure(f2, svgPathFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
 
-assignin('base', 'English_Fig3G_Sessions', Sess);
-assignin('base', 'English_Fig3G_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig3G_FirstSessionP', pFS);
+assignin('base', 'English_Fig3H_Sessions', Sess);
+assignin('base', 'English_Fig3H_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig3H_FirstSessionP', pFS);

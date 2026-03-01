@@ -1,22 +1,18 @@
-% 英文图3G：代表性会话对的细胞间 1s NTATS 分布图
+% 英文图3B：代表性会话对的热图 + 细胞间 1s z-score 分布
 %
-% Pair A: 前后会话平均 inter-cell SD@1s 尽可能大的会话对
-% Pair B: 前后会话平均 inter-cell SD@1s 尽可能小的会话对
+% Pair A: 前后会话平均 inter-cell SD@1s（[-2,2] 细胞）尽可能大
+% Pair B: 前后会话平均 inter-cell SD@1s（[-2,2] 细胞）尽可能小
 % 约束: ΔHit(A) > ΔHit(B)
 %
-% 布局: 2×2 tiledlayout
-%   Row 1 = Pair A (session k → k+1)
-%   Row 2 = Pair B (session k → k+1)
-%
-% 每个 tile: 细胞间 per-cell median ZScore@1s 分布直方图
-%   — Pair A 直方图较宽（SD 大），Pair B 较窄（SD 小）
-%
-% 会话选取参考 C 图 (C_RepresentativeSessionPairs_LWHeatmaps)。
+% 布局: 2×4 tiledlayout（2 行 = Pair A/B，每行：热图k|直方图k|热图k+1|直方图k+1）
+%   热图：per-cell median z-score 按 @1s 排序，模仿 2B 风格
+%   直方图：横向 (z-score on Y axis)，范围 [-2,2]
+%   右侧标注 Moderates / Extremists
 %
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.G_RepresentativeSD_NTATSDistribution
+%   TransferLearning.英文图3.B_RepresentativeSD_NTATSDistribution
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
@@ -40,10 +36,10 @@ SessSpeed = iSessionDeltaNext(Sess);
 nPairs = height(SessSpeed);
 deltaHit = double(SessSpeed.Speed_DeltaNext);
 
-%% ===== 2) Compute SD@1s per session pair =====
+%% ===== 2) Compute SD@1s per session pair (cells in [-2,2]) =====
 sd1sMean = nan(nPairs, 1);
-sd1sK    = nan(nPairs, 1);  % SD of session k
-sd1sK1   = nan(nPairs, 1);  % SD of session k+1
+sd1sK    = nan(nPairs, 1);
+sd1sK1   = nan(nPairs, 1);
 nCellMin = nan(nPairs, 1);
 
 for iP = 1:nPairs
@@ -54,8 +50,8 @@ for iP = 1:nPairs
 	if isempty(ntatsK) || isempty(ntatsK1), continue; end
 	vK  = double(ntatsK(:, idx1s));
 	vK1 = double(ntatsK1(:, idx1s));
-	vK  = vK(isfinite(vK));
-	vK1 = vK1(isfinite(vK1));
+	vK  = vK(isfinite(vK) & vK >= -2 & vK <= 2);
+	vK1 = vK1(isfinite(vK1) & vK1 >= -2 & vK1 <= 2);
 	nCellMin(iP) = min(numel(vK), numel(vK1));
 	if numel(vK) >= 3 && numel(vK1) >= 3
 		sd1sK(iP)  = std(vK);
@@ -82,8 +78,6 @@ for iA = 1:numel(sortedBySD)
 		candB = sortedBySD(iB);
 		if candB == candA, continue; end
 		maxSD_B = max(sd1sK(candB), sd1sK1(candB));
-		% Constraints: meanSD(A) > meanSD(B), ΔHit(A) - ΔHit(B) >= 10%,
-		% and min session SD of A > max session SD of B
 		if sd1sMean(candA) > sd1sMean(candB) ...
 				&& (deltaHit(candA) - deltaHit(candB)) >= 0.10 ...
 				&& minSD_A > maxSD_B
@@ -98,52 +92,69 @@ end
 
 if ~found
 	error('EnglishFig3B:NoFeasible', ...
-		'Cannot find Pair A & B satisfying all constraints (meanSD, \DeltaHit, min/max SD separation).');
+		'Cannot find Pair A & B satisfying all constraints.');
 end
 
 pairsIdx = [bestA; bestB];
 
-%% ===== 4) Fetch per-cell 1s values for 4 sessions =====
-vals = cell(2, 2);       % vals{pair, session}: col 1=k, 2=k+1
+%% ===== 4) Fetch full NTATS + per-cell 1s values for 4 sessions =====
+vals = cell(2, 2);       % vals{pair, session}: per-cell z-score@1s (filtered [-2,2])
 sdVals = nan(2, 2);
+heatData = cell(2, 2);   % heatData{pair, session}: (cells×time) sorted by @1s
+
+xMask = (xsSec >= 0) & (xsSec <= 2); % 0~2s for heatmap
 
 for iP = 1:2
 	idx = pairsIdx(iP);
 	dtK  = SessSpeed.DateTime(idx);
 	dtK1 = SessSpeed.DateTimeNext(idx);
 
-	[~, ntatsK]  = iSessionNTATS(DS, dtK);
-	[~, ntatsK1] = iSessionNTATS(DS, dtK1);
+	for iS = 1:2
+		if iS == 1, dt = dtK; else, dt = dtK1; end
+		[~, ntats] = iSessionNTATS(DS, dt);
+		v1s = double(ntats(:, idx1s));
 
-	vK  = double(ntatsK(:, idx1s));
-	vK  = vK(isfinite(vK));
-	vK1 = double(ntatsK1(:, idx1s));
-	vK1 = vK1(isfinite(vK1));
+		% Filter to cells in [-2,2]
+		keepMask = isfinite(v1s) & v1s >= -2 & v1s <= 2;
+		v1s_filt = v1s(keepMask);
+		ntats_filt = double(ntats(keepMask, :));
 
-	vals{iP, 1} = vK;
-	vals{iP, 2} = vK1;
-	sdVals(iP, 1) = std(vK);
-	sdVals(iP, 2) = std(vK1);
+		% Sort by z-score@1s ascending
+		[~, sortIdx] = sort(v1s_filt, 'ascend');
+		v1s_sorted = v1s_filt(sortIdx);
+		ntats_sorted = ntats_filt(sortIdx, xMask);
+
+		vals{iP, iS} = v1s_sorted;
+		sdVals(iP, iS) = std(v1s_sorted);
+		heatData{iP, iS} = ntats_sorted;
+	end
 
 	pLabel = char('A' + iP - 1);
 	fprintf('Pair %s: Mouse=%s, k=%s, k+1=%s, ΔHit=%+.1f%%, meanSD=%.3f\n', ...
 		pLabel, string(SessSpeed.Mouse(idx)), ...
 		datestr(dtK, 'yyyy-mm-dd HH:MM'), datestr(dtK1, 'yyyy-mm-dd HH:MM'), ...
 		100 * deltaHit(idx), sd1sMean(idx));
-	fprintf('  Session k:   n=%d cells, SD=%.3f\n', numel(vK), sdVals(iP, 1));
-	fprintf('  Session k+1: n=%d cells, SD=%.3f\n', numel(vK1), sdVals(iP, 2));
+	fprintf('  Session k:   n=%d cells, SD=%.3f\n', numel(vals{iP,1}), sdVals(iP,1));
+	fprintf('  Session k+1: n=%d cells, SD=%.3f\n', numel(vals{iP,2}), sdVals(iP,2));
 end
 
-% --- Shared bin edges (display range: -2 to 3)
-nBins = 50;
-binEdges = linspace(-2, 3, nBins + 1);
+%% ===== 5) Compute heatmap CLim (symmetric, sqrt-scale) =====
+allHeat = cellfun(@(x) x(:), heatData, 'UniformOutput', false);
+allHeat = vertcat(allHeat{:});
+negV = min(allHeat); posV = max(allHeat);
+if ~isfinite(negV), negV = -1; end
+if ~isfinite(posV), posV = 1; end
+climLowAbs  = iNiceLimit(sqrt(abs(min(negV, 0))));
+climHighAbs = iNiceLimit(sqrt(abs(max(posV, 0))));
+if climLowAbs <= 0, climLowAbs = 1; end
+if climHighAbs <= 0, climHighAbs = 1; end
+CLim = [-climLowAbs, climHighAbs];
 
-%% ===== 5) Plot: 2×2 tiledlayout =====
+%% ===== 6) Figure: 2 rows × (heatmap + histogram) × 2 columns =====
+% Use separate figure-level positioning to achieve heatmap(wide) + histogram(narrow)
 f = figure('Color', 'w', 'Name', 'English Fig3B Representative SD NTATS Distribution');
 f.Units = 'centimeters';
-f.Position(3:4) = [6, 4];
-
-Layout = tiledlayout(f, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+f.Position(3:4) = [10.5, 8]; % 105mm × 80mm (15mm×7, 40mm×2)
 
 colorA = [0.8500 0.3250 0.0980]; % orange — Pair A
 colorB = [0 0.4470 0.7410];      % blue  — Pair B
@@ -151,66 +162,164 @@ pairColors = {colorA; colorB};
 pairLabels = ["Pair A", "Pair B"];
 colTitles = ["Previous block", "Latter block"];
 
-axH = gobjects(2, 2);
+nBins = 40;
+binEdges = linspace(-2, 2, nBins + 1);
+
+% Axes positioning grid (normalized)
+% Columns: heatK(wide) | histK(narrow) | gap | heatK1(wide) | histK1(narrow) | gap(annotation)
+leftMargin = 0.06;
+rightMargin = 0.04;  % space for Moderates/Extremists labels
+topMargin = 0.06;
+botMargin = 0.12;
+gapH = 0.06; % horizontal gap between heatmap and histogram (room for z-score ylabel)
+gapHCol = 0.04; % gap between two column groups
+gapV = 0.06; % vertical gap between rows
+heatFrac = 0.50; % heatmap fraction of column group width
+histFrac = 0.50; % histogram fraction
+
+totalW = 1 - leftMargin - rightMargin;
+colGroupW = (totalW - gapHCol) / 2;
+heatW = colGroupW * heatFrac - gapH/2;
+histW = colGroupW * histFrac - gapH/2;
+
+totalH = 1 - topMargin - botMargin;
+rowH = (totalH - gapV) / 2;
+
+axHeat = gobjects(2, 2);
+axHist = gobjects(2, 2);
 
 for iR = 1:2
+	yBot = botMargin + (2 - iR) * (rowH + gapV);
 	for iC = 1:2
-		axH(iR, iC) = nexttile(Layout, (iR - 1) * 2 + iC);
-		ax = axH(iR, iC);
+		xBase = leftMargin + (iC - 1) * (colGroupW + gapHCol);
+
+		% --- Heatmap ---
+		hd = heatData{iR, iC};
+		nCells = size(hd, 1);
+
+		heatPos = [xBase, yBot, heatW, rowH];
+		axH = axes(f, 'Units', 'normalized', 'Position', heatPos); %#ok<LAXES>
+		axHeat(iR, iC) = axH;
+
+		imagesc(axH, 'XData', [0, 2], 'YData', [1, nCells], 'CData', hd);
+		axH.YDir = 'normal';
+		ylim(axH, [0.5, nCells + 0.5]); % tight fit, no blank at top/bottom
+		clim(axH, CLim);
+
+		% Blue-white-red colormap, 0-centered (asymmetric CLim support)
+		nMap = 256;
+		aFrac = climLowAbs / (climLowAbs + climHighAbs);
+		nBelow = max(round(nMap * aFrac), 1);
+		nAbove = max(nMap - nBelow, 1);
+		cmapBelow = [linspace(0,1,nBelow)', linspace(0,1,nBelow)', ones(nBelow,1)];
+		cmapAbove = [ones(nAbove,1), linspace(1,0,nAbove)', linspace(1,0,nAbove)'];
+		colormap(axH, [cmapBelow; cmapAbove]);
+
+		axH.FontSize = 6;
+		axH.FontName = 'Segoe UI Emoji';
+		axH.TickDir = 'in';
+		box(axH, 'on');
+		axH.Toolbar.Visible = 'off';
+
+		% X ticks: 0 (light onset) and 1 (water)
+		axH.XTick = [0, 1];
+		axH.XTickLabel = {'💡', '💧'};
+
+		% xline markers
+		xline(axH, 0, ':k', 'LineWidth', 0.5);
+		xline(axH, 1, '-k', 'LineWidth', 0.5);
+
+		% Column title (top row only)
+		if iR == 1
+			title(axH, colTitles(iC), 'FontSize', 6, 'FontWeight', 'bold');
+		end
+
+		% Row label + cell count (left column only)
+		if iC == 1
+			ylabel(axH, sprintf('%s\n%d cells', pairLabels(iR), nCells), 'FontSize', 6);
+			axH.YAxis.Visible = 'on';
+			axH.YTick = [];
+		else
+			axH.YAxis.Visible = 'off';
+		end
+
+		% Bottom row: xlabel
+		if iR == 1
+			axH.XTickLabel = [];
+		else
+			xlabel(axH, 'Time (s)', 'FontSize', 6);
+		end
+
+		% --- Histogram (horizontal) ---
+		histPos = [xBase + heatW + gapH, yBot, histW, rowH];
+		axHist(iR, iC) = axes(f, 'Units', 'normalized', 'Position', histPos); %#ok<LAXES>
+		ax = axHist(iR, iC);
 		hold(ax, 'on');
 
 		v = vals{iR, iC};
 		histogram(ax, v, binEdges, 'Normalization', 'probability', ...
-			'FaceColor', pairColors{iR}, 'FaceAlpha', 0.6, 'EdgeColor', 'none');
-		xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+			'Orientation', 'horizontal', ...
+			'FaceColor', pairColors{iR}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
+		yline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
 
 		ax.FontSize = 6;
 		box(ax, 'off');
 		grid(ax, 'off');
 		ax.Toolbar.Visible = 'off';
-		xlim(ax, [-2, 3]);
-
-		% SD annotation
-		text(ax, 0.95, 0.95, sprintf('SD=%.2f', sdVals(iR, iC)), ...
-			'Units', 'normalized', 'HorizontalAlignment', 'right', ...
-			'VerticalAlignment', 'top', 'FontSize', 6);
-
-		% Column title (top row only)
-		if iR == 1
-			title(ax, colTitles(iC), 'FontSize', 6, 'FontWeight', 'normal');
-		end
-
-		% Row label (left column only)
+		ylim(ax, [-2, 2]);
+		ax.YTick = [-2, -1, 0, 1, 2];
+		% Show y-axis tick labels on left-column histograms
 		if iC == 1
-			ylabel(ax, pairLabels(iR), 'FontSize', 6);
+			ax.YTickLabel = {'-2','-1',  '0', '1', '2'};
+			ylabel(ax, 'z-score', 'FontSize', 6);
+		else
+			ax.YTickLabel = [];
 		end
 
-		% Hide top row x-axis
+		% ±1 boundary lines
+		yline(ax, -1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
+		yline(ax, 1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
+
+		% SD annotation (top-left to avoid overlap with right-side labels)
+		text(ax, 0.05, 0.97, sprintf('SD=%.2f', sdVals(iR, iC)), ...
+			'Units', 'normalized', 'HorizontalAlignment', 'left', ...
+			'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
+
+		% Hide x-axis labels for top row; show "Cell proportion" for bottom
 		if iR == 1
 			ax.XTickLabel = [];
-			ax.XAxis.Visible = 'off';
-		end
-
-		% Hide right column y-axis
-		if iC == 2
-			ax.YTickLabel = [];
-			ax.YAxis.Visible = 'off';
+		else
+			xlabel(ax, 'Cell proportion', 'FontSize', 6);
 		end
 	end
 end
 
-% Layout-level x label
-xl = xlabel(Layout, 'z-score');
-ylabel(Layout,'Cell proportion',FontSize=6);
-xl.FontSize = 6;
-
-% Unify Y limits
-yMax = max(arrayfun(@(a) a.YLim(2), axH(:)));
-for a = axH(:)'
-	ylim(a, [0, yMax]);
+% --- Unify histogram X limits ---
+xMax = max(arrayfun(@(a) a.XLim(2), axHist(:)));
+for a = axHist(:)'
+	xlim(a, [0, xMax]);
 end
 
-% ===== 6) Export =====
+% --- Moderates / Extremists annotation (right of right-column histograms) ---
+% Normalized Y coords: [-2,2]→20[0,1]; y=-1→0.25, y=0→0.5, y=1→0.75
+% Moderates ([-1,1] zone): rotated 90°, centered at y=0.5
+% Extremists ([1,2] and [-2,-1] zones): horizontal, centered in each quarter
+for iR = 1:2
+	axR = axHist(iR, 2);
+	text(axR, 1.06, 0.5, 'Moderates', 'Units', 'normalized', ...
+		'FontSize', 6, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', ...
+		'FontWeight', 'bold', 'Rotation', 90, 'Clipping', 'off');
+	% Top extremists zone: y in [0.75, 1.0], center at 0.875
+	text(axR, 0.95, 0.815, 'Extremists', 'Units', 'normalized', ...
+		'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', ...
+		'Color', [0.5 0.5 0.5], 'Clipping', 'off');
+	% Bottom extremists zone: y in [0, 0.25], center at 0.125
+	text(axR, 0.95, 0.185, 'Extremists', 'Units', 'normalized', ...
+		'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', ...
+		'Color', [0.5 0.5 0.5], 'Clipping', 'off');
+end
+
+% ===== 7) Export =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig3B_RepresentativeSD_NTATSDistribution.svg";
 svgPath = fullfile(outDirUNC, svgName);
@@ -393,4 +502,19 @@ if isa(G.NTATS, 'MATLAB.DataTypes.NDTable')
 else
 	ntats = double(G.NTATS);
 end
+end
+
+function y = iNiceLimit(x)
+if ~isfinite(x) || x <= 0
+	y = 1; return;
+end
+e = floor(log10(x));
+f = x / (10^e);
+if f <= 1, n = 1;
+elseif f <= 2, n = 2;
+elseif f <= 5, n = 5;
+else, n = 10;
+end
+y = n * (10^e);
+if y < x, y = 10 * (10^e); end
 end
