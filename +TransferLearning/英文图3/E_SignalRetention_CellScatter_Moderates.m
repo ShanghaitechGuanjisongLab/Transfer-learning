@@ -135,7 +135,15 @@ box(ax, 'off');
 grid(ax, 'off');
 xlabel(ax, '🔊💧 z-score');
 ylabel(ax, '💡💧 z-score');
-title(ax, 'Moderates', 'FontSize', 6);
+title(ax, 'Moderate cells', 'FontSize', 6);
+
+% Expand x/y limits so points do not sit on axes bounds
+xMin = min(awAll); xMax = max(awAll);
+yMin = min(lwAll); yMax = max(lwAll);
+dx = max(0.05, 0.08 * max(1e-6, xMax - xMin));
+dy = max(0.05, 0.08 * max(1e-6, yMax - yMin));
+xlim(ax, [xMin - dx, xMax + dx]);
+ylim(ax, [yMin - dy, yMax + dy]);
 
 % p-value annotation (top-right corner)
 if p == 0 || p < 1e-10
@@ -145,8 +153,9 @@ elseif p < 0.001
 else
 	pStr = sprintf('p=%.2g', p);
 end
-text(ax, 0.95, 0.95, pStr, ...
-	'Units', 'normalized', 'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+text(ax, 0.97, 0.97, pStr, ...
+	'Units', 'normalized', 'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', ...
+	'BackgroundColor', 'w', 'Margin', 0.5);
 
 %% ===== Export Part 1 =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end

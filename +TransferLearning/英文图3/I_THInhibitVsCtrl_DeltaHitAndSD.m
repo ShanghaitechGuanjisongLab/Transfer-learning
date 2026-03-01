@@ -153,7 +153,6 @@ ax1 = gca;
 ax1.FontSize = 6;
 ax1.XTick = [1 2];
 ax1.XTickLabel = {'Ctrl', 'TH'};
-ax1.XAxis.Visible = 'off';
 legend(ax1, 'off');
 box(ax1, 'off');
 grid(ax1, 'off');
