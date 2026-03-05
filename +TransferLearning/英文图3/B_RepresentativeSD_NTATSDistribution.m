@@ -1,7 +1,7 @@
 % 英文图3B：代表性会话对的热图 + 细胞间 1s z-score 分布
 %
-% Pair A: 前后会话平均 inter-cell SD@1s（[-2,2] 细胞）尽可能大
-% Pair B: 前后会话平均 inter-cell SD@1s（[-2,2] 细胞）尽可能小
+% Pair A: 前后会话平均 inter-cell SD@1s（[-1,1] 细胞）尽可能大
+% Pair B: 前后会话平均 inter-cell SD@1s（[-1,1] 细胞）尽可能小
 % 约束: ΔHit(A) > ΔHit(B)
 %
 % 布局: 2×4 tiledlayout（2 行 = Pair A/B，每行：热图k|直方图k|热图k+1|直方图k+1）
@@ -36,7 +36,7 @@ SessSpeed = iSessionDeltaNext(Sess);
 nPairs = height(SessSpeed);
 deltaHit = double(SessSpeed.Speed_DeltaNext);
 
-%% ===== 2) Compute SD@1s per session pair (cells in [-2,2]) =====
+%% ===== 2) Compute SD@1s per session pair (cells in [-1,1]) =====
 sd1sMean = nan(nPairs, 1);
 sd1sK    = nan(nPairs, 1);
 sd1sK1   = nan(nPairs, 1);
@@ -50,8 +50,8 @@ for iP = 1:nPairs
 	if isempty(ntatsK) || isempty(ntatsK1), continue; end
 	vK  = double(ntatsK(:, idx1s));
 	vK1 = double(ntatsK1(:, idx1s));
-	vK  = vK(isfinite(vK) & vK >= -2 & vK <= 2);
-	vK1 = vK1(isfinite(vK1) & vK1 >= -2 & vK1 <= 2);
+	vK  = vK(isfinite(vK) & vK >= -1 & vK <= 1);
+	vK1 = vK1(isfinite(vK1) & vK1 >= -1 & vK1 <= 1);
 	nCellMin(iP) = min(numel(vK), numel(vK1));
 	if numel(vK) >= 3 && numel(vK1) >= 3
 		sd1sK(iP)  = std(vK);
@@ -114,8 +114,8 @@ for iP = 1:2
 		[~, ntats] = iSessionNTATS(DS, dt);
 		v1s = double(ntats(:, idx1s));
 
-		% Filter to cells in [-2,2]
-		keepMask = isfinite(v1s) & v1s >= -2 & v1s <= 2;
+		% Filter to cells in [-1,1]
+		keepMask = isfinite(v1s) & v1s >= -1 & v1s <= 1;
 		v1s_filt = v1s(keepMask);
 		ntats_filt = double(ntats(keepMask, :));
 
@@ -159,11 +159,12 @@ f.Position(3:4) = [10.5, 8]; % 105mm × 80mm (15mm×7, 40mm×2)
 colorA = [0.8500 0.3250 0.0980]; % orange — Pair A
 colorB = [0 0.4470 0.7410];      % blue  — Pair B
 pairColors = {colorA; colorB};
-pairLabels = ["Pair A", "Pair B"];
+% Pair markers match Fig3A scatter markers: Pair A = ■ (square), Pair B = ▲ (triangle)
+pairLabels = ["Pair A ■", "Pair B ▲"];
 colTitles = ["Previous block", "Latter block"];
 
 nBins = 40;
-binEdges = linspace(-2, 2, nBins + 1);
+binEdges = linspace(-1, 1, nBins + 1);
 
 % Axes positioning grid (normalized)
 % Columns: heatK(wide) | histK(narrow) | gap | heatK1(wide) | histK1(narrow) | gap(annotation)
@@ -222,16 +223,24 @@ for iR = 1:2
 		axH.Toolbar.Visible = 'off';
 
 		% X ticks: 0 (light onset) and 1 (water)
-		axH.XTick = [0, 1];
-		axH.XTickLabel = {'💡', '💧'};
+		% 1s (💧) is where the SD is computed — add a star tick label to make this explicit
+		if iR == 2
+			axH.XTick = [0, 1];
+			axH.XTickLabel = {'💡', '💧★'};
+		else
+			axH.XTick = [0, 1];
+			axH.XTickLabel = [];
+		end
 
 		% xline markers
 		xline(axH, 0, ':k', 'LineWidth', 0.5);
 		xline(axH, 1, '-k', 'LineWidth', 0.5);
 
-		% Column title (top row only)
+		% Column title (top row only), with marker indicating which session point in Fig3A
+		% Previous = block k (■ for Pair A, ▲ for Pair B); Latter = block k+1 (same marker)
 		if iR == 1
-			title(axH, colTitles(iC), 'FontSize', 6, 'FontWeight', 'bold');
+			markerStr = {'■','▲'};
+			title(axH, sprintf('%s %s/%s', colTitles(iC), markerStr{1}, markerStr{2}), 'FontSize', 6, 'FontWeight', 'bold');
 		end
 
 		% Row label (left column only)
@@ -243,10 +252,8 @@ for iR = 1:2
 			axH.YAxis.Visible = 'off';
 		end
 
-		% Bottom row: xlabel
-		if iR == 1
-			axH.XTickLabel = [];
-		else
+		% Bottom row: xlabel (XTickLabel already set above per-row; xlabel only on bottom)
+		if iR == 2
 			xlabel(axH, 'Time (s)', 'FontSize', 6);
 		end
 
@@ -280,8 +287,8 @@ for iR = 1:2
 		yline(ax, -1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
 		yline(ax, 1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
 
-		% SD annotation (top-left to avoid overlap with right-side labels)
-		text(ax, 0.05, 0.97, sprintf('SD=%.2f', sdVals(iR, iC)), ...
+		% SD annotation — ★ symbol echoes the 1s marker on the heatmap x-axis
+		text(ax, 0.05, 0.97, sprintf('★ SD=%.2f', sdVals(iR, iC)), ...
 			'Units', 'normalized', 'HorizontalAlignment', 'left', ...
 			'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
 

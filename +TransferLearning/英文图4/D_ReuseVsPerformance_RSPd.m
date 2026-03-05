@@ -5,7 +5,7 @@
 % Execution:
 %   TransferLearning.英文图4.C_ReuseVsPerformance_RSPd
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 RSP = TransferLearning.RSPd();
 xsSec = seconds(TransferLearning.Xs);
@@ -79,7 +79,12 @@ end
 
 [rho, p] = TransferLearning.Fig36.iSpearman(x(use), y(use));
 if isfinite(p)
-	text(ax, 0.95, 0.95, sprintf('p=%.2g', p), ...
+	if p < 0.001, sigLabel = '***';
+	elseif p < 0.01, sigLabel = '**';
+	elseif p < 0.05, sigLabel = '*';
+	else, sigLabel = 'n.s.';
+	end
+	text(ax, 0.95, 0.95, sigLabel, ...
 		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6);
 end
 

@@ -208,8 +208,14 @@ else
 	end
 end
 
-star2 = iAsterisk(pSD);
-Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
+if pSD < 0.001
+	star2 = sprintf('p=%.1e', pSD);
+elseif pSD < 0.1
+	star2 = sprintf('p=%.3f', pSD);
+else
+	star2 = sprintf('p=%.2f', pSD);
+end
+Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), string(star2), 0, ...
 	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
 [~, PT2] = MATLAB.Graphics.PLine(Desc2);
 for t = PT2(:)', t.FontSize = 6; end
@@ -264,6 +270,7 @@ for iDT = 1:nDT
 		end
 	end
 	vAll = vals(isfinite(vals));
+	vAll = vAll(vAll >= -1 & vAll <= 1);  % Filter to [-1,1]
 	if numel(vAll) >= minCells
 		sdAll(iDT) = std(vAll, 0, 1);
 	end

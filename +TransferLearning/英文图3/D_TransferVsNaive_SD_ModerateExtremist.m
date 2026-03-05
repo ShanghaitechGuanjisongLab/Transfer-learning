@@ -1,4 +1,4 @@
-% 英文图3C：Transfer vs Naive inter-cell SD，分 Moderates / Extremists 统计
+% 英文图3D：Transfer vs Naive inter-cell SD，分 Moderates / Extremists 统计
 %
 % Moderates：z-score@1s ∈ [-1,1]
 % Extremists：z-score@1s ∈ [-2,-1) ∪ (1,2]
@@ -19,7 +19,7 @@
 %   TransferLearning.英文图3.C_TransferVsNaive_SD_ModerateExtremist
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
-svgName = "English_Fig3C_TransferVsNaive_SD_ModerateExtremist.svg";
+svgName = "English_Fig3D_TransferVsNaive_SD_ModerateExtremist.svg";
 
 % --- Time axis
 xs = TransferLearning.Xs;

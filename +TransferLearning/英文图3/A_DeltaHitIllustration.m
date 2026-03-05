@@ -116,6 +116,11 @@ plot(ax, xSess, yPerf, '-o', ...
 colorPairA = [0.8500 0.3250 0.0980]; % orange
 colorPairB = [0 0.4470 0.7410];      % blue
 
+% Pair markers: Pair A = square ('s'  ■), Pair B = triangle ('^'  ▲)
+% These same markers are echoed in Fig3B row labels (Pair A/B)
+markerPairA = 's';
+markerPairB = '^';
+
 % --- 5) Annotate each ΔHit pair
 for iA = 1:numel(annoIdx)
 	ai = annoIdx(iA);
@@ -126,12 +131,14 @@ for iA = 1:numel(annoIdx)
 	delta = yA2 - yA1;
 	if pairLetters(iA) == "A"
 		aColor = colorPairA;
+		aMarker = markerPairA;
 	else
 		aColor = colorPairB;
+		aMarker = markerPairB;
 	end
 
-	% Highlight sessions
-	scatter(ax, [xA1 xA2], [yA1 yA2], 25, aColor, 'filled');
+	% Highlight sessions with pair-specific marker
+	scatter(ax, [xA1 xA2], [yA1 yA2], 25, aColor, aMarker, 'filled');
 
 	% Bracket position: stagger right so two brackets don't overlap
 	xArrow = xA2 + 0.35 + (iA - 1) * 0.2;

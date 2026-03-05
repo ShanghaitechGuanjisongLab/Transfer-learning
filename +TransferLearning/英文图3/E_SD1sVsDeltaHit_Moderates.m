@@ -110,7 +110,7 @@ fprintf('\n=== Panel D: SD@1s (Moderates) vs ΔHit (merged N+T) ===\n');
 fprintf('  Simple Spearman: rho=%+.3f p=%.4g (n=%d)\n', rho, pVal, sum(k));
 
 %% ===== Plot (single axes, 30mm wide) =====
-svgName = "English_Fig3D_SD1sVsDeltaHit_Moderates.svg";
+svgName = "English_Fig3E_SD1sVsDeltaHit_Moderates.svg";
 f = figure('Color', 'w', 'Name', 'English Fig3D SD@1s (Moderates) vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];

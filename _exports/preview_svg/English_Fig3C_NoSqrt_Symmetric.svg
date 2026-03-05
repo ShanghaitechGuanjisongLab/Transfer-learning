@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="31.75mm" height="80.0806mm"
+ viewBox="0 0 90 227"
+ xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  version="1.2" baseProfile="tiny">
+<title>Qt SVG Document</title>
+<desc>MATLAB, The MathWorks, Inc. Version 25.2.0.3123386 R2025b Update 3</desc>
+<defs>
+<pattern id="fillPattern73_" x="30" y="19" width="83" height="72" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="83" height="72" />
+</pattern>
+<pattern id="fillPattern74_" x="30" y="109" width="83" height="72" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="83" height="72" />
+</pattern>
+<pattern id="fillPattern75_" x="30" y="200" width="83" height="72" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="83" height="72" />
+</pattern>
+</defs>
+<g fill="none" stroke="black" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="SimSun" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M0,0 L121,0 L121,304 L0,304 L0,0"/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="SimSun" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M300000,190000 L300000,910000 L1.13e+06,910000 L1.13e+06,190000 L300000,190000"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,37.5001,11.5125)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >z-score max</text>
+</g>
+
+<g fill="url(#fillPattern73_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M30,91 L113,91 L113,19 L30,19 L30,91"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,91 113,91 " />
+<polyline fill="none" vector-effect="none" points="30,19 113,19 " />
+<polyline fill="none" vector-effect="none" points="30,91.83 30,91 " />
+<polyline fill="none" vector-effect="none" points="30,19 30,18.17 " />
+<polyline fill="none" vector-effect="none" points="70.6354,91.83 70.6354,91 " />
+<polyline fill="none" vector-effect="none" points="70.6354,19 70.6354,18.17 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0,-0.75,0.75,0,10.6775,49.5)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >Trial #</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,91 30,19 " />
+<polyline fill="none" vector-effect="none" points="113,91 113,19 " />
+<polyline fill="none" vector-effect="none" points="29.17,68.2 30,68.2 " />
+<polyline fill="none" vector-effect="none" points="113,68.2 113.83,68.2 " />
+<polyline fill="none" vector-effect="none" points="29.17,44.2 30,44.2 " />
+<polyline fill="none" vector-effect="none" points="113,44.2 113.83,44.2 " />
+<polyline fill="none" vector-effect="none" points="29.17,20.2 30,20.2 " />
+<polyline fill="none" vector-effect="none" points="113,20.2 113.83,20.2 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,52.65)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >10</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,34.65)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >20</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,16.65)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >30</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,91 30,19 " />
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="70.6354,91 70.6354,19 " />
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M300000,1.09e+06 L300000,1.81e+06 L1.13e+06,1.81e+06 L1.13e+06,1.09e+06 L300000,1.09e+06"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,33.0001,79.0125)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >z-score median</text>
+</g>
+
+<g fill="url(#fillPattern74_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M30,181 L113,181 L113,109 L30,109 L30,181"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,181 113,181 " />
+<polyline fill="none" vector-effect="none" points="30,109 113,109 " />
+<polyline fill="none" vector-effect="none" points="30,181.83 30,181 " />
+<polyline fill="none" vector-effect="none" points="30,109 30,108.17 " />
+<polyline fill="none" vector-effect="none" points="70.6354,181.83 70.6354,181 " />
+<polyline fill="none" vector-effect="none" points="70.6354,109 70.6354,108.17 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0,-0.75,0.75,0,10.6775,117)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >Trial #</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,181 30,109 " />
+<polyline fill="none" vector-effect="none" points="113,181 113,109 " />
+<polyline fill="none" vector-effect="none" points="29.17,158.2 30,158.2 " />
+<polyline fill="none" vector-effect="none" points="113,158.2 113.83,158.2 " />
+<polyline fill="none" vector-effect="none" points="29.17,134.2 30,134.2 " />
+<polyline fill="none" vector-effect="none" points="113,134.2 113.83,134.2 " />
+<polyline fill="none" vector-effect="none" points="29.17,110.2 30,110.2 " />
+<polyline fill="none" vector-effect="none" points="113,110.2 113.83,110.2 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,120.15)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >10</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,102.15)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >20</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,84.15)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >30</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,181 30,109 " />
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="70.6354,181 70.6354,109 " />
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M300000,2e+06 L300000,2.72e+06 L1.13e+06,2.72e+06 L1.13e+06,2e+06 L300000,2e+06"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,37.8751,147.263)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >z-score min</text>
+</g>
+
+<g fill="url(#fillPattern75_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M30,272 L113,272 L113,200 L30,200 L30,272"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,47.25,218.572)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >Time</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,272 113,272 " />
+<polyline fill="none" vector-effect="none" points="30,200 113,200 " />
+<polyline fill="none" vector-effect="none" points="30,272.83 30,272 " />
+<polyline fill="none" vector-effect="none" points="30,200 30,199.17 " />
+<polyline fill="none" vector-effect="none" points="70.6354,272.83 70.6354,272 " />
+<polyline fill="none" vector-effect="none" points="70.6354,200 70.6354,199.17 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,18.375,210.322)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >💡</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,48.8516,210.322)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >💧</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0,-0.75,0.75,0,10.6775,185.25)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >Trial #</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,272 30,200 " />
+<polyline fill="none" vector-effect="none" points="113,272 113,200 " />
+<polyline fill="none" vector-effect="none" points="29.17,249.2 30,249.2 " />
+<polyline fill="none" vector-effect="none" points="113,249.2 113.83,249.2 " />
+<polyline fill="none" vector-effect="none" points="29.17,225.2 30,225.2 " />
+<polyline fill="none" vector-effect="none" points="113,225.2 113.83,225.2 " />
+<polyline fill="none" vector-effect="none" points="29.17,201.2 30,201.2 " />
+<polyline fill="none" vector-effect="none" points="113,201.2 113.83,201.2 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,188.4)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >10</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,170.4)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >20</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,14.6775,152.4)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+ >30</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="30,272 30,200 " />
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="8" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="70.6354,272 70.6354,200 " />
+</g>
+</g>
+</svg>
