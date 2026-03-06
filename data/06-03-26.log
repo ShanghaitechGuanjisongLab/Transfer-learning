@@ -622,3 +622,116 @@
 2026-03-06 16:38:08,432 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
 2026-03-06 16:38:08,432 - image-mcp - DEBUG - Creating Image object with format: png
 2026-03-06 16:38:08,432 - image-mcp - DEBUG - Processed 1 images in 0.19 seconds. Success: 1, Failed: 0
+2026-03-06 17:00:05,913 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-06 17:00:05,913 - image-mcp - DEBUG - Processing 4 local files
+2026-03-06 17:00:05,972 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:00:06,085 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png with 72779 bytes
+2026-03-06 17:00:06,098 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png: 532x473
+2026-03-06 17:00:06,098 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:00:06,098 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:00:06,154 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:00:06,271 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png with 71768 bytes
+2026-03-06 17:00:06,271 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png: 532x473
+2026-03-06 17:00:06,271 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:00:06,272 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:00:06,330 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:00:06,433 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png with 63788 bytes
+2026-03-06 17:00:06,434 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png: 532x473
+2026-03-06 17:00:06,435 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:00:06,435 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:00:06,490 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:00:06,594 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png with 63668 bytes
+2026-03-06 17:00:06,594 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png: 532x473
+2026-03-06 17:00:06,594 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:00:06,594 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:00:06,595 - image-mcp - DEBUG - Processed 4 images in 0.67 seconds. Success: 4, Failed: 0
+2026-03-06 17:05:18,846 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-06 17:05:18,846 - image-mcp - DEBUG - Processing 4 local files
+2026-03-06 17:05:18,903 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:05:19,006 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png with 56359 bytes
+2026-03-06 17:05:19,006 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png: 532x473
+2026-03-06 17:05:19,006 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:05:19,006 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:05:19,063 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:05:19,165 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png with 55621 bytes
+2026-03-06 17:05:19,166 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png: 532x473
+2026-03-06 17:05:19,166 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:05:19,166 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:05:19,222 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:05:19,324 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png with 50578 bytes
+2026-03-06 17:05:19,325 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png: 532x473
+2026-03-06 17:05:19,325 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:05:19,325 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:05:19,383 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:05:19,483 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png with 50696 bytes
+2026-03-06 17:05:19,483 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png: 532x473
+2026-03-06 17:05:19,483 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:05:19,483 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:05:19,484 - image-mcp - DEBUG - Processed 4 images in 0.64 seconds. Success: 4, Failed: 0
+2026-03-06 17:10:30,914 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-06 17:10:30,915 - image-mcp - DEBUG - Processing 4 local files
+2026-03-06 17:10:30,973 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:10:31,087 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png with 60090 bytes
+2026-03-06 17:10:31,088 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png: 532x473
+2026-03-06 17:10:31,089 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:10:31,089 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:10:31,157 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:10:31,261 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png with 59209 bytes
+2026-03-06 17:10:31,262 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png: 532x473
+2026-03-06 17:10:31,262 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:10:31,262 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:10:31,318 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:10:31,422 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png with 53041 bytes
+2026-03-06 17:10:31,423 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png: 532x473
+2026-03-06 17:10:31,423 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:10:31,424 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:10:31,481 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:10:31,581 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png with 52966 bytes
+2026-03-06 17:10:31,581 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png: 532x473
+2026-03-06 17:10:31,581 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:10:31,581 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:10:31,582 - image-mcp - DEBUG - Processed 4 images in 0.66 seconds. Success: 4, Failed: 0
+2026-03-06 17:15:07,773 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-06 17:15:07,773 - image-mcp - DEBUG - Processing 1 local files
+2026-03-06 17:15:07,834 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 17:15:07,939 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png with 60288 bytes
+2026-03-06 17:15:07,940 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png: 532x473
+2026-03-06 17:15:07,940 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 17:15:07,940 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 17:15:07,940 - image-mcp - DEBUG - Processed 1 images in 0.17 seconds. Success: 1, Failed: 0
+2026-03-06 19:51:27,434 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-06 19:51:27,435 - image-mcp - DEBUG - Processing 4 local files
+2026-03-06 19:51:27,506 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 19:51:27,639 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png with 74635 bytes
+2026-03-06 19:51:27,639 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png: 800x320
+2026-03-06 19:51:27,639 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 19:51:27,639 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 19:51:27,697 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 19:51:27,817 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png with 73541 bytes
+2026-03-06 19:51:27,817 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK1.png: 800x320
+2026-03-06 19:51:27,818 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 19:51:27,818 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 19:51:27,875 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 19:51:27,988 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png with 72894 bytes
+2026-03-06 19:51:27,989 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png: 800x320
+2026-03-06 19:51:27,989 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 19:51:27,989 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 19:51:28,046 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png has extension 'png', mapped to content type 'png'
+2026-03-06 19:51:28,150 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png with 71507 bytes
+2026-03-06 19:51:28,150 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK1.png: 800x320
+2026-03-06 19:51:28,150 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 19:51:28,150 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 19:51:28,150 - image-mcp - DEBUG - Processed 4 images in 0.70 seconds. Success: 4, Failed: 0
+2026-03-06 19:53:26,104 - image-mcp - DEBUG - Processing 2 image sources: 0 URLs and 2 local files
+2026-03-06 19:53:26,105 - image-mcp - DEBUG - Processing 2 local files
+2026-03-06 19:53:26,166 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 19:53:26,276 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png with 62625 bytes
+2026-03-06 19:53:26,277 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairA_SessionK.png: 800x320
+2026-03-06 19:53:26,278 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 19:53:26,278 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 19:53:26,335 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png has extension 'png', mapped to content type 'png'
+2026-03-06 19:53:26,446 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png with 56253 bytes
+2026-03-06 19:53:26,446 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3B_Volshow_PairB_SessionK.png: 800x320
+2026-03-06 19:53:26,446 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-06 19:53:26,446 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-06 19:53:26,447 - image-mcp - DEBUG - Processed 2 images in 0.34 seconds. Success: 2, Failed: 0

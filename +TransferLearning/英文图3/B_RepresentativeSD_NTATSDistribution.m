@@ -211,6 +211,14 @@ for iP = 1:2
 			'Alphamap', alphaVec, ...
 			'Transformation', tform);
 
+		% 相机设置：X(cells)水平，从前上方俯视，呈扁平六边形
+		sz = size(V_norm) .* scaleVec;
+		ct = sz / 2;
+		dist = max(sz) * 2.5;
+		viewer.CameraTarget = ct;
+		viewer.CameraPosition = ct + [0, -dist*sind(25), dist*cosd(25)];
+		viewer.CameraUpVector = [0, 0, 1];
+
 		uilabel(fig, 'Text', 'X: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
 			'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
 		uilabel(fig, 'Text', 'Y: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
