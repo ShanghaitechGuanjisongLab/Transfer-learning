@@ -1,0 +1,85 @@
+2026-03-05 14:30:38,989 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 14:30:38,990 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 14:30:39,019 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png has extension 'png', mapped to content type 'png'
+2026-03-05 14:30:39,045 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png with 101836 bytes
+2026-03-05 14:30:39,059 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png: 560x480
+2026-03-05 14:30:39,059 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-05 14:30:39,059 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 14:30:39,060 - image-mcp - DEBUG - Processed 1 images in 0.06 seconds. Success: 1, Failed: 0
+2026-03-05 14:39:48,189 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 14:39:48,189 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 14:39:48,215 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png has extension 'png', mapped to content type 'png'
+2026-03-05 14:39:48,236 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png with 103732 bytes
+2026-03-05 14:39:48,249 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png: 560x480
+2026-03-05 14:39:48,249 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-05 14:39:48,249 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 14:39:48,250 - image-mcp - DEBUG - Processed 1 images in 0.05 seconds. Success: 1, Failed: 0
+2026-03-05 14:42:34,812 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 14:42:34,813 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 14:42:34,841 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png has extension 'png', mapped to content type 'png'
+2026-03-05 14:42:34,861 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png with 201899 bytes
+2026-03-05 14:42:34,862 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png: 560x480
+2026-03-05 14:42:34,862 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-05 14:42:34,862 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 14:42:34,862 - image-mcp - DEBUG - Processed 1 images in 0.05 seconds. Success: 1, Failed: 0
+2026-03-05 15:01:23,825 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 15:01:23,825 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 15:01:23,852 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png has extension 'png', mapped to content type 'png'
+2026-03-05 15:01:23,872 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png with 162400 bytes
+2026-03-05 15:01:23,872 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\scratch_volshow_3D_heatmap.png: 560x480
+2026-03-05 15:01:23,873 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-05 15:01:23,873 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 15:01:23,873 - image-mcp - DEBUG - Processed 1 images in 0.05 seconds. Success: 1, Failed: 0
+2026-03-05 15:18:40,063 - image-mcp - DEBUG - Processing 2 image sources: 0 URLs and 2 local files
+2026-03-05 15:18:40,063 - image-mcp - DEBUG - Processing 2 local files
+2026-03-05 15:18:40,091 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3K_DivergenceVsDeltaHit.svg, converting to PNG
+2026-03-05 15:18:40,183 - image-mcp - DEBUG - Converted SVG to PNG: 11069 bytes
+2026-03-05 15:18:40,183 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3K_DivergenceVsDeltaHit.svg: 188x238
+2026-03-05 15:18:40,183 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 15:18:40,183 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 15:18:40,188 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg, converting to PNG
+2026-03-05 15:18:40,249 - image-mcp - DEBUG - Converted SVG to PNG: 17151 bytes
+2026-03-05 15:18:40,249 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg: 267x267
+2026-03-05 15:18:40,249 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 15:18:40,249 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 15:18:40,250 - image-mcp - DEBUG - Processed 2 images in 0.19 seconds. Success: 2, Failed: 0
+2026-03-05 15:22:36,422 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 15:22:36,422 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 15:22:36,450 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg, converting to PNG
+2026-03-05 15:22:36,511 - image-mcp - DEBUG - Converted SVG to PNG: 17151 bytes
+2026-03-05 15:22:36,512 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg: 267x267
+2026-03-05 15:22:36,512 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 15:22:36,512 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 15:22:36,512 - image-mcp - DEBUG - Processed 1 images in 0.09 seconds. Success: 1, Failed: 0
+2026-03-05 15:27:53,184 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 15:27:53,185 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 15:27:53,212 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg, converting to PNG
+2026-03-05 15:27:53,267 - image-mcp - DEBUG - Converted SVG to PNG: 16147 bytes
+2026-03-05 15:27:53,267 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg: 267x267
+2026-03-05 15:27:53,267 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 15:27:53,267 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 15:27:53,267 - image-mcp - DEBUG - Processed 1 images in 0.09 seconds. Success: 1, Failed: 0
+2026-03-05 15:36:57,911 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 15:36:57,912 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 15:36:57,940 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg, converting to PNG
+2026-03-05 15:36:57,986 - image-mcp - DEBUG - Converted SVG to PNG: 17070 bytes
+2026-03-05 15:36:57,986 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg: 267x267
+2026-03-05 15:36:57,986 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 15:36:57,986 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 15:36:57,987 - image-mcp - DEBUG - Processed 1 images in 0.08 seconds. Success: 1, Failed: 0
+2026-03-05 18:56:39,049 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 18:56:39,050 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 18:56:39,081 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg, converting to PNG
+2026-03-05 18:56:39,241 - image-mcp - DEBUG - Converted SVG to PNG: 31652 bytes
+2026-03-05 18:56:39,296 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1M_SlopeVsInterCellSD.svg: 267x473
+2026-03-05 18:56:39,296 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 18:56:39,296 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 18:56:39,297 - image-mcp - DEBUG - Processed 1 images in 0.25 seconds. Success: 1, Failed: 0
+2026-03-05 19:00:30,957 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-05 19:00:30,957 - image-mcp - DEBUG - Processing 1 local files
+2026-03-05 19:00:30,984 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3M_SlopeVsInterCellSD.svg, converting to PNG
+2026-03-05 19:00:31,044 - image-mcp - DEBUG - Converted SVG to PNG: 32554 bytes
+2026-03-05 19:00:31,044 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3M_SlopeVsInterCellSD.svg: 267x473
+2026-03-05 19:00:31,044 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-05 19:00:31,044 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-05 19:00:31,044 - image-mcp - DEBUG - Processed 1 images in 0.09 seconds. Success: 1, Failed: 0

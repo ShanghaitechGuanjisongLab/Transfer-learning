@@ -1,25 +1,29 @@
-% 英文图3K：Reactivation vs ΔHit（2/5层细胞合并，所有会话对）
+% 英文图3L：Divergence vs ΔHit（2/5层细胞合并，所有会话对，回合整体计算）
 %
 % Data scope:
 % - All pure-LightWater sessions in AudioLightBaseline (Transfer → Final).
 % - Exclude sessions with hit rate ≥ 100% and all subsequent sessions.
 % - One point = one adjacent session pair (session k → session k+1).
 % - ΔHit = Hit(k+1) - Hit(k), where Hit = session-level LightWater hit rate.
-% - Reactivation = mean(Reuse_k, Reuse_k+1) — 前后session均值.
-%   Reuse = P(TransferActive@1s | LearnedActive@1s), L2/3+L5 cells merged.
+% - Divergence = computed from ALL LightWater trials in session k and k+1 pooled together.
+%   Divergence = sqrt(totalNoise / totalSignal), L2/3+L5 cells merged.
 %
 % Style: scatter + fit line + partial Spearman annotation.
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
+% --- Constants
+sampleRate = 8;
+idxCue = 3 * sampleRate;  % cue at 3s
+idx1s  = idxCue + sampleRate;  % 1s after cue
+
 % --- Load dataset
 DS = TransferLearning.AudioLightBaseline();
 
-% --- Time axis
-xs = TransferLearning.Xs;
-if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
-baseMask = (xsSec >= -3) & (xsSec < 0);
-[~, idx1s] = min(abs(xsSec - 1));
+CellTbl = DS.Cells;
+CellTbl.ZLayer = string(CellTbl.ZLayer);
+CellTbl.CellUID = uint64(CellTbl.CellUID);
+CellTbl.Mouse = string(CellTbl.Mouse);
 
 % --- Session table: pure LightWater, ceiling excluded, adjacent pairs
 Sess = iLightWaterSessions(DS);
@@ -27,34 +31,26 @@ Sess = iKeepPureLightWater(DS, Sess);
 Sess = iExcludeCeiling(Sess);
 SessPairs = iSessionPairsTable(Sess);
 
-% --- Learned active (pooled from Learned-phase AudioWater)
-learnedCell = iLearnedActiveByCell(DS, baseMask, idx1s);
+% --- Compute divergence for each pair (trials from BOTH sessions pooled)
+nPairs = height(SessPairs);
+outDiv = nan(nPairs, 1);
 
-% --- Collect ALL unique sessions needed for reuse calculation
-allSessKeys = unique([SessPairs(:, {'Mouse','DateTime'}); ...
-	table(SessPairs.Mouse, SessPairs.DateTimeNext, 'VariableNames', {'Mouse','DateTime'})], 'rows');
+for i = 1:nPairs
+	m = string(SessPairs.Mouse(i));
+	dt_k  = SessPairs.DateTime(i);
+	dt_kp1 = SessPairs.DateTimeNext(i);
+	outDiv(i) = iComputePairDivergence(DS, CellTbl, m, dt_k, dt_kp1, sampleRate, idx1s);
+end
 
-% --- Per-session reuse rate (L2/3+L5 merged)
-ReuseSess = iSessionReuse_LayersMerged25(DS, allSessKeys, learnedCell, baseMask, idx1s);
+L = SessPairs;
+L.Divergence = outDiv;
 
-% --- Join reuse to session pairs
-ReuseK = ReuseSess;
-ReuseK.Properties.VariableNames{'Reuse'} = 'Reuse_K';
-ReuseKp1 = ReuseSess;
-ReuseKp1.Properties.VariableNames{'DateTime'} = 'DateTimeNext';
-ReuseKp1.Properties.VariableNames{'Reuse'} = 'Reuse_Kp1';
-
-K = SessPairs(:, {'Mouse','DateTime','DateTimeNext','Performance','PerformanceNext','DeltaHit'});
-K = outerjoin(K, ReuseK(:, {'Mouse','DateTime','Reuse_K'}), 'Keys', {'Mouse','DateTime'}, 'Type', 'left', 'MergeKeys', true);
-K = outerjoin(K, ReuseKp1(:, {'Mouse','DateTimeNext','Reuse_Kp1'}), 'Keys', {'Mouse','DateTimeNext'}, 'Type', 'left', 'MergeKeys', true);
-K.Reactivation = (K.Reuse_K + K.Reuse_Kp1) / 2;
-
-x = double(K.Reactivation);
-y = double(K.DeltaHit);
-z = double(K.Performance);  % Hit_K for partial correlation
+x = double(L.Divergence);
+y = double(L.DeltaHit);
+z = double(L.Performance);  % Hit_K for partial correlation
 mask = isfinite(x) & isfinite(y) & isfinite(z);
 
-fprintf('\n=== Panel K: Reactivation vs ΔHit (all session pairs) ===\n');
+fprintf('\n=== Panel L: Divergence(pooled) vs ΔHit (all session pairs) ===\n');
 fprintf('Valid pairs: %d\n', nnz(mask));
 
 % --- Partial Spearman correlation (controlling for Hit_K)
@@ -65,8 +61,8 @@ end
 fprintf('Partial Spearman ρ=%.3f p=%.4g n=%d\n', rho, p, nnz(mask));
 
 % --- Plot
-svgName = "English_Fig3K_ReactivationVsDeltaHit.svg";
-f = figure('Color','w', 'Name', 'English Fig3K Reactivation vs ΔHit');
+svgName = "English_Fig3L_DivergenceVsDeltaHit.svg";
+f = figure('Color','w', 'Name', 'English Fig3L Divergence vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0];
 
@@ -85,7 +81,7 @@ if nnz(mask) >= 2 && std(x(mask)) > 0
 	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
 end
 
-xlabel(ax, 'Reactivation');
+xlabel(ax, 'Divergence');
 ylabel(ax, '\DeltaHit');
 
 if isfinite(p)
@@ -103,7 +99,7 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'EnglishFig3K_Data', K);
+assignin('base', 'EnglishFig3L_Data', L);
 
 %% ===== Local Functions =====
 
@@ -205,96 +201,98 @@ for mi = 1:numel(mice)
 end
 end
 
-function learnedCell = iLearnedActiveByCell(DS, baseMask, idx1s)
-kSigma = 3;
-G = DS.QueryNTATS(struct('Stimulus','AudioWater','Phase','Learned'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-X = iNtatsData(G.NTATS);
-act = iActiveAt1s(X, baseMask, idx1s, kSigma);
-C = DS.Cells;
-learnedCell = table(uint64(G.CellUID), logical(act), 'VariableNames', {'CellUID','LearnedActive'});
-learnedCell = innerjoin(learnedCell, C(:, {'CellUID','Mouse','ZLayer'}), 'Keys', 'CellUID');
-learnedCell.Mouse = string(learnedCell.Mouse);
-learnedCell.ZLayer = string(learnedCell.ZLayer);
+function div = iComputePairDivergence(DS, CellTbl, m, dt_k, dt_kp1, sampleRate, idx1s)
+% Compute divergence from ALL LightWater trials in session k and k+1 pooled together (L2/3+L5)
+div = NaN;
+
+% Query NTS for session k
+ntsK = DS.QueryNTS(struct('Stimulus', "LightWater", 'Mouse', m, 'DateTime', dt_k), UniExp.Flags.DeltaF, 1:24);
+if iscell(ntsK), ntsK = ntsK{1}; end
+% Query NTS for session k+1
+ntsKp1 = DS.QueryNTS(struct('Stimulus', "LightWater", 'Mouse', m, 'DateTime', dt_kp1), UniExp.Flags.DeltaF, 1:24);
+if iscell(ntsKp1), ntsKp1 = ntsKp1{1}; end
+
+if isempty(ntsK) || isempty(ntsKp1), return; end
+
+% Get trial UIDs from both sessions
+TtblK = DS.TableQuery(["TrialUID","Stimulus"], Mouse=m, DateTime=dt_k, Stimulus="LightWater");
+TtblKp1 = DS.TableQuery(["TrialUID","Stimulus"], Mouse=m, DateTime=dt_kp1, Stimulus="LightWater");
+if isempty(TtblK) || isempty(TtblKp1), return; end
+
+allTrialUIDs = unique([uint64(TtblK.TrialUID); uint64(TtblKp1.TrialUID)]);
+if numel(allTrialUIDs) < 3, return; end
+
+% Combine NTS from both sessions
+ntsAll = [ntsK; ntsKp1];
+
+% Build CTT from pooled trials
+[CTT, cellUIDs] = iLocalBuildCTT(ntsAll, allTrialUIDs, sampleRate);
+if isempty(CTT) || size(CTT, 1) < 3, return; end
+
+% Layer mask: L2/3 + L5
+mCell = CellTbl(CellTbl.Mouse == m, :);
+[~, loc] = ismember(cellUIDs, mCell.CellUID);
+cLayers = strings(numel(cellUIDs), 1);
+cLayers(loc > 0) = mCell.ZLayer(loc(loc > 0));
+
+maskL25 = (cLayers == "MOp2/3") | (cLayers == "MOp5");
+if sum(maskL25) < 3, return; end
+
+X = CTT(maskL25, :, idx1s);  % cells × trials at 1s
+totalSignal = sum(mean(X, 2).^2);
+totalNoise  = sum(var(X, [], 2));
+if totalSignal > 0
+	div = sqrt(totalNoise / totalSignal);
+end
 end
 
-function Tout = iSessionReuse_LayersMerged25(DS, SessKey, learnedCell, baseMask, idx1s)
-layerKeep = ["MOp2/3", "MOp5"];
-kSigma = 3;
-SessKey.Mouse = string(SessKey.Mouse);
-SessKey.DateTime = datetime(SessKey.DateTime);
-if isdatetime(SessKey.DateTime) && ~isempty(SessKey.DateTime.TimeZone)
-	SessKey.DateTime.TimeZone = '';
-end
-SessKey = unique(SessKey(:, {'Mouse','DateTime'}), 'rows');
+function [CTT, cellUIDs] = iLocalBuildCTT(nts, trialUIDs, sampleRate)
+CTT = [];
+cellUIDs = uint64([]);
+if isempty(nts) || numel(trialUIDs) < 2, return; end
 
-outMouse = strings(0,1);
-outDT = NaT(0,1);
-outReuse = nan(0,1);
+inTrial = ismember(uint64(nts.TrialUID), trialUIDs);
+nts2 = nts(inTrial, :);
+if isempty(nts2), return; end
 
-for i = 1:height(SessKey)
-	m = string(SessKey.Mouse(i));
-	dt = SessKey.DateTime(i);
+uNts = unique(uint64(nts2.TrialUID));
+trialUIDs = trialUIDs(ismember(trialUIDs, uNts));
+if numel(trialUIDs) < 2, return; end
 
-	q = struct('Mouse', m, 'DateTime', dt, 'Stimulus', 'LightWater');
-	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24);
-	if isempty(ntsCell) || isempty(ntsCell{1}), continue; end
-	nts = ntsCell{1};
+allC = unique(uint64(nts2.CellUID));
+nAllC = numel(allC);
+traces = cell(nAllC, 1);
+keepU = zeros(nAllC, 1, 'uint64');
+nKeep = 0;
 
-	[uid, tranAct] = iTransferActiveFromNtsMedian(nts, baseMask, idx1s, kSigma);
-	if isempty(uid), continue; end
-	tranCell = table(uid, logical(tranAct), 'VariableNames', {'CellUID','TransferActive'});
-
-	LT = innerjoin(learnedCell(:, {'CellUID','Mouse','ZLayer','LearnedActive'}), tranCell, 'Keys', 'CellUID');
-	LT.Mouse = string(LT.Mouse);
-	LT.ZLayer = string(LT.ZLayer);
-	LT = LT(LT.Mouse == m, :);
-	LT = LT(ismember(LT.ZLayer, layerKeep), :);
-	if isempty(LT), continue; end
-
-	den = logical(LT.LearnedActive);
-	if nnz(den) < 1, continue; end
-	reuse = mean(double(LT.TransferActive(den)), 'omitnan');
-
-	outMouse(end+1,1) = m; %#ok<AGROW>
-	outDT(end+1,1) = dt; %#ok<AGROW>
-	outReuse(end+1,1) = reuse; %#ok<AGROW>
+for ci = 1:nAllC
+	cid = allC(ci);
+	rows = (uint64(nts2.CellUID) == cid);
+	if sum(rows) < numel(trialUIDs), continue; end
+	uid = uint64(nts2.TrialUID(rows));
+	sig = double(nts2.TrialSignal(rows, :));
+	[tf, loc] = ismember(trialUIDs, uid);
+	if ~all(tf), continue; end
+	so = sig(loc, :);
+	if any(~isfinite(so), 'all'), continue; end
+	nKeep = nKeep + 1;
+	traces{nKeep} = so;
+	keepU(nKeep) = cid;
 end
 
-Tout = table(outMouse, outDT, outReuse, 'VariableNames', {'Mouse','DateTime','Reuse'});
+if nKeep < 1, return; end
+traces = traces(1:nKeep);
+keepU = keepU(1:nKeep);
+nTr = size(traces{1}, 1);
+nTi = size(traces{1}, 2);
+CTT = nan(nKeep, nTr, nTi);
+for ci = 1:nKeep
+	CTT(ci, :, :) = traces{ci};
 end
 
-function X = iNtatsData(NT)
-if isa(NT, 'MATLAB.DataTypes.NDTable'), X = NT.Data; else, X = NT; end
-X = squeeze(X);
-end
-
-function act = iActiveAt1s(X, baseMask, idx1s, kSigma)
-base = X(:, baseMask);
-mu = mean(base, 2, 'omitnan');
-sd = std(base, 0, 2, 'omitnan');
-thr = mu + kSigma .* sd;
-v = X(:, idx1s);
-act = v > thr;
-end
-
-function [cellUIDs, active] = iTransferActiveFromNtsMedian(nts, baseMask, idx1s, kSigma)
-cellUIDs = unique(uint64(nts.CellUID));
-active = false(numel(cellUIDs), 1);
-for iC = 1:numel(cellUIDs)
-	cid = cellUIDs(iC);
-	rows = (uint64(nts.CellUID) == cid);
-	if nnz(rows) < 1, continue; end
-	sig = double(nts.TrialSignal(rows, :));
-	if isempty(sig) || ~ismatrix(sig), continue; end
-	med = median(sig, 1, 'omitnan');
-	if any(~isfinite(med(baseMask))), continue; end
-	mu = mean(med(baseMask), 2, 'omitnan');
-	sd = std(med(baseMask), 0, 2, 'omitnan');
-	v1 = med(idx1s);
-	if isfinite(v1) && isfinite(mu) && isfinite(sd)
-		active(iC) = (v1 > (mu + kSigma * sd));
-	end
-end
+idx0 = 3 * sampleRate;
+CTT = CTT - CTT(:, :, idx0);
+cellUIDs = keepU;
 end
 
 function [rho, p] = iPartialSpearmanWithPerm(x, y, z, nPerm)

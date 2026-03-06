@@ -85,19 +85,7 @@ SessCtrl = iExcludeCeiling(SessCtrl);
 PairsCtrl = iSessionPairs(SessCtrl);
 fprintf('\nCtrl LW: %d adjacent session pairs\n', height(PairsCtrl));
 
-allDTs_C = unique([PairsCtrl.DateTime; PairsCtrl.DateTimeNext]);
-sdTblCtrl = iBatchSD1s(CtrlDS, allDTs_C, idx1s, minCells);
-
-SD_Ctrl = nan(height(PairsCtrl), 1);
-for iP = 1:height(PairsCtrl)
-	rK  = sdTblCtrl(sdTblCtrl.DateTime == PairsCtrl.DateTime(iP), :);
-	rK1 = sdTblCtrl(sdTblCtrl.DateTime == PairsCtrl.DateTimeNext(iP), :);
-	if height(rK)==1 && height(rK1)==1
-		if isfinite(rK.SD_All) && isfinite(rK1.SD_All)
-			SD_Ctrl(iP) = (rK.SD_All + rK1.SD_All) / 2;
-		end
-	end
-end
+SD_Ctrl = iPairSD_AvgFirst_Batch(CtrlDS, PairsCtrl, idx1s, minCells);
 
 %% --- TH
 SessTH = iLightWaterSessions(THDS);
@@ -105,19 +93,7 @@ SessTH = iExcludeCeiling(SessTH);
 PairsTH = iSessionPairs(SessTH);
 fprintf('TH LW:   %d adjacent session pairs\n', height(PairsTH));
 
-allDTs_T = unique([PairsTH.DateTime; PairsTH.DateTimeNext]);
-sdTblTH = iBatchSD1s(THDS, allDTs_T, idx1s, minCells);
-
-SD_TH = nan(height(PairsTH), 1);
-for iP = 1:height(PairsTH)
-	rK  = sdTblTH(sdTblTH.DateTime == PairsTH.DateTime(iP), :);
-	rK1 = sdTblTH(sdTblTH.DateTime == PairsTH.DateTimeNext(iP), :);
-	if height(rK)==1 && height(rK1)==1
-		if isfinite(rK.SD_All) && isfinite(rK1.SD_All)
-			SD_TH(iP) = (rK.SD_All + rK1.SD_All) / 2;
-		end
-	end
-end
+SD_TH = iPairSD_AvgFirst_Batch(THDS, PairsTH, idx1s, minCells);
 
 kC = isfinite(SD_Ctrl);
 kT = isfinite(SD_TH);
@@ -402,5 +378,57 @@ elseif p < 0.05
 	s = "*";
 else
 	s = "n.s.";
+end
+end
+
+function sdVec = iPairSD_AvgFirst_Batch(DS, Pairs, idx1s, minCells)
+% For each adjacent session pair: average each cell's median z-score@1s
+% across both sessions, filter to [-1,1], compute SD.
+nP    = height(Pairs);
+sdVec = nan(nP, 1);
+if nP == 0, return; end
+
+allDTs = unique([Pairs.DateTime; Pairs.DateTimeNext]);
+q      = struct('Stimulus', 'LightWater', 'DateTime', allDTs);
+try
+	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+catch
+	return;
+end
+if isempty(ntsCell) || isempty(ntsCell{1}), return; end
+nts = ntsCell{1};
+if ~istable(nts) || height(nts) == 0, return; end
+nts.CellUID  = uint64(nts.CellUID);
+nts.DateTime = datetime(nts.DateTime);
+if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone = ''; end
+
+for iP = 1:nP
+	dt1 = Pairs.DateTime(iP);
+	dt2 = Pairs.DateTimeNext(iP);
+	rows1 = nts(nts.DateTime == dt1, :);
+	rows2 = nts(nts.DateTime == dt2, :);
+	allUID = unique([uint64(rows1.CellUID); uint64(rows2.CellUID)]);
+	nC = numel(allUID);
+	meanVals = nan(nC, 1);
+	for iC = 1:nC
+		uid = allUID(iC);
+		sessVals = nan(1, 2);
+		for iS = 1:2
+			if iS == 1, rows = rows1; else, rows = rows2; end
+			mask = rows.CellUID == uid;
+			if ~any(mask), continue; end
+			cTrial = double(rows.TrialSignal(mask, :));
+			med = median(cTrial, 1, 'omitnan');
+			if numel(med) >= idx1s && isfinite(med(idx1s))
+				sessVals(iS) = med(idx1s);
+			end
+		end
+		valid = sessVals(isfinite(sessVals));
+		if ~isempty(valid), meanVals(iC) = mean(valid); end
+	end
+	keep = isfinite(meanVals) & meanVals >= -1 & meanVals <= 1;
+	if nnz(keep) >= minCells
+		sdVec(iP) = std(meanVals(keep));
+	end
 end
 end

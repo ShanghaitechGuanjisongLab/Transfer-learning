@@ -70,6 +70,17 @@ J = outerjoin(J, ReuseKp1(:, {'Mouse','DateTimeNext','Reuse_Kp1','NCells_Kp1'}),
 
 % Average reuse rate of session k and k+1
 J.Reuse_Mean = (J.Reuse_K + J.Reuse_Kp1) / 2;
+
+% Keep only the FIRST adjacent pair per mouse (sessions 1 and 2 of Transfer phase)
+J.Mouse = string(J.Mouse);
+J = sortrows(J, {'Mouse', 'DateTime'});
+uMice = unique(J.Mouse, 'stable');
+firstPair = false(height(J), 1);
+for im = 1:numel(uMice)
+	rows = find(J.Mouse == uMice(im));
+	if ~isempty(rows), firstPair(rows(1)) = true; end
+end
+J = J(firstPair, :);
 assignin('base', 'EnglishFig3J_Joined', J);
 
 x = double(J.Reuse_Mean);
@@ -77,7 +88,7 @@ y = double(J.Speed_DeltaNext);
 z = double(J.Performance);  % Hit_K for partial correlation
 mask = isfinite(x) & isfinite(y) & isfinite(z);
 
-fprintf('\n=== Panel J: Reuse vs ΔHit (mean of k and k+1) ===\n');
+fprintf('\n=== Panel J: Reuse vs ΔHit (first 2 Transfer sessions per mouse) ===\n');
 fprintf('Valid pairs: %d\n', nnz(mask));
 
 % --- Plot
@@ -113,8 +124,20 @@ xlabel(ax, 'Reactivation');
 ylabel(ax, 'ΔHit');
 
 if isfinite(p)
-	text(ax, 0.95, 0.95, sprintf('p=%.2g', p), ...
-		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6);
+	if p < 0.001, sigLabel = '***';
+	elseif p < 0.01, sigLabel = '**';
+	elseif p < 0.05, sigLabel = '*';
+	else, sigLabel = 'n.s.'; end
+	text(ax, 0.95, 0.95, sigLabel, ...
+		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 8, 'FontWeight', 'bold');
+end
+
+% Mean ± SEM of first-session-pair Reactivation across mice
+if nnz(mask) > 0
+	xMean = mean(x(mask));
+	xSEM  = std(x(mask)) / sqrt(nnz(mask));
+	text(ax, 0.05, 0.05, sprintf('Mean = %.3f±%.3f', xMean, xSEM), ...
+		'Units', 'normalized', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom', 'FontSize', 5);
 end
 
 % --- Export SVG

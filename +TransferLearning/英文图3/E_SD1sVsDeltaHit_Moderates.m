@@ -8,7 +8,7 @@
 % - Naive: LightAudioBaseline + LAInterspersed，纯 LW 会话（ceiling excluded）
 % - One point = one adjacent session pair (session k → session k+1).
 % - ΔHit = Hit(k+1) − Hit(k).
-% - x = inter-cell SD of median ZScore at 1s in session k+1, Moderates cells only.
+% - x = Response heterogeneity: pooled SD (all trials from k and k+1 merged, per-cell median, Moderates filter).
 %
 % Layout: single axes
 % Style: scatter + fit line + simple Spearman.
@@ -38,21 +38,17 @@ SessT = iExcludeCeiling(SessT);
 PairsT = iSessionPairs(SessT);
 fprintf('Transfer LW: %d adjacent session pairs\n', height(PairsT));
 
-% Batch query Moderates SD for session k+1
-allDTs_T = unique(PairsT.DateTimeNext);
-sdTbl_T = iBatchSD1s_Moderates(DS_ALB, allDTs_T, idx1s);
+% Batch query trial-level NTS for all Transfer sessions
+allDTs_T = unique([PairsT.DateTime; PairsT.DateTimeNext]);
+rawTbl_T = iBatchQueryRawNTS(DS_ALB, allDTs_T);
 
-% Build Transfer data vectors
+% Build Transfer data vectors: x = pooled SD of pair (k+k+1 trials)
 nPT = height(PairsT);
 T_SD = nan(nPT, 1);
 T_DH = nan(nPT, 1);
 T_HK = nan(nPT, 1);
 for iP = 1:nPT
-	dtK1 = PairsT.DateTimeNext(iP);
-	r = sdTbl_T(sdTbl_T.DateTime == dtK1, :);
-	if height(r) == 1
-		T_SD(iP) = r.SD_Mod;
-	end
+	T_SD(iP) = iPooledPairSD(rawTbl_T, PairsT.DateTime(iP), PairsT.DateTimeNext(iP), idx1s);
 	T_DH(iP) = PairsT.PerformanceNext(iP) - PairsT.Performance(iP);
 	T_HK(iP) = PairsT.Performance(iP);
 end
@@ -71,31 +67,32 @@ allNaiveSess = iExcludeCeilingNaive(allNaiveSess);
 PairsN = iSessionPairs(allNaiveSess);
 fprintf('Naive LW: %d adjacent session pairs (phase-based)\n', height(PairsN));
 
-% Batch query Moderates SD per source dataset
-naiveSD = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_Mod'});
+% Batch query trial-level NTS per source dataset
+rawParts = {};
 for d = 1:numel(naiveDSObjs)
 	DS = naiveDSObjs{d};
 	dsName = naiveDSNames(d);
-	dts = unique(PairsN.DateTimeNext(PairsN.SourceNext == dsName));
+	dtsK  = PairsN.DateTime(PairsN.Source == dsName);
+	dtsK1 = PairsN.DateTimeNext(PairsN.SourceNext == dsName);
+	dts = unique([dtsK; dtsK1]);
 	if isempty(dts), continue; end
-	sdPart = iBatchSD1s_Moderates(DS, dts, idx1s);
-	if ~isempty(sdPart)
-		naiveSD = [naiveSD; sdPart]; %#ok<AGROW>
+	part = iBatchQueryRawNTS(DS, dts);
+	if ~isempty(part) && height(part) > 0
+		rawParts{end+1} = part; %#ok<AGROW>
 	end
 end
-[~, iU] = unique(naiveSD.DateTime);
-naiveSD = naiveSD(iU, :);
+if isempty(rawParts)
+	naiveRawTbl = table();
+else
+	naiveRawTbl = vertcat(rawParts{:});
+end
 
 nPN = height(PairsN);
 N_SD = nan(nPN, 1);
 N_DH = nan(nPN, 1);
 N_HK = nan(nPN, 1);
 for iP = 1:nPN
-	dtK1 = PairsN.DateTimeNext(iP);
-	r = naiveSD(naiveSD.DateTime == dtK1, :);
-	if height(r) == 1
-		N_SD(iP) = r.SD_Mod;
-	end
+	N_SD(iP) = iPooledPairSD(naiveRawTbl, PairsN.DateTime(iP), PairsN.DateTimeNext(iP), idx1s);
 	N_DH(iP) = PairsN.PerformanceNext(iP) - PairsN.Performance(iP);
 	N_HK(iP) = PairsN.Performance(iP);
 end
@@ -132,7 +129,7 @@ if numel(xd) >= 2 && std(xd) > 0
 end
 hold(ax, 'off');
 
-xlabel(ax, 'Inter-cell SD (Moderates)');
+xlabel(ax, 'Response heterogeneity');
 ylabel(ax, 'ΔHit');
 
 % p-value annotation
@@ -147,50 +144,36 @@ fprintf('Wrote: %s\n', svgPath);
 
 %% ===== Local functions =====
 
-function sdTbl = iBatchSD1s_Moderates(DS, dts, idx1s)
-% Batch compute Moderates-only inter-cell SD@1s for a list of sessions.
-% Moderates: per-cell median z-score@1s ∈ [-1,1]
-% Returns table(DateTime, SD_Mod).
-minCells = 3;
-
+function rawTbl = iBatchQueryRawNTS(DS, dts)
+% Batch query trial-level z-score NTS with DateTime column
 q = struct('Stimulus', 'LightWater', 'DateTime', dts);
-ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
-nts = ntsCell{1};
-
-if isempty(nts) || ~istable(nts) || height(nts) == 0
-	sdTbl = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_Mod'});
-	return;
+try
+	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+catch
+	rawTbl = table(); return;
+end
+if isempty(ntsCell) || isempty(ntsCell{1})
+	rawTbl = table(); return;
+end
+rawTbl = ntsCell{1};
+rawTbl.CellUID = uint64(rawTbl.CellUID);
+rawTbl.DateTime = datetime(rawTbl.DateTime);
+if ~isempty(rawTbl.DateTime.TimeZone), rawTbl.DateTime.TimeZone = ''; end
 end
 
-nts.CellUID = uint64(nts.CellUID);
-nts.DateTime = datetime(nts.DateTime);
-if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone = ''; end
-
-uDTs = unique(nts.DateTime);
-nDT = numel(uDTs);
-sdMod = nan(nDT, 1);
-
-for iDT = 1:nDT
-	dt = uDTs(iDT);
-	sessRows = nts(nts.DateTime == dt, :);
-
-	uCells = unique(sessRows.CellUID);
-	nC = numel(uCells);
-	vals = nan(nC, 1);
-	for iC = 1:nC
-		cRows = sessRows.TrialSignal(sessRows.CellUID == uCells(iC), :);
-		med = median(double(cRows), 1, 'omitnan');
-		if numel(med) >= idx1s
-			vals(iC) = med(idx1s);
-		end
-	end
-
-	% Moderates only: [-1, 1]
-	vMod = vals(isfinite(vals) & vals >= -1 & vals <= 1);
-	if numel(vMod) >= minCells, sdMod(iDT) = std(vMod, 0, 1); end
-end
-
-sdTbl = table(uDTs, sdMod, 'VariableNames', {'DateTime','SD_Mod'});
+function sd = iPooledPairSD(rawTbl, dtK, dtK1, idx1s)
+% Pool trials from dtK and dtK1, compute per-cell median z@1s, filter [-1,1], SD
+sd = NaN;
+if isempty(rawTbl), return; end
+rows = rawTbl.DateTime == dtK | rawTbl.DateTime == dtK1;
+if ~any(rows), return; end
+subTbl = rawTbl(rows, :);
+sig = double(subTbl.TrialSignal);
+z1s = sig(:, idx1s);
+G = findgroups(subTbl.CellUID);
+med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G);
+vals = med1s(isfinite(med1s) & med1s >= -1 & med1s <= 1);
+if numel(vals) >= 3, sd = std(vals); end
 end
 
 function s = iAsterisk(p)

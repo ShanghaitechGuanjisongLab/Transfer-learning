@@ -98,9 +98,9 @@ end
 pairsIdx = [bestA; bestB];
 
 %% ===== 4) Fetch full NTATS + per-cell 1s values for 4 sessions =====
-vals = cell(2, 2);       % vals{pair, session}: per-cell z-score@1s (filtered [-2,2])
+vals = cell(2, 2);       % vals{pair, session}: per-cell z-score@1s (filtered [-1,1])
 sdVals = nan(2, 2);
-heatData = cell(2, 2);   % heatData{pair, session}: (cells×time) sorted by @1s
+rawData  = cell(2, 2);   % rawData{pair, session}: (cells×time×trials) for volshow
 
 xMask = (xsSec >= 0) & (xsSec <= 2); % 0~2s for heatmap
 
@@ -111,7 +111,7 @@ for iP = 1:2
 
 	for iS = 1:2
 		if iS == 1, dt = dtK; else, dt = dtK1; end
-		[~, ntats] = iSessionNTATS(DS, dt);
+		[~, ntats, ntsRaw] = iSessionNTATS(DS, dt);
 		v1s = double(ntats(:, idx1s));
 
 		% Filter to cells in [-1,1]
@@ -122,11 +122,17 @@ for iP = 1:2
 		% Sort by z-score@1s ascending
 		[~, sortIdx] = sort(v1s_filt, 'ascend');
 		v1s_sorted = v1s_filt(sortIdx);
-		ntats_sorted = ntats_filt(sortIdx, xMask);
 
 		vals{iP, iS} = v1s_sorted;
 		sdVals(iP, iS) = std(v1s_sorted);
-		heatData{iP, iS} = ntats_sorted;
+
+		% Raw per-trial data: (filteredCells × timeMask × trials)
+		if ~isempty(ntsRaw)
+			raw_filt   = ntsRaw(keepMask, :, :);
+			rawData{iP, iS} = raw_filt(sortIdx, xMask, :);
+		else
+			rawData{iP, iS} = [];
+		end
 	end
 
 	pLabel = char('A' + iP - 1);
@@ -138,207 +144,142 @@ for iP = 1:2
 	fprintf('  Session k+1: n=%d cells, SD=%.3f\n', numel(vals{iP,2}), sdVals(iP,2));
 end
 
-%% ===== 5) Compute heatmap CLim (symmetric, sqrt-scale) =====
-allHeat = cellfun(@(x) x(:), heatData, 'UniformOutput', false);
-allHeat = vertcat(allHeat{:});
-negV = min(allHeat); posV = max(allHeat);
-if ~isfinite(negV), negV = -1; end
-if ~isfinite(posV), posV = 1; end
-climLowAbs  = iNiceLimit(sqrt(abs(min(negV, 0))));
-climHighAbs = iNiceLimit(sqrt(abs(max(posV, 0))));
-if climLowAbs <= 0, climLowAbs = 1; end
-if climHighAbs <= 0, climHighAbs = 1; end
-CLim = [-climLowAbs, climHighAbs];
+%% ===== 5) Export 4 volshow PNGs =====
+if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 
-%% ===== 6) Figure: 2 rows × (heatmap + histogram) × 2 columns =====
-% Use separate figure-level positioning to achieve heatmap(wide) + histogram(narrow)
-f = figure('Color', 'w', 'Name', 'English Fig3B Representative SD NTATS Distribution');
-f.Units = 'centimeters';
-f.Position(3:4) = [10.5, 8]; % 105mm × 80mm (15mm×7, 40mm×2)
+pairTags = ["PairA", "PairB"];
+sessTags = ["SessionK", "SessionK1"];
 
-colorA = [0.8500 0.3250 0.0980]; % orange — Pair A
-colorB = [0 0.4470 0.7410];      % blue  — Pair B
-pairColors = {colorA; colorB};
-% Pair markers match Fig3A scatter markers: Pair A = ■ (square), Pair B = ▲ (triangle)
-pairLabels = ["Pair A ■", "Pair B ▲"];
-colTitles = ["Previous block", "Latter block"];
+% Compute true global min/max from all 4 volumes (no percentile, no clamping)
+globalMin = Inf; globalMax = -Inf;
+for iP2 = 1:2
+	for iS2 = 1:2
+		rd2 = rawData{iP2, iS2};
+		if isempty(rd2), continue; end
+		v2 = rd2(isfinite(rd2));
+		globalMin = min(globalMin, min(v2));
+		globalMax = max(globalMax, max(v2));
+	end
+end
+fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
 
+% Compute minCells for uniform cell-axis scaling
+minCells = min(cellfun(@(x) size(x,1), rawData(:)));
+
+% ===== Volshow: cbrt clim scale (data unchanged, clim = cbrt of extremes) =====
+vAbs = nthroot(max(abs([globalMin, globalMax])), 3);
+fprintf('--- Cbrt clim (symmetric): [%.3f, %.3f] ---\n', -vAbs, vAbs);
+
+nMap = 256;
+nHalf = nMap / 2;
+blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
+                ones(nHalf,1), linspace(1,0,nHalf)', linspace(1,0,nHalf)'];
+alphaVec = repmat(0.04, nMap, 1);
+
+for iP = 1:2
+	for iS = 1:2
+		rd = rawData{iP, iS};
+		if isempty(rd), continue; end
+
+		V = single(rd);
+		V_clamp = max(-vAbs, min(vAbs, V));
+		V_norm = iSymmetricNormalize(V_clamp, vAbs);
+		V_norm(isnan(V_norm)) = 0.5;
+		% 横置：permute (cells,time,trials) → (time,cells,trials)
+		% dim1=time→Y(vertical), dim2=cells→X(horizontal), dim3=trials→Z(depth)
+		V_norm = permute(V_norm, [2, 1, 3]);
+		% 锚点体素：强制volshow的自动归一化范围为[0,1]
+		V_norm(1,1,1) = 0;
+		V_norm(end,end,end) = 1;
+
+		nCellsHere = size(V, 1);
+		nTrials = size(V, 3);
+		% 水平(X=cells) ≈ 3× 垂直(Z=trials)，Y=time 薄
+		zScale = 0.5;
+		xScale = 3 * nTrials * zScale / nCellsHere;
+		yScale = 0.5;
+		scaleVec = [xScale, yScale, zScale];
+		tform = affinetform3d(diag([scaleVec, 1]));
+
+		fig = uifigure('Name', sprintf('Volshow %s %s', pairTags(iP), sessTags(iS)), ...
+			'Color', 'w', 'Position', [100 100 800 320]);
+		viewer = viewer3d(fig, 'BackgroundColor', [1 1 1], 'BackgroundGradient', 'off', 'Lighting', 'off');
+
+		volshow(V_norm, 'Parent', viewer, ...
+			'RenderingStyle', 'VolumeRendering', ...
+			'Colormap', blueWhiteRed, ...
+			'Alphamap', alphaVec, ...
+			'Transformation', tform);
+
+		uilabel(fig, 'Text', 'X: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
+			'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
+		uilabel(fig, 'Text', 'Y: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
+			'Position', [5, 30, 200, 16], 'BackgroundColor', 'none');
+		uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 7, 'FontColor', [0.1 0.1 0.85], ...
+			'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
+
+		pause(1);
+		pngName = sprintf('English_Fig3B_Volshow_%s_%s.png', pairTags(iP), sessTags(iS));
+		exportapp(fig, fullfile(outDirUNC, pngName));
+		fprintf('Wrote: %s\n', pngName);
+	end
+end
+
+%% ===== 6) Export 4 histogram SVGs (15 mm × 40 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
+pairColors = {[0.8500 0.3250 0.0980]; [0 0.4470 0.7410]};
 
-% Axes positioning grid (normalized)
-% Columns: heatK(wide) | histK(narrow) | gap | heatK1(wide) | histK1(narrow) | gap(annotation)
-leftMargin = 0.06;
-rightMargin = 0.04;  % space for Moderates/Extremists labels
-topMargin = 0.06;
-botMargin = 0.12;
-gapH = 0.06; % horizontal gap between heatmap and histogram (room for z-score ylabel)
-gapHCol = 0.04; % gap between two column groups
-gapV = 0.06; % vertical gap between rows
-heatFrac = 0.50; % heatmap fraction of column group width
-histFrac = 0.50; % histogram fraction
+for iP = 1:2
+	for iS = 1:2
+		v = vals{iP, iS};
 
-totalW = 1 - leftMargin - rightMargin;
-colGroupW = (totalW - gapHCol) / 2;
-heatW = colGroupW * heatFrac - gapH/2;
-histW = colGroupW * histFrac - gapH/2;
+		fh = figure('Color', 'w');
+		fh.Units = 'centimeters';
+		fh.Position(3:4) = [1.5, 4]; % 15 mm × 40 mm
 
-totalH = 1 - topMargin - botMargin;
-rowH = (totalH - gapV) / 2;
-
-axHeat = gobjects(2, 2);
-axHist = gobjects(2, 2);
-
-for iR = 1:2
-	yBot = botMargin + (2 - iR) * (rowH + gapV);
-	for iC = 1:2
-		xBase = leftMargin + (iC - 1) * (colGroupW + gapHCol);
-
-		% --- Heatmap ---
-		hd = heatData{iR, iC};
-		nCells = size(hd, 1);
-
-		heatPos = [xBase, yBot, heatW, rowH];
-		axH = axes(f, 'Units', 'normalized', 'Position', heatPos); %#ok<LAXES>
-		axHeat(iR, iC) = axH;
-
-		imagesc(axH, 'XData', [0, 2], 'YData', [1, nCells], 'CData', hd);
-		axH.YDir = 'normal';
-		ylim(axH, [0.5, nCells + 0.5]); % tight fit, no blank at top/bottom
-		clim(axH, CLim);
-
-		% Blue-white-red colormap, 0-centered (asymmetric CLim support)
-		nMap = 256;
-		aFrac = climLowAbs / (climLowAbs + climHighAbs);
-		nBelow = max(round(nMap * aFrac), 1);
-		nAbove = max(nMap - nBelow, 1);
-		cmapBelow = [linspace(0,1,nBelow)', linspace(0,1,nBelow)', ones(nBelow,1)];
-		cmapAbove = [ones(nAbove,1), linspace(1,0,nAbove)', linspace(1,0,nAbove)'];
-		colormap(axH, [cmapBelow; cmapAbove]);
-
-		axH.FontSize = 6;
-		axH.FontName = 'Segoe UI Emoji';
-		axH.TickDir = 'in';
-		box(axH, 'on');
-		axH.Toolbar.Visible = 'off';
-
-		% X ticks: 0 (light onset) and 1 (water)
-		% 1s (💧) is where the SD is computed — add a star tick label to make this explicit
-		if iR == 2
-			axH.XTick = [0, 1];
-			axH.XTickLabel = {'💡', '💧★'};
-		else
-			axH.XTick = [0, 1];
-			axH.XTickLabel = [];
-		end
-
-		% xline markers
-		xline(axH, 0, ':k', 'LineWidth', 0.5);
-		xline(axH, 1, '-k', 'LineWidth', 0.5);
-
-		% Column title (top row only), with marker indicating which session point in Fig3A
-		% Previous = block k (■ for Pair A, ▲ for Pair B); Latter = block k+1 (same marker)
-		if iR == 1
-			markerStr = {'■','▲'};
-			title(axH, sprintf('%s %s/%s', colTitles(iC), markerStr{1}, markerStr{2}), 'FontSize', 6, 'FontWeight', 'bold');
-		end
-
-		% Row label (left column only)
-		if iC == 1
-			ylabel(axH, pairLabels(iR), 'FontSize', 6);
-			axH.YAxis.Visible = 'on';
-			axH.YTick = [];
-		else
-			axH.YAxis.Visible = 'off';
-		end
-
-		% Bottom row: xlabel (XTickLabel already set above per-row; xlabel only on bottom)
-		if iR == 2
-			xlabel(axH, 'Time (s)', 'FontSize', 6);
-		end
-
-		% --- Histogram (horizontal) ---
-		histPos = [xBase + heatW + gapH, yBot, histW, rowH];
-		axHist(iR, iC) = axes(f, 'Units', 'normalized', 'Position', histPos); %#ok<LAXES>
-		ax = axHist(iR, iC);
+		ax = axes(fh);
 		hold(ax, 'on');
 
-		v = vals{iR, iC};
 		histogram(ax, v, binEdges, 'Normalization', 'probability', ...
 			'Orientation', 'horizontal', ...
-			'FaceColor', pairColors{iR}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
+			'FaceColor', pairColors{iP}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
 		yline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+
+		ylim(ax, [-1, 1]);
+		ax.YTick = [-1, 0, 1];
+		yline(ax, -1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
+		yline(ax, 1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
 
 		ax.FontSize = 6;
 		box(ax, 'off');
 		grid(ax, 'off');
-		ax.Toolbar.Visible = 'off';
-		ylim(ax, [-2, 2]);
-		ax.YTick = [-2, -1, 0, 1, 2];
-		% Show y-axis tick labels on left-column histograms
-		if iC == 1
-			ax.YTickLabel = {'-2','-1',  '0', '1', '2'};
-			ylabel(ax, 'z-score', 'FontSize', 6);
-		else
-			ax.YTickLabel = [];
-		end
 
-		% ±1 boundary lines
-		yline(ax, -1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
-		yline(ax, 1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
-
-		% SD annotation — ★ symbol echoes the 1s marker on the heatmap x-axis
-		text(ax, 0.05, 0.97, sprintf('★ SD=%.2f', sdVals(iR, iC)), ...
+		text(ax, 0.05, 0.97, sprintf('SD=%.2f', sdVals(iP, iS)), ...
 			'Units', 'normalized', 'HorizontalAlignment', 'left', ...
-			'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
+			'VerticalAlignment', 'top', 'FontSize', 5, 'FontWeight', 'bold');
 
-		% Hide x-axis labels for top row; show "Cell proportion" for bottom
-		if iR == 1
-			ax.XTickLabel = [];
-		else
-			xlabel(ax, 'Cell proportion', 'FontSize', 6);
-		end
+		ylabel(ax, 'z-score', 'FontSize', 6);
+		xlabel(ax, 'Prop.', 'FontSize', 6);
+
+		svgN = sprintf('English_Fig3B_Hist_%s_%s.svg', pairTags(iP), sessTags(iS));
+		TransferLearning.PrintFigure(fh, fullfile(outDirUNC, svgN));
+		fprintf('Wrote: %s\n', svgN);
+		close(fh);
 	end
 end
 
-% --- Unify histogram X limits ---
-xMax = max(arrayfun(@(a) a.XLim(2), axHist(:)));
-for a = axHist(:)'
-	xlim(a, [0, xMax]);
-end
-
-% --- Moderates / Extremists annotation (right of right-column histograms) ---
-% Normalized Y coords: [-2,2]→20[0,1]; y=-1→0.25, y=0→0.5, y=1→0.75
-% Moderates ([-1,1] zone): rotated 90°, centered at y=0.5
-% Extremists ([1,2] and [-2,-1] zones): horizontal, centered in each quarter
-for iR = 1:2
-	axR = axHist(iR, 2);
-	text(axR, 1.06, 0.5, 'Moderates', 'Units', 'normalized', ...
-		'FontSize', 6, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', ...
-		'FontWeight', 'bold', 'Rotation', 90, 'Clipping', 'off');
-	% Top extremists zone: y in [0.75, 1.0], center at 0.875
-	text(axR, 0.95, 0.815, 'Extremists', 'Units', 'normalized', ...
-		'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', ...
-		'Color', [0.5 0.5 0.5], 'Clipping', 'off');
-	% Bottom extremists zone: y in [0, 0.25], center at 0.125
-	text(axR, 0.95, 0.185, 'Extremists', 'Units', 'normalized', ...
-		'FontSize', 6, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', ...
-		'Color', [0.5 0.5 0.5], 'Clipping', 'off');
-end
-
-% ===== 7) Export =====
-if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgName = "English_Fig3B_RepresentativeSD_NTATSDistribution.svg";
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
-fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'EnglishFig3B_PairsIdx', pairsIdx);
-assignin('base', 'EnglishFig3B_SessSpeed', SessSpeed);
-assignin('base', 'EnglishFig3B_SD', sdVals);
-assignin('base', 'EnglishFig3B_SD1sMean', sd1sMean);
-
 %% ===== Local functions =====
+
+function Vn = iSymmetricNormalize(V, vAbs)
+% SymmetricColormap style: shared magnitude on both sides, zero maps to center.
+if ~isfinite(vAbs) || vAbs <= 0
+	Vn = 0.5 * ones(size(V), 'like', V);
+	return;
+end
+Vn = 0.5 + 0.5 * (V / vAbs);
+Vn = max(0, min(1, Vn));
+end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
 if isempty(xsSec) || ~isvector(xsSec)
@@ -487,41 +428,51 @@ SessSpeed = table(outM, outDT, outP, outDT2, outP2, outDN, ...
 	'VariableNames', {'Mouse','DateTime','Performance','DateTimeNext','PerformanceNext','Speed_DeltaNext'});
 end
 
-function [uid, ntats] = iSessionNTATS(DS, dt)
+function [uid, ntats, ntsRaw] = iSessionNTATS(DS, dt)
 T = DS.TableQuery(["DateTime","Design"], DateTime=dt, Stimulus="LightWater");
 if isempty(T)
-	uid = uint64.empty(0,1); ntats = []; return;
+	uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return;
 end
 
 des = unique(string(T.Design));
 des = des(~ismissing(des));
 if numel(des) ~= 1
-	error('EnglishFig3B:AmbiguousDesign', ...
-		'Expected 1 LightWater Design in DateTime %s, got %d.', datestr(dt), numel(des));
+	uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return;
 end
 
-G = DS.QueryNTATS(struct('DateTime', dt, 'Stimulus', 'LightWater', 'Design', char(des(1))), ...
-	UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G = DS.QueryNTS(struct('DateTime', dt, 'Stimulus', 'LightWater', 'Design', char(des(1))), ...
+	UniExp.Flags.ZScore, 1:24);
+if isempty(G), uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return; end
+if iscell(G), G = G{1}; end
+if isempty(G), uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return; end
 
-uid = uint64(G.CellUID);
-if isa(G.NTATS, 'MATLAB.DataTypes.NDTable')
-	ntats = double(G.NTATS.Data);
+cellUIDs  = uint64(G.CellUID);
+trialUIDs = uint64(G.TrialUID);
+if isa(G.TrialSignal, 'MATLAB.DataTypes.NDTable')
+	ntsAll = double(G.TrialSignal.Data);
 else
-	ntats = double(G.NTATS);
-end
+	ntsAll = double(G.TrialSignal);
 end
 
-function y = iNiceLimit(x)
-if ~isfinite(x) || x <= 0
-	y = 1; return;
+uid   = unique(cellUIDs,  'stable');
+tids  = unique(trialUIDs, 'stable');
+nCells  = numel(uid);
+nTrials = numel(tids);
+nTime   = size(ntsAll, 2);
+
+% per-cell median (for histogram)
+ntats  = nan(nCells, nTime);
+% per-cell per-trial (for 3D surf): cells × time × trials
+ntsRaw = nan(nCells, nTime, nTrials);
+
+for ic = 1:nCells
+	rowsC = (cellUIDs == uid(ic));
+	ntats(ic, :) = median(ntsAll(rowsC, :), 1, 'omitnan');
+	for it = 1:nTrials
+		rowsCT = rowsC & (trialUIDs == tids(it));
+		if any(rowsCT)
+			ntsRaw(ic, :, it) = mean(ntsAll(rowsCT, :), 1, 'omitnan');
+		end
+	end
 end
-e = floor(log10(x));
-f = x / (10^e);
-if f <= 1, n = 1;
-elseif f <= 2, n = 2;
-elseif f <= 5, n = 5;
-else, n = 10;
-end
-y = n * (10^e);
-if y < x, y = 10 * (10^e); end
 end
