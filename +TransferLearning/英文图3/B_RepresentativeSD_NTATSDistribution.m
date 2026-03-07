@@ -185,21 +185,22 @@ for iP = 1:2
 		V_clamp = max(-vAbs, min(vAbs, V));
 		V_norm = iSymmetricNormalize(V_clamp, vAbs);
 		V_norm(isnan(V_norm)) = 0.5;
-		% 横置：permute (cells,time,trials) → (time,cells,trials)
-		% dim1=time→Y(vertical), dim2=cells→X(horizontal), dim3=trials→Z(depth)
-		V_norm = permute(V_norm, [2, 1, 3]);
+		% V_norm 保持 (cells, time, trials)
+		% volshow: dim1→X=cells, dim2→Y=time, dim3→Z=trials
 		% 锚点体素：强制volshow的自动归一化范围为[0,1]
 		V_norm(1,1,1) = 0;
 		V_norm(end,end,end) = 1;
 
 		nCellsHere = size(V, 1);
+		nTime = size(V, 2);
 		nTrials = size(V, 3);
-		% 水平(X=cells) ≈ 3× 垂直(Z=trials)，Y=time 薄
-		zScale = 0.5;
-		xScale = 3 * nTrials * zScale / nCellsHere;
-		yScale = 0.5;
-		scaleVec = [xScale, yScale, zScale];
-		tform = affinetform3d(diag([scaleVec, 1]));
+		% volshow: dim1→intrinsicY, dim2→intrinsicX, dim3→intrinsicZ
+		% 变换矩阵 diag 顺序: [scaleX(=dim2=time), scaleY(=dim1=cells), scaleZ(=dim3=trials)]
+		targetUnit = 30;
+		sX = 0.3 * targetUnit / nTime;       % time → world X (薄)
+		sY = 3 * targetUnit / nCellsHere;    % cells → world Y (最长)
+		sZ = targetUnit / nTrials;            % trials → world Z
+		tform = affinetform3d(diag([sX, sY, sZ, 1]));
 
 		fig = uifigure('Name', sprintf('Volshow %s %s', pairTags(iP), sessTags(iS)), ...
 			'Color', 'w', 'Position', [100 100 800 320]);
@@ -211,17 +212,23 @@ for iP = 1:2
 			'Alphamap', alphaVec, ...
 			'Transformation', tform);
 
-		% 相机设置：X(cells)水平，从前上方俯视，呈扁平六边形
-		sz = size(V_norm) .* scaleVec;
-		ct = sz / 2;
-		dist = max(sz) * 2.5;
+		% 物理尺寸: worldX=time*sX, worldY=cells*sY, worldZ=trials*sZ
+		wX = nTime * sX;    % ≈9
+		wY = nCellsHere * sY;  % ≈90
+		wZ = nTrials * sZ;  % =30
+		ct = [(1+nTime)/2*sX, (1+nCellsHere)/2*sY, (1+nTrials)/2*sZ];
+		dist = max([wX, wY, wZ]) * 2.0;
+		elev = 20;  % 俯角
+		side = 5;   % 微侧，使time厚度可见
+		% 从+X方向看：Y(cells)水平，Z(trials)部分垂直
 		viewer.CameraTarget = ct;
-		viewer.CameraPosition = ct + [0, -dist*sind(25), dist*cosd(25)];
+		viewer.CameraPosition = ct + [dist*cosd(elev)*cosd(side), dist*cosd(elev)*sind(side), dist*sind(elev)];
 		viewer.CameraUpVector = [0, 0, 1];
+		viewer.CameraZoom = 1.5;
 
-		uilabel(fig, 'Text', 'X: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
+		uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
 			'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
-		uilabel(fig, 'Text', 'Y: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
+		uilabel(fig, 'Text', 'Y: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
 			'Position', [5, 30, 200, 16], 'BackgroundColor', 'none');
 		uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 7, 'FontColor', [0.1 0.1 0.85], ...
 			'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
