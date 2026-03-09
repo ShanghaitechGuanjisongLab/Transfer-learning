@@ -1,0 +1,127 @@
+2026-03-08 10:27:12,416 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 10:27:12,416 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 10:27:12,417 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_ByLayer.png has extension 'png', mapped to content type 'png'
+2026-03-08 10:27:12,417 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_ByLayer.png with 56002 bytes
+2026-03-08 10:27:12,493 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_ByLayer.png: 1492x904
+2026-03-08 10:27:12,494 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 10:27:12,494 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 10:27:12,495 - image-mcp - DEBUG - Processed 1 images in 0.08 seconds. Success: 1, Failed: 0
+2026-03-08 10:51:36,948 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 10:51:36,948 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 10:51:36,948 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png has extension 'png', mapped to content type 'png'
+2026-03-08 10:51:36,949 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png with 87951 bytes
+2026-03-08 10:51:36,960 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png: 1353x899
+2026-03-08 10:51:36,960 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 10:51:36,960 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 10:51:36,961 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 1, Failed: 0
+2026-03-08 11:04:47,570 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 11:04:47,570 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 11:04:47,571 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_ResidualizedByFirstHit.png has extension 'png', mapped to content type 'png'
+2026-03-08 11:04:47,571 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_ResidualizedByFirstHit.png with 38446 bytes
+2026-03-08 11:04:47,571 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_ResidualizedByFirstHit.png: 695x603
+2026-03-08 11:04:47,571 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 11:04:47,571 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 11:04:47,572 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 1, Failed: 0
+2026-03-08 11:12:06,400 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 11:12:06,401 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 11:12:06,401 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm_ResidualizedByFirstHit.png has extension 'png', mapped to content type 'png'
+2026-03-08 11:12:06,401 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm_ResidualizedByFirstHit.png with 97767 bytes
+2026-03-08 11:12:06,401 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm_ResidualizedByFirstHit.png: 1356x899
+2026-03-08 11:12:06,402 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 11:12:06,402 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 11:12:06,402 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 1, Failed: 0
+2026-03-08 11:18:15,731 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 11:18:15,732 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 11:18:15,732 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_PartialCorr_LayerAlgorithm_FirstHit.png has extension 'png', mapped to content type 'png'
+2026-03-08 11:18:15,732 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_PartialCorr_LayerAlgorithm_FirstHit.png with 89679 bytes
+2026-03-08 11:18:15,732 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_PartialCorr_LayerAlgorithm_FirstHit.png: 1353x899
+2026-03-08 11:18:15,733 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 11:18:15,733 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 11:18:15,733 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 1, Failed: 0
+2026-03-08 11:25:18,370 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 11:25:18,371 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 11:25:18,372 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png has extension 'png', mapped to content type 'png'
+2026-03-08 11:25:18,372 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png with 84710 bytes
+2026-03-08 11:25:18,372 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png: 1353x899
+2026-03-08 11:25:18,373 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 11:25:18,373 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 11:25:18,373 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 1, Failed: 0
+2026-03-08 11:27:23,608 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 11:27:23,608 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 11:27:23,609 - image-mcp - DEBUG - Local image d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png has extension 'png', mapped to content type 'png'
+2026-03-08 11:27:23,609 - image-mcp - DEBUG - Read local image from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png with 75211 bytes
+2026-03-08 11:27:23,610 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\Temp\English_Fig3C_4Tile_LayerAlgorithm.png: 1353x899
+2026-03-08 11:27:23,610 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 11:27:23,610 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 11:27:23,610 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 1, Failed: 0
+2026-03-08 11:35:23,008 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 11:35:23,008 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 11:35:23,080 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg, converting to PNG
+2026-03-08 11:35:23,200 - image-mcp - DEBUG - Converted SVG to PNG: 10154 bytes
+2026-03-08 11:35:23,201 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg: 188x238
+2026-03-08 11:35:23,201 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 11:35:23,201 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 11:35:23,201 - image-mcp - DEBUG - Processed 1 images in 0.20 seconds. Success: 1, Failed: 0
+2026-03-08 13:22:00,942 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 13:22:00,943 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 13:22:01,017 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_NaiveVsTransfer_RepresentativeSession.svg, converting to PNG
+2026-03-08 13:24:57,935 - image-mcp - DEBUG - Converted SVG to PNG: 109962 bytes
+2026-03-08 13:24:57,936 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_NaiveVsTransfer_RepresentativeSession.svg: 621x267
+2026-03-08 13:24:57,936 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 13:24:57,936 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 13:24:57,946 - image-mcp - DEBUG - Processed 1 images in 177.00 seconds. Success: 1, Failed: 0
+2026-03-08 13:32:46,601 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 13:32:46,602 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 13:32:46,674 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3C_SlopeVsHeterogeneity.svg, converting to PNG
+2026-03-08 13:32:46,846 - image-mcp - DEBUG - Converted SVG to PNG: 20388 bytes
+2026-03-08 13:32:46,858 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3C_SlopeVsHeterogeneity.svg: 356x238
+2026-03-08 13:32:46,859 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 13:32:46,859 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 13:32:46,859 - image-mcp - DEBUG - Processed 1 images in 0.25 seconds. Success: 1, Failed: 0
+2026-03-08 13:48:47,190 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-08 13:48:47,190 - image-mcp - DEBUG - Processing 4 local files
+2026-03-08 13:48:47,259 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Volshow_Naive.png has extension 'png', mapped to content type 'png'
+2026-03-08 13:48:47,372 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Volshow_Naive.png with 98531 bytes
+2026-03-08 13:48:47,372 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Volshow_Naive.png: 800x320
+2026-03-08 13:48:47,372 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 13:48:47,373 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 13:48:47,437 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Volshow_Transfer.png has extension 'png', mapped to content type 'png'
+2026-03-08 13:48:47,551 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Volshow_Transfer.png with 128921 bytes
+2026-03-08 13:48:47,551 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Volshow_Transfer.png: 800x320
+2026-03-08 13:48:47,551 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-08 13:48:47,551 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 13:48:47,622 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Hist_Naive.svg, converting to PNG
+2026-03-08 13:48:47,727 - image-mcp - DEBUG - Converted SVG to PNG: 6272 bytes
+2026-03-08 13:48:47,727 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Hist_Naive.svg: 356x96
+2026-03-08 13:48:47,727 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 13:48:47,727 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 13:48:47,800 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Hist_Transfer.svg, converting to PNG
+2026-03-08 13:48:47,875 - image-mcp - DEBUG - Converted SVG to PNG: 6582 bytes
+2026-03-08 13:48:47,876 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3N_Hist_Transfer.svg: 356x96
+2026-03-08 13:48:47,876 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 13:48:47,876 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 13:48:47,876 - image-mcp - DEBUG - Processed 4 images in 0.69 seconds. Success: 4, Failed: 0
+2026-03-08 16:00:44,040 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 16:00:44,041 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 16:00:44,127 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg, converting to PNG
+2026-03-08 16:00:44,253 - image-mcp - DEBUG - Converted SVG to PNG: 10935 bytes
+2026-03-08 16:00:44,253 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg: 188x238
+2026-03-08 16:00:44,253 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 16:00:44,253 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 16:00:44,253 - image-mcp - DEBUG - Processed 1 images in 0.22 seconds. Success: 1, Failed: 0
+2026-03-08 16:07:08,336 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 16:07:08,337 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 16:07:08,415 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg, converting to PNG
+2026-03-08 16:07:08,508 - image-mcp - DEBUG - Converted SVG to PNG: 11765 bytes
+2026-03-08 16:07:08,509 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg: 188x238
+2026-03-08 16:07:08,509 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 16:07:08,509 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 16:07:08,509 - image-mcp - DEBUG - Processed 1 images in 0.17 seconds. Success: 1, Failed: 0
+2026-03-08 16:22:26,057 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-08 16:22:26,058 - image-mcp - DEBUG - Processing 1 local files
+2026-03-08 16:22:26,139 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg, converting to PNG
+2026-03-08 16:22:26,216 - image-mcp - DEBUG - Converted SVG to PNG: 9679 bytes
+2026-03-08 16:22:26,216 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3D_DeltaHitAndHeterogeneity.svg: 188x238
+2026-03-08 16:22:26,216 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-08 16:22:26,216 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-08 16:22:26,216 - image-mcp - DEBUG - Processed 1 images in 0.16 seconds. Success: 1, Failed: 0

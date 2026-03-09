@@ -1,22 +1,19 @@
-% 英文图3D：Inter-cell SD@1s (Moderates only) vs ΔHit — N/T 合并
+% 英文图3E：代表性单会话 3D 热图 + 细胞间 1s z-score 分布
 %
-% 仅使用 Moderates 细胞（z-score@1s ∈ [-1,1]）计算 SD。
-% 区分方法同 B 图。Naive 与 Transfer 合并为一张散点图。
+% Transfer: 选择响应异质性（SD@1s，[-1,1]细胞）最大的会话
+% Naive:    选择响应异质性最小的会话
+%
+% 每个代表性会话输出：一个 volshow 3D 热图 PNG + 一个直方图 SVG
+% 风格与 B 图一致
 %
 % Data scope:
-% - Transfer: AudioLightBaseline，全部 LW 会话（ceiling excluded）
+% - Transfer: AudioLightBaseline，纯 LW 会话（ceiling excluded）
 % - Naive: LightAudioBaseline + LAInterspersed，纯 LW 会话（ceiling excluded）
-% - One point = one adjacent session pair (session k → session k+1).
-% - ΔHit = Hit(k+1) − Hit(k).
-% - x = Response heterogeneity: pooled SD (all trials from k and k+1 merged, per-cell median, Moderates filter).
 %
-% Layout: single axes
-% Style: scatter + fit line + simple Spearman.
-%
-% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
+% Output: PNG + SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.D_SD1sVsDeltaHit_Moderates
+%   TransferLearning.英文图3.E_SD1sVsDeltaHit_Moderates
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
@@ -24,123 +21,226 @@ outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 
-[dtMin, idx1s] = min(abs(xsSec - 1));
-if isempty(idx1s) || ~isfinite(dtMin) || dtMin > 0.25
-	error('EnglishFig3D:No1s', 'Cannot find a sample close to 1s.');
+[idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
+if ~ok1s
+	error('Fig3E:No1s', 'Cannot find a sample close to 1s.');
 end
 
-%% ===== Part 1: Transfer LW — AudioLightBaseline =====
+%% ===== 1) Gather Transfer sessions & compute per-session SD =====
 DS_ALB = TransferLearning.AudioLightBaseline();
-
 SessT = iLightWaterSessions(DS_ALB);
 SessT = iKeepPureLW(DS_ALB, SessT);
 SessT = iExcludeCeiling(SessT);
-PairsT = iSessionPairs(SessT);
-fprintf('Transfer LW: %d adjacent session pairs\n', height(PairsT));
+fprintf('Transfer LW: %d sessions\n', height(SessT));
 
-% Batch query trial-level NTS for all Transfer sessions
-allDTs_T = unique([PairsT.DateTime; PairsT.DateTimeNext]);
+allDTs_T = unique(SessT.DateTime);
 rawTbl_T = iBatchQueryRawNTS(DS_ALB, allDTs_T);
+sdT = iPerSessionSD(rawTbl_T, SessT.DateTime, idx1s);
 
-% Build Transfer data vectors: x = pooled SD of pair (k+k+1 trials)
-nPT = height(PairsT);
-T_SD = nan(nPT, 1);
-T_DH = nan(nPT, 1);
-T_HK = nan(nPT, 1);
-for iP = 1:nPT
-	T_SD(iP) = iPooledPairSD(rawTbl_T, PairsT.DateTime(iP), PairsT.DateTimeNext(iP), idx1s);
-	T_DH(iP) = PairsT.PerformanceNext(iP) - PairsT.Performance(iP);
-	T_HK(iP) = PairsT.Performance(iP);
-end
-
-%% ===== Part 2: Naive LW — LightAudioBaseline + LAInterspersed =====
+%% ===== 2) Gather Naive sessions & compute per-session SD =====
 DS_LAB = TransferLearning.LightAudioBaseline();
 DS_LAI = TransferLearning.LAInterspersed();
-
-naiveDSNames  = ["LAB"; "LAI"];
-naiveDSObjs   = {DS_LAB; DS_LAI};
 
 allNaiveSess = iGatherNaiveSessions(DS_LAB, DS_LAI);
 allNaiveSess = iExcludeAudioWaterSessions(allNaiveSess, DS_LAB, DS_LAI);
 allNaiveSess = iExcludeCeilingNaive(allNaiveSess);
+fprintf('Naive LW: %d sessions\n', height(allNaiveSess));
 
-PairsN = iSessionPairs(allNaiveSess);
-fprintf('Naive LW: %d adjacent session pairs (phase-based)\n', height(PairsN));
-
-% Batch query trial-level NTS per source dataset
+% Batch query per source dataset
 rawParts = {};
+naiveDSNames = ["LAB"; "LAI"];
+naiveDSObjs  = {DS_LAB; DS_LAI};
 for d = 1:numel(naiveDSObjs)
-	DS = naiveDSObjs{d};
 	dsName = naiveDSNames(d);
-	dtsK  = PairsN.DateTime(PairsN.Source == dsName);
-	dtsK1 = PairsN.DateTimeNext(PairsN.SourceNext == dsName);
-	dts = unique([dtsK; dtsK1]);
+	dts = unique(allNaiveSess.DateTime(allNaiveSess.Source == dsName));
 	if isempty(dts), continue; end
-	part = iBatchQueryRawNTS(DS, dts);
+	part = iBatchQueryRawNTS(naiveDSObjs{d}, dts);
 	if ~isempty(part) && height(part) > 0
 		rawParts{end+1} = part; %#ok<AGROW>
 	end
 end
-if isempty(rawParts)
-	naiveRawTbl = table();
-else
-	naiveRawTbl = vertcat(rawParts{:});
+if isempty(rawParts), naiveRawTbl = table();
+else, naiveRawTbl = vertcat(rawParts{:});
+end
+sdN = iPerSessionSD(naiveRawTbl, allNaiveSess.DateTime, idx1s);
+
+%% ===== 3) Pick max-SD Transfer session & min-SD Naive session =====
+[maxSDT, idxT] = max(sdT);
+[minSDN, idxN] = min(sdN);
+fprintf('\nSelected Transfer: Mouse=%s, DateTime=%s, SD=%.3f\n', ...
+	SessT.Mouse(idxT), datestr(SessT.DateTime(idxT)), maxSDT);
+fprintf('Selected Naive:    Mouse=%s, DateTime=%s, SD=%.3f\n', ...
+	allNaiveSess.Mouse(idxN), datestr(allNaiveSess.DateTime(idxN)), minSDN);
+
+%% ===== 4) Fetch full trial-level NTS for 2 selected sessions =====
+xMask = (xsSec >= 0) & (xsSec <= 2);
+
+sessInfo = struct('label', {"Transfer","Naive"}, ...
+	'dt', {SessT.DateTime(idxT), allNaiveSess.DateTime(idxN)}, ...
+	'mouse', {string(SessT.Mouse(idxT)), string(allNaiveSess.Mouse(idxN))}, ...
+	'DS', {DS_ALB, []});
+
+% Determine which DS for the Naive session
+naiveSrc = allNaiveSess.Source(idxN);
+if naiveSrc == "LAB", sessInfo(2).DS = DS_LAB;
+else, sessInfo(2).DS = DS_LAI;
 end
 
-nPN = height(PairsN);
-N_SD = nan(nPN, 1);
-N_DH = nan(nPN, 1);
-N_HK = nan(nPN, 1);
-for iP = 1:nPN
-	N_SD(iP) = iPooledPairSD(naiveRawTbl, PairsN.DateTime(iP), PairsN.DateTimeNext(iP), idx1s);
-	N_DH(iP) = PairsN.PerformanceNext(iP) - PairsN.Performance(iP);
-	N_HK(iP) = PairsN.Performance(iP);
+vals    = cell(1, 2);   % per-cell z@1s (filtered [-1,1], sorted)
+sdVals  = nan(1, 2);
+rawData = cell(1, 2);   % (cells × time × trials) for volshow
+
+for iS = 1:2
+	[~, ntats, ntsRaw] = iSessionNTATS(sessInfo(iS).DS, sessInfo(iS).dt);
+	if isempty(ntats)
+		fprintf('WARNING: no NTATS data for %s session\n', sessInfo(iS).label);
+		continue;
+	end
+	v1s = double(ntats(:, idx1s));
+	keepMask = isfinite(v1s) & v1s >= -1 & v1s <= 1;
+	v1s_filt = v1s(keepMask);
+	[~, sortIdx] = sort(v1s_filt, 'ascend');
+	vals{iS} = v1s_filt(sortIdx);
+	sdVals(iS) = std(vals{iS});
+
+	if ~isempty(ntsRaw)
+		raw_filt = ntsRaw(keepMask, :, :);
+		rawData{iS} = raw_filt(sortIdx, xMask, :);
+	end
+
+	fprintf('  %s: n=%d cells, SD=%.3f\n', sessInfo(iS).label, numel(vals{iS}), sdVals(iS));
 end
 
-%% ===== Statistics (merged N+T, simple Spearman) =====
-all_SD = [N_SD; T_SD];
-all_DH = [N_DH; T_DH];
-
-k = isfinite(all_SD) & isfinite(all_DH);
-[rho, pVal] = corr(all_SD(k), all_DH(k), 'Type', 'Spearman');
-fprintf('\n=== Panel D: SD@1s (Moderates) vs ΔHit (merged N+T) ===\n');
-fprintf('  Simple Spearman: rho=%+.3f p=%.4g (n=%d)\n', rho, pVal, sum(k));
-
-%% ===== Plot (single axes, 30mm wide) =====
-svgName = "English_Fig3E_SD1sVsDeltaHit_Moderates.svg";
-f = figure('Color', 'w', 'Name', 'English Fig3D SD@1s (Moderates) vs ΔHit');
-f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
-
-ax = axes(f);
-hold(ax, 'on'); box(ax, 'off'); grid(ax, 'off');
-ax.FontSize = 6;
-
-colorMerge = [0.4 0.4 0.4];
-scatter(ax, all_SD(k), all_DH(k), 5, colorMerge, 'LineWidth', 0.2);
-
-% Fit line
-xd = all_SD(k); yd = all_DH(k);
-if numel(xd) >= 2 && std(xd) > 0
-	pFit = polyfit(xd, yd, 1);
-	xFit = [min(xd), max(xd)];
-	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'Color', [0.85 0.325 0.098], 'LineWidth', 1);
-end
-hold(ax, 'off');
-
-xlabel(ax, 'Response heterogeneity');
-ylabel(ax, 'ΔHit');
-
-% p-value annotation
-text(ax, 0.95, 0.95, sprintf('p=%.2g', pVal), ...
-	'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right');
-
-% --- Export SVG
+%% ===== 5) Export 2 volshow PNGs =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
-fprintf('Wrote: %s\n', svgPath);
+
+sessTags = ["Transfer", "Naive"];
+
+% Compute global clim from both volumes
+globalMin = Inf; globalMax = -Inf;
+for iS = 1:2
+	rd = rawData{iS};
+	if isempty(rd), continue; end
+	v2 = rd(isfinite(rd));
+	globalMin = min(globalMin, min(v2));
+	globalMax = max(globalMax, max(v2));
+end
+fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
+
+vAbs = nthroot(max(abs([globalMin, globalMax])), 3);
+fprintf('--- Cbrt clim (symmetric): [%.3f, %.3f] ---\n', -vAbs, vAbs);
+
+nMap = 256;
+nHalf = nMap / 2;
+blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
+                ones(nHalf,1), linspace(1,0,nHalf)', linspace(1,0,nHalf)'];
+alphaVec = repmat(1/30, nMap, 1);
+
+for iS = 1:2
+	rd = rawData{iS};
+	if isempty(rd), continue; end
+
+	V = single(rd);
+	V_clamp = max(-vAbs, min(vAbs, V));
+	V_norm = iSymmetricNormalize(V_clamp, vAbs);
+	V_norm(isnan(V_norm)) = 0.5;
+	V_norm(1,1,1) = 0;
+	V_norm(end,end,end) = 1;
+
+	nCellsHere = size(V, 1);
+	nTime = size(V, 2);
+	nTrials = size(V, 3);
+	targetUnit = 30;
+	sX = 0.8 * targetUnit / nTime;
+	sY = 3 * targetUnit / nCellsHere;
+	sZ = targetUnit / nTrials;
+	tform = affinetform3d(diag([sX, sY, sZ, 1]));
+
+	fig = uifigure('Name', sprintf('Volshow E %s', sessTags(iS)), ...
+		'Color', 'w', 'Position', [100 100 800 320]);
+	viewer = viewer3d(fig, 'BackgroundColor', [1 1 1], 'BackgroundGradient', 'off', 'Lighting', 'off');
+
+	volshow(V_norm, 'Parent', viewer, ...
+		'RenderingStyle', 'VolumeRendering', ...
+		'Colormap', blueWhiteRed, ...
+		'Alphamap', alphaVec, ...
+		'Transformation', tform);
+
+	wX = nTime * sX;
+	wY = nCellsHere * sY;
+	wZ = nTrials * sZ;
+	ct = [(1+nTime)/2*sX, (1+nCellsHere)/2*sY, (1+nTrials)/2*sZ];
+	dist = max([wX, wY, wZ]) * 2.0;
+	elev = 25; side = 30;
+	camOffset = [dist*cosd(elev)*cosd(side), dist*cosd(elev)*sind(side), dist*sind(elev)];
+	viewer.CameraTarget = ct;
+	viewer.CameraPosition = ct + camOffset;
+	Vdir = -camOffset / norm(camOffset);
+	Yaxis = [0, 1, 0];
+	projY = Yaxis - dot(Yaxis, Vdir) * Vdir;
+	upVec = cross(projY, Vdir);
+	viewer.CameraUpVector = upVec / norm(upVec);
+	viewer.CameraZoom = 1.4;
+
+	uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
+		'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
+	uilabel(fig, 'Text', 'Y: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
+		'Position', [5, 30, 200, 16], 'BackgroundColor', 'none');
+	uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 7, 'FontColor', [0.1 0.1 0.85], ...
+		'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
+
+	pause(1);
+	pngName = sprintf('English_Fig3E_Volshow_%s.png', sessTags(iS));
+	exportapp(fig, fullfile(outDirUNC, pngName));
+	fprintf('Wrote: %s\n', pngName);
+end
+
+%% ===== 6) Export 2 histogram SVGs (60 mm × 16 mm) =====
+nBins = 40;
+binEdges = linspace(-1, 1, nBins + 1);
+pairColors = {[0 0.4470 0.7410]; [0.8500 0.3250 0.0980]};  % Transfer=blue, Naive=orange
+
+histFigs = gobjects(1, 2);
+histAxes = gobjects(1, 2);
+for iS = 1:2
+	v = vals{iS};
+
+	fh = figure('Color', 'w');
+	fh.Units = 'centimeters';
+	fh.Position(3:4) = [6, 1.6];
+
+	ax = axes(fh);
+	hold(ax, 'on');
+
+	histogram(ax, v, binEdges, 'Normalization', 'probability', ...
+		'FaceColor', pairColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
+	xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+
+	xlim(ax, [-1, 1]);
+	ax.XTick = [-1, 0, 1];
+	ax.FontSize = 6;
+	box(ax, 'off');
+	grid(ax, 'off');
+
+	text(ax, 0.97, 0.95, sprintf('SD=%.2f', sdVals(iS)), ...
+		'Units', 'normalized', 'HorizontalAlignment', 'right', ...
+		'VerticalAlignment', 'top', 'FontSize', 5, 'FontWeight', 'bold');
+
+	xlabel(ax, 'z-score', 'FontSize', 6);
+	ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
+
+	histFigs(iS) = fh;
+	histAxes(iS) = ax;
+end
+
+MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
+
+for iS = 1:2
+	svgN = sprintf('English_Fig3E_Hist_%s.svg', sessTags(iS));
+	TransferLearning.PrintFigure(histFigs(iS), fullfile(outDirUNC, svgN));
+	fprintf('Wrote: %s\n', svgN);
+	close(histFigs(iS));
+end
 
 %% ===== Local functions =====
 
@@ -161,39 +261,21 @@ rawTbl.DateTime = datetime(rawTbl.DateTime);
 if ~isempty(rawTbl.DateTime.TimeZone), rawTbl.DateTime.TimeZone = ''; end
 end
 
-function sd = iPooledPairSD(rawTbl, dtK, dtK1, idx1s)
-% Pool trials from dtK and dtK1, compute per-cell median z@1s, filter [-1,1], SD
-sd = NaN;
+function sdVec = iPerSessionSD(rawTbl, dts, idx1s)
+% Compute per-session SD of z-score@1s (cells in [-1,1])
+sdVec = nan(numel(dts), 1);
 if isempty(rawTbl), return; end
-rows = rawTbl.DateTime == dtK | rawTbl.DateTime == dtK1;
-if ~any(rows), return; end
-subTbl = rawTbl(rows, :);
-sig = double(subTbl.TrialSignal);
-z1s = sig(:, idx1s);
-G = findgroups(subTbl.CellUID);
-med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G);
-vals = med1s(isfinite(med1s) & med1s >= -1 & med1s <= 1);
-if numel(vals) >= 3, sd = std(vals); end
+for i = 1:numel(dts)
+	rows = rawTbl.DateTime == dts(i);
+	if ~any(rows), continue; end
+	sub = rawTbl(rows, :);
+	sig = double(sub.TrialSignal);
+	z1s = sig(:, idx1s);
+	G = findgroups(sub.CellUID);
+	med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G);
+	v = med1s(isfinite(med1s) & med1s >= -1 & med1s <= 1);
+	if numel(v) >= 3, sdVec(i) = std(v); end
 end
-
-function s = iAsterisk(p)
-if p < 0.001
-	s = "***";
-elseif p < 0.01
-	s = "**";
-elseif p < 0.05
-	s = "*";
-else
-	s = " n.s.";
-end
-end
-
-function [rho, p] = iPartialSpearman(x, y, z)
-% Partial Spearman correlation of x and y, controlling for z.
-rx = tiedrank(x); ry = tiedrank(y); rz = tiedrank(z);
-rx_res = rx - rz * (rz \ rx);
-ry_res = ry - rz * (rz \ ry);
-[rho, p] = corr(rx_res, ry_res, 'Type', 'Pearson');
 end
 
 function AllSess = iGatherNaiveSessions(LAB, LAI)
@@ -394,54 +476,60 @@ perf = double(SessOut.Performance);
 SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end
 
-function Pairs = iSessionPairs(Sess)
-Sess = sortrows(Sess, {'Mouse','DateTime'});
-Sess.Mouse = string(Sess.Mouse);
-mice = unique(Sess.Mouse);
-nTotal = 0;
-for mi = 1:numel(mice)
-	nS = nnz(Sess.Mouse == mice(mi));
-	if nS >= 2, nTotal = nTotal + nS - 1; end
+function [uid, ntats, ntsRaw] = iSessionNTATS(DS, dt)
+T = DS.TableQuery(["DateTime","Design"], DateTime=dt, Stimulus="LightWater");
+if isempty(T)
+	uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return;
 end
-outMouse = strings(nTotal, 1);
-outDT    = NaT(nTotal, 1);
-outPerf  = nan(nTotal, 1);
-outDT2   = NaT(nTotal, 1);
-outPerf2 = nan(nTotal, 1);
-hasSrc = ismember('Source', Sess.Properties.VariableNames);
-if hasSrc
-	outSrc  = strings(nTotal, 1);
-	outSrc2 = strings(nTotal, 1);
+des = unique(string(T.Design));
+des = des(~ismissing(des));
+if numel(des) ~= 1
+	uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return;
 end
-pos = 0;
-for mi = 1:numel(mice)
-	m = mice(mi);
-	R = Sess(Sess.Mouse == m, :);
-	perf = double(R.Performance);
-	dt = R.DateTime;
-	use = isfinite(perf) & ~ismissing(dt);
-	R = R(use, :);
-	perf = perf(use);
-	dt = dt(use);
-	if numel(perf) < 2, continue; end
-	n = numel(perf) - 1;
-	idx = (pos + 1):(pos + n);
-	outMouse(idx) = repmat(m, n, 1);
-	outDT(idx)    = dt(1:end-1);
-	outPerf(idx)  = perf(1:end-1);
-	outDT2(idx)   = dt(2:end);
-	outPerf2(idx) = perf(2:end);
-	if hasSrc
-		src = string(R.Source);
-		outSrc(idx)  = src(1:end-1);
-		outSrc2(idx) = src(2:end);
+G = DS.QueryNTS(struct('DateTime', dt, 'Stimulus', 'LightWater', 'Design', char(des(1))), ...
+	UniExp.Flags.ZScore, 1:24);
+if isempty(G), uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return; end
+if iscell(G), G = G{1}; end
+if isempty(G), uid = uint64.empty(0,1); ntats = []; ntsRaw = []; return; end
+cellUIDs  = uint64(G.CellUID);
+trialUIDs = uint64(G.TrialUID);
+if isa(G.TrialSignal, 'MATLAB.DataTypes.NDTable')
+	ntsAll = double(G.TrialSignal.Data);
+else
+	ntsAll = double(G.TrialSignal);
+end
+uid   = unique(cellUIDs,  'stable');
+tids  = unique(trialUIDs, 'stable');
+nCells  = numel(uid);
+nTrials = numel(tids);
+nTime   = size(ntsAll, 2);
+ntats  = nan(nCells, nTime);
+ntsRaw = nan(nCells, nTime, nTrials);
+for ic = 1:nCells
+	rowsC = (cellUIDs == uid(ic));
+	ntats(ic, :) = median(ntsAll(rowsC, :), 1, 'omitnan');
+	for it = 1:nTrials
+		rowsCT = rowsC & (trialUIDs == tids(it));
+		if any(rowsCT)
+			ntsRaw(ic, :, it) = mean(ntsAll(rowsCT, :), 1, 'omitnan');
+		end
 	end
-	pos = pos + n;
 end
-Pairs = table(outMouse(1:pos), outDT(1:pos), outPerf(1:pos), outDT2(1:pos), outPerf2(1:pos), ...
-	'VariableNames', {'Mouse','DateTime','Performance','DateTimeNext','PerformanceNext'});
-if hasSrc
-	Pairs.Source     = outSrc(1:pos);
-	Pairs.SourceNext = outSrc2(1:pos);
 end
+
+function Vn = iSymmetricNormalize(V, vAbs)
+if ~isfinite(vAbs) || vAbs <= 0
+	Vn = 0.5 * ones(size(V), 'like', V);
+	return;
+end
+Vn = 0.5 + 0.5 * (V / vAbs);
+Vn = max(0, min(1, Vn));
+end
+
+function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
+if isempty(xsSec) || ~isvector(xsSec)
+	idx = 1; ok = false; return;
+end
+[d, idx] = min(abs(xsSec(:) - tSec));
+ok = isfinite(d) && (d <= tolSec);
 end

@@ -1,273 +1,66 @@
-% English Fig3D: Naive vs Transfer — response heterogeneity by layer
-%
-% Two vertical tiles comparing Naive and Transfer cohorts:
-%   Top:    L2/3 response heterogeneity
-%   Bottom: L5 response heterogeneity
-%
-% Metric per mouse (avg-first):
-%   per-cell per-session median z@1s -> per-cell mean across used sessions
-%   -> filter to [-1,1] -> std across cells
-%
-% Naive:    LightAudioBaseline + LAInterspersed (Naive→Learned)
-% Transfer: AudioLightBaseline (Transfer→Final)
-%
-% Execution:
-%   TransferLearning.英文图3.D_DeltaHitAndHeterogeneity
+% Verify Fig3D and Fig3I(v2) lower-tile significance when using
+% mouse-level avg-first response heterogeneity, stratified by layer.
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+DS_LAB = TransferLearning.LightAudioBaseline();
+DS_LAI = TransferLearning.LAInterspersed();
+DS_ALB = TransferLearning.AudioLightBaseline();
+DS_TH  = TransferLearning.THInhibit();
 
-DS_NaiveLAB = TransferLearning.LightAudioBaseline();
-DS_NaiveLAI = TransferLearning.LAInterspersed();
-DS_Transfer = TransferLearning.AudioLightBaseline();
-CellLAB = iDCellLayerTable(DS_NaiveLAB, "LAB");
-CellLAI = iDCellLayerTable(DS_NaiveLAI, "LAI");
-CellTransfer = iDCellLayerTable(DS_Transfer, "Transfer");
+CellLAB = iCellLayerTable(DS_LAB, "LAB");
+CellLAI = iCellLayerTable(DS_LAI, "LAI");
+CellALB = iCellLayerTable(DS_ALB, "ALB");
+CellTH  = iCellLayerTable(DS_TH,  "TH");
 
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
-if ~ok1s, error('Fig3D:No1s', 'Cannot find sample close to 1s.'); end
+if ~ok1s
+	error('ScratchDIByLayer:No1s', 'Cannot find sample close to 1s.');
+end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
 
-[naiveTbl, naiveMice] = iDNaiveMouseAvgSDByLayer(DS_NaiveLAB, DS_NaiveLAI, CellLAB, CellLAI, idx1s, layers);
-[transferTbl, transferMice] = iDTransferMouseAvgSDByLayer(DS_Transfer, CellTransfer, idx1s, "Transfer", "Final", layers);
+% D panel cohorts
+[dNaive, dNaiveMice] = iNaiveMouseAvgSDByLayer(DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layers);
+[dTransfer, dTransferMice] = iTransferLikeMouseAvgSDByLayer(DS_ALB, CellALB, idx1s, "Transfer", "Final", layers);
 
-fprintf('Naive mice with layer values: %d\n', numel(unique(naiveMice)));
-fprintf('Transfer mice with layer values: %d\n', numel(unique(transferMice)));
+% I v2 panel cohorts
+[iCtrl, iCtrlMice] = iTransferLikeMouseAvgSDByLayer(DS_ALB, CellALB, idx1s, "Transfer", "Final", layers);
+[iTH, iTHMice] = iTransferLikeMouseAvgSDByLayer(DS_TH, CellTH, idx1s, "Transfer", "Final", layers);
 
-% --- Figure: 2×1 tiledlayout
-f = figure('Color', 'w', 'Name', 'Fig3D Response heterogeneity by layer');
-f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
-
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-title(Layout, 'Response heterogeneity', 'FontSize', 6, 'FontWeight', 'normal');
-
-colorNaive    = [0.8500 0.3250 0.0980];
-colorTransfer = [0      0.4470 0.7410];
-CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
-
+fprintf('=== Mouse-level avg-first response heterogeneity by layer ===\n');
 for iL = 1:numel(layers)
 	layerName = layers(iL);
 	layerLabel = layerLabels(iL);
-	valsN = naiveTbl.SD(naiveTbl.Layer == layerName);
-	valsT = transferTbl.SD(transferTbl.Layer == layerName);
-	pVal = iRanksumSafe(valsN, valsT);
 
-	fprintf('\n=== %s ===\n', layerLabel);
-	fprintf('Naive:    %.4f +- %.4f (n=%d mice)\n', mean(valsN), std(valsN)/sqrt(numel(valsN)), numel(valsN));
-	fprintf('Transfer: %.4f +- %.4f (n=%d mice)\n', mean(valsT), std(valsT)/sqrt(numel(valsT)), numel(valsT));
-	fprintf('ranksum p = %.6g\n', pVal);
+	vdN = dNaive.SD(dNaive.Layer == layerName);
+	vdT = dTransfer.SD(dTransfer.Layer == layerName);
+	pD = iRanksumSafe(vdN, vdT);
+	fprintf('\n[Fig3D] %s\n', layerLabel);
+	fprintf('  Naive:    %.4f ± %.4f (n=%d mice)\n', mean(vdN), std(vdN)/sqrt(numel(vdN)), numel(vdN));
+	fprintf('  Transfer: %.4f ± %.4f (n=%d mice)\n', mean(vdT), std(vdT)/sqrt(numel(vdT)), numel(vdT));
+	fprintf('  ranksum p = %.6g\n', pD);
 
-	nexttile(Layout, iL);
-	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
-	for eb = EB.Object(:)', eb.LineWidth = 0.5; end
-	ax = gca;
-	ax.FontSize = 6;
-	ax.XTick = [1 2];
-	if iL == 1
-		ax.XTickLabel = {};
-	else
-		ax.XTickLabel = {'Naive', 'Transfer'};
-	end
-	ylabel(ax, layerLabel, 'FontSize', 6);
-	legend(ax, 'off');
-	box(ax, 'off');
-	grid(ax, 'off');
-	ax.Toolbar.Visible = 'off';
-	if isscalar(Bars)
-		Bars.FaceColor = 'flat';
-		nB = numel(Bars.YData);
-		Bars.CData = repmat([colorNaive; colorTransfer], ceil(nB/2), 1);
-		Bars.CData = Bars.CData(1:nB, :);
-		Bars.BarWidth = 0.5;
-		Bars.LineWidth = 0.5;
-		Bars.FaceAlpha = 1/3;
-	end
-	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
-		for pt = Opt.MultiCompare.PText(:)', pt.FontSize = 6; end
-	end
+	viC = iCtrl.SD(iCtrl.Layer == layerName);
+	viT = iTH.SD(iTH.Layer == layerName);
+	pI = iRanksumSafe(viC, viT);
+	fprintf('[Fig3I v2] %s\n', layerLabel);
+	fprintf('  Ctrl: %.4f ± %.4f (n=%d mice)\n', mean(viC), std(viC)/sqrt(numel(viC)), numel(viC));
+	fprintf('  TH:   %.4f ± %.4f (n=%d mice)\n', mean(viT), std(viT)/sqrt(numel(viT)), numel(viT));
+	fprintf('  ranksum p = %.6g\n', pI);
 end
 
-% --- Export
-if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, 'English_Fig3D_DeltaHitAndHeterogeneity.svg');
-TransferLearning.PrintFigure(f, svgPath);
-fprintf('Wrote: %s\n', svgPath);
+fprintf('\nNaive mice with layer values: %s\n', strjoin(cellstr(unique(dNaiveMice)), ', '));
+fprintf('Transfer/Ctrl mice with layer values: %s\n', strjoin(cellstr(unique(dTransferMice)), ', '));
+fprintf('TH mice with layer values: %s\n', strjoin(cellstr(unique(iTHMice)), ', '));
 
-%% ===== Local functions =====
+assignin('base', 'scratch_D_byLayer_mouseavg', dNaive);
+assignin('base', 'scratch_D_transfer_byLayer_mouseavg', dTransfer);
+assignin('base', 'scratch_I_ctrl_byLayer_mouseavg', iCtrl);
+assignin('base', 'scratch_I_th_byLayer_mouseavg', iTH);
 
-function [dhVec, sdVec] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
-% Returns:
-%   dhVec: ΔHit per session pair (one element per adjacent pair)
-%   sdVec: Response heterogeneity per session (one element per session)
-
-Sess = iLightWaterSessions(DS);
-Sess = iKeepPureLW_NoMustWarn(DS, Sess);
-Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
-
-if isempty(Sess)
-	dhVec = []; sdVec = []; return;
-end
-Sess = sortrows(Sess, {'Mouse','DateTime'});
-
-% --- Session-pair ΔHit (ceiling-excluded) ---
-mice = unique(string(Sess.Mouse));
-dhVec = [];
-allUsedDTs = datetime.empty(0,1);
-for iM = 1:numel(mice)
-	m = mice(iM);
-	R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
-	if height(R) < 2, continue; end
-	first100 = find(double(R.Performance) >= 1.0, 1, 'first');
-	if ~isempty(first100) && first100 > 1
-		R = R(1:first100-1, :);
-	elseif ~isempty(first100) && first100 == 1
-		continue;
-	end
-	if height(R) < 2, continue; end
-	perf = double(R.Performance);
-	dhVec = [dhVec; diff(perf)]; %#ok<AGROW>
-	allUsedDTs = [allUsedDTs; R.DateTime]; %#ok<AGROW>
-end
-
-% --- Session-level SD (per session, not averaged across mouse) ---
-allUsedDTs = unique(allUsedDTs);
-sdVec = [];
-if isempty(allUsedDTs), return; end
-
-q = struct('Stimulus', 'LightWater', 'DateTime', allUsedDTs);
-try
-	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
-catch
-	return;
-end
-if isempty(ntsCell) || isempty(ntsCell{1}), return; end
-rawTbl = ntsCell{1};
-rawTbl.CellUID  = uint64(rawTbl.CellUID);
-rawTbl.DateTime = iNormDT(datetime(rawTbl.DateTime));
-sig = double(rawTbl.TrialSignal);
-z1s = sig(:, idx1s);
-
-% Per-cell per-session median
-[G1, cellU1, dtU1] = findgroups(rawTbl.CellUID, rawTbl.DateTime);
-med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G1);
-
-% Compute SD per session
-uDTs = unique(dtU1);
-sdVec = nan(numel(uDTs), 1);
-for iDT = 1:numel(uDTs)
-	vals = med1s(dtU1 == uDTs(iDT));
-	vals = vals(isfinite(vals) & vals >= -1 & vals <= 1);
-	if numel(vals) >= 3, sdVec(iDT) = std(vals); end
-end
-sdVec = sdVec(isfinite(sdVec));
-end
-
-function [dhVec, sdVec, mice] = iNaiveMergedCohortData(DS_LAB, DS_LAI, idx1s)
-% Naive 合并两个数据库来源，按学习过程规则筛选：
-%   - Naive→Learned 日期范围（包含 missing phase）
-%   - 排除含 AudioWater trial 的会话
-%   - 排除首个 100% 及其后续会话
-
-AllSess = iGatherNaiveSessions(DS_LAB, DS_LAI);
-AllSess = iExcludeAudioWaterSessions(AllSess, DS_LAB, DS_LAI);
-AllSess = iExcludeCeilingNaive(AllSess);
-
-[dhVec, SessUsed, mice] = iNaiveDeltaHitSessions(AllSess);
-sdVec = iNaiveSessionSD(SessUsed, DS_LAB, DS_LAI, idx1s);
-end
-
-function [dhVec, SessUsed, mice] = iNaiveDeltaHitSessions(Sess)
-if isempty(Sess)
-	SessUsed = Sess;
-	dhVec = [];
-	mice = string.empty(0,1);
-	return;
-end
-
-Sess = sortrows(Sess, {'Mouse','DateTime'});
-miceAll = unique(string(Sess.Mouse));
-dhVec = [];
-keepRows = false(height(Sess), 1);
-keepMice = false(numel(miceAll), 1);
-
-for iM = 1:numel(miceAll)
-	m = miceAll(iM);
-	R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
-	if height(R) < 2, continue; end
-	perf = double(R.Performance);
-	if any(~isfinite(perf)), continue; end
-	dhVec = [dhVec; diff(perf)]; %#ok<AGROW>
-	keepRows = keepRows | (string(Sess.Mouse) == m & ismember(Sess.DateTime, R.DateTime));
-	keepMice(iM) = true;
-end
-
-SessUsed = Sess(keepRows, :);
-mice = miceAll(keepMice);
-end
-
-function sdVec = iNaiveSessionSD(SessUsed, DS_LAB, DS_LAI, idx1s)
-sdVec = [];
-if isempty(SessUsed), return; end
-
-rawParts = {};
-for srcName = ["LAB"; "LAI"]'
-	dts = unique(SessUsed.DateTime(SessUsed.Source == srcName));
-	if isempty(dts), continue; end
-	if srcName == "LAB"
-		DS = DS_LAB;
-	else
-		DS = DS_LAI;
-	end
-	try
-		ntsCell = DS.QueryNTS(struct('Stimulus', 'LightWater', 'DateTime', dts), ...
-			UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
-	catch
-		continue;
-	end
-	if isempty(ntsCell) || isempty(ntsCell{1}), continue; end
-	part = ntsCell{1};
-	part.CellUID = uint64(part.CellUID);
-	part.DateTime = iNormDT(datetime(part.DateTime));
-	part.Source = repmat(srcName, height(part), 1);
-	rawParts{end+1} = part; %#ok<AGROW>
-	end
-
-	if isempty(rawParts), return; end
-	rawTbl = vertcat(rawParts{:});
-	sig = double(rawTbl.TrialSignal);
-	z1s = sig(:, idx1s);
-
-	[G1, cellU1, dtU1, srcU1] = findgroups(rawTbl.CellUID, rawTbl.DateTime, string(rawTbl.Source));
-	med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G1);
-
-	mapTbl = SessUsed(:, {'DateTime','Source'});
-	mapTbl.Source = string(mapTbl.Source);
-	[~, iU] = unique(mapTbl(:, {'DateTime','Source'}), 'rows');
-	mapTbl = mapTbl(iU, :);
-
-	medTbl = table(cellU1, dtU1, srcU1, med1s, 'VariableNames', {'CellUID','DateTime','Source','Med1s'});
-	medTbl = innerjoin(medTbl, mapTbl, 'Keys', {'DateTime','Source'});
-	if isempty(medTbl), return; end
-
-	[G2, ~, ~] = findgroups(medTbl.DateTime, medTbl.Source);
-	sdPerSess = splitapply(@iSessionBoundedSD, medTbl.Med1s, G2);
-	sdVec = sdPerSess(isfinite(sdPerSess));
-end
-
-function out = iSessionBoundedSD(vals)
-vals = vals(isfinite(vals) & vals >= -1 & vals <= 1);
-if numel(vals) >= 3
-	out = std(vals);
-else
-	out = NaN;
-end
-end
-
-function S = iDCellLayerTable(DS, sourceName)
+function S = iCellLayerTable(DS, sourceName)
 S = DS.Cells(:, {'Mouse','CellUID','ZLayer'});
 S.Mouse = string(S.Mouse);
 S.CellUID = uint64(S.CellUID);
@@ -275,16 +68,17 @@ S.ZLayer = string(S.ZLayer);
 S.Source = repmat(string(sourceName), height(S), 1);
 end
 
-function [outTbl, miceOut] = iDTransferMouseAvgSDByLayer(DS, CellMap, idx1s, phaseStart, phaseEnd, layers)
+function [outTbl, miceOut] = iTransferLikeMouseAvgSDByLayer(DS, CellMap, idx1s, phaseStart, phaseEnd, layers)
 Sess = iLightWaterSessions(DS);
 Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
 Sess = sortrows(Sess, {'Mouse','DateTime'});
-[SessUsed, mice] = iDUsedTransferLikeSessions(Sess);
-[outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, mice, idx1s, layers);
+
+[SessUsed, mice] = iUsedTransferLikeSessions(Sess);
+[outTbl, miceOut] = iMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, mice, idx1s, layers);
 end
 
-function [SessUsed, mice] = iDUsedTransferLikeSessions(Sess)
+function [SessUsed, mice] = iUsedTransferLikeSessions(Sess)
 if isempty(Sess)
 	SessUsed = Sess;
 	mice = string.empty(0,1);
@@ -312,16 +106,17 @@ SessUsed = Sess(keepRows, :);
 mice = miceAll(keepMice);
 end
 
-function [outTbl, miceOut] = iDNaiveMouseAvgSDByLayer(DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layers)
+function [outTbl, miceOut] = iNaiveMouseAvgSDByLayer(DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layers)
 AllSess = iGatherNaiveSessions(DS_LAB, DS_LAI);
 AllSess = iExcludeAudioWaterSessions(AllSess, DS_LAB, DS_LAI);
 AllSess = iExcludeCeilingNaive(AllSess);
 AllSess = sortrows(AllSess, {'Mouse','DateTime'});
-[SessUsed, mice] = iDUsedNaiveSessions(AllSess);
-[outTbl, miceOut] = iDMouseAvgByLayerMergedSources(DS_LAB, DS_LAI, CellLAB, CellLAI, SessUsed, mice, idx1s, layers);
+
+[SessUsed, mice] = iUsedNaiveSessions(AllSess);
+[outTbl, miceOut] = iMouseAvgByLayerMergedSources(DS_LAB, DS_LAI, CellLAB, CellLAI, SessUsed, mice, idx1s, layers);
 end
 
-function [SessUsed, mice] = iDUsedNaiveSessions(Sess)
+function [SessUsed, mice] = iUsedNaiveSessions(Sess)
 if isempty(Sess)
 	SessUsed = Sess;
 	mice = string.empty(0,1);
@@ -344,14 +139,15 @@ SessUsed = Sess(keepRows, :);
 mice = miceAll(keepMice);
 end
 
-function [outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, miceIn, idx1s, layers)
+function [outTbl, miceOut] = iMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, miceIn, idx1s, layers)
 outTbl = table(strings(0,1), strings(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD'});
 miceOut = string.empty(0,1);
 if isempty(SessUsed) || isempty(miceIn), return; end
 
 dts = unique(SessUsed.DateTime);
 try
-	ntsCell = DS.QueryNTS(struct('Stimulus', 'LightWater', 'DateTime', dts), UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+	ntsCell = DS.QueryNTS(struct('Stimulus', 'LightWater', 'DateTime', dts), ...
+		UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
 catch
 	return;
 end
@@ -359,7 +155,7 @@ if isempty(ntsCell) || isempty(ntsCell{1}), return; end
 rawTbl = ntsCell{1};
 rawTbl.CellUID = uint64(rawTbl.CellUID);
 rawTbl.DateTime = iNormDT(datetime(rawTbl.DateTime));
-rawTbl = iDAttachLayer(rawTbl, CellMap);
+rawTbl = iAttachLayer(rawTbl, CellMap);
 sig = double(rawTbl.TrialSignal);
 z1s = sig(:, idx1s);
 
@@ -397,7 +193,7 @@ outTbl.SD = double(outTbl.SD);
 miceOut = unique(outTbl.Mouse);
 end
 
-function [outTbl, miceOut] = iDMouseAvgByLayerMergedSources(DS_LAB, DS_LAI, CellLAB, CellLAI, SessUsed, miceIn, idx1s, layers)
+function [outTbl, miceOut] = iMouseAvgByLayerMergedSources(DS_LAB, DS_LAI, CellLAB, CellLAI, SessUsed, miceIn, idx1s, layers)
 outTbl = table(strings(0,1), strings(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD'});
 miceOut = string.empty(0,1);
 if isempty(SessUsed) || isempty(miceIn), return; end
@@ -416,7 +212,8 @@ for iDS = 1:2
 	dts = unique(SessUsed.DateTime(SessUsed.Source == srcName));
 	if isempty(dts), continue; end
 	try
-		ntsCell = DS.QueryNTS(struct('Stimulus', 'LightWater', 'DateTime', dts), UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+		ntsCell = DS.QueryNTS(struct('Stimulus', 'LightWater', 'DateTime', dts), ...
+			UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
 	catch
 		continue;
 	end
@@ -425,11 +222,11 @@ for iDS = 1:2
 	part.CellUID = uint64(part.CellUID);
 	part.DateTime = iNormDT(datetime(part.DateTime));
 	part.Source = repmat(srcName, height(part), 1);
-	part = iDAttachLayer(part, cellMap);
+	part = iAttachLayer(part, cellMap);
 	rawParts{end+1} = part; %#ok<AGROW>
 	end
-
 if isempty(rawParts), return; end
+
 rawTbl = vertcat(rawParts{:});
 sig = double(rawTbl.TrialSignal);
 z1s = sig(:, idx1s);
@@ -470,7 +267,7 @@ outTbl.SD = double(outTbl.SD);
 miceOut = unique(outTbl.Mouse);
 end
 
-function T = iDAttachLayer(T, cellMap)
+function T = iAttachLayer(T, cellMap)
 cellMap = cellMap(:, {'CellUID','ZLayer'});
 [~, loc] = ismember(T.CellUID, cellMap.CellUID);
 T.ZLayer = strings(height(T), 1);
@@ -495,10 +292,17 @@ end
 end
 
 function Sess = iLightWaterSessions(DS)
-Blocks = DS.Blocks(:, {'BlockUID','DateTime','MustWarn'});
+blkCols = DS.Blocks.Properties.VariableNames;
+hasMustWarn = ismember('MustWarn', blkCols);
+if hasMustWarn
+	Blocks = DS.Blocks(:, {'BlockUID','DateTime','MustWarn'});
+	Blocks.MustWarn = string(Blocks.MustWarn);
+else
+	Blocks = DS.Blocks(:, {'BlockUID','DateTime'});
+	Blocks.MustWarn = repmat("", height(Blocks), 1);
+end
 Blocks.BlockUID = uint64(Blocks.BlockUID);
 Blocks.DateTime = iNormDT(datetime(Blocks.DateTime));
-Blocks.MustWarn = string(Blocks.MustWarn);
 DT = DS.DateTimes(:, {'DateTime','Mouse','Phase'});
 DT.DateTime = iNormDT(datetime(DT.DateTime));
 DT.Mouse = string(DT.Mouse);
@@ -508,7 +312,8 @@ Tr.BlockUID = uint64(Tr.BlockUID);
 TrLW = Tr(string(Tr.Stimulus) == "LightWater", {'BlockUID','Behavior'});
 if isempty(TrLW)
 	Sess = table(string.empty(0,1), NaT(0,1), string.empty(0,1), nan(0,1), ...
-		'VariableNames',{'Mouse','DateTime','Phase','Performance'}); return;
+		'VariableNames',{'Mouse','DateTime','Phase','Performance'});
+	return;
 end
 [G, bu] = findgroups(uint64(TrLW.BlockUID));
 lwPerf = splitapply(@(x) mean(double(x),'omitnan'), TrLW.Behavior, G);
@@ -556,11 +361,11 @@ for iM = 1:numel(mice)
 	endDates = dtM.DateTime(dtM.Phase == phaseEnd);
 	if isempty(phDates) || isempty(endDates), continue; end
 	startDT = min(phDates);
-	endDT   = max(endDates);
+	endDT = max(endDates);
 	if ismissing(startDT) || ismissing(endDT), continue; end
 	rows = (string(SessOut.Mouse) == m) & (SessOut.DateTime >= startDT) & (SessOut.DateTime <= endDT);
 	keep = keep | rows;
-end
+	end
 SessOut = SessOut(keep, :);
 end
 

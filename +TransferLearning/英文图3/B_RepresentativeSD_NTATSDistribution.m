@@ -174,7 +174,7 @@ nMap = 256;
 nHalf = nMap / 2;
 blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
                 ones(nHalf,1), linspace(1,0,nHalf)', linspace(1,0,nHalf)'];
-alphaVec = repmat(0.04, nMap, 1);
+alphaVec = repmat(1/30, nMap, 1);
 
 for iP = 1:2
 	for iS = 1:2
@@ -197,7 +197,7 @@ for iP = 1:2
 		% volshow: dim1→intrinsicY, dim2→intrinsicX, dim3→intrinsicZ
 		% 变换矩阵 diag 顺序: [scaleX(=dim2=time), scaleY(=dim1=cells), scaleZ(=dim3=trials)]
 		targetUnit = 30;
-		sX = 0.3 * targetUnit / nTime;       % time → world X (薄)
+		sX = 0.8 * targetUnit / nTime;       % time → world X (中厚，形成六边形)
 		sY = 3 * targetUnit / nCellsHere;    % cells → world Y (最长)
 		sZ = targetUnit / nTrials;            % trials → world Z
 		tform = affinetform3d(diag([sX, sY, sZ, 1]));
@@ -218,13 +218,19 @@ for iP = 1:2
 		wZ = nTrials * sZ;  % =30
 		ct = [(1+nTime)/2*sX, (1+nCellsHere)/2*sY, (1+nTrials)/2*sZ];
 		dist = max([wX, wY, wZ]) * 2.0;
-		elev = 20;  % 俯角
-		side = 5;   % 微侧，使time厚度可见
+		elev = 25;  % 俯角，使Trial轴向下倾斜
+		side = 30;  % 侧偏角，使Time轴向侧面倾斜 → 六边形轮廓
 		% 从+X方向看：Y(cells)水平，Z(trials)部分垂直
+		camOffset = [dist*cosd(elev)*cosd(side), dist*cosd(elev)*sind(side), dist*sind(elev)];
 		viewer.CameraTarget = ct;
-		viewer.CameraPosition = ct + [dist*cosd(elev)*cosd(side), dist*cosd(elev)*sind(side), dist*sind(elev)];
-		viewer.CameraUpVector = [0, 0, 1];
-		viewer.CameraZoom = 1.5;
+		viewer.CameraPosition = ct + camOffset;
+		% 第三转轴(roll)：计算使Y轴在屏幕上完美水平的CameraUpVector
+		V = -camOffset / norm(camOffset);  % 视线方向（camera→target）
+		Yaxis = [0, 1, 0];
+		projY = Yaxis - dot(Yaxis, V) * V;  % Y轴在屏幕平面上的投影
+		upVec = cross(projY, V);             % 垂直于projY，即屏幕上的"上"
+		viewer.CameraUpVector = upVec / norm(upVec);
+		viewer.CameraZoom = 1.4;
 
 		uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
 			'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
@@ -240,47 +246,56 @@ for iP = 1:2
 	end
 end
 
-%% ===== 6) Export 4 histogram SVGs (15 mm × 40 mm) =====
+%% ===== 6) Export 4 histogram SVGs (59 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 pairColors = {[0.8500 0.3250 0.0980]; [0 0.4470 0.7410]};
 
+histFigs = gobjects(2, 2);
+histAxes = gobjects(2, 2);
 for iP = 1:2
 	for iS = 1:2
 		v = vals{iP, iS};
 
 		fh = figure('Color', 'w');
 		fh.Units = 'centimeters';
-		fh.Position(3:4) = [1.5, 4]; % 15 mm × 40 mm
+		fh.Position(3:4) = [5.9, 1.6]; % 59 mm × 16 mm
 
 		ax = axes(fh);
 		hold(ax, 'on');
 
 		histogram(ax, v, binEdges, 'Normalization', 'probability', ...
-			'Orientation', 'horizontal', ...
 			'FaceColor', pairColors{iP}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-		yline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+		xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
 
-		ylim(ax, [-1, 1]);
-		ax.YTick = [-1, 0, 1];
-		yline(ax, -1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
-		yline(ax, 1, ':', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
+		xlim(ax, [-1, 1]);
+		ax.XTick = [-1, 0, 1];
 
 		ax.FontSize = 6;
 		box(ax, 'off');
 		grid(ax, 'off');
 
-		text(ax, 0.05, 0.97, sprintf('SD=%.2f', sdVals(iP, iS)), ...
-			'Units', 'normalized', 'HorizontalAlignment', 'left', ...
+		text(ax, 0.97, 0.95, sprintf('SD=%.2f', sdVals(iP, iS)), ...
+			'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 			'VerticalAlignment', 'top', 'FontSize', 5, 'FontWeight', 'bold');
 
-		ylabel(ax, 'z-score', 'FontSize', 6);
-		xlabel(ax, 'Prop.', 'FontSize', 6);
+		xlabel(ax, 'z-score', 'FontSize', 6);
+		ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
 
+		histFigs(iP, iS) = fh;
+		histAxes(iP, iS) = ax;
+	end
+end
+
+% Unify ylim across all 4 histograms
+MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
+
+for iP = 1:2
+	for iS = 1:2
 		svgN = sprintf('English_Fig3B_Hist_%s_%s.svg', pairTags(iP), sessTags(iS));
-		TransferLearning.PrintFigure(fh, fullfile(outDirUNC, svgN));
+		TransferLearning.PrintFigure(histFigs(iP, iS), fullfile(outDirUNC, svgN));
 		fprintf('Wrote: %s\n', svgN);
-		close(fh);
+		close(histFigs(iP, iS));
 	end
 end
 

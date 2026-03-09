@@ -1,434 +1,265 @@
-% 英文图3I：TH 抑制组 vs 对照组 ΔHit 和 细胞间 SD（会话对平均）
+% English Fig3I: TH inhibition vs Ctrl - DeltaHit and Response heterogeneity
 %
-% 两个面板（上下 tiledlayout，参照英文图2K）：
-%   上: ΔHit — 前后会话命中率差值（iBuildSessionDeltaNextTable）
-%   下: Inter-cell SD@1s — 相邻会话对均值 mean(SD_k, SD_{k+1})
-%       参考英文图3E/F 的口径（per-cell median ZScore@1s，取细胞间 std）
+% Two bar tiles comparing Ctrl and TH groups:
+%   Top:    DeltaHit per session pair (one point = one adjacent pair)
+%   Bottom: Response heterogeneity per mouse (avg-first, one point = one mouse)
 %
-% 数据源（模仿 Fig3.5C/E/F）：
-% - 对照组：TransferLearning.AudioLightBaseline
-% - 抑制组：TransferLearning.THInhibit
-%
-% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
+% Ctrl: AudioLightBaseline (Transfer->Final)
+% TH:   THInhibit          (Transfer->Final)
 %
 % Execution:
 %   TransferLearning.英文图3.I_THInhibitVsCtrl_DeltaHitAndSD
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
-%% --- 0) Ensure project loaded
-try
-	if ~exist('UniExp.DataSet','class')
-		thisFile = mfilename('fullpath');
-		thisDir = fileparts(thisFile);
-		prjFile = fullfile(thisDir, '..', '..', 'Transferlearning.prj');
-		if exist(prjFile,'file')
-			try, matlab.project.loadProject(prjFile); catch, end
-		end
-	end
-catch
-end
-
-%% --- 1) Load datasets
 CtrlDS = TransferLearning.AudioLightBaseline();
-THDS   = TransferLearning.THInhibit();
+THDS = TransferLearning.THInhibit();
 
-%% --- Time axis
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
-[dtMin, idx1s] = min(abs(xsSec - 1));
-if isempty(idx1s) || ~isfinite(dtMin) || dtMin > 0.25
-	error('EnglishFig3I:No1s', 'Cannot find a sample close to 1s.');
-end
+[idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
+if ~ok1s, error('Fig3I:No1s', 'Cannot find sample close to 1s.'); end
 
-minCells = 3;
+[dhC, sdC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");
+[dhT, sdT] = iCohortData(THDS, idx1s, "Transfer", "Final");
 
-%% ======================================================================
-%  Part A: ΔHit (forward difference)
-%  ======================================================================
+fprintf('Ctrl: %d pairs (DeltaHit), %d mice (SD)\n', numel(dhC), numel(sdC));
+fprintf('TH:   %d pairs (DeltaHit), %d mice (SD)\n', numel(dhT), numel(sdT));
 
-Bc = TransferLearning.Fig35.iQueryLightWaterBlocks(CtrlDS, false);
-Bt = TransferLearning.Fig35.iQueryLightWaterBlocks(THDS, false);
-Bc.Group = repmat("Ctrl", height(Bc), 1);
-Bt.Group = repmat("TH",   height(Bt), 1);
-Bc.Mouse = string(Bc.Mouse);
-Bt.Mouse = string(Bt.Mouse);
-Bc.DateTime = TransferLearning.Fig35.iNormalizeDateTime(Bc.DateTime);
-Bt.DateTime = TransferLearning.Fig35.iNormalizeDateTime(Bt.DateTime);
+pDH = iRanksumSafe(dhC, dhT);
+pSD = iRanksumSafe(sdC, sdT);
+fprintf('DeltaHit ranksum p=%.4g\n', pDH);
+fprintf('Response heterogeneity ranksum p=%.4g\n', pSD);
 
-J = MATLAB.DataTypes.MergeTables(Bc, Bt);
-J.Group = string(J.Group);
-
-vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable');
-SessAll = TransferLearning.Fig35.iSessionizeByDateTime(J(:, vars));
-SessAll = sortrows(SessAll, {'Group','Mouse','DateTime'});
-SessAll = TransferLearning.Fig35.iAddSessionIndex(SessAll);
-
-Delta = TransferLearning.Fig35.iBuildSessionDeltaNextTable(SessAll);
-dCtrl = Delta.DeltaPerf(string(Delta.Group) == "Ctrl");
-dTH   = Delta.DeltaPerf(string(Delta.Group) == "TH");
-
-pDelta = iRanksumSafe(dCtrl, dTH);
-
-fprintf('=== ΔHit (forward difference) ===\n');
-fprintf('  Ctrl: %.4f ± %.4f (n=%d pairs)\n', mean(dCtrl,'omitnan'), std(dCtrl,'omitnan')/sqrt(nnz(isfinite(dCtrl))), nnz(isfinite(dCtrl)));
-fprintf('  TH:   %.4f ± %.4f (n=%d pairs)\n', mean(dTH,'omitnan'),   std(dTH,'omitnan')/sqrt(nnz(isfinite(dTH))),     nnz(isfinite(dTH)));
-fprintf('  ranksum p = %.4g\n', pDelta);
-
-%% ======================================================================
-%  Part B: Pair-averaged inter-cell SD@1s (matching English Fig3E/F)
-%  ======================================================================
-
-%% --- Ctrl
-SessCtrl = iLightWaterSessions(CtrlDS);
-SessCtrl = iExcludeCeiling(SessCtrl);
-PairsCtrl = iSessionPairs(SessCtrl);
-fprintf('\nCtrl LW: %d adjacent session pairs\n', height(PairsCtrl));
-
-SD_Ctrl = iPairSD_AvgFirst_Batch(CtrlDS, PairsCtrl, idx1s, minCells);
-
-%% --- TH
-SessTH = iLightWaterSessions(THDS);
-SessTH = iExcludeCeiling(SessTH);
-PairsTH = iSessionPairs(SessTH);
-fprintf('TH LW:   %d adjacent session pairs\n', height(PairsTH));
-
-SD_TH = iPairSD_AvgFirst_Batch(THDS, PairsTH, idx1s, minCells);
-
-kC = isfinite(SD_Ctrl);
-kT = isfinite(SD_TH);
-pSD = iRanksumSafe(SD_Ctrl(kC), SD_TH(kT));
-
-fprintf('\n=== Pair-averaged inter-cell SD@1s ===\n');
-fprintf('  Ctrl: %.4f ± %.4f (n=%d pairs)\n', mean(SD_Ctrl(kC)), std(SD_Ctrl(kC))/sqrt(sum(kC)), sum(kC));
-fprintf('  TH:   %.4f ± %.4f (n=%d pairs)\n', mean(SD_TH(kT)),   std(SD_TH(kT))/sqrt(sum(kT)),   sum(kT));
-fprintf('  ranksum p = %.4g\n', pSD);
-
-%% ======================================================================
-%  Plot (2×1 tiledlayout, bar only, style: English Fig2K)
-%  ======================================================================
 svgName = "English_Fig3I_THInhibitVsCtrl_DeltaHitAndSD.svg";
-
-f = figure('Color', 'w', 'Name', 'English Fig3I TH DeltaHit & SD');
+f = figure('Color', 'w', 'Name', 'Fig3I TH DeltaHit and Heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+colorA = [1 0 0];
+colorB = [0 0 1];
+CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-colorA = [1 0 0];   % Ctrl = red
-colorB = [0 0 1];   % TH   = blue
-
-%% --- Tile 1: ΔHit
 nexttile(Layout, 1);
-[~, ~, Bars1, EB1] = UniExp.BarScatterCompare( ...
-	{double(dCtrl(:)), double(dTH(:))}, false);
-delete(findobj(gca, 'Type', 'Scatter'));
+[~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({dhC, dhT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
 for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
-
 ax1 = gca;
 ax1.FontSize = 6;
 ax1.XTick = [1 2];
-ax1.XTickLabel = {'Ctrl', 'TH'};
+ax1.XTickLabel = {};
+ylabel(ax1, 'DeltaHit', 'FontSize', 6);
 legend(ax1, 'off');
 box(ax1, 'off');
-grid(ax1, 'off');
-ax1.Toolbar.Visible = 'off';
-ylabel(ax1, '\DeltaHit', 'FontSize', 6);
-
 if isscalar(Bars1)
 	Bars1.FaceColor = 'flat';
 	nB = numel(Bars1.YData);
 	Bars1.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars1.CData = Bars1.CData(1:nB, :);
-	Bars1.BarWidth = 0.5; Bars1.LineWidth = 0.5; Bars1.FaceAlpha = 1/3;
-else
-	if numel(Bars1) >= 2
-		Bars1(1).FaceColor = colorA; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 0.5;
-		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 0.5;
-	end
+	Bars1.BarWidth = 0.5;
+	Bars1.LineWidth = 0.5;
+	Bars1.FaceAlpha = 1/3;
+end
+if isfield(Opt1, 'MultiCompare') && ismember('PText', Opt1.MultiCompare.Properties.VariableNames)
+	for pt = Opt1.MultiCompare.PText(:)', pt.FontSize = 6; end
 end
 
-star1 = iAsterisk(pDelta);
-Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[~, PT1] = MATLAB.Graphics.PLine(Desc1);
-for t = PT1(:)', t.FontSize = 6; end
-
-%% --- Tile 2: Pair-averaged SD
 nexttile(Layout, 2);
-[~, ~, Bars2, EB2] = UniExp.BarScatterCompare( ...
-	{double(SD_Ctrl(kC)), double(SD_TH(kT))}, false);
-delete(findobj(gca, 'Type', 'Scatter'));
+[~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdC, sdT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
 for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
-
 ax2 = gca;
 ax2.FontSize = 6;
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Ctrl', 'TH'};
+ylabel(ax2, 'Response heterogeneity', 'FontSize', 6);
 legend(ax2, 'off');
 box(ax2, 'off');
-grid(ax2, 'off');
-ax2.Toolbar.Visible = 'off';
-ylabel(ax2, 'Inter-cell SD', 'FontSize', 6);
-
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
-	nB2 = numel(Bars2.YData);
-	Bars2.CData = repmat([colorA; colorB], ceil(nB2/2), 1);
-	Bars2.CData = Bars2.CData(1:nB2, :);
-	Bars2.BarWidth = 0.5; Bars2.LineWidth = 0.5; Bars2.FaceAlpha = 1/3;
-else
-	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
-		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
-	end
+	nB = numel(Bars2.YData);
+	Bars2.CData = repmat([colorA; colorB], ceil(nB/2), 1);
+	Bars2.CData = Bars2.CData(1:nB, :);
+	Bars2.BarWidth = 0.5;
+	Bars2.LineWidth = 0.5;
+	Bars2.FaceAlpha = 1/3;
+end
+if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
+	for pt = Opt2.MultiCompare.PText(:)', pt.FontSize = 6; end
 end
 
-if pSD < 0.001
-	star2 = sprintf('p=%.1e', pSD);
-elseif pSD < 0.1
-	star2 = sprintf('p=%.3f', pSD);
-else
-	star2 = sprintf('p=%.2f', pSD);
-end
-Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), string(star2), 0, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[~, PT2] = MATLAB.Graphics.PLine(Desc2);
-for t = PT2(:)', t.FontSize = 6; end
-
-%% --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'English_Fig3I_DeltaHit_Ctrl', dCtrl);
-assignin('base', 'English_Fig3I_DeltaHit_TH',   dTH);
-assignin('base', 'English_Fig3I_SD_Ctrl', SD_Ctrl(kC));
-assignin('base', 'English_Fig3I_SD_TH',   SD_TH(kT));
-assignin('base', 'English_Fig3I_pDelta', pDelta);
-assignin('base', 'English_Fig3I_pSD',    pSD);
-
-%% ===== Local functions =====
-
-function sdTbl = iBatchSD1s(DS, dts, idx1s, minCells)
-q = struct('Stimulus', 'LightWater', 'DateTime', dts);
-ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
-if isempty(ntsCell) || isempty(ntsCell{1})
-	sdTbl = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_All'});
+function [dhVec, sdVec] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
+Sess = iLightWaterSessions(DS);
+Sess = iKeepPureLW_NoMustWarn(DS, Sess);
+Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
+if isempty(Sess)
+	dhVec = [];
+	sdVec = [];
 	return;
 end
-nts = ntsCell{1};
-if ~istable(nts) || height(nts) == 0
-	sdTbl = table(NaT(0,1), nan(0,1), 'VariableNames', {'DateTime','SD_All'});
-	return;
-end
-
-nts.CellUID = uint64(nts.CellUID);
-nts.DateTime = datetime(nts.DateTime);
-if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone = ''; end
-
-uDTs = unique(nts.DateTime);
-nDT = numel(uDTs);
-sdAll = nan(nDT, 1);
-
-for iDT = 1:nDT
-	dt = uDTs(iDT);
-	sessRows = nts(nts.DateTime == dt, :);
-	uCells = unique(sessRows.CellUID);
-	nC = numel(uCells);
-	vals = nan(nC, 1);
-	for iC = 1:nC
-		cRows = sessRows.TrialSignal(sessRows.CellUID == uCells(iC), :);
-		med = median(double(cRows), 1, 'omitnan');
-		if numel(med) >= idx1s
-			vals(iC) = med(idx1s);
-		end
-	end
-	vAll = vals(isfinite(vals));
-	vAll = vAll(vAll >= -1 & vAll <= 1);  % Filter to [-1,1]
-	if numel(vAll) >= minCells
-		sdAll(iDT) = std(vAll, 0, 1);
-	end
-end
-
-sdTbl = table(uDTs, sdAll, 'VariableNames', {'DateTime','SD_All'});
-end
-
-function Sess = iLightWaterSessions(DS)
-Blocks = DS.Blocks;
-Blocks.BlockUID = uint64(Blocks.BlockUID);
-Blocks.DateTime = datetime(Blocks.DateTime);
-if ~isempty(Blocks.DateTime.TimeZone), Blocks.DateTime.TimeZone = ''; end
-blkVars = string(Blocks.Properties.VariableNames);
-if ismember("MustWarn", blkVars)
-	Blocks.MustWarn = string(Blocks.MustWarn);
-else
-	Blocks.MustWarn = repmat("", height(Blocks), 1);
-end
-Blocks = Blocks(:, {'BlockUID','DateTime','MustWarn'});
-
-DT = DS.DateTimes(:, {'DateTime','Mouse'});
-DT.DateTime = datetime(DT.DateTime);
-if ~isempty(DT.DateTime.TimeZone), DT.DateTime.TimeZone = ''; end
-DT.Mouse = string(DT.Mouse);
-
-Tr = DS.Trials(:, {'BlockUID','Stimulus','Behavior'});
-Tr.BlockUID = uint64(Tr.BlockUID);
-TrLW = Tr(string(Tr.Stimulus) == "LightWater", :);
-if isempty(TrLW)
-	Sess = table(string.empty(0,1), NaT(0,1), nan(0,1), ...
-		'VariableNames', {'Mouse','DateTime','Performance'});
-	return;
-end
-
-[G, bu] = findgroups(uint64(TrLW.BlockUID));
-lwPerf = splitapply(@(x) mean(double(x), 'omitnan'), TrLW.Behavior, G);
-perfByBlock = table(uint64(bu), lwPerf, 'VariableNames', {'BlockUID','LWPerf'});
-
-T = innerjoin(perfByBlock, Blocks, 'Keys', 'BlockUID');
-keep = ismissing(T.MustWarn) | (T.MustWarn == "");
-T = T(keep, :);
-T = innerjoin(T, DT, 'Keys', 'DateTime');
-
-[G2, mouse, dt] = findgroups(T.Mouse, T.DateTime);
-perfSess = splitapply(@(x) mean(double(x), 'omitnan'), T.LWPerf, G2);
-Sess = table(mouse, dt, perfSess, 'VariableNames', {'Mouse','DateTime','Performance'});
 Sess = sortrows(Sess, {'Mouse','DateTime'});
-end
 
-function SessOut = iExcludeCeiling(SessIn)
-SessOut = SessIn;
-if isempty(SessOut), return; end
-SessOut.Mouse = string(SessOut.Mouse);
-SessOut = sortrows(SessOut, {'Mouse','DateTime'});
-remove = false(height(SessOut), 1);
-for m = unique(SessOut.Mouse)'
-	rows = find(SessOut.Mouse == m);
-	p = double(SessOut.Performance(rows));
-	i100 = find(p >= 1 - 1e-12, 1, 'first');
-	if ~isempty(i100)
-		remove(rows(i100:end)) = true;
+mice = unique(string(Sess.Mouse));
+nMice = numel(mice);
+dhVec = [];
+allUsedDTs = datetime.empty(0,1);
+sessPerMouse = cell(nMice, 1);
+for iM = 1:nMice
+	m = mice(iM);
+	R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
+	if height(R) < 2, continue; end
+	first100 = find(double(R.Performance) >= 1.0, 1, 'first');
+	if ~isempty(first100) && first100 > 1
+		R = R(1:first100-1, :);
+	elseif ~isempty(first100) && first100 == 1
+		continue;
 	end
-end
-SessOut(remove, :) = [];
-perf = double(SessOut.Performance);
-SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
-end
-
-function Pairs = iSessionPairs(Sess)
-Sess = sortrows(Sess, {'Mouse','DateTime'});
-Sess.Mouse = string(Sess.Mouse);
-mice = unique(Sess.Mouse);
-
-nTotal = 0;
-for mi = 1:numel(mice)
-	nS = nnz(Sess.Mouse == mice(mi));
-	if nS >= 2, nTotal = nTotal + nS - 1; end
-end
-
-outMouse = strings(nTotal, 1);
-outDT    = NaT(nTotal, 1);
-outPerf  = nan(nTotal, 1);
-outDT2   = NaT(nTotal, 1);
-outPerf2 = nan(nTotal, 1);
-
-pos = 0;
-for mi = 1:numel(mice)
-	m = mice(mi);
-	R = Sess(Sess.Mouse == m, :);
+	if height(R) < 2, continue; end
 	perf = double(R.Performance);
-	dt = R.DateTime;
-	use = isfinite(perf) & ~ismissing(dt);
-	R = R(use, :);
-	perf = perf(use);
-	dt = dt(use);
-	if numel(perf) < 2, continue; end
-	n = numel(perf) - 1;
-	idx = (pos + 1):(pos + n);
-	outMouse(idx) = repmat(m, n, 1);
-	outDT(idx)    = dt(1:end-1);
-	outPerf(idx)  = perf(1:end-1);
-	outDT2(idx)   = dt(2:end);
-	outPerf2(idx) = perf(2:end);
-	pos = pos + n;
+	dhVec = [dhVec; diff(perf)]; %#ok<AGROW>
+	allUsedDTs = [allUsedDTs; R.DateTime]; %#ok<AGROW>
+	sessPerMouse{iM} = R.DateTime;
+	end
+
+allUsedDTs = unique(allUsedDTs);
+sdVec = nan(nMice, 1);
+if isempty(allUsedDTs), sdVec = []; return; end
+
+q = struct('Stimulus', 'LightWater', 'DateTime', allUsedDTs);
+try
+	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+catch
+	sdVec = [];
+	return;
+end
+if isempty(ntsCell) || isempty(ntsCell{1}), sdVec = []; return; end
+rawTbl = ntsCell{1};
+rawTbl.CellUID = uint64(rawTbl.CellUID);
+rawTbl.DateTime = iNormDT(datetime(rawTbl.DateTime));
+sig = double(rawTbl.TrialSignal);
+z1s = sig(:, idx1s);
+
+[G1, cellU1, dtU1] = findgroups(rawTbl.CellUID, rawTbl.DateTime);
+med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G1);
+
+dtMouseMap = Sess(:, {'DateTime','Mouse'});
+dtMouseMap.Mouse = string(dtMouseMap.Mouse);
+[~, iU] = unique(dtMouseMap.DateTime);
+dtMouseMap = dtMouseMap(iU, :);
+
+medTbl = table(cellU1, dtU1, med1s, 'VariableNames', {'CellUID','DateTime','Med1s'});
+medTbl = innerjoin(medTbl, dtMouseMap, 'Keys', 'DateTime');
+
+for iM = 1:nMice
+	if isempty(sessPerMouse{iM}), continue; end
+	m = mice(iM);
+	mRows = medTbl(string(medTbl.Mouse) == m & ismember(medTbl.DateTime, sessPerMouse{iM}), :);
+	if isempty(mRows), continue; end
+	[~, ~, cellID] = unique(mRows.CellUID);
+	meanPerCell = accumarray(cellID, mRows.Med1s, [], @mean);
+	vals = meanPerCell(isfinite(meanPerCell) & meanPerCell >= -1 & meanPerCell <= 1);
+	if numel(vals) >= 3, sdVec(iM) = std(vals); end
+	end
+sdVec = sdVec(isfinite(sdVec));
 end
 
-Pairs = table(outMouse(1:pos), outDT(1:pos), outPerf(1:pos), outDT2(1:pos), outPerf2(1:pos), ...
-	'VariableNames', {'Mouse','DateTime','Performance','DateTimeNext','PerformanceNext'});
+function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
+[d, idx] = min(abs(xsSec(:) - tSec));
+ok = isfinite(d) && (d <= tolSec);
 end
 
 function p = iRanksumSafe(x, y)
 p = NaN;
-x = double(x(:)); y = double(y(:));
-x = x(isfinite(x)); y = y(isfinite(y));
+x = double(x(:));
+y = double(y(:));
+x = x(isfinite(x));
+y = y(isfinite(y));
 if numel(x) >= 2 && numel(y) >= 2
 	try, p = ranksum(x, y); catch, end
 end
 end
 
-function s = iAsterisk(p)
-if ~isfinite(p)
-	s = "n.s.";
-elseif p < 0.001
-	s = "***";
-elseif p < 0.01
-	s = "**";
-elseif p < 0.05
-	s = "*";
+function Sess = iLightWaterSessions(DS)
+blkCols = DS.Blocks.Properties.VariableNames;
+hasMustWarn = ismember('MustWarn', blkCols);
+if hasMustWarn
+	Blocks = DS.Blocks(:, {'BlockUID','DateTime','MustWarn'});
+	Blocks.MustWarn = string(Blocks.MustWarn);
 else
-	s = "n.s.";
+	Blocks = DS.Blocks(:, {'BlockUID','DateTime'});
+	Blocks.MustWarn = repmat("", height(Blocks), 1);
 end
-end
-
-function sdVec = iPairSD_AvgFirst_Batch(DS, Pairs, idx1s, minCells)
-% For each adjacent session pair: average each cell's median z-score@1s
-% across both sessions, filter to [-1,1], compute SD.
-nP    = height(Pairs);
-sdVec = nan(nP, 1);
-if nP == 0, return; end
-
-allDTs = unique([Pairs.DateTime; Pairs.DateTimeNext]);
-q      = struct('Stimulus', 'LightWater', 'DateTime', allDTs);
-try
-	ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
-catch
+Blocks.BlockUID = uint64(Blocks.BlockUID);
+Blocks.DateTime = iNormDT(datetime(Blocks.DateTime));
+DT = DS.DateTimes(:, {'DateTime','Mouse','Phase'});
+DT.DateTime = iNormDT(datetime(DT.DateTime));
+DT.Mouse = string(DT.Mouse);
+DT.Phase = string(DT.Phase);
+Tr = DS.Trials(:, {'BlockUID','Stimulus','Behavior'});
+Tr.BlockUID = uint64(Tr.BlockUID);
+TrLW = Tr(string(Tr.Stimulus) == "LightWater", {'BlockUID','Behavior'});
+if isempty(TrLW)
+	Sess = table(string.empty(0,1), NaT(0,1), string.empty(0,1), nan(0,1), 'VariableNames',{'Mouse','DateTime','Phase','Performance'});
 	return;
 end
-if isempty(ntsCell) || isempty(ntsCell{1}), return; end
-nts = ntsCell{1};
-if ~istable(nts) || height(nts) == 0, return; end
-nts.CellUID  = uint64(nts.CellUID);
-nts.DateTime = datetime(nts.DateTime);
-if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone = ''; end
-
-for iP = 1:nP
-	dt1 = Pairs.DateTime(iP);
-	dt2 = Pairs.DateTimeNext(iP);
-	rows1 = nts(nts.DateTime == dt1, :);
-	rows2 = nts(nts.DateTime == dt2, :);
-	allUID = unique([uint64(rows1.CellUID); uint64(rows2.CellUID)]);
-	nC = numel(allUID);
-	meanVals = nan(nC, 1);
-	for iC = 1:nC
-		uid = allUID(iC);
-		sessVals = nan(1, 2);
-		for iS = 1:2
-			if iS == 1, rows = rows1; else, rows = rows2; end
-			mask = rows.CellUID == uid;
-			if ~any(mask), continue; end
-			cTrial = double(rows.TrialSignal(mask, :));
-			med = median(cTrial, 1, 'omitnan');
-			if numel(med) >= idx1s && isfinite(med(idx1s))
-				sessVals(iS) = med(idx1s);
-			end
-		end
-		valid = sessVals(isfinite(sessVals));
-		if ~isempty(valid), meanVals(iC) = mean(valid); end
-	end
-	keep = isfinite(meanVals) & meanVals >= -1 & meanVals <= 1;
-	if nnz(keep) >= minCells
-		sdVec(iP) = std(meanVals(keep));
-	end
+[G, bu] = findgroups(uint64(TrLW.BlockUID));
+lwPerf = splitapply(@(x) mean(double(x),'omitnan'), TrLW.Behavior, G);
+perfByBlock = table(uint64(bu), lwPerf, 'VariableNames',{'BlockUID','LWPerf'});
+T = innerjoin(perfByBlock, Blocks, 'Keys','BlockUID');
+keep = ismissing(T.MustWarn) | (T.MustWarn == "");
+T = T(keep, :);
+T = innerjoin(T, DT, 'Keys','DateTime');
+[G2, mouse, dt] = findgroups(T.Mouse, T.DateTime);
+perf2 = splitapply(@(x) mean(double(x),'omitnan'), T.LWPerf, G2);
+phase2 = splitapply(@(x) string(x(1)), T.Phase, G2);
+Sess = table(mouse, dt, phase2, perf2, 'VariableNames',{'Mouse','DateTime','Phase','Performance'});
+Sess = sortrows(Sess, {'Mouse','DateTime'});
 end
+
+function SessOut = iKeepPureLW_NoMustWarn(DS, SessIn)
+SessOut = SessIn;
+if isempty(SessOut), return; end
+Blocks = DS.Blocks(:, {'BlockUID','DateTime'});
+Blocks.BlockUID = uint64(Blocks.BlockUID);
+Blocks.DateTime = iNormDT(datetime(Blocks.DateTime));
+Tr = DS.Trials(:, {'BlockUID','Stimulus'});
+Tr.BlockUID = uint64(Tr.BlockUID);
+TrAW = Tr(string(Tr.Stimulus) == "AudioWater", {'BlockUID'});
+if isempty(TrAW), return; end
+blkAW = unique(uint64(TrAW.BlockUID));
+TAW = innerjoin(table(blkAW,'VariableNames',{'BlockUID'}), Blocks, 'Keys','BlockUID');
+dtAW = unique(TAW.DateTime);
+SessOut = SessOut(~ismember(SessOut.DateTime, dtAW), :);
+end
+
+function SessOut = iKeepPhaseRange(DS, SessIn, phaseStart, phaseEnd)
+SessOut = SessIn;
+if isempty(SessOut), return; end
+DT = DS.DateTimes(:,{'DateTime','Mouse','Phase'});
+DT.DateTime = iNormDT(datetime(DT.DateTime));
+DT.Mouse = string(DT.Mouse);
+DT.Phase = string(DT.Phase);
+mice = unique(string(SessOut.Mouse));
+keep = false(height(SessOut), 1);
+for iM = 1:numel(mice)
+	m = mice(iM);
+	dtM = DT(DT.Mouse == m, :);
+	phDates = dtM.DateTime(dtM.Phase == phaseStart);
+	endDates = dtM.DateTime(dtM.Phase == phaseEnd);
+	if isempty(phDates) || isempty(endDates), continue; end
+	startDT = min(phDates);
+	endDT = max(endDates);
+	if ismissing(startDT) || ismissing(endDT), continue; end
+	rows = (string(SessOut.Mouse) == m) & (SessOut.DateTime >= startDT) & (SessOut.DateTime <= endDT);
+	keep = keep | rows;
+	end
+SessOut = SessOut(keep, :);
+end
+
+function dt = iNormDT(dt)
+try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch; end
 end
