@@ -207,7 +207,7 @@ for iS = 1:2
 
 	fh = figure('Color', 'w');
 	fh.Units = 'centimeters';
-	fh.Position(3:4) = [6, 1.6];
+	fh.Position(3:4) = [5.9, 1.6];
 
 	ax = axes(fh);
 	hold(ax, 'on');
@@ -222,9 +222,9 @@ for iS = 1:2
 	box(ax, 'off');
 	grid(ax, 'off');
 
-	text(ax, 0.97, 0.95, sprintf('Response heterogeneity\n=%.2f', sdVals(iS)), ...
+	text(ax, 0.97, 0.95, sprintf('Resp. heterogeneity\n=%.2f', sdVals(iS)), ...
 		'Units', 'normalized', 'HorizontalAlignment', 'right', ...
-		'VerticalAlignment', 'top', 'FontSize', 5, 'FontWeight', 'bold');
+		'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
 
 	xlabel(ax, 'z-score', 'FontSize', 6);
 	ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);

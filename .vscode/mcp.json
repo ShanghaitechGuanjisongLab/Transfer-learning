@@ -1,0 +1,19 @@
+{
+	"servers": {
+		"image-service": {
+			"command": "uvx",
+			"args": ["--from", "git+https://github.com/Ebola-Chan-bot/mcp-images", "mcp-image-server"],
+			"env": {
+				"CAIRO_DLL_DIRS": "C:\\Program Files\\GTK3-Runtime Win64\\bin",
+				"PATH": "C:\\Program Files\\GTK3-Runtime Win64\\bin;${env:PATH}"
+			}
+		},
+		"MATLAB": {
+			"command": "D:\\Users\\张天夫\\AppData\\Roaming\\MathWorks\\MATLAB Add-Ons\\Toolboxes\\MATLAB MCP Core Server\\.bin\\win64\\matlab-mcp-core-server.exe",
+			"args": [
+				"--existing-session-only"
+			]
+		}
+	},
+	"inputs": []
+}
