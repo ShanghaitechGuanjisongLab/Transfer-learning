@@ -1,7 +1,7 @@
-% English Fig3I: TH inhibition vs Ctrl - DeltaHit and Response heterogeneity
+% English Fig3I: TH inhibition vs Ctrl - ΔHit and Response heterogeneity
 %
 % Two bar tiles comparing Ctrl and TH groups:
-%   Top:    DeltaHit per session pair (one point = one adjacent pair)
+%   Top:    ΔHit per session pair (one point = one adjacent pair)
 %   Bottom: Response heterogeneity per mouse (avg-first, one point = one mouse)
 %
 % Ctrl: AudioLightBaseline (Transfer->Final)
@@ -23,16 +23,16 @@ if ~ok1s, error('Fig3I:No1s', 'Cannot find sample close to 1s.'); end
 [dhC, sdC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");
 [dhT, sdT] = iCohortData(THDS, idx1s, "Transfer", "Final");
 
-fprintf('Ctrl: %d pairs (DeltaHit), %d mice (SD)\n', numel(dhC), numel(sdC));
-fprintf('TH:   %d pairs (DeltaHit), %d mice (SD)\n', numel(dhT), numel(sdT));
+fprintf('Ctrl: %d pairs (ΔHit), %d mice (Response heterogeneity)\n', numel(dhC), numel(sdC));
+fprintf('TH:   %d pairs (ΔHit), %d mice (Response heterogeneity)\n', numel(dhT), numel(sdT));
 
 pDH = iRanksumSafe(dhC, dhT);
 pSD = iRanksumSafe(sdC, sdT);
-fprintf('DeltaHit ranksum p=%.4g\n', pDH);
+fprintf('ΔHit ranksum p=%.4g\n', pDH);
 fprintf('Response heterogeneity ranksum p=%.4g\n', pSD);
 
 svgName = "English_Fig3I_THInhibitVsCtrl_DeltaHitAndSD.svg";
-f = figure('Color', 'w', 'Name', 'Fig3I TH DeltaHit and Heterogeneity');
+f = figure('Color', 'w', 'Name', 'Fig3I TH ΔHit and Response heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
@@ -48,7 +48,7 @@ ax1 = gca;
 ax1.FontSize = 6;
 ax1.XTick = [1 2];
 ax1.XTickLabel = {};
-ylabel(ax1, 'DeltaHit', 'FontSize', 6);
+ylabel(ax1, 'ΔHit', 'FontSize', 6);
 legend(ax1, 'off');
 box(ax1, 'off');
 if isscalar(Bars1)

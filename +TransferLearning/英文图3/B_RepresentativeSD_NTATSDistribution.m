@@ -1,13 +1,12 @@
-% 英文图3B：代表性会话对的热图 + 细胞间 1s z-score 分布
+% 英文图3B：代表性单会话的 3D 热图 + 细胞间 1s z-score 分布
 %
-% Pair A: 前后会话平均 inter-cell SD@1s（[-1,1] 细胞）尽可能大
-% Pair B: 前后会话平均 inter-cell SD@1s（[-1,1] 细胞）尽可能小
+% 先按原规则找出 Pair A / Pair B，共 4 个候选会话
+% 再在这 4 个会话中挑选 response heterogeneity 最大的 1 个作为代表
 % 约束: ΔHit(A) > ΔHit(B)
 %
-% 布局: 2×4 tiledlayout（2 行 = Pair A/B，每行：热图k|直方图k|热图k+1|直方图k+1）
-%   热图：per-cell median z-score 按 @1s 排序，模仿 2B 风格
-%   直方图：横向 (z-score on Y axis)，范围 [-2,2]
-%   右侧标注 Moderates / Extremists
+% 输出：
+%   热图：1 个代表会话的 3D volshow PNG
+%   直方图：同一会话的 1 个 SVG
 %
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
@@ -101,6 +100,7 @@ pairsIdx = [bestA; bestB];
 vals = cell(2, 2);       % vals{pair, session}: per-cell z-score@1s (filtered [-1,1])
 sdVals = nan(2, 2);
 rawData  = cell(2, 2);   % rawData{pair, session}: (cells×time×trials) for volshow
+dtVals = NaT(2, 2);
 
 xMask = (xsSec >= 0) & (xsSec <= 2); % 0~2s for heatmap
 
@@ -111,6 +111,7 @@ for iP = 1:2
 
 	for iS = 1:2
 		if iS == 1, dt = dtK; else, dt = dtK1; end
+		dtVals(iP, iS) = dt;
 		[~, ntats, ntsRaw] = iSessionNTATS(DS, dt);
 		v1s = double(ntats(:, idx1s));
 
@@ -136,35 +137,41 @@ for iP = 1:2
 	end
 
 	pLabel = char('A' + iP - 1);
-	fprintf('Pair %s: Mouse=%s, k=%s, k+1=%s, ΔHit=%+.1f%%, meanSD=%.3f\n', ...
+	fprintf('Pair %s: Mouse=%s, k=%s, k+1=%s, ΔHit=%+.1f%%, mean response heterogeneity=%.3f\n', ...
 		pLabel, string(SessSpeed.Mouse(idx)), ...
 		datestr(dtK, 'yyyy-mm-dd HH:MM'), datestr(dtK1, 'yyyy-mm-dd HH:MM'), ...
 		100 * deltaHit(idx), sd1sMean(idx));
-	fprintf('  Session k:   n=%d cells, SD=%.3f\n', numel(vals{iP,1}), sdVals(iP,1));
-	fprintf('  Session k+1: n=%d cells, SD=%.3f\n', numel(vals{iP,2}), sdVals(iP,2));
+	fprintf('  Session k:   n=%d cells, Response heterogeneity=%.3f\n', numel(vals{iP,1}), sdVals(iP,1));
+	fprintf('  Session k+1: n=%d cells, Response heterogeneity=%.3f\n', numel(vals{iP,2}), sdVals(iP,2));
 end
 
-%% ===== 5) Export 4 volshow PNGs =====
-if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+repPairIdx = 1;
+repSessIdx = 1;
+repSD = -Inf;
+for iP = 1:2
+	for iS = 1:2
+		if isfinite(sdVals(iP, iS)) && sdVals(iP, iS) > repSD
+			repSD = sdVals(iP, iS);
+			repPairIdx = iP;
+			repSessIdx = iS;
+		end
+	end
+end
 
 pairTags = ["PairA", "PairB"];
 sessTags = ["SessionK", "SessionK1"];
+repDt = dtVals(repPairIdx, repSessIdx);
+fprintf('\nRepresentative session: %s %s, DateTime=%s, Response heterogeneity=%.3f\n', ...
+	pairTags(repPairIdx), sessTags(repSessIdx), datestr(repDt, 'yyyy-mm-dd HH:MM'), repSD);
 
-% Compute true global min/max from all 4 volumes (no percentile, no clamping)
-globalMin = Inf; globalMax = -Inf;
-for iP2 = 1:2
-	for iS2 = 1:2
-		rd2 = rawData{iP2, iS2};
-		if isempty(rd2), continue; end
-		v2 = rd2(isfinite(rd2));
-		globalMin = min(globalMin, min(v2));
-		globalMax = max(globalMax, max(v2));
-	end
-end
+%% ===== 5) Export representative volshow PNG =====
+if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+
+rd2 = rawData{repPairIdx, repSessIdx};
+v2 = rd2(isfinite(rd2));
+globalMin = min(v2);
+globalMax = max(v2);
 fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
-
-% Compute minCells for uniform cell-axis scaling
-minCells = min(cellfun(@(x) size(x,1), rawData(:)));
 
 % ===== Volshow: cbrt clim scale (data unchanged, clim = cbrt of extremes) =====
 vAbs = nthroot(max(abs([globalMin, globalMax])), 3);
@@ -176,128 +183,96 @@ blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
                 ones(nHalf,1), linspace(1,0,nHalf)', linspace(1,0,nHalf)'];
 alphaVec = repmat(1/30, nMap, 1);
 
-for iP = 1:2
-	for iS = 1:2
-		rd = rawData{iP, iS};
-		if isempty(rd), continue; end
+rd = rawData{repPairIdx, repSessIdx};
+V = single(rd);
+V_clamp = max(-vAbs, min(vAbs, V));
+V_norm = iSymmetricNormalize(V_clamp, vAbs);
+V_norm(isnan(V_norm)) = 0.5;
+V_norm(1,1,1) = 0;
+V_norm(end,end,end) = 1;
 
-		V = single(rd);
-		V_clamp = max(-vAbs, min(vAbs, V));
-		V_norm = iSymmetricNormalize(V_clamp, vAbs);
-		V_norm(isnan(V_norm)) = 0.5;
-		% V_norm 保持 (cells, time, trials)
-		% volshow: dim1→X=cells, dim2→Y=time, dim3→Z=trials
-		% 锚点体素：强制volshow的自动归一化范围为[0,1]
-		V_norm(1,1,1) = 0;
-		V_norm(end,end,end) = 1;
+nCellsHere = size(V, 1);
+nTime = size(V, 2);
+nTrials = size(V, 3);
+targetUnit = 30;
+sX = 0.8 * targetUnit / nTime;
+sY = 3 * targetUnit / nCellsHere;
+sZ = targetUnit / nTrials;
+tform = affinetform3d(diag([sX, sY, sZ, 1]));
 
-		nCellsHere = size(V, 1);
-		nTime = size(V, 2);
-		nTrials = size(V, 3);
-		% volshow: dim1→intrinsicY, dim2→intrinsicX, dim3→intrinsicZ
-		% 变换矩阵 diag 顺序: [scaleX(=dim2=time), scaleY(=dim1=cells), scaleZ(=dim3=trials)]
-		targetUnit = 30;
-		sX = 0.8 * targetUnit / nTime;       % time → world X (中厚，形成六边形)
-		sY = 3 * targetUnit / nCellsHere;    % cells → world Y (最长)
-		sZ = targetUnit / nTrials;            % trials → world Z
-		tform = affinetform3d(diag([sX, sY, sZ, 1]));
+fig = uifigure('Name', sprintf('Volshow %s %s', pairTags(repPairIdx), sessTags(repSessIdx)), ...
+	'Color', 'w', 'Position', [100 100 800 320]);
+viewer = viewer3d(fig, 'BackgroundColor', [1 1 1], 'BackgroundGradient', 'off', 'Lighting', 'off');
 
-		fig = uifigure('Name', sprintf('Volshow %s %s', pairTags(iP), sessTags(iS)), ...
-			'Color', 'w', 'Position', [100 100 800 320]);
-		viewer = viewer3d(fig, 'BackgroundColor', [1 1 1], 'BackgroundGradient', 'off', 'Lighting', 'off');
+volshow(V_norm, 'Parent', viewer, ...
+	'RenderingStyle', 'VolumeRendering', ...
+	'Colormap', blueWhiteRed, ...
+	'Alphamap', alphaVec, ...
+	'Transformation', tform);
 
-		volshow(V_norm, 'Parent', viewer, ...
-			'RenderingStyle', 'VolumeRendering', ...
-			'Colormap', blueWhiteRed, ...
-			'Alphamap', alphaVec, ...
-			'Transformation', tform);
+wX = nTime * sX;
+wY = nCellsHere * sY;
+wZ = nTrials * sZ;
+ct = [(1+nTime)/2*sX, (1+nCellsHere)/2*sY, (1+nTrials)/2*sZ];
+dist = max([wX, wY, wZ]) * 2.0;
+elev = 25;
+side = 30;
+camOffset = [dist*cosd(elev)*cosd(side), dist*cosd(elev)*sind(side), dist*sind(elev)];
+viewer.CameraTarget = ct;
+viewer.CameraPosition = ct + camOffset;
+Vcam = -camOffset / norm(camOffset);
+Yaxis = [0, 1, 0];
+projY = Yaxis - dot(Yaxis, Vcam) * Vcam;
+upVec = cross(projY, Vcam);
+viewer.CameraUpVector = upVec / norm(upVec);
+viewer.CameraZoom = 1.4;
 
-		% 物理尺寸: worldX=time*sX, worldY=cells*sY, worldZ=trials*sZ
-		wX = nTime * sX;    % ≈9
-		wY = nCellsHere * sY;  % ≈90
-		wZ = nTrials * sZ;  % =30
-		ct = [(1+nTime)/2*sX, (1+nCellsHere)/2*sY, (1+nTrials)/2*sZ];
-		dist = max([wX, wY, wZ]) * 2.0;
-		elev = 25;  % 俯角，使Trial轴向下倾斜
-		side = 30;  % 侧偏角，使Time轴向侧面倾斜 → 六边形轮廓
-		% 从+X方向看：Y(cells)水平，Z(trials)部分垂直
-		camOffset = [dist*cosd(elev)*cosd(side), dist*cosd(elev)*sind(side), dist*sind(elev)];
-		viewer.CameraTarget = ct;
-		viewer.CameraPosition = ct + camOffset;
-		% 第三转轴(roll)：计算使Y轴在屏幕上完美水平的CameraUpVector
-		V = -camOffset / norm(camOffset);  % 视线方向（camera→target）
-		Yaxis = [0, 1, 0];
-		projY = Yaxis - dot(Yaxis, V) * V;  % Y轴在屏幕平面上的投影
-		upVec = cross(projY, V);             % 垂直于projY，即屏幕上的"上"
-		viewer.CameraUpVector = upVec / norm(upVec);
-		viewer.CameraZoom = 1.4;
+uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 6, 'FontColor', [0.85 0.1 0.1], ...
+	'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
+uilabel(fig, 'Text', 'Y: Cell (sorted by z@1s)', 'FontSize', 6, 'FontColor', [0.1 0.6 0.1], ...
+	'Position', [5, 30, 200, 16], 'BackgroundColor', 'none');
+uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 6, 'FontColor', [0.1 0.1 0.85], ...
+	'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
 
-		uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
-			'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
-		uilabel(fig, 'Text', 'Y: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
-			'Position', [5, 30, 200, 16], 'BackgroundColor', 'none');
-		uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 7, 'FontColor', [0.1 0.1 0.85], ...
-			'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
+pause(1);
+pngName = 'English_Fig3B_Volshow_Representative.png';
+exportapp(fig, fullfile(outDirUNC, pngName));
+fprintf('Wrote: %s\n', pngName);
 
-		pause(1);
-		pngName = sprintf('English_Fig3B_Volshow_%s_%s.png', pairTags(iP), sessTags(iS));
-		exportapp(fig, fullfile(outDirUNC, pngName));
-		fprintf('Wrote: %s\n', pngName);
-	end
-end
-
-%% ===== 6) Export 4 histogram SVGs (59 mm × 16 mm) =====
+%% ===== 6) Export representative histogram SVG (59 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 pairColors = {[0.8500 0.3250 0.0980]; [0 0.4470 0.7410]};
+v = vals{repPairIdx, repSessIdx};
 
-histFigs = gobjects(2, 2);
-histAxes = gobjects(2, 2);
-for iP = 1:2
-	for iS = 1:2
-		v = vals{iP, iS};
+fh = figure('Color', 'w');
+fh.Units = 'centimeters';
+fh.Position(3:4) = [5.9, 1.6]; % 59 mm × 16 mm
 
-		fh = figure('Color', 'w');
-		fh.Units = 'centimeters';
-		fh.Position(3:4) = [5.9, 1.6]; % 59 mm × 16 mm
+ax = axes(fh);
+hold(ax, 'on');
 
-		ax = axes(fh);
-		hold(ax, 'on');
+histogram(ax, v, binEdges, 'Normalization', 'probability', ...
+	'FaceColor', pairColors{repPairIdx}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
+xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
 
-		histogram(ax, v, binEdges, 'Normalization', 'probability', ...
-			'FaceColor', pairColors{iP}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-		xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+xlim(ax, [-1, 1]);
+ax.XTick = [-1, 0, 1];
+ax.FontSize = 6;
+box(ax, 'off');
+grid(ax, 'off');
 
-		xlim(ax, [-1, 1]);
-		ax.XTick = [-1, 0, 1];
+text(ax, 0.97, 0.95, sprintf('Response heterogeneity\n=%.2f', sdVals(repPairIdx, repSessIdx)), ...
+	'Units', 'normalized', 'HorizontalAlignment', 'right', ...
+	'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
 
-		ax.FontSize = 6;
-		box(ax, 'off');
-		grid(ax, 'off');
+xlabel(ax, 'z-score', 'FontSize', 6);
+ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
 
-		text(ax, 0.97, 0.95, sprintf('SD=%.2f', sdVals(iP, iS)), ...
-			'Units', 'normalized', 'HorizontalAlignment', 'right', ...
-			'VerticalAlignment', 'top', 'FontSize', 5, 'FontWeight', 'bold');
-
-		xlabel(ax, 'z-score', 'FontSize', 6);
-		ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
-
-		histFigs(iP, iS) = fh;
-		histAxes(iP, iS) = ax;
-	end
-end
-
-% Unify ylim across all 4 histograms
-MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
-
-for iP = 1:2
-	for iS = 1:2
-		svgN = sprintf('English_Fig3B_Hist_%s_%s.svg', pairTags(iP), sessTags(iS));
-		TransferLearning.PrintFigure(histFigs(iP, iS), fullfile(outDirUNC, svgN));
-		fprintf('Wrote: %s\n', svgN);
-		close(histFigs(iP, iS));
-	end
-end
+svgN = 'English_Fig3B_Hist_Representative.svg';
+TransferLearning.PrintFigure(fh, fullfile(outDirUNC, svgN));
+fprintf('Wrote: %s\n', svgN);
+close(fh);
 
 %% ===== Local functions =====
 

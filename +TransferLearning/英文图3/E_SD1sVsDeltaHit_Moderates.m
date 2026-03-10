@@ -67,9 +67,9 @@ sdN = iPerSessionSD(naiveRawTbl, allNaiveSess.DateTime, idx1s);
 %% ===== 3) Pick max-SD Transfer session & min-SD Naive session =====
 [maxSDT, idxT] = max(sdT);
 [minSDN, idxN] = min(sdN);
-fprintf('\nSelected Transfer: Mouse=%s, DateTime=%s, SD=%.3f\n', ...
+fprintf('\nSelected Transfer: Mouse=%s, DateTime=%s, Response heterogeneity=%.3f\n', ...
 	SessT.Mouse(idxT), datestr(SessT.DateTime(idxT)), maxSDT);
-fprintf('Selected Naive:    Mouse=%s, DateTime=%s, SD=%.3f\n', ...
+fprintf('Selected Naive:    Mouse=%s, DateTime=%s, Response heterogeneity=%.3f\n', ...
 	allNaiveSess.Mouse(idxN), datestr(allNaiveSess.DateTime(idxN)), minSDN);
 
 %% ===== 4) Fetch full trial-level NTS for 2 selected sessions =====
@@ -108,7 +108,7 @@ for iS = 1:2
 		rawData{iS} = raw_filt(sortIdx, xMask, :);
 	end
 
-	fprintf('  %s: n=%d cells, SD=%.3f\n', sessInfo(iS).label, numel(vals{iS}), sdVals(iS));
+	fprintf('  %s: n=%d cells, Response heterogeneity=%.3f\n', sessInfo(iS).label, numel(vals{iS}), sdVals(iS));
 end
 
 %% ===== 5) Export 2 volshow PNGs =====
@@ -222,7 +222,7 @@ for iS = 1:2
 	box(ax, 'off');
 	grid(ax, 'off');
 
-	text(ax, 0.97, 0.95, sprintf('SD=%.2f', sdVals(iS)), ...
+	text(ax, 0.97, 0.95, sprintf('Response heterogeneity\n=%.2f', sdVals(iS)), ...
 		'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 		'VerticalAlignment', 'top', 'FontSize', 5, 'FontWeight', 'bold');
 

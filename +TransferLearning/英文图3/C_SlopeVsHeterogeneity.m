@@ -40,6 +40,7 @@ colorN = [0.8500 0.3250 0.0980];
 colorT = [0      0.4470 0.7410];
 hLegend = gobjects(2, 1);
 tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+xlabel(tl, 'Response heterogeneity', 'FontSize', 6);
 
 for iL = 1:numel(layers)
 	layerName = layers(iL);
@@ -93,7 +94,6 @@ for iL = 1:numel(layers)
 	title(ax, layerLabel, 'FontSize', 6);
 	text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', ...
 		'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
-	xlabel(ax, 'Response heterogeneity', 'FontSize', 6);
 	if iL == 1
 		ylabel(ax, 'Learning slope', 'FontSize', 6);
 	end
