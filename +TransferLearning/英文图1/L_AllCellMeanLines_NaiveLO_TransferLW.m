@@ -8,7 +8,7 @@
 % Execution:
 %   TransferLearning.英文图1.L_AllCellMeanLines_NaiveLO_TransferLW
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 DS = TransferLearning.AudioLightBaseline();
 

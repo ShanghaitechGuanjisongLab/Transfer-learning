@@ -2,7 +2,7 @@
 
 取单回合数据用UniExp.DataSet.QueryNTS，取会话整体数据用UniExp.DataSet.QueryNTATS。两种方法都要使用ZScore归一化。两种方法都支持表格化批量查询，以及多条件查询，应尽量避免循环调用，而是将所有查询条件一次性输入。
 
-所有图的高度必须是40㎜的整数倍；宽度必须是15㎜的整数倍，但不低于30㎜
+所有图的高度必须是40㎜的整数倍；宽度必须是15㎜的整数倍，但不低于30㎜。所有字号设为6pt。
 
 # 学习过程
 对每只鼠，将其所有Block按DateTime排序。对Naive组每只鼠，包含从Phase=Naive到Phase=Learned之间的所有会话（包括Phase=missing的）；对其它鼠，则包含从Phase=Transfer到Phase=Final之间的所有会话（包括Phase=missing的）。然后，排除所有穿插了 AudioWater Trial 的会话。还要取这些会话的Performance，如果会话中不是只有 LightWater Trial，必须用仅 LightWater Trial 的Behavior手动计算Performance；纯LightWater会话则可以直接取用数据库中的Performance。然后，排除Performance达到100%及以后的会话。

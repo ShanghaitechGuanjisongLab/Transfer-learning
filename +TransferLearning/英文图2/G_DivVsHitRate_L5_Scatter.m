@@ -10,7 +10,7 @@
 % Execution:
 %   TransferLearning.英文图2.G_DivVsHitRate_L5_Scatter
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;

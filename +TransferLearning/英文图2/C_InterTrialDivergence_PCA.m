@@ -12,7 +12,7 @@
 % Execution:
 %   TransferLearning.英文图2.C_InterTrialDivergence_PCA
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % Time (s) to use as PCA origin after cropping (0 = cue time).
 originSec = 0.0;

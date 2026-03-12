@@ -36,6 +36,7 @@ fprintf('Transfer LW: %d sessions\n', height(SessT));
 allDTs_T = unique(SessT.DateTime);
 rawTbl_T = iBatchQueryRawNTS(DS_ALB, allDTs_T);
 sdT = iPerSessionSD(rawTbl_T, SessT.DateTime, idx1s);
+globalSdT = iPerSessionGlobalSD(rawTbl_T, SessT.DateTime, xMask);
 
 %% ===== 2) Gather Naive sessions & compute per-session SD =====
 DS_LAB = TransferLearning.LightAudioBaseline();
@@ -63,14 +64,43 @@ if isempty(rawParts), naiveRawTbl = table();
 else, naiveRawTbl = vertcat(rawParts{:});
 end
 sdN = iPerSessionSD(naiveRawTbl, allNaiveSess.DateTime, idx1s);
+globalSdN = iPerSessionGlobalSD(naiveRawTbl, allNaiveSess.DateTime, xMask);
 
-%% ===== 3) Pick max-SD Transfer session & min-SD Naive session =====
-[maxSDT, idxT] = max(sdT);
-[minSDN, idxN] = min(sdN);
+%% ===== 3) Pick sessions with hard constraint: globalSD(Naive) > globalSD(Transfer) =====
+idxT = NaN;
+idxN = NaN;
+validT = find(isfinite(sdT) & isfinite(globalSdT));
+validN = find(isfinite(sdN) & isfinite(globalSdN));
+if isempty(validT) || isempty(validN)
+	error('Fig3E:NoValidSessions', 'No valid sessions for representative selection.');
+end
+[~, ordT] = sort(sdT(validT), 'descend');
+[~, ordN] = sort(sdN(validN), 'ascend');
+validT = validT(ordT);
+validN = validN(ordN);
+for iT = 1:numel(validT)
+	for iN = 1:numel(validN)
+		if globalSdN(validN(iN)) > globalSdT(validT(iT))
+			idxT = validT(iT);
+			idxN = validN(iN);
+			break;
+		end
+	end
+	if isfinite(idxT) && isfinite(idxN)
+		break;
+	end
+end
+if ~isfinite(idxT) || ~isfinite(idxN)
+	error('Fig3E:NoFeasibleRepresentativePair', ...
+		'Cannot find Naive/Transfer sessions satisfying globalSD(Naive) > globalSD(Transfer).');
+end
+maxSDT = sdT(idxT);
+minSDN = sdN(idxN);
 fprintf('\nSelected Transfer: Mouse=%s, DateTime=%s, Response heterogeneity=%.3f\n', ...
 	SessT.Mouse(idxT), datestr(SessT.DateTime(idxT)), maxSDT);
 fprintf('Selected Naive:    Mouse=%s, DateTime=%s, Response heterogeneity=%.3f\n', ...
 	allNaiveSess.Mouse(idxN), datestr(allNaiveSess.DateTime(idxN)), minSDN);
+fprintf('Global SD constraint: Naive=%.3f > Transfer=%.3f\n', globalSdN(idxN), globalSdT(idxT));
 
 %% ===== 4) Fetch full trial-level NTS for 2 selected sessions =====
 xMask = (xsSec >= 0) & (xsSec <= 2);
@@ -127,8 +157,8 @@ for iS = 1:2
 end
 fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
 
-vAbs = nthroot(max(abs([globalMin, globalMax])), 3);
-fprintf('--- Cbrt clim (symmetric): [%.3f, %.3f] ---\n', -vAbs, vAbs);
+vAbs = 5.823;
+fprintf('--- Shared cbrt clim with Fig3B: [%.3f, %.3f] ---\n', -vAbs, vAbs);
 
 nMap = 256;
 nHalf = nMap / 2;
@@ -207,7 +237,7 @@ for iS = 1:2
 
 	fh = figure('Color', 'w');
 	fh.Units = 'centimeters';
-	fh.Position(3:4) = [5.9, 1.6];
+	fh.Position(3:4) = [5.8, 1.5];
 
 	ax = axes(fh);
 	hold(ax, 'on');
@@ -265,8 +295,8 @@ function sdVec = iPerSessionSD(rawTbl, dts, idx1s)
 % Compute per-session SD of z-score@1s (cells in [-1,1])
 sdVec = nan(numel(dts), 1);
 if isempty(rawTbl), return; end
-for i = 1:numel(dts)
-	rows = rawTbl.DateTime == dts(i);
+for iDT = 1:numel(dts)
+	rows = rawTbl.DateTime == dts(iDT);
 	if ~any(rows), continue; end
 	sub = rawTbl(rows, :);
 	sig = double(sub.TrialSignal);
@@ -274,7 +304,24 @@ for i = 1:numel(dts)
 	G = findgroups(sub.CellUID);
 	med1s = splitapply(@(x) median(x, 'omitnan'), z1s, G);
 	v = med1s(isfinite(med1s) & med1s >= -1 & med1s <= 1);
-	if numel(v) >= 3, sdVec(i) = std(v); end
+	if numel(v) >= 3, sdVec(iDT) = std(v); end
+end
+end
+
+function sdVec = iPerSessionGlobalSD(rawTbl, dts, xMask)
+sdVec = nan(numel(dts), 1);
+if isempty(rawTbl), return; end
+for iDT = 1:numel(dts)
+	rows = rawTbl.DateTime == dts(iDT);
+	if ~any(rows), continue; end
+	sub = rawTbl(rows, :);
+	sig = double(sub.TrialSignal);
+	if ndims(sig) < 2 || size(sig, 2) < nnz(xMask), continue; end
+	v = sig(:, xMask);
+	v = v(isfinite(v));
+	if numel(v) >= 10
+		sdVec(iDT) = std(v);
+	end
 end
 end
 

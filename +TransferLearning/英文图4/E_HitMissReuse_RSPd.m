@@ -5,7 +5,7 @@
 % Execution:
 %   TransferLearning.英文图4.D_HitMissReuse_RSPd
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 RSP = TransferLearning.RSPd();
 xsSec = seconds(TransferLearning.Xs);
@@ -72,6 +72,10 @@ svgName = "English_Fig4E_RSPd_HitMiss_Reuse.svg";
 f = figure('Color','w', 'Name','English Fig4E Hit vs Miss Reuse');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax,'on');

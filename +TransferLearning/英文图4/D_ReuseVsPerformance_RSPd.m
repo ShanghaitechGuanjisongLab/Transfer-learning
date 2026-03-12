@@ -61,6 +61,10 @@ svgName = "English_Fig4D_RSPd_Reuse_vs_Performance.svg";
 f = figure('Color','w', 'Name','English Fig4D Reuse vs Perf');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax,'on');

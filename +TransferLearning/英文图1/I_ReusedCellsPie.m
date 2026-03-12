@@ -6,7 +6,7 @@
 % 分母定义（按用户要求）：
 %   只统计“🔊💧Active”的细胞（即英文图1F第3个泳道：Learned AudioWater 在1s处活跃）
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded
 try
@@ -80,7 +80,11 @@ nNon = nTotal - nReuse;
 svgName = "English_Fig1I_ReusedCellsPie.svg";
 f = figure('Color', 'w', 'Name', 'English Fig1I Reused Cells Pie');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4]; % 50mm x 50mm
+f.Position(3:4) = [3, 4]; % 30mm x 40mm
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 if nTotal > 0
 	pReuse = nReuse / nTotal;

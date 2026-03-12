@@ -131,19 +131,13 @@ classdef(Abstract)TransferLearning
 			RSP.Mice.Paradigm(:)="声光无穿插";
 		end
 		function Inhibit=iTHInhibit
-			Inhibit=UniExp.DataSet.Merge('\\data-server-2\个人数据\张天夫\202507\PO抑制MOp成像.v3.mat',["\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo7.202601282023.AudioWater.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo7.AudioWater.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo7.LAuW.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo7.LightWater.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo8.202601232056.LAuW.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo8.202601282120.AudioWater.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo8.AudioWater.行为.UniExp.mat"
-"\\Data-Server-2\个人数据\杨青宁\202603\行为学\yqnTHMo8.LightWater.行为.UniExp.mat"],"\\Data-Server-2\个人数据\杨青宁\202601\yqnTHMo7\yqnTHMo7.UniExp.mat","\\Data-Server-2\个人数据\杨青宁\202601\yqnTHMo8\yqnTHMo8.UniExp.mat");
+			Inhibit=UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202603\PO抑制MOp成像.v5.mat");
 			Inhibit.TagSplitTrial(seconds([-3,3]));
 			TrialDuration=seconds(6);
 			LLP=Inhibit.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 			Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 			Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
+            Inhibit.AddBehavior;
 		end
 		function V7Inhibit=iVacation7
 			V7Inhibit=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\WT声光等待7天后迁移.v3.mat");

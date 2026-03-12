@@ -18,7 +18,7 @@
 % Execution:
 %   TransferLearning.英文图2.D_DivergenceBarCompare_Dual
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;   % index 24
@@ -201,6 +201,10 @@ fprintf('  signrank p = %.4g\n', pDecomp);
 f = figure('Color', 'w', 'Name', 'English Fig2D Divergence dual bar compare');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');

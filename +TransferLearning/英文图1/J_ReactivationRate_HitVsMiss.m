@@ -1,6 +1,6 @@
-% 英文图1J: Hit vs Miss Reactivation rate (per mouse, layers merged)
+% 英文图1J: Hit vs Miss Reactivation (per mouse, layers merged)
 %
-% Reactivation rate = P(Transfer active | Learned active) at 1s
+% Reactivation = P(Transfer active | Learned active) at 1s
 %   L = Learned AudioWater active at 1s
 %   T_hit/T_miss = Transfer LightWater Hit/Miss active at 1s
 % Paired test: signrank(Hit > Miss)
@@ -8,7 +8,7 @@
 % Execution:
 %   TransferLearning.英文图1.K_ReactivationRate_HitVsMiss
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- ensure project loaded
 try
@@ -28,7 +28,7 @@ end
 
 R = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer();
 if isempty(R)
-	error('Fig1K:Empty', 'No valid mice for Reactivation rate Hit/Miss.');
+	error('Fig1K:Empty', 'No valid mice for Reactivation Hit/Miss.');
 end
 
 % 合并2/3和5层数据：取各鼠每层的均值
@@ -44,9 +44,13 @@ mask = isfinite(hit) & isfinite(miss);
 %% 
 svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
 
-f = figure('Color','w', 'Name','English Fig1J Reactivation rate Hit vs Miss');
+f = figure('Color','w', 'Name','English Fig1J Reactivation Hit vs Miss');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax,'on');
@@ -71,7 +75,7 @@ ylim(ax, [0 1]);
 grid(ax,'off');
 box(ax,'off');
 ax.FontSize = 6;
-ylabel(ax, 'Reactivation rate', 'FontSize', 6);
+ylabel(ax, 'Reactivation', 'FontSize', 6);
 
 % p-value line with asterisk (paired signrank) via MATLAB.Graphics.PLine
 if isfinite(p)

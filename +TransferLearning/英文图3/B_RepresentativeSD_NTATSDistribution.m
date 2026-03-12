@@ -148,8 +148,12 @@ end
 repPairIdx = 1;
 repSessIdx = 1;
 repSD = -Inf;
+excludeDt = iERepresentativeTransferDate(DS, idx1s);
 for iP = 1:2
 	for iS = 1:2
+		if ~isnat(excludeDt) && dtVals(iP, iS) == excludeDt
+			continue;
+		end
 		if isfinite(sdVals(iP, iS)) && sdVals(iP, iS) > repSD
 			repSD = sdVals(iP, iS);
 			repPairIdx = iP;
@@ -173,9 +177,9 @@ globalMin = min(v2);
 globalMax = max(v2);
 fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
 
-% ===== Volshow: cbrt clim scale (data unchanged, clim = cbrt of extremes) =====
-vAbs = nthroot(max(abs([globalMin, globalMax])), 3);
-fprintf('--- Cbrt clim (symmetric): [%.3f, %.3f] ---\n', -vAbs, vAbs);
+% ===== Volshow: shared cbrt clim with Fig3E =====
+vAbs = 5.823;
+fprintf('--- Shared cbrt clim with Fig3E: [%.3f, %.3f] ---\n', -vAbs, vAbs);
 
 nMap = 256;
 nHalf = nMap / 2;
@@ -239,7 +243,7 @@ pngName = 'English_Fig3B_Volshow_Representative.png';
 exportapp(fig, fullfile(outDirUNC, pngName));
 fprintf('Wrote: %s\n', pngName);
 
-%% ===== 6) Export representative histogram SVG (59 mm × 16 mm) =====
+%% ===== 6) Export representative histogram SVG (58 mm × 15 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 pairColors = {[0.8500 0.3250 0.0980]; [0 0.4470 0.7410]};
@@ -247,7 +251,7 @@ v = vals{repPairIdx, repSessIdx};
 
 fh = figure('Color', 'w');
 fh.Units = 'centimeters';
-fh.Position(3:4) = [5.9, 1.6]; % 59 mm × 16 mm
+fh.Position(3:4) = [5.8, 1.5]; % 58 mm × 15 mm
 
 ax = axes(fh);
 hold(ax, 'on');
@@ -292,6 +296,29 @@ if isempty(xsSec) || ~isvector(xsSec)
 end
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
+end
+
+function dtSel = iERepresentativeTransferDate(DS, idx1s)
+dtSel = NaT;
+Sess = iLightWaterSessions(DS);
+Sess = iKeepPureLW_NoMustWarn(DS, Sess);
+Sess = iExcludeCeiling(Sess);
+if isempty(Sess), return; end
+
+allDTs = unique(Sess.DateTime);
+bestSD = -Inf;
+for i = 1:numel(allDTs)
+	[~, ntats] = iSessionNTATS(DS, allDTs(i));
+	if isempty(ntats), continue; end
+	v = double(ntats(:, idx1s));
+	v = v(isfinite(v) & v >= -1 & v <= 1);
+	if numel(v) < 3, continue; end
+	s = std(v);
+	if isfinite(s) && s > bestSD
+		bestSD = s;
+		dtSel = allDTs(i);
+	end
+	end
 end
 
 function Sess = iLightWaterSessions(DS)

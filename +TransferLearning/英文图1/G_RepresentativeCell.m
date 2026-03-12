@@ -12,7 +12,7 @@
 % Execution:
 %   TransferLearning.英文图1.G_RepresentativeCell
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded
 try

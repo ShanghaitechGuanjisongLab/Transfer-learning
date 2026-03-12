@@ -6,7 +6,7 @@
 % Execution:
 %   TransferLearning.英文图4.H_LearningCurve_RSPd_RSPdPlusM1_mCherry
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 1) Load datasets (match WTMulti.m)
 rspPath     = "\\Data-Server-2\个人数据\张天夫\202505\RSP-Gi 化学遗传学抑制 声转光.v2.mat";

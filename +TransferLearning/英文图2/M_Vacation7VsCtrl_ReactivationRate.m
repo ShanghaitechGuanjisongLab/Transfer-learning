@@ -1,7 +1,7 @@
 % English Fig2M: Vacation7 vs Control — Reactivation & Divergence (双 tile)
 %
 % v6 Panel M 合并原 K+L:
-%   上面板: Reactivation Rate P(T|L) 条形图
+%   上面板: Reactivation P(T|L) 条形图
 %   下面板: Population Divergence 条形图
 %
 % 共用: Ctrl = AudioLightBaseline, Vac7 = Vacation7
@@ -11,7 +11,7 @@
 % Execution:
 %   TransferLearning.英文图2.M_Vacation7VsCtrl_ReactivationRate
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;
@@ -56,7 +56,7 @@ xReactV7   = R.PTgivenL(R.Group == "Vacation7");
 xReactCtrl = xReactCtrl(isfinite(xReactCtrl));
 xReactV7   = xReactV7(isfinite(xReactV7));
 
-fprintf('\n=== Upper tile: Reactivation Rate P(T|L) ===\n');
+fprintf('\n=== Upper tile: Reactivation P(T|L) ===\n');
 fprintf('  Control:   n=%d, mean=%.4f\n', numel(xReactCtrl), mean(xReactCtrl));
 fprintf('  Vacation7: n=%d, mean=%.4f\n', numel(xReactV7),   mean(xReactV7));
 pReact = ranksum(xReactCtrl, xReactV7);
@@ -138,13 +138,17 @@ svgName = "English_Fig2M_Vacation7VsCtrl_Reactivation_Divergence.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2M Vacation7 Reactivation + Divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 
 colorA = [1 0 0];   % Control = red
 colorB = [0 0 1];   % Vacation7 = blue
 
-% --- Tile 1: Reactivation Rate ---
+% --- Tile 1: Reactivation ---
 nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare( ...
 	{double(xReactCtrl(:)), double(xReactV7(:))}, false);

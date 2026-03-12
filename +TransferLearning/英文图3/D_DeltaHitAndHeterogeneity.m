@@ -1,6 +1,6 @@
-% English Fig3D: Naive vs Transfer — response heterogeneity by layer
+% English Fig3D: Naive / Learned AudioWater / Transfer — response heterogeneity by layer
 %
-% Two vertical tiles comparing Naive and Transfer cohorts:
+% Two vertical tiles comparing three cohorts:
 %   Top:    L2/3 response heterogeneity
 %   Bottom: L5 response heterogeneity
 %
@@ -8,8 +8,9 @@
 %   per-cell per-session median z@1s -> per-cell mean across used sessions
 %   -> filter to [-1,1] -> std across cells
 %
-% Naive:    LightAudioBaseline + LAInterspersed (Naive→Learned)
-% Transfer: AudioLightBaseline (Transfer→Final)
+% Naive:           LightAudioBaseline + LAInterspersed (Naive→Learned)
+% Learned Audio:   AudioLightBaseline (AudioWater, Learned)
+% Transfer:        AudioLightBaseline (Transfer→Final, LightWater)
 %
 % Execution:
 %   TransferLearning.英文图3.D_DeltaHitAndHeterogeneity
@@ -32,45 +33,57 @@ layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
 
 [naiveTbl, naiveMice] = iDNaiveMouseAvgSDByLayer(DS_NaiveLAB, DS_NaiveLAI, CellLAB, CellLAI, idx1s, layers);
+[learnedTbl, learnedMice] = iDLearnedAudioMouseAvgSDByLayer(DS_Transfer, CellTransfer, idx1s, layers);
 [transferTbl, transferMice] = iDTransferMouseAvgSDByLayer(DS_Transfer, CellTransfer, idx1s, "Transfer", "Final", layers);
 
 fprintf('Naive mice with layer values: %d\n', numel(unique(naiveMice)));
+fprintf('Learned AudioWater mice with layer values: %d\n', numel(unique(learnedMice)));
 fprintf('Transfer mice with layer values: %d\n', numel(unique(transferMice)));
+%% 
 
 % --- Figure: 2×1 tiledlayout
 f = figure('Color', 'w', 'Name', 'Fig3D Response heterogeneity by layer');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 title(Layout, 'Response heterogeneity', 'FontSize', 6, 'FontWeight', 'normal');
 
 colorNaive    = [0.8500 0.3250 0.0980];
 colorTransfer = [0      0.4470 0.7410];
-CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+colorLearned  = [0.4660 0.6740 0.1880];
+CompareGroup = table([1 2; 3 2], 'VariableNames', {'GroupPair'});
 
 for iL = 1:numel(layers)
 	layerName = layers(iL);
 	layerLabel = layerLabels(iL);
 	valsN = naiveTbl.SD(naiveTbl.Layer == layerName);
+	valsL = learnedTbl.SD(learnedTbl.Layer == layerName);
 	valsT = transferTbl.SD(transferTbl.Layer == layerName);
-	pVal = iRanksumSafe(valsN, valsT);
+	pValNT = iRanksumSafe(valsN, valsT);
+	pValLT = iRanksumSafe(valsL, valsT);
 
 	fprintf('\n=== %s ===\n', layerLabel);
 	fprintf('Naive:    %.4f +- %.4f (n=%d mice)\n', mean(valsN), std(valsN)/sqrt(numel(valsN)), numel(valsN));
+	fprintf('Learned:  %.4f +- %.4f (n=%d mice)\n', mean(valsL), std(valsL)/sqrt(numel(valsL)), numel(valsL));
 	fprintf('Transfer: %.4f +- %.4f (n=%d mice)\n', mean(valsT), std(valsT)/sqrt(numel(valsT)), numel(valsT));
-	fprintf('ranksum p = %.6g\n', pVal);
+	fprintf('Naive vs Transfer ranksum p = %.6g\n', pValNT);
+	fprintf('Learned AW vs Transfer ranksum p = %.6g\n', pValLT);
 
 	nexttile(Layout, iL);
-	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
+	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 0.05);
 	for eb = EB.Object(:)', eb.LineWidth = 0.5; end
 	ax = gca;
 	ax.FontSize = 6;
-	ax.XTick = [1 2];
+	ax.XTick = [1 2 3];
 	if iL == 1
 		ax.XTickLabel = {};
 	else
-		ax.XTickLabel = {'Naive', 'Transfer'};
+		ax.XTickLabel = {'Naive', 'Tran.', '🔊💧'};
 	end
 	ylabel(ax, layerLabel, 'FontSize', 6);
 	legend(ax, 'off');
@@ -80,11 +93,19 @@ for iL = 1:numel(layers)
 	if isscalar(Bars)
 		Bars.FaceColor = 'flat';
 		nB = numel(Bars.YData);
-		Bars.CData = repmat([colorNaive; colorTransfer], ceil(nB/2), 1);
+		Bars.CData = repmat([colorNaive; colorTransfer; colorLearned], ceil(nB/3), 1);
 		Bars.CData = Bars.CData(1:nB, :);
 		Bars.BarWidth = 0.5;
 		Bars.LineWidth = 0.5;
 		Bars.FaceAlpha = 1/3;
+	elseif numel(Bars) >= 3
+		Bars(1).FaceColor = colorNaive;
+		Bars(2).FaceColor = colorTransfer;
+		Bars(3).FaceColor = colorLearned;
+		for ib = 1:3
+			Bars(ib).LineWidth = 0.5;
+			try, Bars(ib).FaceAlpha = 1/3; catch, end
+		end
 	end
 	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
 		for pt = Opt.MultiCompare.PText(:)', pt.FontSize = 6; end
@@ -281,7 +302,15 @@ Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
 Sess = sortrows(Sess, {'Mouse','DateTime'});
 [SessUsed, mice] = iDUsedTransferLikeSessions(Sess);
-[outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, mice, idx1s, layers);
+[outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, mice, idx1s, layers, "LightWater");
+end
+
+function [outTbl, miceOut] = iDLearnedAudioMouseAvgSDByLayer(DS, CellMap, idx1s, layers)
+Sess = iAudioWaterSessions(DS);
+Sess = Sess(string(Sess.Phase) == "Learned", :);
+Sess = sortrows(Sess, {'Mouse','DateTime'});
+mice = unique(string(Sess.Mouse));
+[outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, Sess, mice, idx1s, layers, "AudioWater");
 end
 
 function [SessUsed, mice] = iDUsedTransferLikeSessions(Sess)
@@ -344,14 +373,14 @@ SessUsed = Sess(keepRows, :);
 mice = miceAll(keepMice);
 end
 
-function [outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, miceIn, idx1s, layers)
+function [outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, miceIn, idx1s, layers, stimulusName)
 outTbl = table(strings(0,1), strings(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD'});
 miceOut = string.empty(0,1);
 if isempty(SessUsed) || isempty(miceIn), return; end
 
 dts = unique(SessUsed.DateTime);
 try
-	ntsCell = DS.QueryNTS(struct('Stimulus', 'LightWater', 'DateTime', dts), UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+	ntsCell = DS.QueryNTS(struct('Stimulus', string(stimulusName), 'DateTime', dts), UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
 catch
 	return;
 end
@@ -519,6 +548,36 @@ T = T(keep, :);
 T = innerjoin(T, DT, 'Keys','DateTime');
 [G2, mouse, dt] = findgroups(T.Mouse, T.DateTime);
 perf2 = splitapply(@(x) mean(double(x),'omitnan'), T.LWPerf, G2);
+phase2 = splitapply(@(x) string(x(1)), T.Phase, G2);
+Sess = table(mouse, dt, phase2, perf2, 'VariableNames',{'Mouse','DateTime','Phase','Performance'});
+Sess = sortrows(Sess, {'Mouse','DateTime'});
+end
+
+function Sess = iAudioWaterSessions(DS)
+Blocks = DS.Blocks(:, {'BlockUID','DateTime','MustWarn'});
+Blocks.BlockUID = uint64(Blocks.BlockUID);
+Blocks.DateTime = iNormDT(datetime(Blocks.DateTime));
+Blocks.MustWarn = string(Blocks.MustWarn);
+DT = DS.DateTimes(:, {'DateTime','Mouse','Phase'});
+DT.DateTime = iNormDT(datetime(DT.DateTime));
+DT.Mouse = string(DT.Mouse);
+DT.Phase = string(DT.Phase);
+Tr = DS.Trials(:, {'BlockUID','Stimulus','Behavior'});
+Tr.BlockUID = uint64(Tr.BlockUID);
+TrAW = Tr(string(Tr.Stimulus) == "AudioWater", {'BlockUID','Behavior'});
+if isempty(TrAW)
+	Sess = table(string.empty(0,1), NaT(0,1), string.empty(0,1), nan(0,1), ...
+		'VariableNames',{'Mouse','DateTime','Phase','Performance'}); return;
+end
+[G, bu] = findgroups(uint64(TrAW.BlockUID));
+awPerf = splitapply(@(x) mean(double(x),'omitnan'), TrAW.Behavior, G);
+perfByBlock = table(uint64(bu), awPerf, 'VariableNames',{'BlockUID','AWPerf'});
+T = innerjoin(perfByBlock, Blocks, 'Keys','BlockUID');
+keep = ismissing(T.MustWarn) | (T.MustWarn == "");
+T = T(keep, :);
+T = innerjoin(T, DT, 'Keys','DateTime');
+[G2, mouse, dt] = findgroups(T.Mouse, T.DateTime);
+perf2 = splitapply(@(x) mean(double(x),'omitnan'), T.AWPerf, G2);
 phase2 = splitapply(@(x) string(x(1)), T.Phase, G2);
 Sess = table(mouse, dt, phase2, perf2, 'VariableNames',{'Mouse','DateTime','Phase','Performance'});
 Sess = sortrows(Sess, {'Mouse','DateTime'});

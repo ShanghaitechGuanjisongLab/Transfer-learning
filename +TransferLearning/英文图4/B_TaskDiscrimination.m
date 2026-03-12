@@ -6,7 +6,7 @@
 % Execution:
 %   TransferLearning.英文图4.A_TaskDiscrimination
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 RSP = TransferLearning.RSPd();
 
@@ -103,6 +103,7 @@ CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
 CB.FontSize = 12;
+CB.Label.FontSize = 12;
 
 % Per-lane styling
 laneXTicks = {[0 1], [0 1], [0 1]};

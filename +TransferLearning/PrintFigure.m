@@ -29,7 +29,10 @@ catch
 end
 
 try
-	set(figHandle, 'PaperPositionMode', 'auto');
+	modeNow = string(get(figHandle, 'PaperPositionMode'));
+	if ~strcmpi(modeNow, "manual")
+		set(figHandle, 'PaperPositionMode', 'auto');
+	end
 catch
 end
 

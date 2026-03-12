@@ -8,7 +8,7 @@
 % Execution:
 %   TransferLearning.英文图2.B_LanearHeatmap_Learned_TransferHit_TransferMiss
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 DS = TransferLearning.AudioLightBaseline();
 

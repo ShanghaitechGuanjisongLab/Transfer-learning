@@ -35,6 +35,10 @@ svgName = "English_Fig3I_THInhibitVsCtrl_DeltaHitAndSD.svg";
 f = figure('Color', 'w', 'Name', 'Fig3I TH ΔHit and Response heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 colorA = [1 0 0];

@@ -7,7 +7,7 @@
 % Execution:
 %   TransferLearning.英文图4.F_SD0p3sVsLearningSpeed_RSPd
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 RSP = TransferLearning.RSPd();
 xsSec = seconds(TransferLearning.Xs);

@@ -22,6 +22,7 @@ if isempty(Sess)
 end
 
 Sess = sortrows(Sess, {'Mouse','DateTime'});
+Sess = iExcludeCeiling(Sess);
 Sess = iAddSessionIndex(Sess);
 
 % --- 2) Pick a representative mouse: prefer one with ≥5 sessions and non-trivial variation
@@ -57,39 +58,14 @@ R = sortrows(R, 'Session');
 xSess = double(R.Session);
 yPerf = double(R.Performance);
 
-% --- 3) Choose TWO annotation pairs in the rising part
+% --- 3) Choose ONE annotation pair in the rising part
 dH = diff(yPerf);
-posIdx = find(dH > 0);
-if numel(posIdx) < 2
-	% Fallback: pick two consecutive pairs near the middle
-	annoIdx = unique(min([max(1,floor(numel(yPerf)/2)), max(2,floor(numel(yPerf)/2)+1)], numel(yPerf)-1));
+posIdx = find(isfinite(dH) & dH > 0);
+if isempty(posIdx)
+	annoIdx = max(1, min(numel(yPerf)-1, floor(numel(yPerf)/2)));
 else
-	% Pick the two largest positive ΔHit pairs (non-overlapping)
 	[~, sortOrder] = sort(dH(posIdx), 'descend');
-	pick1 = posIdx(sortOrder(1));
-	pick2 = [];
-	for k = 2:numel(sortOrder)
-		cand = posIdx(sortOrder(k));
-		if abs(cand - pick1) >= 2
-			pick2 = cand;
-			break;
-		end
-	end
-	if isempty(pick2)
-		pick2 = posIdx(sortOrder(min(2, numel(sortOrder))));
-	end
-	annoIdx = sort([pick1, pick2]);
-end
-if isscalar(annoIdx)
-	annoIdx = [annoIdx, min(annoIdx+2, numel(yPerf)-1)];
-end
-
-% Assign Pair A (较大 ΔHit) and Pair B (较小 ΔHit)
-dHAnno = dH(annoIdx);
-if dHAnno(1) >= dHAnno(2)
-	pairLetters = ["A", "B"];
-else
-	pairLetters = ["B", "A"];
+	annoIdx = posIdx(sortOrder(1));
 end
 
 %% 
@@ -98,6 +74,10 @@ svgName = "English_Fig3A_DeltaHitIllustration.svg";
 f = figure('Color', 'w', 'Name', 'English Fig3B ΔHit illustration');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4]; % 45mm x 35mm
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax, 'on');
@@ -120,52 +100,38 @@ colorPairB = [0 0.4470 0.7410];      % blue
 markerPrev = 's';
 markerLatt = '^';
 
-% --- 5) Annotate each ΔHit pair
-for iA = 1:numel(annoIdx)
-	ai = annoIdx(iA);
-	xA1 = xSess(ai);
-	xA2 = xSess(ai + 1);
-	yA1 = yPerf(ai);
-	yA2 = yPerf(ai + 1);
-	delta = yA2 - yA1;
-	if pairLetters(iA) == "A"
-		aColor = colorPairA;
-	else
-		aColor = colorPairB;
-	end
+% --- 5) Annotate the chosen ΔHit pair
+ai = annoIdx;
+xA1 = xSess(ai);
+xA2 = xSess(ai + 1);
+yA1 = yPerf(ai);
+yA2 = yPerf(ai + 1);
+delta = yA2 - yA1;
+aColor = colorPairA;
 
-	% Highlight sessions: previous block = ■ ('s'), latter block = ▲ ('^')
-	scatter(ax, xA1, yA1, 25, aColor, markerPrev, 'filled');
-	scatter(ax, xA2, yA2, 25, aColor, markerLatt, 'filled');
+scatter(ax, xA1, yA1, 25, aColor, markerPrev, 'filled');
+scatter(ax, xA2, yA2, 25, aColor, markerLatt, 'filled');
 
-	% Bracket position: stagger right so two brackets don't overlap
-	xArrow = xA2 + 0.35 + (iA - 1) * 0.2;
+xArrow = xA2 + 0.35;
+plot(ax, [xArrow xArrow], [yA1 yA2], '-', 'Color', aColor, 'LineWidth', 1);
 
-	% Vertical line
-	plot(ax, [xArrow xArrow], [yA1 yA2], '-', 'Color', aColor, 'LineWidth', 1);
+tickW = 0.15;
+plot(ax, [xArrow - tickW, xArrow + tickW], [yA1 yA1], '-', 'Color', aColor, 'LineWidth', 1);
+plot(ax, [xArrow - tickW, xArrow + tickW], [yA2 yA2], '-', 'Color', aColor, 'LineWidth', 1);
 
-	% Horizontal ticks
-	tickW = 0.15;
-	plot(ax, [xArrow - tickW, xArrow + tickW], [yA1 yA1], '-', 'Color', aColor, 'LineWidth', 1);
-	plot(ax, [xArrow - tickW, xArrow + tickW], [yA2 yA2], '-', 'Color', aColor, 'LineWidth', 1);
+plot(ax, [xA1 xArrow], [yA1 yA1], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
+plot(ax, [xA2 xArrow], [yA2 yA2], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
 
-	% Dashed guides
-	plot(ax, [xA1 xArrow], [yA1 yA1], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
-	plot(ax, [xA2 xArrow], [yA2 yA2], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
-
-	% Label with pair letter and numeric value
-	yMid = (yA1 + yA2) / 2;
-	if delta >= 0
-		dhStr = sprintf('\\DeltaHit=+%.0f%%', delta * 100);
-	else
-		dhStr = sprintf('\\DeltaHit=%.0f%%', delta * 100);
-	end
-	lblStr = {sprintf('Pair %s', pairLetters(iA)), dhStr};
-	text(ax, xArrow + 0.2, yMid, lblStr, ...
-		'FontSize', 5, 'Color', aColor, ...
-		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
-		'FontWeight', 'bold');
+yMid = (yA1 + yA2) / 2;
+if delta >= 0
+	dhStr = sprintf('\\DeltaHit=+%.0f%%', delta * 100);
+else
+	dhStr = sprintf('\\DeltaHit=%.0f%%', delta * 100);
 end
+text(ax, xArrow + 0.2, yMid, dhStr, ...
+	'FontSize', 5, 'Color', aColor, ...
+	'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
+	'FontWeight', 'bold');
 
 title(ax, 'Representative mouse', 'FontSize', 6, 'FontWeight', 'normal');
 xlabel(ax, 'Block');
@@ -237,4 +203,23 @@ T = sortrows(T, {'Mouse','DateTime'});
 [G, ~] = findgroups(T.Mouse);
 sessCell = splitapply(@(x) {(1:numel(x))'}, T.DateTime, G);
 T.Session = vertcat(sessCell{:});
+end
+
+function SessOut = iExcludeCeiling(SessIn)
+SessOut = SessIn;
+if isempty(SessOut), return; end
+SessOut.Mouse = string(SessOut.Mouse);
+SessOut = sortrows(SessOut, {'Mouse','DateTime'});
+remove = false(height(SessOut), 1);
+for m = unique(SessOut.Mouse)'
+	rows = find(SessOut.Mouse == m);
+	p = double(SessOut.Performance(rows));
+	i100 = find(isfinite(p) & p >= 1 - 1e-12, 1, 'first');
+	if ~isempty(i100)
+		remove(rows(i100:end)) = true;
+	end
+end
+SessOut(remove, :) = [];
+perf = double(SessOut.Performance);
+SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end

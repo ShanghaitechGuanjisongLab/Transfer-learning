@@ -96,6 +96,10 @@ svgName = "English_Fig3J_ReactivationVsDeltaHit.svg";
 f = figure('Color','w', 'Name', 'English Fig3J Reuse vs ΔHit');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax, 'on');
@@ -124,10 +128,15 @@ xlabel(ax, 'Reactivation');
 ylabel(ax, 'ΔHit');
 
 if isfinite(p)
-	if p < 0.001, sigLabel = '***';
-	elseif p < 0.01, sigLabel = '**';
-	elseif p < 0.05, sigLabel = '*';
-	else, sigLabel = 'n.s.'; end
+	if p < 0.001
+		sigLabel = '***';
+	elseif p < 0.01
+		sigLabel = '**';
+	elseif p < 0.05
+		sigLabel = '*';
+	else
+		sigLabel = 'n.s.';
+	end
 	text(ax, 0.95, 0.95, sigLabel, ...
 		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 8, 'FontWeight', 'bold');
 end

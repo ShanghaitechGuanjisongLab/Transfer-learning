@@ -152,6 +152,10 @@ fprintf('  L5:   Naive %.3f ± %.3f vs Learned %.3f ± %.3f (n=%d), p=%.4g\n', .
 f = figure('Color', 'w', 'Name', 'English Fig2E NaiveAW vs LearnedAW Div by layer');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');

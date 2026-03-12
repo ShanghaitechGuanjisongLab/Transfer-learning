@@ -1,6 +1,6 @@
-% 英文图1K: Reactivation rate vs Transfer hit rate (layers merged)
+% 英文图1K: Reactivation vs Transfer hit rate (layers merged)
 %
-% Reactivation rate = P(Transfer active | Learned active) at 1s
+% Reactivation = P(Transfer active | Learned active) at 1s
 % Sessions (pure):
 % - Learned AudioWater: last pure session
 % - Transfer LightWater: first pure session
@@ -9,7 +9,7 @@
 % Execution:
 %   TransferLearning.英文图1.L_ReactivationVsHitRate
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 % --- ensure project loaded
 try
 	if ~exist('UniExp.DataSet','class')
@@ -28,7 +28,7 @@ end
 
 R = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer();
 if isempty(R)
-	error('Fig1L:Empty', 'No valid mice for Reactivation rate.');
+	error('Fig1L:Empty', 'No valid mice for Reactivation.');
 end
 
 % 合并2/3和5层数据：取各鼠每层的均值
@@ -44,6 +44,10 @@ svgName = "English_Fig1K_ReactivationVsHitRate.svg";
 f = figure('Color','w', 'Name','English Fig1K Reactivation vs Hit rate');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax,'on');
@@ -54,9 +58,9 @@ try
 catch
 end
 
-rho = NaN; p = NaN;
+p = NaN;
 if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
-	[rho, p] = corr(x(mask), y(mask), 'type','Spearman');
+	[~, p] = corr(x(mask), y(mask), 'type','Spearman');
 end
 
 % 散点：空心圆，边框0.2
@@ -72,12 +76,17 @@ end
 grid(ax,'off');
 box(ax,'off');
 ax.FontSize = 6;
-xlabel(ax, 'Reactivation rate', 'FontSize', 6);
+xlabel(ax, 'Reactivation', 'FontSize', 6);
 ylabel(ax, 'Hit rate', 'FontSize', 6);
 
 if isfinite(p)
-	text(ax, 0.95, 0.95, sprintf('p=%.2g', p), 'Units','normalized', ...
-		'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6);
+	if p < 0.001
+		pLabel = 'p<0.001';
+	else
+		pLabel = sprintf('p=%.3f', p);
+	end
+	text(ax, 0.95, 0.95, pLabel, 'Units','normalized', ...
+		'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6, 'FontWeight', 'bold');
 end
 
 % Export

@@ -13,7 +13,7 @@
 % Execution:
 %   TransferLearning.英文图2.A_RepresentativeCellTraces
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 rng(42); % 固定随机种子，确保可复现
 

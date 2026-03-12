@@ -21,7 +21,7 @@
 % - Do NOT use run.
 % - Open in MATLAB Editor and Run/F5.
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded (for UniExp)
 try
