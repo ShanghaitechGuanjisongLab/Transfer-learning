@@ -1,4 +1,4 @@
-% English Fig3I: TH inhibition vs Ctrl - ΔHit and Response heterogeneity
+% English Fig3J: TH inhibition vs Ctrl - ΔHit and Response heterogeneity
 %
 % Two bar tiles comparing Ctrl and TH groups:
 %   Top:    ΔHit per session pair (one point = one adjacent pair)
@@ -8,7 +8,7 @@
 % TH:   THInhibit          (Transfer->Final)
 %
 % Execution:
-%   TransferLearning.英文图3.I_THInhibitVsCtrl_DeltaHitAndSD
+%   TransferLearning.英文图3.J_THInhibitVsCtrl_DeltaHitAndSD
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
@@ -18,7 +18,7 @@ THDS = TransferLearning.THInhibit();
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
-if ~ok1s, error('Fig3I:No1s', 'Cannot find sample close to 1s.'); end
+if ~ok1s, error('Fig3J:No1s', 'Cannot find sample close to 1s.'); end
 
 [dhC, sdC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");
 [dhT, sdT] = iCohortData(THDS, idx1s, "Transfer", "Final");
@@ -31,8 +31,8 @@ pSD = iRanksumSafe(sdC, sdT);
 fprintf('ΔHit ranksum p=%.4g\n', pDH);
 fprintf('Response heterogeneity ranksum p=%.4g\n', pSD);
 
-svgName = "English_Fig3I_THInhibitVsCtrl_DeltaHitAndSD.svg";
-f = figure('Color', 'w', 'Name', 'Fig3I TH ΔHit and Response heterogeneity');
+svgName = "English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD.svg";
+f = figure('Color', 'w', 'Name', 'Fig3J TH ΔHit and Response heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -95,6 +95,7 @@ if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+close(f);
 
 function [dhVec, sdVec] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
 Sess = iLightWaterSessions(DS);

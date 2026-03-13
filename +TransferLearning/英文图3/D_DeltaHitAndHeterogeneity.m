@@ -83,7 +83,7 @@ for iL = 1:numel(layers)
 	if iL == 1
 		ax.XTickLabel = {};
 	else
-		ax.XTickLabel = {'Naive', 'Tran.', '🔊💧'};
+		ax.XTickLabel = {'Naive', 'Tran.', '🔊💧100%'};
 	end
 	ylabel(ax, layerLabel, 'FontSize', 6);
 	legend(ax, 'off');

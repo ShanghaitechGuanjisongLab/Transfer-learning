@@ -1,17 +1,21 @@
-% 英文图3H试作：THInhibit 单源 vs 对照组 LightWater 学习曲线 + 首会话命中率
+% 英文图3G：TH 抑制组 vs 对照组 LightWater 学习曲线 + 首会话命中率
 %
-% 数据源：
+% 数据源（模仿 Fig3.5C）：
 % - 对照组：TransferLearning.AudioLightBaseline
-% - 抑制组：TransferLearning.THInhibit
+% - 抑制组：TransferLearning.THInhibit + PO 化学遗传抑制（纯行为）
+%
+% 绘图样式模仿英文图2J：
+%   Figure 1: MultiShadowedLines 学习曲线
+%   Figure 2: BarScatterCompare 首会话命中率
 %
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution:
-%   TransferLearning.英文图3.H_THInhibitOnlyVsCtrl_LearningCurve
+%   TransferLearning.英文图3.G_THInhibitVsCtrl_LearningCurve
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
-svgNameLC = "English_Fig3H_THInhibitOnlyVsCtrl_LearningCurve.svg";
-svgNameFS = "English_Fig3H_THInhibitOnlyVsCtrl_FirstSessionHitRate.svg";
+svgNameLC = "English_Fig3G_THInhibitVsCtrl_LearningCurve.svg";
+svgNameFS = "English_Fig3G_THInhibitVsCtrl_FirstSessionHitRate.svg";
 
 %% --- 0) Ensure project loaded
 try
@@ -26,7 +30,7 @@ try
 catch
 end
 
-%% --- 1) Load datasets
+%% --- 1) Load datasets (same as Fig3.5C)
 CtrlDS = TransferLearning.AudioLightBaseline();
 THDS   = TransferLearning.THInhibit();
 
@@ -54,6 +58,29 @@ sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
 sessionForSummary.Group = string(sessionForSummary.Group);
 sessionForSummary = sortrows(sessionForSummary, {'Group','Mouse','DateTime'});
 
+%% --- 3b) Include PO chemogenetic inhibition into TH group (matching Fig3.5C)
+poMatPath = "\\Data-Server-2\个人数据\张天夫\202505\化学遗传抑制PO.v1.mat";
+try
+	if exist(poMatPath, 'file')
+		PO = UniExp.DataSet(poMatPath);
+		POTable = PO.TableQuery(["Mouse","DateTime","Performance","Phase"], Design="LightWater", Expression="溢出");
+		if ~isempty(POTable)
+			if ismember('Phase', POTable.Properties.VariableNames)
+				POTable.Phase = string(POTable.Phase);
+				POTable(POTable.Phase=="Recall", :) = [];
+			end
+			poSess = POTable(:, intersect(["Mouse","DateTime","Performance"], string(POTable.Properties.VariableNames), 'stable'));
+			poSess.Mouse = string(poSess.Mouse);
+			poSess.DateTime = TransferLearning.Fig35.iNormalizeDateTime(poSess.DateTime);
+			poSess.Group = repmat("TH", height(poSess), 1);
+			poSess = unique(poSess(:, ["Mouse","DateTime","Performance","Group"]), 'rows');
+			sessionForSummary = [sessionForSummary; poSess]; %#ok<AGROW>
+			sessionForSummary = sortrows(sessionForSummary, {'Group','Mouse','DateTime'});
+		end
+	end
+catch
+end
+
 %% --- 4) Learning curve summary
 PValueLS = NaN;
 try
@@ -74,8 +101,14 @@ end
 meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', false);
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
 
-%% --- 5) Plot learning curve
-f = figure('Color', 'w', 'Name', 'English Fig3H THInhibit-only learning curve');
+if numel(meanCells) >= 2
+	keepN = min(14, numel(meanCells{2}));
+	meanCells{2} = meanCells{2}(1:keepN);
+	semCells{2} = semCells{2}(1:keepN);
+end
+
+%% --- 5) Plot learning curve (style: English Fig2J)
+f = figure('Color', 'w', 'Name', 'English Fig3G TH Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperPositionMode = 'auto';
@@ -105,6 +138,7 @@ end
 ax.FontSize = 12;
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
+ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
@@ -121,55 +155,44 @@ end
 svgPath = fullfile(outDirUNC, svgNameLC);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+close(f);
 
-%% --- 7) First transfer session hit-rate bar compare
-perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
-perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
+%% --- 7) First transfer session hit-rate bar compare (style: English Fig2J)
+barSess = sessionForSummary;
+barSess = sortrows(barSess, {'Group','Mouse','DateTime'});
+barSess = TransferLearning.Fig35.iAddSessionIndex(barSess);
 
-xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Ctrl");
-xTH   = perMouse.TransferFirstPerf(perMouse.Group=="TH");
-
-if ~any(isfinite(xCtrl)) || ~any(isfinite(xTH))
-	for i = 1:height(perMouse)
-		m = perMouse.Mouse(i);
-		S1 = Sess(Sess.Mouse==m, :);
-		S1 = sortrows(S1, 'Session');
-		p1 = double(S1.Performance(find(S1.Session==1, 1, 'first')));
-		if perMouse.Group(i)=="Ctrl"
-			xCtrl(i) = p1;
-		else
-			xTH(i) = p1;
-		end
-	end
-end
+firstSess = sortrows(barSess(barSess.Session == 1, :), {'Group','Mouse'});
+xCtrl = double(firstSess.Performance(firstSess.Group=="Ctrl"));
+xTH   = double(firstSess.Performance(firstSess.Group=="TH"));
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xTH   = xTH(isfinite(xTH));
 [pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xTH);
 
-fprintf('First Transfer session hit rate (THInhibit only):\n');
+fprintf('First Transfer session hit rate:\n');
 fprintf('  Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl), std(xCtrl)/sqrt(numel(xCtrl)), numel(xCtrl));
-fprintf('  TH:   %.3f ± %.3f (n=%d)\n', mean(xTH), std(xTH)/sqrt(numel(xTH)), numel(xTH));
+fprintf('  TH:   %.3f ± %.3f (n=%d)\n', mean(xTH),   std(xTH)/sqrt(numel(xTH)),     numel(xTH));
 fprintf('  ranksum p = %.4g\n', pFS);
-fprintf('  learning-summary p = %.4g\n', PValueLS);
 
 DataCell = {double(xCtrl(:)), double(xTH(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-fb = figure('Color', 'none', 'Name', 'English Fig3H THInhibit-only first-session hit rate');
-fb.Units = 'centimeters';
-fb.Position(3:4) = [4, 3];
-fb.PaperPositionMode = 'auto';
-try, fb.InvertHardcopy = 'off'; catch, end
+f2 = figure('Color', 'none', 'Name', 'English Fig3G TH First transfer session');
+f2.Units = 'centimeters';
+f2.Position(3:4) = [4, 3];
+f2.PaperPositionMode = 'auto';
+try, f2.InvertHardcopy = 'off'; catch, end
 
 [~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
-axb = gca;
-axb.FontSize = 12/1.2;
-axb.Color = 'none';
-axb.XAxis.Visible = false;
-axb.XTick = [];
-legend(axb, 'off');
+ax2 = gca;
+ax2.FontSize = 12;
+ax2.Color = 'none';
+ax2.XAxis.Visible = false;
+ax2.XTick = [];
+legend(ax2, 'off');
 
+% Bar styling (match English Fig2J)
 colorA = [1 0 0];
 colorB = [0 0 1];
 if isscalar(Bars2)
@@ -190,12 +213,22 @@ end
 for eb = ErrorBars2.Object(:)'
 	eb.LineWidth = 0.5;
 end
-axb.XLim = [0.5, 2.5];
+ax2.XLim = [0.5, 2.5];
 
-ylabel(axb, 'Hit rate', 'FontSize', 12);
-title(axb, 'First block');
-box(axb, 'off');
+ylabel(ax2, 'Hit rate', 'FontSize', 12);
+title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
+box(ax2, 'off');
 
+try
+	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
+catch
+end
 svgPathFS = fullfile(outDirUNC, svgNameFS);
-TransferLearning.PrintFigure(fb, svgPathFS);
+TransferLearning.PrintFigure(f2, svgPathFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
+close(f2);
+
+assignin('base', 'English_Fig3G_Sessions', Sess);
+assignin('base', 'English_Fig3G_BarSessions', barSess);
+assignin('base', 'English_Fig3G_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig3G_FirstSessionP', pFS);

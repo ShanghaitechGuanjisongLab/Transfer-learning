@@ -212,16 +212,18 @@ for iS = 1:2
 	viewer.CameraUpVector = upVec / norm(upVec);
 	viewer.CameraZoom = 1.4;
 
-	uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 7, 'FontColor', [0.85 0.1 0.1], ...
+	uilabel(fig, 'Text', 'X: Time (0~2 s)', 'FontSize', 6, 'FontColor', [0.85 0.1 0.1], ...
 		'Position', [5, 48, 200, 16], 'BackgroundColor', 'none');
-	uilabel(fig, 'Text', 'Y: Cell (sorted by z@1s)', 'FontSize', 7, 'FontColor', [0.1 0.6 0.1], ...
+	uilabel(fig, 'Text', 'Y: Cell (sorted by z@1s)', 'FontSize', 6, 'FontColor', [0.1 0.6 0.1], ...
 		'Position', [5, 30, 200, 16], 'BackgroundColor', 'none');
-	uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 7, 'FontColor', [0.1 0.1 0.85], ...
+	uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 6, 'FontColor', [0.1 0.1 0.85], ...
 		'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
 
 	pause(1);
 	pngName = sprintf('English_Fig3E_Volshow_%s.png', sessTags(iS));
 	exportapp(fig, fullfile(outDirUNC, pngName));
+	drawnow;
+	close(fig);
 	fprintf('Wrote: %s\n', pngName);
 end
 
@@ -229,6 +231,7 @@ end
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 pairColors = {[0 0.4470 0.7410]; [0.8500 0.3250 0.0980]};  % Transfer=blue, Naive=orange
+histTitles = ["Transfer", "Naive"];
 
 histFigs = gobjects(1, 2);
 histAxes = gobjects(1, 2);
@@ -237,9 +240,11 @@ for iS = 1:2
 
 	fh = figure('Color', 'w');
 	fh.Units = 'centimeters';
-	fh.Position(3:4) = [5.8, 1.5];
+	fh.Position(3:4) = [5.8, 1.6];
 
 	ax = axes(fh);
+	disableDefaultInteractivity(ax);
+	ax.Toolbar.Visible = 'off';
 	hold(ax, 'on');
 
 	histogram(ax, v, binEdges, 'Normalization', 'probability', ...
@@ -255,6 +260,7 @@ for iS = 1:2
 	text(ax, 0.97, 0.95, sprintf('Resp. heterogeneity\n=%.2f', sdVals(iS)), ...
 		'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 		'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
+	title(ax, histTitles(iS), 'FontSize', 6, 'FontWeight', 'normal');
 
 	xlabel(ax, 'z-score', 'FontSize', 6);
 	ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);

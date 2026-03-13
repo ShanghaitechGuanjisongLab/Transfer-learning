@@ -142,6 +142,7 @@ colorPos = [0.85 0.325 0.098];
 colorNeg = [0 0.4470 0.7410];
 fs = 6;
 
+%% 
 f = figure('Color', 'w', 'Name', 'Fig3EF Combined');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5 4.0];
@@ -158,7 +159,7 @@ sX = LM;                        sY = BM;
 axE = axes(f, 'Position', [sX sY sW sH]);
 hold(axE, 'on');
 scatter(axE, awAll, lwAll, 1, colorNeg, 'LineWidth', 0.2, ...
-	'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0.5);
+	'MarkerFaceAlpha', 0.05,MarkerEdgeAlpha= 0.05,Marker='.');
 xline(axE, 0, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.4);
 yline(axE, 0, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.4);
 pf = polyfit(awAll, lwAll, 1);
@@ -259,7 +260,7 @@ axR.YAxisLocation = 'left';  % +/- on scatter side (left = closer to scatter)
 % xlabel shared with scatter
 box(axR, 'off');
 
-%% ===== Export =====
+% ===== Export =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);

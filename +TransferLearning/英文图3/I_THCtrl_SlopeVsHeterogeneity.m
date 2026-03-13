@@ -1,4 +1,4 @@
-% English Fig3M: TH/Ctrl per-mouse learning slope vs Response heterogeneity
+% English Fig3I: TH/Ctrl per-mouse learning slope vs Response heterogeneity
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
@@ -11,15 +11,15 @@ xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-    error('Fig3M:No1s', 'Cannot find sample close to 1s in time axis.');
+    error('Fig3I:No1s', 'Cannot find sample close to 1s in time axis.');
 end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-colorC = [1 0 0];
-colorT = [0 0 1];
+colorC = [238 124 121] / 255;
+colorT = [0 0.4470 0.7410];
 
-f = figure('Color', 'w', 'Name', 'Fig3M TH/Ctrl slope vs Response heterogeneity');
+f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl slope vs Response heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [6, 4];
 f.PaperUnits = 'centimeters';
@@ -28,7 +28,9 @@ f.PaperPosition = [0, 0, 6, 4];
 f.PaperSize = [6, 4];
 
 tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+xlabel(tl, 'Response heterogeneity', 'FontSize', 6);
 hLegend = gobjects(2, 1);
+axAll = gobjects(numel(layers), 1);
 
 for iL = 1:numel(layers)
     layerName = layers(iL);
@@ -66,6 +68,8 @@ for iL = 1:numel(layers)
     if iL == 1
         hLegend = [hC; hT];
         ylabel(ax, 'Learning slope', 'FontSize', 6);
+    else
+        ax.YAxis.Visible = 'off';
     end
     if nnz(use) >= 2 && std(sdAll(use)) > 0
         fitP = polyfit(sdAll(use), slopeAll(use), 1);
@@ -73,22 +77,25 @@ for iL = 1:numel(layers)
         plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', [0.4 0.4 0.4], 'LineWidth', 1);
     end
     title(ax, layerLabels(iL), 'FontSize', 6);
-    xlabel(ax, 'Response heterogeneity', 'FontSize', 6);
     text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
+    axAll(iL) = ax;
 
-    fprintf('\n=== Fig3M %s ===\n', layerLabels(iL));
+    fprintf('\n=== Fig3I %s ===\n', layerLabels(iL));
     fprintf('Ctrl mice: %d\n', nnz(maskC));
     fprintf('TH mice: %d\n', nnz(maskT));
     fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
 end
 
-lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 5, 'Box', 'off', 'Orientation', 'horizontal');
+MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
+
+lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 6, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, 'English_Fig3M_THCtrl_SlopeVsHeterogeneity.svg');
+svgPath = fullfile(outDirUNC, 'English_Fig3I_THCtrl_SlopeVsHeterogeneity.svg');
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+close(f);
 
 function [slopeVec, sdVec, miceKept] = iSingleDatasetCohortDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)
 Sess = iLightWaterSessions(DS);
