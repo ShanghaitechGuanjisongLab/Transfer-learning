@@ -94,13 +94,10 @@ catch
 end
 ax = axes(f);
 hold(ax,'on');
-title(ax, 'Non-specific MOp inhibition', 'FontSize', 8);
+title(ax, 'Non-specific MOp inhibition', 'FontSize', 6, 'FontWeight', 'normal');
 
-try
-	edgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
-catch
-	edgeColors = lines(2);
-end
+% Reference palette from 范例 SVGs: Control=#e60012, Experimental=#0070c0
+edgeColors = [230/255, 0, 18/255; 0, 112/255, 192/255];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -133,7 +130,7 @@ if isfinite(pCurve)
 	else
 		astStr = 'n.s.';
 	end
-	ht = text(ax, lastSess + 0.5, yMid, astStr, 'FontSize', 12, ...
+	ht = text(ax, lastSess + 0.5, yMid, astStr, 'FontSize', 6, ...
 		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
 		'HandleVisibility', 'off');
 	ht.AffectAutoLimits = 'on';
@@ -147,13 +144,13 @@ try
 	else
 		lg = legend(ax, labels, 'Location', 'best');
 	end
-	lg.FontSize = 12;
+	lg.FontSize = 6;
 catch
 end
 
-ax.FontSize = 12;
-xlabel(ax, 'Session', 'FontSize', 12);
-ylabel(ax, 'Hit rate', 'FontSize', 12);
+ax.FontSize = 6;
+xlabel(ax, 'Session', 'FontSize', 6);
+ylabel(ax, 'Hit rate', 'FontSize', 6);
 ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
@@ -197,15 +194,15 @@ end
 
 [~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
-ax2.FontSize = 12/1.2;
+ax2.FontSize = 6;
 ax2.Color = 'none';
 ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
 
-% Bar styling (match English Fig1B)
-colorA = [1 0 0];
-colorB = [0 0 1];
+	% Bar styling – reference palette from 范例 SVGs
+	colorA = [230/255, 0, 18/255];    % #e60012 Control
+	colorB = [0, 112/255, 192/255];   % #0070c0 Experimental
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	nBars = numel(Bars2.YData);
@@ -230,8 +227,8 @@ for eb = ErrorBars2.Object(:)'
 end
 ax2.XLim = [0.5, 2.5];
 
-ylabel(ax2, 'Hit rate', 'FontSize', 12 / 1.2);
-title(ax2, 'First block');
+ylabel(ax2, 'Hit rate', 'FontSize', 6);
+title(ax2, 'First block', 'FontSize', 6, 'FontWeight', 'normal');
 box(ax2, 'off');
 
 svgFS = fullfile(outDirUNC, 'English_Fig2J_DREADD_FirstSessionHitRate.svg');

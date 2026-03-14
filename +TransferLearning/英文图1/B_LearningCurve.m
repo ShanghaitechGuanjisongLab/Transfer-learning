@@ -90,12 +90,12 @@ f = figure('Color','w', 'Name', 'Fig3.1b Learning curve (LightWater)'); %[output
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8]; % 90mm x 80mm %[output:5c266b7f]
 ax = axes(f); %[output:5c266b7f]
-ax.FontSize = 12; %[output:5c266b7f]
+ax.FontSize = 6; %[output:5c266b7f]
 hold(ax,'on'); %[output:5c266b7f]
 axes(ax); %[output:5c266b7f]
 
-% Avoid white lines on white background
-EdgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
+% Reference palette from 范例 SVGs: Naive=#e60012 (red), Transfer=#0070c0 (blue)
+EdgeColors = [230/255, 0, 18/255; 0, 112/255, 192/255];
 
 % MultiShadowedLines 要求：若 Y 为矩阵则 X/Shadow 尺寸必须与 Y 相同。
 % 这里使用 cell 输入以适配不同组的有效长度（避免 NaN padding 影响绘图）。
@@ -108,23 +108,23 @@ y2_at2 = meanMat(2, 2); % Transfer at block 2
 yMid = (y1_at2 + y2_at2) / 2;
 yHalfLen = abs(y1_at2 - y2_at2) / 4; % 竖线长度减半
 	plot(ax, [2 2], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off'); %[output:5c266b7f]
-	text(ax, 2.1, yMid, '*', 'FontSize', 12, ... %[output:5c266b7f]
+	text(ax, 2.1, yMid, '*', 'FontSize', 6, ... %[output:5c266b7f]
 		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'HandleVisibility', 'off'); %[output:5c266b7f]
 
 labels = {'Naive', 'Transfer'};
     if numel(Patches) >= 2
     	lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2))); %[output:5c266b7f]
-    	lg.FontSize = 12; %[output:5c266b7f]
+		lg.FontSize = 6; %[output:5c266b7f]
     else
     	lg = legend(ax, labels, 'Location', 'best');
-    	lg.FontSize = 12;
+		lg.FontSize = 6;
     end
 
 % Set legend title to emoji (remove figure main title)
 lg.Title.String = '💡💧'; %[output:5c266b7f]
 
-xlabel(ax, 'Block', 'FontSize', 12); %[output:5c266b7f]
-ylabel(ax, 'Hit rate', 'FontSize', 12); %[output:5c266b7f]
+xlabel(ax, 'Block', 'FontSize', 6); %[output:5c266b7f]
+ylabel(ax, 'Hit rate', 'FontSize', 6); %[output:5c266b7f]
 ylim(ax, [0 1]); %[output:5c266b7f]
 box(ax, 'off'); %[output:5c266b7f]
 % title removed per user request
@@ -185,7 +185,7 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	nexttile; %[output:4cd90a67]
 	[~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05); %[output:4cd90a67]
 	ax2 = gca;
-	ax2.FontSize = 12/1.2; %[output:4cd90a67]
+	ax2.FontSize = 6; %[output:4cd90a67]
 	ax2.Color = 'none'; %[output:4cd90a67]
 
 	ax2.XTick = [1, 2]; %[output:4cd90a67]
@@ -195,13 +195,13 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	% Asterisk font size
 	if isfield(Optional2, 'MultiCompare') && ismember('PText', Optional2.MultiCompare.Properties.VariableNames)
 		for pt = Optional2.MultiCompare.PText(:)'
-			pt.FontSize = 12/1.2; %[output:4cd90a67]
+			pt.FontSize = 6; %[output:4cd90a67]
 		end
 	end
 
-	% Bar styling (match B curve colors)
-	colorNaive = [1 0 0];
-	colorTrans = [0 0 1];
+	% Bar styling – reference palette from 范例 SVGs
+	colorNaive = [230/255, 0, 18/255];    % #e60012
+	colorTrans = [0, 112/255, 192/255];   % #0070c0
 	if numel(Bars2) == 1
 		Bars2.FaceColor = 'flat'; %[output:4cd90a67]
 		nBars = numel(Bars2.YData);
@@ -230,8 +230,8 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	end
 	ax2.XLim = [0.5, 2.5]; %[output:4cd90a67]
 
-	ylabel(ax2, 'Hit rate'); %[output:4cd90a67]
-	title(ax2, 'First block'); %[output:4cd90a67]
+	ylabel(ax2, 'Hit rate', 'FontSize', 6); %[output:4cd90a67]
+	title(ax2, 'First block', 'FontSize', 6, 'FontWeight', 'normal'); %[output:4cd90a67]
 	box(ax2, 'off'); %[output:4cd90a67]
 
 	% Export SVG (transparent)

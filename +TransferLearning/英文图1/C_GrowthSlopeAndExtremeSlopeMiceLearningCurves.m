@@ -145,7 +145,7 @@ set(f1, 'Units', 'centimeters', 'Position', [5 5 4 4]);
 [~, ~, Bars, ErrorBars] = UniExp.BarScatterCompare(Groups, false);
 ax=gca;
 
-ax.FontSize = 12;
+ax.FontSize = 6;
 ax.XTick = 1:2;
 ax.XTickLabel = {'Naive', 'Transfer'};
 
@@ -156,9 +156,9 @@ for eb = ErrorBars.Object(:)'
 	eb.LineWidth = 0.5;
 end
 
-% Match bar colors to Fig1B lines (red/blue)
-colorNaive = [1, 0, 0];
-colorTrans = [0, 0, 1];
+% Match bar colors to Fig1B lines – reference palette from 范例 SVGs
+colorNaive = [230/255, 0, 18/255];    % #e60012
+colorTrans = [0, 112/255, 192/255];   % #0070c0
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorNaive; colorTrans];
@@ -166,7 +166,7 @@ if isscalar(Bars)
 	Bars.FaceAlpha = 1/3;
 end
 ax.XLim = [0.5, 2.5];
-title('Learning slope');
+title('Learning slope', 'FontSize', 6, 'FontWeight', 'normal');
 
 
 % P-line annotation (asterisk) using ANCOVA p-value
@@ -285,8 +285,10 @@ xlabel(ax2, 'Block');
 ylabel(ax2, 'Hit rate');
 box(ax2, 'off');
 grid(ax2, 'off');
-ax2.FontSize = 12;
-legend(ax2, 'Location','northeastoutside');
+ax2.FontSize = 6;
+xlabel(ax2, 'Block', 'FontSize', 6);
+ylabel(ax2, 'Hit rate', 'FontSize', 6);
+legend(ax2, 'Location','northeastoutside', 'FontSize', 6);
 
 svgPath2 = fullfile(outDirUNC, 'English_Fig1C_ExtremeSlopeMiceLearningCurves.svg');
 try

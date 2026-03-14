@@ -1,0 +1,400 @@
+2026-03-14 11:05:21,015 - image-mcp - DEBUG - Processing 6 image sources: 0 URLs and 6 local files
+2026-03-14 11:05:21,016 - image-mcp - DEBUG - Processing 6 local files
+2026-03-14 11:05:21,017 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例1.svg, converting to PNG at 220 DPI
+2026-03-14 11:05:24,294 - image-mcp - DEBUG - Converted SVG to PNG: 172983 bytes
+2026-03-14 11:05:24,632 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例1.svg: 489x697
+2026-03-14 11:05:24,632 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:05:24,633 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:05:24,634 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例2.svg, converting to PNG at 220 DPI
+2026-03-14 11:05:25,872 - image-mcp - DEBUG - Converted SVG to PNG: 146465 bytes
+2026-03-14 11:05:25,873 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例2.svg: 468x523
+2026-03-14 11:05:25,873 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:05:25,873 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:05:25,874 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图1.svg, converting to PNG at 220 DPI
+2026-03-14 11:05:27,131 - image-mcp - DEBUG - Converted SVG to PNG: 434773 bytes
+2026-03-14 11:05:27,131 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图1.svg: 1559x1062
+2026-03-14 11:05:27,131 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:05:27,131 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:05:27,132 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图2.svg, converting to PNG at 220 DPI
+2026-03-14 11:05:30,921 - image-mcp - DEBUG - Converted SVG to PNG: 719114 bytes
+2026-03-14 11:05:30,921 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图2.svg: 1559x1755
+2026-03-14 11:05:30,921 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:05:30,921 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:05:30,930 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图3.svg, converting to PNG at 220 DPI
+2026-03-14 11:05:32,501 - image-mcp - DEBUG - Converted SVG to PNG: 923287 bytes
+2026-03-14 11:05:32,502 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图3.svg: 1559x1755
+2026-03-14 11:05:32,502 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:05:32,502 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:05:32,503 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图4.svg, converting to PNG at 220 DPI
+2026-03-14 11:05:33,092 - image-mcp - DEBUG - Converted SVG to PNG: 298278 bytes
+2026-03-14 11:05:33,093 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图4.svg: 1559x716
+2026-03-14 11:05:33,093 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:05:33,093 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:05:33,093 - image-mcp - DEBUG - Processed 6 images in 12.08 seconds. Success: 6, Failed: 0
+2026-03-14 11:35:15,319 - image-mcp - DEBUG - Processing 5 image sources: 0 URLs and 5 local files
+2026-03-14 11:35:15,319 - image-mcp - DEBUG - Processing 5 local files
+2026-03-14 11:35:15,342 - image-mcp - ERROR - File not found: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1B_LearningCurve.svg
+2026-03-14 11:35:15,342 - image-mcp - ERROR - File not found: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1B_FirstSessionPerformance.svg
+2026-03-14 11:35:15,344 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1C_GrowthSlope.svg, converting to PNG at 220 DPI
+2026-03-14 11:35:15,623 - image-mcp - DEBUG - Converted SVG to PNG: 8509 bytes
+2026-03-14 11:35:15,634 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1C_GrowthSlope.svg: 348x348
+2026-03-14 11:35:15,635 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:35:15,635 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:35:15,638 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1C_ExtremeSlopeMiceLearningCurves.svg, converting to PNG at 220 DPI
+2026-03-14 11:35:15,804 - image-mcp - DEBUG - Converted SVG to PNG: 45590 bytes
+2026-03-14 11:35:15,805 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1C_ExtremeSlopeMiceLearningCurves.svg: 1042x694
+2026-03-14 11:35:15,805 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:35:15,805 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:35:15,808 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2B_LanearHeatmap.svg, converting to PNG at 220 DPI
+2026-03-14 11:35:15,993 - image-mcp - DEBUG - Converted SVG to PNG: 162744 bytes
+2026-03-14 11:35:15,993 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2B_LanearHeatmap.svg: 1042x694
+2026-03-14 11:35:15,993 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:35:15,993 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:35:15,994 - image-mcp - DEBUG - Processed 5 images in 0.67 seconds. Success: 3, Failed: 2
+2026-03-14 11:37:39,927 - image-mcp - DEBUG - Processing 8 image sources: 0 URLs and 8 local files
+2026-03-14 11:37:39,928 - image-mcp - DEBUG - Processing 8 local files
+2026-03-14 11:37:39,949 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_LearningCurve.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,081 - image-mcp - DEBUG - Converted SVG to PNG: 41302 bytes
+2026-03-14 11:37:40,081 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_LearningCurve.svg: 782x694
+2026-03-14 11:37:40,081 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,081 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,083 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_FirstSessionPerformance.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,125 - image-mcp - DEBUG - Converted SVG to PNG: 7726 bytes
+2026-03-14 11:37:40,125 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_FirstSessionPerformance.svg: 348x263
+2026-03-14 11:37:40,125 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,125 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,127 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurve.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,240 - image-mcp - DEBUG - Converted SVG to PNG: 43901 bytes
+2026-03-14 11:37:40,240 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurve.svg: 782x694
+2026-03-14 11:37:40,240 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,240 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,243 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_FirstSessionHitRate.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,329 - image-mcp - DEBUG - Converted SVG to PNG: 7764 bytes
+2026-03-14 11:37:40,329 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_FirstSessionHitRate.svg: 348x263
+2026-03-14 11:37:40,329 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,329 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,331 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_DREADD_LearningCurve.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,403 - image-mcp - DEBUG - Converted SVG to PNG: 33013 bytes
+2026-03-14 11:37:40,404 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_DREADD_LearningCurve.svg: 782x694
+2026-03-14 11:37:40,404 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,404 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,406 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_DREADD_FirstSessionHitRate.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,441 - image-mcp - DEBUG - Converted SVG to PNG: 7827 bytes
+2026-03-14 11:37:40,442 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_DREADD_FirstSessionHitRate.svg: 348x263
+2026-03-14 11:37:40,442 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,442 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,443 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_LearningCurve.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,534 - image-mcp - DEBUG - Converted SVG to PNG: 38301 bytes
+2026-03-14 11:37:40,535 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_LearningCurve.svg: 782x694
+2026-03-14 11:37:40,535 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,535 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,536 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_FirstSessionHitRate.svg, converting to PNG at 220 DPI
+2026-03-14 11:37:40,581 - image-mcp - DEBUG - Converted SVG to PNG: 6341 bytes
+2026-03-14 11:37:40,581 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_FirstSessionHitRate.svg: 348x263
+2026-03-14 11:37:40,581 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:37:40,581 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:37:40,581 - image-mcp - DEBUG - Processed 8 images in 0.65 seconds. Success: 8, Failed: 0
+2026-03-14 11:48:30,833 - image-mcp - DEBUG - Processing 5 image sources: 0 URLs and 5 local files
+2026-03-14 11:48:30,834 - image-mcp - DEBUG - Processing 5 local files
+2026-03-14 11:48:30,858 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4B_RSPd_TaskDiscrimination.svg, converting to PNG at 220 DPI
+2026-03-14 11:48:31,085 - image-mcp - DEBUG - Converted SVG to PNG: 262075 bytes
+2026-03-14 11:48:31,085 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4B_RSPd_TaskDiscrimination.svg: 1042x694
+2026-03-14 11:48:31,085 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:48:31,085 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:48:31,089 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4C_Onset_RSPd_vs_MOp.svg, converting to PNG at 220 DPI
+2026-03-14 11:48:31,179 - image-mcp - DEBUG - Converted SVG to PNG: 44827 bytes
+2026-03-14 11:48:31,179 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4C_Onset_RSPd_vs_MOp.svg: 782x694
+2026-03-14 11:48:31,179 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:48:31,179 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:48:31,181 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4F_RSPd_LearnedActive_Curves.svg, converting to PNG at 220 DPI
+2026-03-14 11:48:31,295 - image-mcp - DEBUG - Converted SVG to PNG: 97336 bytes
+2026-03-14 11:48:31,295 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4F_RSPd_LearnedActive_Curves.svg: 782x694
+2026-03-14 11:48:31,295 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:48:31,295 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:48:31,297 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg, converting to PNG at 220 DPI
+2026-03-14 11:48:31,385 - image-mcp - DEBUG - Converted SVG to PNG: 54582 bytes
+2026-03-14 11:48:31,386 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg: 782x694
+2026-03-14 11:48:31,386 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:48:31,386 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:48:31,390 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg, converting to PNG at 220 DPI
+2026-03-14 11:48:31,452 - image-mcp - DEBUG - Converted SVG to PNG: 8438 bytes
+2026-03-14 11:48:31,453 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg: 348x263
+2026-03-14 11:48:31,453 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:48:31,453 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:48:31,453 - image-mcp - DEBUG - Processed 5 images in 0.62 seconds. Success: 5, Failed: 0
+2026-03-14 11:55:36,963 - image-mcp - DEBUG - Processing 2 image sources: 0 URLs and 2 local files
+2026-03-14 11:55:36,963 - image-mcp - DEBUG - Processing 2 local files
+2026-03-14 11:55:36,964 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例1.svg, converting to PNG at 200 DPI
+2026-03-14 11:55:38,742 - image-mcp - DEBUG - Converted SVG to PNG: 172983 bytes
+2026-03-14 11:55:38,742 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例1.svg: 489x697
+2026-03-14 11:55:38,742 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:55:38,742 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:55:38,743 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例2.svg, converting to PNG at 200 DPI
+2026-03-14 11:55:40,097 - image-mcp - DEBUG - Converted SVG to PNG: 146465 bytes
+2026-03-14 11:55:40,098 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\范例2.svg: 468x523
+2026-03-14 11:55:40,098 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:55:40,098 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:55:40,099 - image-mcp - DEBUG - Processed 2 images in 3.14 seconds. Success: 2, Failed: 0
+2026-03-14 11:56:13,513 - image-mcp - DEBUG - Processing 5 image sources: 0 URLs and 5 local files
+2026-03-14 11:56:13,514 - image-mcp - DEBUG - Processing 5 local files
+2026-03-14 11:56:13,537 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4B_RSPd_TaskDiscrimination.svg, converting to PNG at 200 DPI
+2026-03-14 11:56:13,720 - image-mcp - DEBUG - Converted SVG to PNG: 233393 bytes
+2026-03-14 11:56:13,721 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4B_RSPd_TaskDiscrimination.svg: 947x631
+2026-03-14 11:56:13,721 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:56:13,721 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:56:13,724 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4C_Onset_RSPd_vs_MOp.svg, converting to PNG at 200 DPI
+2026-03-14 11:56:13,879 - image-mcp - DEBUG - Converted SVG to PNG: 39091 bytes
+2026-03-14 11:56:13,880 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4C_Onset_RSPd_vs_MOp.svg: 711x631
+2026-03-14 11:56:13,880 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:56:13,880 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:56:13,882 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4F_RSPd_LearnedActive_Curves.svg, converting to PNG at 200 DPI
+2026-03-14 11:56:14,012 - image-mcp - DEBUG - Converted SVG to PNG: 85650 bytes
+2026-03-14 11:56:14,012 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4F_RSPd_LearnedActive_Curves.svg: 711x631
+2026-03-14 11:56:14,012 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:56:14,013 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:56:14,014 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg, converting to PNG at 200 DPI
+2026-03-14 11:56:14,110 - image-mcp - DEBUG - Converted SVG to PNG: 48452 bytes
+2026-03-14 11:56:14,110 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg: 711x631
+2026-03-14 11:56:14,110 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:56:14,110 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:56:14,113 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg, converting to PNG at 200 DPI
+2026-03-14 11:56:14,164 - image-mcp - DEBUG - Converted SVG to PNG: 6775 bytes
+2026-03-14 11:56:14,164 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg: 317x239
+2026-03-14 11:56:14,164 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:56:14,164 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:56:14,164 - image-mcp - DEBUG - Processed 5 images in 0.65 seconds. Success: 5, Failed: 0
+2026-03-14 11:57:24,479 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 11:57:24,479 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 11:57:24,502 - image-mcp - ERROR - File not found: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1B_LearningCurve_NaiveVsTransfer.svg
+2026-03-14 11:57:24,503 - image-mcp - ERROR - File not found: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_LearningCurve_Vacation7.svg
+2026-03-14 11:57:24,504 - image-mcp - ERROR - File not found: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurveAndFirstSession.svg
+2026-03-14 11:57:24,505 - image-mcp - ERROR - File not found: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_MOp_LearningCurveAndFirstSession.svg
+2026-03-14 11:57:24,506 - image-mcp - DEBUG - Processed 4 images in 0.03 seconds. Success: 0, Failed: 4
+2026-03-14 11:57:40,334 - image-mcp - DEBUG - Processing 3 image sources: 0 URLs and 3 local files
+2026-03-14 11:57:40,335 - image-mcp - DEBUG - Processing 3 local files
+2026-03-14 11:57:40,337 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_LearningCurve.svg, converting to PNG at 200 DPI
+2026-03-14 11:57:40,482 - image-mcp - DEBUG - Converted SVG to PNG: 33220 bytes
+2026-03-14 11:57:40,482 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_LearningCurve.svg: 711x631
+2026-03-14 11:57:40,482 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:57:40,482 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:57:40,484 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurve.svg, converting to PNG at 200 DPI
+2026-03-14 11:57:40,575 - image-mcp - DEBUG - Converted SVG to PNG: 38206 bytes
+2026-03-14 11:57:40,575 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurve.svg: 711x631
+2026-03-14 11:57:40,575 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:57:40,575 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:57:40,577 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3G_THInhibitVsCtrl_LearningCurve.svg, converting to PNG at 200 DPI
+2026-03-14 11:57:40,691 - image-mcp - DEBUG - Converted SVG to PNG: 32567 bytes
+2026-03-14 11:57:40,691 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3G_THInhibitVsCtrl_LearningCurve.svg: 711x631
+2026-03-14 11:57:40,691 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 11:57:40,691 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 11:57:40,691 - image-mcp - DEBUG - Processed 3 images in 0.36 seconds. Success: 3, Failed: 0
+2026-03-14 12:05:21,530 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 12:05:21,531 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 12:05:21,554 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4C_Onset_RSPd_vs_MOp.svg, converting to PNG at 200 DPI
+2026-03-14 12:05:21,652 - image-mcp - DEBUG - Converted SVG to PNG: 45906 bytes
+2026-03-14 12:05:21,653 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4C_Onset_RSPd_vs_MOp.svg: 711x631
+2026-03-14 12:05:21,653 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:05:21,653 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:05:21,656 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4F_RSPd_LearnedActive_Curves.svg, converting to PNG at 200 DPI
+2026-03-14 12:05:21,759 - image-mcp - DEBUG - Converted SVG to PNG: 90335 bytes
+2026-03-14 12:05:21,760 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4F_RSPd_LearnedActive_Curves.svg: 711x631
+2026-03-14 12:05:21,760 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:05:21,760 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:05:21,763 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg, converting to PNG at 200 DPI
+2026-03-14 12:05:21,885 - image-mcp - DEBUG - Converted SVG to PNG: 50223 bytes
+2026-03-14 12:05:21,886 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg: 711x631
+2026-03-14 12:05:21,886 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:05:21,886 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:05:21,889 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg, converting to PNG at 200 DPI
+2026-03-14 12:05:21,934 - image-mcp - DEBUG - Converted SVG to PNG: 6775 bytes
+2026-03-14 12:05:21,934 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg: 317x239
+2026-03-14 12:05:21,934 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:05:21,934 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:05:21,934 - image-mcp - DEBUG - Processed 4 images in 0.40 seconds. Success: 4, Failed: 0
+2026-03-14 12:15:41,606 - image-mcp - DEBUG - Processing 6 image sources: 0 URLs and 6 local files
+2026-03-14 12:15:41,607 - image-mcp - DEBUG - Processing 6 local files
+2026-03-14 12:15:41,629 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_LearningCurve.svg, converting to PNG at 180 DPI
+2026-03-14 12:15:41,729 - image-mcp - DEBUG - Converted SVG to PNG: 36092 bytes
+2026-03-14 12:15:41,729 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_LearningCurve.svg: 640x568
+2026-03-14 12:15:41,729 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:15:41,729 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:15:41,731 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_FirstSessionPerformance.svg, converting to PNG at 180 DPI
+2026-03-14 12:15:41,773 - image-mcp - DEBUG - Converted SVG to PNG: 5571 bytes
+2026-03-14 12:15:41,773 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_FirstSessionPerformance.svg: 285x215
+2026-03-14 12:15:41,773 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:15:41,773 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:15:41,774 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig1C_GrowthSlope.svg, converting to PNG at 180 DPI
+2026-03-14 12:15:41,827 - image-mcp - DEBUG - Converted SVG to PNG: 6433 bytes
+2026-03-14 12:15:41,828 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig1C_GrowthSlope.svg: 285x285
+2026-03-14 12:15:41,828 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:15:41,828 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:15:41,831 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurve.svg, converting to PNG at 180 DPI
+2026-03-14 12:15:41,962 - image-mcp - DEBUG - Converted SVG to PNG: 39628 bytes
+2026-03-14 12:15:41,963 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2I_cFos_LearningCurve.svg: 640x568
+2026-03-14 12:15:41,963 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:15:41,963 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:15:41,966 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_DREADD_LearningCurve.svg, converting to PNG at 180 DPI
+2026-03-14 12:15:42,044 - image-mcp - DEBUG - Converted SVG to PNG: 26987 bytes
+2026-03-14 12:15:42,044 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2J_DREADD_LearningCurve.svg: 640x568
+2026-03-14 12:15:42,044 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:15:42,044 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:15:42,047 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_LearningCurve.svg, converting to PNG at 180 DPI
+2026-03-14 12:15:42,175 - image-mcp - DEBUG - Converted SVG to PNG: 34133 bytes
+2026-03-14 12:15:42,176 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2L_Vacation7_LearningCurve.svg: 640x568
+2026-03-14 12:15:42,176 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:15:42,176 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:15:42,176 - image-mcp - DEBUG - Processed 6 images in 0.57 seconds. Success: 6, Failed: 0
+2026-03-14 12:48:53,061 - image-mcp - DEBUG - Processing 9 image sources: 0 URLs and 9 local files
+2026-03-14 12:48:53,062 - image-mcp - DEBUG - Processing 9 local files
+2026-03-14 12:48:53,085 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\图2E.2层.png has extension 'png', mapped to content type 'png'
+2026-03-14 12:48:53,114 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\图2E.2层.png with 156412 bytes
+2026-03-14 12:48:53,143 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\图2E.2层.png: 512x512
+2026-03-14 12:48:53,143 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:48:53,143 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,146 - image-mcp - DEBUG - Local image \\Data-Server-2\个人数据\张天夫\202602\图2E.5层.png has extension 'png', mapped to content type 'png'
+2026-03-14 12:48:53,165 - image-mcp - DEBUG - Read local image from \\Data-Server-2\个人数据\张天夫\202602\图2E.5层.png with 166064 bytes
+2026-03-14 12:48:53,165 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\图2E.5层.png: 512x512
+2026-03-14 12:48:53,165 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:48:53,166 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,168 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,456 - image-mcp - DEBUG - Converted SVG to PNG: 6433 bytes
+2026-03-14 12:48:53,456 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg: 215x285
+2026-03-14 12:48:53,456 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:48:53,456 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,458 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,525 - image-mcp - DEBUG - Converted SVG to PNG: 6423 bytes
+2026-03-14 12:48:53,525 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg: 215x285
+2026-03-14 12:48:53,525 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:48:53,525 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,526 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2K_cFos_LearningCurve.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,619 - image-mcp - DEBUG - Converted SVG to PNG: 39628 bytes
+2026-03-14 12:48:53,619 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2K_cFos_LearningCurve.svg: 640x568
+2026-03-14 12:48:53,619 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:48:53,619 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,621 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2K_cFos_FirstSessionHitRate.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,669 - image-mcp - DEBUG - Converted SVG to PNG: 5570 bytes
+2026-03-14 12:48:53,669 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2K_cFos_FirstSessionHitRate.svg: 285x215
+2026-03-14 12:48:53,669 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:48:53,669 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,672 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2M_Vacation7_LearningCurve.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,740 - image-mcp - DEBUG - Converted SVG to PNG: 34133 bytes
+2026-03-14 12:48:53,741 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2M_Vacation7_LearningCurve.svg: 640x568
+2026-03-14 12:48:53,741 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:48:53,741 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,744 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2M_Vacation7_FirstSessionHitRate.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,791 - image-mcp - DEBUG - Converted SVG to PNG: 4619 bytes
+2026-03-14 12:48:53,791 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2M_Vacation7_FirstSessionHitRate.svg: 285x215
+2026-03-14 12:48:53,791 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:48:53,791 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,793 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg, converting to PNG at 180 DPI
+2026-03-14 12:48:53,853 - image-mcp - DEBUG - Converted SVG to PNG: 5474 bytes
+2026-03-14 12:48:53,853 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg: 215x285
+2026-03-14 12:48:53,853 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:48:53,853 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:48:53,854 - image-mcp - DEBUG - Processed 9 images in 0.79 seconds. Success: 9, Failed: 0
+2026-03-14 12:49:26,833 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-14 12:49:26,833 - image-mcp - DEBUG - Processing 1 local files
+2026-03-14 12:49:26,834 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图2.svg, converting to PNG at 160 DPI
+2026-03-14 12:49:29,638 - image-mcp - DEBUG - Converted SVG to PNG: 447220 bytes
+2026-03-14 12:49:29,638 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图2.svg: 1134x1276
+2026-03-14 12:49:29,638 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 12:49:29,639 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:49:29,647 - image-mcp - DEBUG - Processed 1 images in 2.81 seconds. Success: 1, Failed: 0
+2026-03-14 12:51:16,118 - image-mcp - DEBUG - Processing 3 image sources: 0 URLs and 3 local files
+2026-03-14 12:51:16,119 - image-mcp - DEBUG - Processing 3 local files
+2026-03-14 12:51:16,141 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg, converting to PNG at 180 DPI
+2026-03-14 12:51:16,228 - image-mcp - DEBUG - Converted SVG to PNG: 6095 bytes
+2026-03-14 12:51:16,228 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg: 215x285
+2026-03-14 12:51:16,228 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:51:16,229 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:51:16,231 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2K_cFos_FirstSessionHitRate.svg, converting to PNG at 180 DPI
+2026-03-14 12:51:16,280 - image-mcp - DEBUG - Converted SVG to PNG: 4067 bytes
+2026-03-14 12:51:16,281 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2K_cFos_FirstSessionHitRate.svg: 285x215
+2026-03-14 12:51:16,281 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:51:16,281 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:51:16,283 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2M_Vacation7_FirstSessionHitRate.svg, converting to PNG at 180 DPI
+2026-03-14 12:51:16,316 - image-mcp - DEBUG - Converted SVG to PNG: 3738 bytes
+2026-03-14 12:51:16,316 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2M_Vacation7_FirstSessionHitRate.svg: 285x215
+2026-03-14 12:51:16,316 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 12:51:16,317 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 12:51:16,317 - image-mcp - DEBUG - Processed 3 images in 0.20 seconds. Success: 3, Failed: 0
+2026-03-14 13:06:08,307 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 13:06:08,308 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 13:06:08,308 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图1.svg, converting to PNG at 150 DPI
+2026-03-14 13:06:09,045 - image-mcp - DEBUG - Converted SVG to PNG: 255595 bytes
+2026-03-14 13:06:09,045 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图1.svg: 1063x724
+2026-03-14 13:06:09,045 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 13:06:09,046 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 13:06:09,047 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图2.svg, converting to PNG at 150 DPI
+2026-03-14 13:06:11,761 - image-mcp - DEBUG - Converted SVG to PNG: 410283 bytes
+2026-03-14 13:06:11,762 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图2.svg: 1063x1197
+2026-03-14 13:06:11,762 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 13:06:11,762 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 13:06:11,771 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图3.svg, converting to PNG at 150 DPI
+2026-03-14 13:06:12,801 - image-mcp - DEBUG - Converted SVG to PNG: 501583 bytes
+2026-03-14 13:06:12,801 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图3.svg: 1063x1197
+2026-03-14 13:06:12,801 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 13:06:12,802 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 13:06:12,803 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图4.svg, converting to PNG at 150 DPI
+2026-03-14 13:06:13,204 - image-mcp - DEBUG - Converted SVG to PNG: 182610 bytes
+2026-03-14 13:06:13,204 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\图4.svg: 1063x488
+2026-03-14 13:06:13,204 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 13:06:13,204 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 13:06:13,205 - image-mcp - DEBUG - Processed 4 images in 4.90 seconds. Success: 4, Failed: 0
+2026-03-14 14:58:39,415 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 14:58:39,416 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 14:58:39,416 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\1A.svg, converting to PNG at 150 DPI
+2026-03-14 14:58:39,866 - image-mcp - ERROR - Error converting SVG d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\1A.svg: (<LiteralToken =>, 'unexpected literal token.')
+Traceback (most recent call last):
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\mcp_image.py", line 456, in process_local_image
+    png_data = cairosvg.svg2png(bytestring=svg_data_with_fonts, dpi=svg_dpi)
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\cairosvg\__init__.py", line 54, in svg2png
+    return surface.PNGSurface.convert(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bytestring=bytestring, file_obj=file_obj, url=url, dpi=dpi,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        invert_images=invert_images, unsafe=unsafe, write_to=write_to,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        output_width=output_width, output_height=output_height)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\cairosvg\surface.py", line 133, in convert
+    tree = Tree(
+        bytestring=bytestring, file_obj=file_obj, url=url, unsafe=unsafe,
+        **kwargs)
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\cairosvg\parser.py", line 402, in __init__
+    style = parent.style if parent else css.parse_stylesheets(self, url)
+                                        ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\cairosvg\css.py", line 81, in parse_stylesheets
+    for selector in cssselect2.compile_selector_list(rule.prelude):
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\cssselect2\compiler.py", line 31, in compile_selector_list
+    return [CompiledSelector(selector) for selector in parser.parse(input, namespaces)]
+                                                       ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "D:\Users\张天夫\AppData\Local\uv\cache\archive-v0\uVZvN0t-B9zDrmr3ki7Ai\Lib\site-packages\cssselect2\parser.py", line 46, in parse
+    raise SelectorError(next, f'unexpected {next.type} token.')
+cssselect2.parser.SelectorError: (<LiteralToken =>, 'unexpected literal token.')
+2026-03-14 14:58:39,870 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\2N.svg, converting to PNG at 150 DPI
+2026-03-14 14:58:40,007 - image-mcp - DEBUG - Converted SVG to PNG: 36989 bytes
+2026-03-14 14:58:40,085 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\2N.svg: 531x236
+2026-03-14 14:58:40,085 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 14:58:40,085 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 14:58:40,086 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\3K.svg, converting to PNG at 150 DPI
+2026-03-14 14:58:40,141 - image-mcp - DEBUG - Converted SVG to PNG: 28201 bytes
+2026-03-14 14:58:40,141 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\3K.svg: 354x236
+2026-03-14 14:58:40,141 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 14:58:40,141 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 14:58:40,141 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\3L.svg, converting to PNG at 150 DPI
+2026-03-14 14:58:40,235 - image-mcp - DEBUG - Converted SVG to PNG: 28150 bytes
+2026-03-14 14:58:40,235 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\3L.svg: 354x236
+2026-03-14 14:58:40,235 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 14:58:40,235 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 14:58:40,235 - image-mcp - DEBUG - Processed 4 images in 0.82 seconds. Success: 3, Failed: 1
+2026-03-14 14:59:54,009 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-14 14:59:54,009 - image-mcp - DEBUG - Processing 1 local files
+2026-03-14 14:59:54,010 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\1A.svg, converting to PNG at 150 DPI
+2026-03-14 14:59:54,117 - image-mcp - DEBUG - Converted SVG to PNG: 13123 bytes
+2026-03-14 14:59:54,118 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\整合\1A.svg: 409x190
+2026-03-14 14:59:54,118 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 14:59:54,118 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 14:59:54,118 - image-mcp - DEBUG - Processed 1 images in 0.11 seconds. Success: 1, Failed: 0

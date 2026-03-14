@@ -60,10 +60,10 @@
      id="defs1"><style
        id="style1">
 .MsftOfcResponsive_Fill_00b0f0 {
- fill:#00B0F0; 
+ fill:#0070C0; 
 }
 .MsftOfcThm_Accent1_Stroke_v2 {
- stroke:#4472C4; 
+ stroke:#0070C0; 
 }
 </style><marker
        id="triBlue"
@@ -456,7 +456,7 @@
            font-weight="400"
            font-style="normal"
            id="text21-1">1</text></g><g
-         fill="#ff0000"
+         fill="#e60012"
          fill-opacity="0.333333"
          stroke="none"
          transform="matrix(7.5e-5,0,0,7.5e-5,0,0)"
@@ -469,9 +469,9 @@
            fill-rule="evenodd"
            d="m 758000,1189790 v 172510 172520 l 258000,-637190 258000,-139996 258000,-301634 258000,-103441 258000,-98909 258000,-23650 -258000,5198 -258000,16485 -258000,26377 -258000,87820 -258000,148489 -258000,675421"
            id="path22-4" /></g><g
-         fill="#ff0000"
+         fill="#e60012"
          fill-opacity="1"
-         stroke="#ff0000"
+         stroke="#e60012"
          stroke-opacity="1"
          stroke-width="0.666667"
          stroke-linecap="square"
@@ -507,7 +507,7 @@
            vector-effect="none"
            points="204.8,24.4424 230.6,23 "
            id="polyline28-6" /></g><g
-         fill="#0000ff"
+         fill="#0070c0"
          fill-opacity="0.333333"
          stroke="none"
          transform="matrix(7.5e-5,0,0,7.5e-5,0,0)"
@@ -520,9 +520,9 @@
            fill-rule="evenodd"
            d="m 758000,2171480 v 121190 121180 l 258000,-548460 258000,-559970 258000,-474259 258000,122204 258000,-459043 258000,-87276 258000,-151754 258000,-25292 -258000,1152 -258000,6912 -258000,18502 -258000,202068 -258000,16426 -258000,239738 -258000,392032 -258000,1064650"
            id="path28-9" /></g><g
-         fill="#0000ff"
+         fill="#0070c0"
          fill-opacity="1"
-         stroke="#0000ff"
+         stroke="#0070c0"
          stroke-opacity="1"
          stroke-width="0.666667"
          stroke-linecap="square"
@@ -579,7 +579,7 @@
            fill-rule="evenodd"
            d="m 1750000,2120000 v 380000 H 2980000 V 2120000 H 1750000"
            id="path36-2" /></g><g
-         fill="#ff0000"
+         fill="#e60012"
          fill-opacity="0.333333"
          stroke="none"
          transform="matrix(7.5e-5,0,0,7.5e-5,0,0)"
@@ -593,7 +593,7 @@
            d="m 1790000,2160710 v 125850 h 400000 v -125850 h -400000"
            id="path37-9" /></g><g
          fill="none"
-         stroke="#ff0000"
+         stroke="#e60012"
          stroke-opacity="1"
          stroke-width="0.666667"
          stroke-linecap="butt"
@@ -609,7 +609,7 @@
            fill-rule="evenodd"
            d="m 179,228.656 v -12.585 h 40 v 12.585 h -40"
            id="path38-3" /></g><g
-         fill="#0000ff"
+         fill="#0070c0"
          fill-opacity="0.333333"
          stroke="none"
          transform="matrix(7.5e-5,0,0,7.5e-5,0,0)"
@@ -623,7 +623,7 @@
            d="m 1790000,2333440 v 125850 h 400000 v -125850 h -400000"
            id="path39-4" /></g><g
          fill="none"
-         stroke="#0000ff"
+         stroke="#0070c0"
          stroke-opacity="1"
          stroke-width="0.666667"
          stroke-linecap="butt"
@@ -819,19 +819,19 @@
        x2="123"
        y2="187.5"
        stroke="#999999"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="line11"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><path
        d="m 123,187 c 2,-1 5,-2 8,-3 2,-0.5 5,-1 8,-1.5"
        fill="none"
-       stroke="#e57373"
+      stroke="#e60012"
        stroke-width="0.35"
        opacity="0.85"
        id="path11"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><path
        d="m 123,187 c 3,0.5 6,1 9,1.5 2,0.5 5,0.5 8,0.5"
        fill="none"
-       stroke="#64b5f6"
+      stroke="#0070c0"
        stroke-width="0.35"
        opacity="0.85"
        id="path12-6"
@@ -941,7 +941,7 @@
        x2="165"
        y2="168.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line21"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -950,7 +950,7 @@
        x2="169"
        y2="170"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line22"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -959,7 +959,7 @@
        x2="167"
        y2="174.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line23"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -968,7 +968,7 @@
        x2="163"
        y2="174.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line24"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -977,7 +977,7 @@
        x2="161"
        y2="170"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line25"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -986,7 +986,7 @@
        x2="163"
        y2="174.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line26"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -995,7 +995,7 @@
        x2="167"
        y2="174.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line27"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
@@ -1004,7 +1004,7 @@
        r="0.89999998"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle27"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="171"
@@ -1012,7 +1012,7 @@
        r="0.89999998"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle28"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="162"
@@ -1020,7 +1020,7 @@
        r="0.89999998"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle29"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="168"
@@ -1028,7 +1028,7 @@
        r="0.89999998"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle30"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><text
        x="165"
@@ -1191,7 +1191,7 @@
        x2="193"
        y2="167.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line44"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -1200,7 +1200,7 @@
        x2="198.5"
        y2="169"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line45"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -1209,7 +1209,7 @@
        x2="196"
        y2="173.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line46"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -1218,7 +1218,7 @@
        x2="190"
        y2="173.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line47"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -1227,7 +1227,7 @@
        x2="187.5"
        y2="169"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line48"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -1236,7 +1236,7 @@
        x2="190"
        y2="173.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line49"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><line
@@ -1245,7 +1245,7 @@
        x2="196"
        y2="173.5"
        stroke="#c62828"
-       stroke-width="0.15"
+      stroke-width="0.25"
        opacity="0.4"
        id="line50"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
@@ -1254,7 +1254,7 @@
        r="1"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle50"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="201"
@@ -1262,7 +1262,7 @@
        r="1"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle51"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="188"
@@ -1270,7 +1270,7 @@
        r="1"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle52"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="194"
@@ -1278,7 +1278,7 @@
        r="1"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle53"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><circle
        cx="200"
@@ -1286,7 +1286,7 @@
        r="1"
        fill="#e0e0e0"
        stroke="#bdbdbd"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="circle54"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><text
        x="182"
@@ -1300,12 +1300,12 @@
        x2="182"
        y2="187.5"
        stroke="#999999"
-       stroke-width="0.15"
+      stroke-width="0.25"
        id="line54"
        style="font-size:2.1px;font-family:Arial, Helvetica, sans-serif" /><path
        d="m 182,187 c 3,-1 5,-1.5 8,-1.8 3,-0.2 6,-0.4 9,-0.5"
        fill="none"
-       stroke="#e57373"
+      stroke="#e60012"
        stroke-width="0.35"
        opacity="0.85"
        id="path54-8"

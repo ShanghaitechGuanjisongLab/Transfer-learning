@@ -106,16 +106,18 @@ subTitles = ["Learned 🔊💧", "Tr 💡💧 Hit", "Tr 💡💧 Miss"];
 	ImagescStyle={'XData', [0, 1.5]}, ...
 	LMHColor=[0,0,1;1,1,1;1,0,0]);
 
-xlabel(Layout, 'Time (s)');
-ylabel(Layout, sprintf('%d cells', size(laneData,1)));
+xlabel(Layout, 'Time (s)', 'FontSize', 6);
+ylabel(Layout, sprintf('%d cells', size(laneData,1)), 'FontSize', 6);
 
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
+CB.FontSize = 6;
+CB.Label.FontSize = 6;
 
 for iA = 1:numel(Axes)
 	if isgraphics(Axes(iA))
-		Axes(iA).FontSize = 12;
+		Axes(iA).FontSize = 6;
 		Axes(iA).FontName = 'Segoe UI Emoji';
 		xline(Axes(iA), 0, ':k');
 		xline(Axes(iA), 1, '-k');
@@ -124,11 +126,10 @@ for iA = 1:numel(Axes)
 		Axes(iA).Toolbar.Visible = 'off';
 		if isprop(Axes(iA), 'Title') && isgraphics(Axes(iA).Title)
 			Axes(iA).Title.FontName = 'Segoe UI Emoji';
-			Axes(iA).Title.FontSize = 12;
+			Axes(iA).Title.FontSize = 6;
 		end
 	end
 end
-CB.FontSize = 12;
 
 % --- 8) Export
 if ~isfolder(outDirUNC)
