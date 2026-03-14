@@ -77,9 +77,6 @@ if isempty(mcherryColorIdx), mcherryColorIdx = 2; end
 
 f2 = figure('Color','none', 'Name','English Fig4H First-session performance');
 f2.Units = 'centimeters';
-pos2 = f2.Position;
-pos2(3:4) = [4, 3];
-f2.Position = pos2;
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 3];
 f2.PaperPositionMode = 'auto';

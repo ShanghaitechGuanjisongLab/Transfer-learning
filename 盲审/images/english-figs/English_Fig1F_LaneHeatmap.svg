@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="120.297mm" height="80.0806mm"
+ viewBox="0 0 341 227"
+ xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  version="1.2" baseProfile="tiny">
+<title>Qt SVG Document</title>
+<desc>MATLAB, The MathWorks, Inc. Version 25.2.0.3055257 R2025b Update 2</desc>
+<defs>
+<pattern id="fillPattern62_" x="45" y="25" width="81" height="229" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="81" height="229" />
+</pattern>
+<pattern id="fillPattern63_" x="126" y="25" width="80" height="229" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="80" height="229" />
+</pattern>
+<pattern id="fillPattern64_" x="206" y="25" width="80" height="229" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="80" height="229" />
+</pattern>
+<pattern id="fillPattern65_" x="286" y="25" width="81" height="229" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, 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" x="0" y="0" width="81" height="229" />
+</pattern>
+<pattern id="fillPattern66_" x="388" y="25" width="16" height="229" patternUnits="userSpaceOnUse" >
+<image xlink:href="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAADlCAYAAABarHfLAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAwklEQVRoge2bQQqAMBDEtur/n2w9+IRdSBni3TA7hkoLXbtqV+N5aq3O+xOA66ITBADaJQZ8hYAReMB90wl4gCIpkiINAfRADxRpCKBIeqBIQwBFUiT3zqcAAkpUpBMAfIkmiADwJbqgnADgSzRBBIAv0QQRAP8LESPwAEWKGIEHeJamSIo0BFAkPVCkIYAi6YEeDAEUSZEU6Qe4d+7lr6pnt24vTADe1wR8Ah7Ad2CCCABfYjsBP0IAgC/RBCcA8A4+9ctRKB/L09AAAAAASUVORK5CYII=" x="0" y="0" width="16" height="229" />
+</pattern>
+</defs>
+<g fill="none" stroke="black" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="SimSun" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M0,0 L455,0 L455,304 L0,304 L0,0"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,141.425,225.75)"
+font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+ >Time</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0,-0.75,0.75,0,9,125.175)"
+font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+ >74 cells</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M450000,250000 L450000,2.54e+06 L1.26e+06,2.54e+06 L1.26e+06,250000 L450000,250000"/>
+</g>
+
+<g fill="url(#fillPattern62_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M126,25 L45,25 L45,254 L126,254 L126,25"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Helvetica" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="45,254 126,254 " />
+<polyline fill="none" vector-effect="none" points="45,25 126,25 " />
+<polyline fill="none" vector-effect="none" points="72,254 72,251.71 " />
+<polyline fill="none" vector-effect="none" points="72,27.29 72,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,45.75,203.9)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >🔊</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="72,254 72,25 " />
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M1.26e+06,250000 L1.26e+06,2.54e+06 L2.06e+06,2.54e+06 L2.06e+06,250000 L1.26e+06,250000"/>
+</g>
+
+<g fill="url(#fillPattern63_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M206,25 L126,25 L126,254 L206,254 L206,25"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="126,254 206,254 " />
+<polyline fill="none" vector-effect="none" points="126,25 206,25 " />
+<polyline fill="none" vector-effect="none" points="152.667,254 152.667,251.71 " />
+<polyline fill="none" vector-effect="none" points="152.667,27.29 152.667,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,106.25,203.9)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >💡</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="152.667,254 152.667,25 " />
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M2.06e+06,250000 L2.06e+06,2.54e+06 L2.86e+06,2.54e+06 L2.86e+06,250000 L2.06e+06,250000"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,161.25,13.5)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >100% hit</text>
+</g>
+
+<g fill="url(#fillPattern64_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M286,25 L206,25 L206,254 L286,254 L286,25"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="206,254 286,254 " />
+<polyline fill="none" vector-effect="none" points="206,25 286,25 " />
+<polyline fill="none" vector-effect="none" points="232.667,254 232.667,251.71 " />
+<polyline fill="none" vector-effect="none" points="232.667,27.29 232.667,25 " />
+<polyline fill="none" vector-effect="none" points="258.778,254 258.778,251.71 " />
+<polyline fill="none" vector-effect="none" points="258.778,27.29 258.778,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,166.25,203.9)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >🔊</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,185.833,203.9)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >💧</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="232.667,254 232.667,25 " />
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="258.778,254 258.778,25 " />
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(7.5e-05,0,0,7.5e-05,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M2.86e+06,250000 L2.86e+06,2.54e+06 L3.67e+06,2.54e+06 L3.67e+06,250000 L2.86e+06,250000"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,224.25,13.5)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >Transfer</text>
+</g>
+
+<g fill="url(#fillPattern65_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M367,25 L286,25 L286,254 L367,254 L367,25"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="286,254 367,254 " />
+<polyline fill="none" vector-effect="none" points="286,25 367,25 " />
+<polyline fill="none" vector-effect="none" points="313,254 313,251.71 " />
+<polyline fill="none" vector-effect="none" points="313,27.29 313,25 " />
+<polyline fill="none" vector-effect="none" points="339.438,254 339.438,251.71 " />
+<polyline fill="none" vector-effect="none" points="339.438,27.29 339.438,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,226.5,203.9)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >💡</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,246.328,203.9)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >💧</text>
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-dasharray="1,3" stroke-dashoffset="0" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="313,254 313,25 " />
+</g>
+
+<g fill="#000000" fill-opacity="0.701961" stroke="#000000" stroke-opacity="0.701961" stroke-width="0.666667" stroke-linecap="butt" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="339.438,254 339.438,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="388,254 404,254 " />
+<polyline fill="none" vector-effect="none" points="388,25 404,25 " />
+<polyline fill="none" vector-effect="none" points="388,254 388,25 " />
+<polyline fill="none" vector-effect="none" points="404,254 404,25 " />
+</g>
+
+<g fill="url(#fillPattern66_)" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M388,254 L404,254 L404,25 L388,25 L388,254"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="404,254 404,25 " />
+<polyline fill="none" vector-effect="none" points="404,254 401.71,254 " />
+<polyline fill="none" vector-effect="none" points="404,215.833 401.71,215.833 " />
+<polyline fill="none" vector-effect="none" points="404,177.667 401.71,177.667 " />
+<polyline fill="none" vector-effect="none" points="404,139.5 401.71,139.5 " />
+<polyline fill="none" vector-effect="none" points="404,101.333 401.71,101.333 " />
+<polyline fill="none" vector-effect="none" points="404,63.1667 401.71,63.1667 " />
+<polyline fill="none" vector-effect="none" points="404,25 401.71,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,193.5)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >-2</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,164.875)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >0</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,136.25)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >2</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,107.625)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >4</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,79)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >6</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,50.375)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >8</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0.75,0,0,0.75,307.4,21.75)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >10</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(0,-0.75,0.75,0,332.9,123.375)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<text fill="#212121" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="0" font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+ >z-score</text>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="#212121" stroke-opacity="1" stroke-width="0.666667" stroke-linecap="square" stroke-linejoin="round" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="388,25 404,25 " />
+<polyline fill="none" vector-effect="none" points="388,254 404,254 " />
+<polyline fill="none" vector-effect="none" points="388,254 388,25 " />
+<polyline fill="none" vector-effect="none" points="404,254 404,25 " />
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M387.667,253.667 L388.333,253.667 L388.333,254.333 L387.667,254.333 L387.667,253.667"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M387.667,24.6667 L388.333,24.6667 L388.333,25.3333 L387.667,25.3333 L387.667,24.6667"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M403.667,253.667 L404.333,253.667 L404.333,254.333 L403.667,254.333 L403.667,253.667"/>
+</g>
+
+<g fill="#212121" fill-opacity="1" stroke="none" transform="matrix(0.75,0,0,0.75,0,0)"
+font-family="Segoe UI Emoji" font-size="16" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M403.667,24.6667 L404.333,24.6667 L404.333,25.3333 L403.667,25.3333 L403.667,24.6667"/>
+</g>
+</g>
+</svg>

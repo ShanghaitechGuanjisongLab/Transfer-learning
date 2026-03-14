@@ -170,16 +170,13 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	DataCell = {naiveA, tranA}; % {Naive, Transfer}
 	CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-	% --- Plot (transparent background, 30mm x 15mm)
+	% --- Plot (transparent background)
 	f2 = figure('Color','none', 'Name', 'English Fig1B First-session performance'); %[output:4cd90a67]
 		f2.Units = 'centimeters';
-		pos2 = f2.Position;
-		pos2(3:4) = [4,3];
-		f2.Position = pos2; %[output:4cd90a67]
-			f2.PaperUnits = 'centimeters';
-			f2.PaperSize = [4,3];
-			f2.PaperPositionMode = 'auto';
-			f2.InvertHardcopy = 'off';
+		f2.InvertHardcopy = 'off';
+		f2.PaperUnits = 'centimeters';
+		f2.PaperSize = [4,3];
+		f2.PaperPositionMode = 'auto';
 
 	tiledlayout(1,1,'TileSpacing','compact','Padding','compact'); %[output:4cd90a67]
 	nexttile; %[output:4cd90a67]

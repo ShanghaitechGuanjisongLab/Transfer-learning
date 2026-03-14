@@ -233,13 +233,10 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 %% 
 f2 = figure('Color','w', 'Name', 'English Fig2K cFos First transfer session');
-try
-	f2.Units = 'centimeters';
-	f2.Position(3:4) = [4, 3];
-	try, f2.PaperPositionMode = 'auto'; catch, end
-	try, f2.InvertHardcopy = 'off'; catch, end
-catch
-end
+f2.Units = 'centimeters';
+f2.Position(3:4) = [4, 3];
+try, f2.PaperPositionMode = 'auto'; catch, end
+try, f2.InvertHardcopy = 'off'; catch, end
 
 [~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;

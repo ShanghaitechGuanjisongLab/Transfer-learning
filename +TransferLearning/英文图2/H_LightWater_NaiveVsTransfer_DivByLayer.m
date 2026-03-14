@@ -69,12 +69,6 @@ fprintf('  L5:   Naive %.3f ± %.3f (n=%d) vs Transfer %.3f ± %.3f (n=%d), p=%.
 	mean(tranL5), std(tranL5)/sqrt(numel(tranL5)), numel(tranL5), pL5);
 
 f = figure('Color', 'w', 'Name', 'English Fig2H NaiveLW vs TransferLW Div by layer');
-f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');

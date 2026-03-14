@@ -398,3 +398,134 @@ cssselect2.parser.SelectorError: (<LiteralToken =>, 'unexpected literal token.')
 2026-03-14 14:59:54,118 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
 2026-03-14 14:59:54,118 - image-mcp - DEBUG - Creating Image object with format: png
 2026-03-14 14:59:54,118 - image-mcp - DEBUG - Processed 1 images in 0.11 seconds. Success: 1, Failed: 0
+2026-03-14 15:15:00,983 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 15:15:00,984 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 15:15:01,007 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_LearningCurve.svg, converting to PNG at 200 DPI
+2026-03-14 15:15:01,095 - image-mcp - DEBUG - Converted SVG to PNG: 41338 bytes
+2026-03-14 15:15:01,096 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202601\English_Fig1B_LearningCurve.svg: 711x631
+2026-03-14 15:15:01,096 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:15:01,096 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:15:01,097 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg, converting to PNG at 200 DPI
+2026-03-14 15:15:01,150 - image-mcp - DEBUG - Converted SVG to PNG: 7893 bytes
+2026-03-14 15:15:01,150 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg: 239x317
+2026-03-14 15:15:01,150 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:15:01,150 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:15:01,152 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3A_DeltaHitIllustration.svg, converting to PNG at 200 DPI
+2026-03-14 15:15:01,227 - image-mcp - DEBUG - Converted SVG to PNG: 17020 bytes
+2026-03-14 15:15:01,227 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3A_DeltaHitIllustration.svg: 239x317
+2026-03-14 15:15:01,227 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:15:01,227 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:15:01,229 - image-mcp - DEBUG - SVG file detected: \\Data-Server-2\个人数据\张天夫\202602\English_Fig3F_SignalRetention.svg, converting to PNG at 200 DPI
+2026-03-14 15:15:04,002 - image-mcp - DEBUG - Converted SVG to PNG: 46499 bytes
+2026-03-14 15:15:04,002 - image-mcp - DEBUG - Original image dimensions from \\Data-Server-2\个人数据\张天夫\202602\English_Fig3F_SignalRetention.svg: 356x317
+2026-03-14 15:15:04,002 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:15:04,002 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:15:04,003 - image-mcp - DEBUG - Processed 4 images in 3.02 seconds. Success: 4, Failed: 0
+2026-03-14 15:16:55,050 - image-mcp - DEBUG - Processing 1 image sources: 0 URLs and 1 local files
+2026-03-14 15:16:55,051 - image-mcp - DEBUG - Processing 1 local files
+2026-03-14 15:16:55,051 - image-mcp - ERROR - File not found: d:/Users/张天夫/Documents/MATLAB/Transfer-learning/盲审/images/english-figs/English_Fig4C_Onset_RSPd_vs_MOp.svg
+2026-03-14 15:16:55,051 - image-mcp - DEBUG - Processed 1 images in 0.00 seconds. Success: 0, Failed: 1
+2026-03-14 15:21:15,548 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 15:21:15,548 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 15:21:15,549 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig1B_LearningCurve.svg, converting to PNG at 150 DPI
+2026-03-14 15:21:15,629 - image-mcp - DEBUG - Converted SVG to PNG: 28994 bytes
+2026-03-14 15:21:15,630 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig1B_LearningCurve.svg: 533x473
+2026-03-14 15:21:15,630 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:21:15,630 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:21:15,630 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg, converting to PNG at 150 DPI
+2026-03-14 15:21:15,688 - image-mcp - DEBUG - Converted SVG to PNG: 6084 bytes
+2026-03-14 15:21:15,689 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg: 179x238
+2026-03-14 15:21:15,689 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:21:15,689 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:21:15,689 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig3F_SignalRetention.svg, converting to PNG at 150 DPI
+2026-03-14 15:21:18,279 - image-mcp - DEBUG - Converted SVG to PNG: 29899 bytes
+2026-03-14 15:21:18,279 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig3F_SignalRetention.svg: 267x238
+2026-03-14 15:21:18,279 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:21:18,279 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:21:18,280 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4C_Onset_RSPd_vs_MOp.svg, converting to PNG at 150 DPI
+2026-03-14 15:21:18,395 - image-mcp - DEBUG - Converted SVG to PNG: 31681 bytes
+2026-03-14 15:21:18,395 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4C_Onset_RSPd_vs_MOp.svg: 533x473
+2026-03-14 15:21:18,395 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:21:18,395 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:21:18,395 - image-mcp - DEBUG - Processed 4 images in 2.85 seconds. Success: 4, Failed: 0
+2026-03-14 15:35:48,942 - image-mcp - DEBUG - Processing 11 image sources: 0 URLs and 11 local files
+2026-03-14 15:35:48,943 - image-mcp - DEBUG - Processing 11 local files
+2026-03-14 15:35:48,943 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,093 - image-mcp - DEBUG - Converted SVG to PNG: 17009 bytes
+2026-03-14 15:35:49,093 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg: 1679x1012
+2026-03-14 15:35:49,093 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,094 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,094 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,224 - image-mcp - DEBUG - Converted SVG to PNG: 15531 bytes
+2026-03-14 15:35:49,225 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg: 1679x1012
+2026-03-14 15:35:49,225 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,225 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,225 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2K_cFos_LearningCurve.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,378 - image-mcp - DEBUG - Converted SVG to PNG: 71724 bytes
+2026-03-14 15:35:49,378 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2K_cFos_LearningCurve.svg: 1679x1012
+2026-03-14 15:35:49,379 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,379 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,379 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2K_cFos_FirstSessionHitRate.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,495 - image-mcp - DEBUG - Converted SVG to PNG: 12707 bytes
+2026-03-14 15:35:49,495 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2K_cFos_FirstSessionHitRate.svg: 1679x1012
+2026-03-14 15:35:49,495 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,495 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,495 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2M_Vacation7_LearningCurve.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,611 - image-mcp - DEBUG - Converted SVG to PNG: 60552 bytes
+2026-03-14 15:35:49,612 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2M_Vacation7_LearningCurve.svg: 1679x1012
+2026-03-14 15:35:49,612 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,612 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,612 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2M_Vacation7_FirstSessionHitRate.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,703 - image-mcp - DEBUG - Converted SVG to PNG: 11610 bytes
+2026-03-14 15:35:49,704 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2M_Vacation7_FirstSessionHitRate.svg: 1679x1012
+2026-03-14 15:35:49,704 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,704 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,704 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,824 - image-mcp - DEBUG - Converted SVG to PNG: 14508 bytes
+2026-03-14 15:35:49,824 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg: 1679x1012
+2026-03-14 15:35:49,824 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,824 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,825 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4C_Onset_RSPd_vs_MOp.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:49,965 - image-mcp - DEBUG - Converted SVG to PNG: 79129 bytes
+2026-03-14 15:35:49,965 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4C_Onset_RSPd_vs_MOp.svg: 1679x1012
+2026-03-14 15:35:49,965 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:49,966 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:49,966 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4F_RSPd_LearnedActive_Curves.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:50,134 - image-mcp - DEBUG - Converted SVG to PNG: 151337 bytes
+2026-03-14 15:35:50,135 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4F_RSPd_LearnedActive_Curves.svg: 1679x1012
+2026-03-14 15:35:50,135 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:50,135 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:50,135 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:50,266 - image-mcp - DEBUG - Converted SVG to PNG: 78733 bytes
+2026-03-14 15:35:50,267 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg: 1679x1012
+2026-03-14 15:35:50,267 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:35:50,267 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:50,267 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg, converting to PNG at 150 DPI
+2026-03-14 15:35:50,402 - image-mcp - DEBUG - Converted SVG to PNG: 15946 bytes
+2026-03-14 15:35:50,402 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg: 1679x1012
+2026-03-14 15:35:50,402 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:35:50,403 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:35:50,403 - image-mcp - DEBUG - Processed 11 images in 1.46 seconds. Success: 11, Failed: 0
+2026-03-14 15:36:47,257 - image-mcp - DEBUG - Processing 4 image sources: 0 URLs and 4 local files
+2026-03-14 15:36:47,258 - image-mcp - DEBUG - Processing 4 local files
+2026-03-14 15:36:47,258 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2K_cFos_LearningCurve.svg, converting to PNG at 150 DPI
+2026-03-14 15:36:47,381 - image-mcp - DEBUG - Converted SVG to PNG: 71724 bytes
+2026-03-14 15:36:47,381 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2K_cFos_LearningCurve.svg: 1679x1012
+2026-03-14 15:36:47,381 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:36:47,382 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:36:47,382 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig3C2_PairwiseDeltaHitVsHeterogeneity.svg, converting to PNG at 150 DPI
+2026-03-14 15:36:47,435 - image-mcp - DEBUG - Converted SVG to PNG: 17220 bytes
+2026-03-14 15:36:47,435 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig3C2_PairwiseDeltaHitVsHeterogeneity.svg: 356x238
+2026-03-14 15:36:47,435 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:36:47,435 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:36:47,435 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4A_RSPd_TaskDiscrimination.svg, converting to PNG at 150 DPI
+2026-03-14 15:36:47,548 - image-mcp - DEBUG - Converted SVG to PNG: 155985 bytes
+2026-03-14 15:36:47,548 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig4A_RSPd_TaskDiscrimination.svg: 710x473
+2026-03-14 15:36:47,548 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGBA
+2026-03-14 15:36:47,548 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:36:47,548 - image-mcp - DEBUG - SVG file detected: d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2_MechanisticModel.svg, converting to PNG at 150 DPI
+2026-03-14 15:36:47,616 - image-mcp - DEBUG - Converted SVG to PNG: 35963 bytes
+2026-03-14 15:36:47,616 - image-mcp - DEBUG - Original image dimensions from d:\Users\张天夫\Documents\MATLAB\Transfer-learning\盲审\images\english-figs\English_Fig2_MechanisticModel.svg: 531x236
+2026-03-14 15:36:47,616 - image-mcp - DEBUG - Image format from PIL: PNG, mode: RGB
+2026-03-14 15:36:47,616 - image-mcp - DEBUG - Creating Image object with format: png
+2026-03-14 15:36:47,616 - image-mcp - DEBUG - Processed 4 images in 0.36 seconds. Success: 4, Failed: 0
