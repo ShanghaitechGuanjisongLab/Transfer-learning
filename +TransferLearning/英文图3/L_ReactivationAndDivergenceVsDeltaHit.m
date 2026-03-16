@@ -124,12 +124,13 @@ hold(ax, 'on');
 box(ax, 'off');
 grid(ax, 'off');
 ax.FontSize = 6;
-scatter(ax, x, y, 5, [0 0.4470 0.7410], 'LineWidth', 0.2);
+palette3 = TransferLearning.FigurePalette(3);
+scatter(ax, x, y, 5, palette3(1,:), 'LineWidth', 0.2);
 if numel(x) >= 2 && std(x) > 0
 	pFit = polyfit(x, y, 1);
 	xFit = [min(x) max(x)];
 	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', [0.85 0.325 0.098]);
+	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', palette3(2,:));
 end
 xlabel(ax, xLabel);
 ylabel(ax, yLabel);

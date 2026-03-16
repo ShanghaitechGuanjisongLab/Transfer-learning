@@ -14,8 +14,10 @@ if ~ok1s, error('Fig3M:No1s', 'Cannot find sample close to 1s.'); end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-colorC = [1 0 0];
-colorT = [0 0 1];
+palette3 = TransferLearning.FigurePalette(3);
+colorC = palette3(1,:);
+colorT = palette3(2,:);
+colorFit = palette3(3,:);
 
 f = figure('Color', 'w', 'Name', 'Fig3M2 TH/Ctrl pairwise DeltaHit vs Response heterogeneity');
 f.Units = 'centimeters';
@@ -25,7 +27,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 6, 4];
 f.PaperSize = [6, 4];
 tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
-xlabel(tl, 'Response heterogeneity', 'FontSize', 6);
+xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
 
 hLegend = gobjects(2,1);
 for iL = 1:numel(layers)
@@ -51,33 +53,33 @@ for iL = 1:numel(layers)
 
     ax = nexttile(tl, iL);
     hold(ax, 'on');
-    ax.FontSize = 6;
+    ax.FontSize = 12;
     box(ax, 'off');
     hC = scatter(ax, sdC(useC), dhC(useC), 6, colorC, 'o', 'filled', 'LineWidth', 0.2);
     hT = scatter(ax, sdT(useT), dhT(useT), 6, colorT, 's', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hC; hT];
-        ylabel(ax, 'ΔHit', 'FontSize', 6);
+        ylabel(ax, 'ΔHit', 'FontSize', 12);
     end
     if numel(xAll) >= 2 && std(xAll) > 0
         b = polyfit(xAll, yAll, 1);
         xFit = [min(xAll), max(xAll)];
-        plot(ax, xFit, polyval(b, xFit), '-', 'Color', [0.4 0.4 0.4], 'LineWidth', 1);
+        plot(ax, xFit, polyval(b, xFit), '-', 'Color', colorFit, 'LineWidth', 2);
     end
-    title(ax, layerLabels(iL), 'FontSize', 6);
-    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
+    title(ax, layerLabels(iL), 'FontSize', 12);
+    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
 
     fprintf('\n=== Fig3M2 %s ===\n', layerLabels(iL));
     fprintf('Ctrl pairs: %d\n', nnz(useC));
     fprintf('TH pairs: %d\n', nnz(useT));
     fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
 end
-lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 5, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, 'English_Fig3M2_THCtrl_PairwiseDeltaHitVsHeterogeneity.svg');
-TransferLearning.PrintFigure(f, svgPath);
+TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 
 function [dhVec, sdVec] = iSingleDatasetPairDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)

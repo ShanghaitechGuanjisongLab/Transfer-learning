@@ -1,4 +1,4 @@
-% English Fig2H: LightWater Naive vs Transfer Divergence by layer
+﻿% English Fig2H: LightWater Naive vs Transfer Divergence by layer
 %
 % 上面板：L2/3  Naive LW vs Transfer LW（非配对 ranksum）
 % 下面板：L5    Naive LW vs Transfer LW（非配对 ranksum）
@@ -13,13 +13,13 @@
 % Execution:
 %   TransferLearning.英文图2.H_LightWater_NaiveVsTransfer_DivByLayer
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idx1s = 4 * sampleRate;
 
-RED = [230/255, 0, 18/255];
-BLUE = [0, 112/255, 192/255];
+palette2 = TransferLearning.FigurePalette(2);
+RED = palette2(1,:);
+BLUE = palette2(2,:);
 
 Sources = {
 	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline(), 'Group', "Naive", 'StartPhase', "Naive")
@@ -69,6 +69,12 @@ fprintf('  L5:   Naive %.3f ± %.3f (n=%d) vs Transfer %.3f ± %.3f (n=%d), p=%.
 	mean(tranL5), std(tranL5)/sqrt(numel(tranL5)), numel(tranL5), pL5);
 
 f = figure('Color', 'w', 'Name', 'English Fig2H NaiveLW vs TransferLW Div by layer');
+f.Units = 'centimeters';
+f.Position(3:4) = [3, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 3, 4];
+f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');
@@ -93,9 +99,10 @@ for eb = EB2.Object(:)'
 	eb.LineWidth = 0.5;
 end
 iStyleAxes(ax2, 'L5');
-xlabel(ax2, 'LightWater', 'FontName', 'Arial', 'FontSize', 6);
+xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
 iStyleBars(Bars2, RED, BLUE);
 
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgPath = fullfile(outDirUNC, 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg');
 TransferLearning.PrintFigure(f, svgPath);
 

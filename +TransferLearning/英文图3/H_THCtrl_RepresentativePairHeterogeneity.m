@@ -120,26 +120,35 @@ for iS = 1:2
 end
 
 binEdges = linspace(-1, 1, 41);
-histColors = {[1 0 0], [0 0 1]};
+palette2 = TransferLearning.FigurePalette(2);
+histColors = {palette2(1,:), palette2(2,:)};
 histTitles = ["Control", "TH inhibited"];
 histFigs = gobjects(1, 2);
 histAxes = gobjects(1, 2);
 for iS = 1:2
     fh = figure('Color', 'w');
     fh.Units = 'centimeters';
-    fh.Position(3:4) = [5.8, 1.6];
+    fh.Position(3:4) = [6, 4];
+    fh.PaperUnits = 'centimeters';
+    fh.PaperPositionMode = 'auto';
+    fh.PaperSize = [6, 4];
     ax = axes(fh);
     disableDefaultInteractivity(ax);
     ax.Toolbar.Visible = 'off';
     hold(ax, 'on');
-    histogram(ax, vals{iS}, binEdges, 'Normalization', 'probability', 'FaceColor', histColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
+    hHist = histogram(ax, vals{iS}, binEdges, 'Normalization', 'probability', 'FaceColor', histColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
     xline(ax, mean(vals{iS}), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
     xlim(ax, [-1 1]);
     ax.XTick = [-1 0 1];
     ax.FontSize = 6;
     box(ax, 'off');
     grid(ax, 'off');
-    text(ax, 0.97, 0.95, sprintf('Resp. heterogeneity\n=%.2f', sdVals(iS)), 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
+    yMax = max(hHist.Values, [], 'omitnan');
+    if ~isfinite(yMax) || yMax <= 0
+        yMax = 0.1;
+    end
+    ylim(ax, [0, yMax * 1.55]);
+    text(ax, 0.97, 0.88, sprintf('Resp. heterogeneity\n=%.2f', sdVals(iS)), 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
     title(ax, histTitles(iS), 'FontSize', 6, 'FontWeight', 'normal');
     xlabel(ax, 'z-score', 'FontSize', 6);
     ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
@@ -150,7 +159,7 @@ end
 MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
 for iS = 1:2
     yl = ylim(histAxes(iS));
-    ylim(histAxes(iS), [yl(1), yl(2) * 2.40]);
+    ylim(histAxes(iS), [yl(1), yl(2) * 1.20]);
 end
 for iS = 1:2
     svgName = sprintf('English_Fig3H_Hist_%s.svg', sessInfo(iS).label);

@@ -1,4 +1,4 @@
-% English Fig2J: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
+﻿% English Fig2J: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
 %
 % v6 Panel J: DREADD MOp 全局抑制（学习曲线 + 首会话命中率）
 % Data source: Fig3.5B (TransferLearning.Fig35.B_MOpVsMCherry)
@@ -10,7 +10,6 @@
 % - Keep this file as a script (do NOT convert to function).
 % - Open in MATLAB Editor and Run/F5.
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -90,10 +89,10 @@ f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
 try, f.PaperPositionMode = 'auto'; catch, end
 ax = axes(f);
 hold(ax,'on');
-title(ax, 'Non-specific MOp inhibition', 'FontSize', 6, 'FontWeight', 'normal');
+title(ax, 'Non-specific MOp inhibition', 'FontSize', 12, 'FontWeight', 'normal');
 
 % Reference palette from 范例 SVGs: Control=#e60012, Experimental=#0070c0
-edgeColors = [230/255, 0, 18/255; 0, 112/255, 192/255];
+edgeColors = TransferLearning.FigurePalette(2);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -126,7 +125,7 @@ if isfinite(pCurve)
 	else
 		astStr = 'n.s.';
 	end
-	ht = text(ax, lastSess + 0.5, yMid, astStr, 'FontSize', 6, ...
+	ht = text(ax, lastSess + 0.5, yMid, astStr, 'FontSize', 12, ...
 		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
 		'HandleVisibility', 'off');
 	ht.AffectAutoLimits = 'on';
@@ -140,17 +139,18 @@ try
 	else
 		lg = legend(ax, labels, 'Location', 'best');
 	end
-	lg.FontSize = 6;
+	lg.FontSize = 12;
 catch
 end
 
-ax.FontSize = 6;
-xlabel(ax, 'Session', 'FontSize', 6);
-ylabel(ax, 'Hit rate', 'FontSize', 6);
+ax.FontSize = 12;
+xlabel(ax, 'Session', 'FontSize', 12);
+ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgLC = fullfile(outDirUNC, 'English_Fig2J_DREADD_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
@@ -158,7 +158,7 @@ catch
 end
 try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
-	TransferLearning.PrintFigure(f, svgLC);
+	TransferLearning.PrintFigure(f, svgLC, ForceLegendOrColorbar=true);
 	fprintf('Wrote: %s\n', svgLC);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -181,21 +181,23 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 f2 = figure('Color','none', 'Name', 'English Fig2J DREADD First transfer session');
 f2.Units = 'centimeters';
-f2.Position(3:4) = [4, 3];
+f2.Position(3:4) = [4, 4];
 try, f2.PaperPositionMode = 'auto'; catch, end
+try, f2.PaperUnits = 'centimeters'; f2.PaperSize = [4, 4]; catch, end
 try, f2.InvertHardcopy = 'off'; catch, end
 
 [~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
-ax2.FontSize = 6;
+ax2.FontSize = 12;
 ax2.Color = 'none';
 ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
 
 	% Bar styling – reference palette from 范例 SVGs
-	colorA = [230/255, 0, 18/255];    % #e60012 Control
-	colorB = [0, 112/255, 192/255];   % #0070c0 Experimental
+	palette2 = TransferLearning.FigurePalette(2);
+	colorA = palette2(1,:);
+	colorB = palette2(2,:);
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	nBars = numel(Bars2.YData);
@@ -203,31 +205,31 @@ if isscalar(Bars2)
 	Bars2.CData = repmat([colorA; colorB], reps, 1);
 	Bars2.CData = Bars2.CData(1:nBars, :);
 	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 0.5;
+	Bars2.LineWidth = 2;
 	try, Bars2.FaceAlpha = 1/3; catch, end
 else
 	if numel(Bars2) >= 2
 		Bars2(1).FaceColor = colorA;
 		Bars2(2).FaceColor = colorB;
-		Bars2(1).LineWidth = 0.5;
-		Bars2(2).LineWidth = 0.5;
+		Bars2(1).LineWidth = 2;
+		Bars2(2).LineWidth = 2;
 		try, Bars2(1).FaceAlpha = 1/3; catch, end
 		try, Bars2(2).FaceAlpha = 1/3; catch, end
 	end
 end
 for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 0.5;
+	eb.LineWidth = 2;
 end
 ax2.XLim = [0.5, 2.5];
 
-ylabel(ax2, 'Hit rate', 'FontSize', 6);
-title(ax2, 'First block', 'FontSize', 6, 'FontWeight', 'normal');
+ylabel(ax2, 'Hit rate', 'FontSize', 12);
+title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 
 svgFS = fullfile(outDirUNC, 'English_Fig2J_DREADD_FirstSessionHitRate.svg');
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
-	TransferLearning.PrintFigure(f2, svgFS);
+	TransferLearning.PrintFigure(f2, svgFS, ForceLegendOrColorbar=true);
 	fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

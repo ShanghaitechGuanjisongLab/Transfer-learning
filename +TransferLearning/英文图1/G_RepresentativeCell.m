@@ -1,4 +1,4 @@
-% 英文图1G：代表性细胞信号曲线
+﻿% 英文图1G：代表性细胞信号曲线
 %
 % 挑选一个细胞满足以下条件：
 % - 在1s处：Learned AudioWater > Transfer LightWater > 两个Naive泳道
@@ -12,7 +12,6 @@
 % Execution:
 %   TransferLearning.英文图1.G_RepresentativeCell
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded
 try
@@ -342,7 +341,6 @@ if maxLO_shifted >= minAO_shifted - gap
 end
 
 % --- 5) Plot
-svgName = "English_Fig1G_RepresentativeCell.svg";
 f = figure('Color','w', 'Name', 'English Fig1G Representative Cell');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5, 4.0]; % 45mm x 40mm
@@ -353,7 +351,7 @@ TL = tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 ax1 = nexttile(TL);
 hold(ax1, 'on');
 plot(ax1, xsPlot, SigAO_shifted, 'k-', 'LineWidth', 1);
-plot(ax1, xsPlot, SigLO_shifted, 'Color', [0.5 0.5 0.5], 'LineWidth', 1);
+plot(ax1, xsPlot, SigLO_shifted, 'k-', 'LineWidth', 1);
 xline(ax1, 0, ':k');
 xlim(ax1, [-1 2]);
 title(ax1, {sprintf('Cell#%u', picked.CellUID); 'Naive'}, 'FontSize', 6);
@@ -380,8 +378,8 @@ try ax1.Toolbar.Visible = 'off'; catch, end
 % --- Subplot 2: Learned & Transfer
 ax2 = nexttile(TL);
 hold(ax2, 'on');
-plot(ax2, xsPlot, SigLearned_shifted, 'r-', 'LineWidth', 1);
-plot(ax2, xsPlot, SigTrans_shifted, 'Color', [0.5 0 0.5], 'LineWidth', 1);
+plot(ax2, xsPlot, SigLearned_shifted, 'k-', 'LineWidth', 1);
+plot(ax2, xsPlot, SigTrans_shifted, 'k-', 'LineWidth', 1);
 xline(ax2, 0, ':k');
 xline(ax2, 1, '-k');
 xlim(ax2, [-1 2]);
@@ -418,12 +416,14 @@ xlabel(TL, 'Time (s)', 'FontSize', 6);
 
 % --- 6) Export
 try
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
 catch
 end
 
+svgName = "English_Fig1G_RepresentativeCell.svg";
 svgPath = fullfile(outDirUNC, svgName);
 try
 	TransferLearning.PrintFigure(f, svgPath);

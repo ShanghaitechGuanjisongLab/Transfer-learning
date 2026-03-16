@@ -116,11 +116,7 @@ f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
 
-try
-	edgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
-catch
-	edgeColors = lines(2);
-end
+edgeColors = TransferLearning.FigurePalette(2);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -153,7 +149,7 @@ try
 catch
 end
 svgPath = fullfile(outDirUNC, svgNameLC);
-TransferLearning.PrintFigure(f, svgPath);
+TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 close(f);
 
@@ -180,8 +176,10 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 f2 = figure('Color', 'none', 'Name', 'English Fig3G TH First transfer session');
 f2.Units = 'centimeters';
-f2.Position(3:4) = [4, 3];
+f2.Position(3:4) = [4, 4];
 f2.PaperPositionMode = 'auto';
+f2.PaperUnits = 'centimeters';
+f2.PaperSize = [4, 4];
 try, f2.InvertHardcopy = 'off'; catch, end
 
 [~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
@@ -193,8 +191,8 @@ ax2.XTick = [];
 legend(ax2, 'off');
 
 % Bar styling (match English Fig2J)
-colorA = [1 0 0];
-colorB = [0 0 1];
+colorA = edgeColors(1,:);
+colorB = edgeColors(2,:);
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	nBars = numel(Bars2.YData);
@@ -202,16 +200,16 @@ if isscalar(Bars2)
 	Bars2.CData = repmat([colorA; colorB], reps, 1);
 	Bars2.CData = Bars2.CData(1:nBars, :);
 	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 0.5;
+	Bars2.LineWidth = 2;
 	try, Bars2.FaceAlpha = 1/3; catch, end
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA; Bars2(1).LineWidth = 0.5; try, Bars2(1).FaceAlpha = 1/3; catch, end
-		Bars2(2).FaceColor = colorB; Bars2(2).LineWidth = 0.5; try, Bars2(2).FaceAlpha = 1/3; catch, end
+		Bars2(1).FaceColor = colorA; Bars2(1).LineWidth = 2; try, Bars2(1).FaceAlpha = 1/3; catch, end
+		Bars2(2).FaceColor = colorB; Bars2(2).LineWidth = 2; try, Bars2(2).FaceAlpha = 1/3; catch, end
 	end
 end
 for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 0.5;
+	eb.LineWidth = 2;
 end
 ax2.XLim = [0.5, 2.5];
 
@@ -224,7 +222,7 @@ try
 catch
 end
 svgPathFS = fullfile(outDirUNC, svgNameFS);
-TransferLearning.PrintFigure(f2, svgPathFS);
+TransferLearning.PrintFigure(f2, svgPathFS, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
 close(f2);
 

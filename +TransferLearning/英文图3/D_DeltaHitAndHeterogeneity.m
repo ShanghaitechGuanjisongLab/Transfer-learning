@@ -53,9 +53,10 @@ f.PaperSize = [3, 4];
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 title(Layout, 'Response heterogeneity', 'FontSize', 6, 'FontWeight', 'normal');
 
-colorNaive    = [0.8500 0.3250 0.0980];
-colorTransfer = [0      0.4470 0.7410];
-colorLearned  = [0.4660 0.6740 0.1880];
+palette3 = TransferLearning.FigurePalette(3);
+colorNaive    = palette3(1,:);
+colorTransfer = palette3(2,:);
+colorLearned  = palette3(3,:);
 CompareGroup = table([1 2; 3 2], 'VariableNames', {'GroupPair'});
 
 for iL = 1:numel(layers)

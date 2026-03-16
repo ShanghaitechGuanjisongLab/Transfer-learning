@@ -1,4 +1,4 @@
-% 英文图1J: Hit vs Miss Reactivation (per mouse, layers merged)
+﻿% 英文图1J: Hit vs Miss Reactivation (per mouse, layers merged)
 %
 % Reactivation = P(Transfer active | Learned active) at 1s
 %   L = Learned AudioWater active at 1s
@@ -8,7 +8,6 @@
 % Execution:
 %   TransferLearning.英文图1.K_ReactivationRate_HitVsMiss
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- ensure project loaded
 try
@@ -42,7 +41,6 @@ hit = nanmean([hit23, hit5], 2);
 miss = nanmean([miss23, miss5], 2);
 mask = isfinite(hit) & isfinite(miss);
 %% 
-svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
 
 f = figure('Color','w', 'Name','English Fig1J Reactivation Hit vs Miss');
 f.Units = 'centimeters';
@@ -67,9 +65,11 @@ if nnz(mask) >= 4
 end
 
 Y = [hit(mask), miss(mask)];
-plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', [0.5 0.5 0.5]);
-scatter(ax, ones(nnz(mask),1), hit(mask), 15, [0 0.4470 0.7410], 'filled');
-scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, [0 0.4470 0.7410], 'filled');
+lineColor = [0.7922, 0.7922, 0.7922];
+markerColor = [0, 0, 1];
+plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', lineColor);
+scatter(ax, ones(nnz(mask),1), hit(mask), 15, markerColor, 'filled');
+scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, markerColor, 'filled');
 set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 ylim(ax, [0 1]);
 grid(ax,'off');
@@ -118,12 +118,14 @@ text(ax, 0.02, 0.98, sprintf('n=%d', nnz(mask)), 'Units','normalized', ...
 
 % Export
 try
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
 catch
 end
 
+svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
 svgPath = fullfile(outDirUNC, svgName);
 try
 	TransferLearning.PrintFigure(f, svgPath);

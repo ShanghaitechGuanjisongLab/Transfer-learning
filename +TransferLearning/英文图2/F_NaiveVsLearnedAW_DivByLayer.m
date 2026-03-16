@@ -1,4 +1,4 @@
-% 英文图2F：Naive声水 vs 学会声水 Divergence，分 L2/3 / L5 上下 tile
+﻿% 英文图2F：Naive声水 vs 学会声水 Divergence，分 L2/3 / L5 上下 tile
 %
 % 上面板：L2/3  Naive AW vs Learned AW（配对 signrank）
 % 下面板：L5    Naive AW vs Learned AW（配对 signrank）
@@ -11,7 +11,6 @@
 % Execution:
 %   TransferLearning.英文图2.F_NaiveVsLearnedAW_DivByLayer
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;   % index 24
@@ -161,8 +160,9 @@ Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');
 yl.FontSize = 6;
 
-colorNaive = [230/255, 0, 18/255];
-colorLearn = [0, 112/255, 192/255];
+palette2 = TransferLearning.FigurePalette(2);
+colorNaive = palette2(1,:);
+colorLearn = palette2(2,:);
 
 % --- Top tile: L2/3 ---
 nexttile(Layout, 1);
@@ -206,7 +206,7 @@ ax2.FontName = 'Arial';
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Naive', 'Learned'};
 title(ax2, 'L5', 'FontSize', 6);
-xlabel(ax2, 'AudioWater', 'FontSize', 6);
+xlabel(ax2, '🔊💧', 'FontSize', 6);
 legend(ax2, 'off');
 box(ax2, 'off');
 grid(ax2, 'off');
@@ -226,6 +226,7 @@ end
 for t = findobj(ax2, 'Type', 'Text')', t.FontSize = 6; end
 
 % --- Export ---
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgPath = fullfile(outDirUNC, "English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg");
 TransferLearning.PrintFigure(f, svgPath);
 

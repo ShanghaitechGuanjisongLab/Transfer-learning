@@ -5,7 +5,7 @@ arguments
 	PrintPath
 	ScaleColor=false;
 end
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 try
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
@@ -46,7 +46,10 @@ ylabel(Layout1,'Cell',Interpreter='none');
 CB=colorbar;
 CB.Layout.Tile='east';
 CB.Label.String='ΔF/F_0';
+CB.FontSize = 12;
+CB.Label.FontSize = 12;
+set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12);
 MATLAB.Graphics.FigureAspectRatio(2025,931,MATLAB.Flags.Narrow);
 CB.TickLabels=MATLAB.SignificantFixedpoint(2.^str2double(CB.TickLabels)-1,2);
-print(PrintPath+".png",'-dpng');
-print(PrintPath+".svg",'-dsvg');
+TransferLearning.PrintFigure(gcf, string(PrintPath) + ".png");
+TransferLearning.PrintFigure(gcf, string(PrintPath) + ".svg");

@@ -86,13 +86,14 @@ grid(ax, 'off');
 ax.FontSize = 6;
 
 % Learning curve (no markers on line — annotation scatter provides them)
+palette3 = TransferLearning.FigurePalette(3);
 plot(ax, xSess, yPerf, '-', ...
-	'Color', [0 0.4470 0.7410], ...
+	'Color', palette3(2,:), ...
 	'LineWidth', 1);
 
-% Pair colors — match Fig3G
-colorPairA = [0.8500 0.3250 0.0980]; % orange
-colorPairB = [0 0.4470 0.7410];      % blue
+colorPairA = palette3(1,:);
+colorPairB = palette3(2,:);
+colorGuide = palette3(3,:);
 
 % Session-position markers: Previous block = square ('s' ■), Latter block = triangle ('^' ▲)
 % Both pairs share the same shapes; pair identity is indicated by color only.
@@ -119,8 +120,8 @@ tickW = 0.15;
 plot(ax, [xArrow - tickW, xArrow + tickW], [yA1 yA1], '-', 'Color', aColor, 'LineWidth', 1);
 plot(ax, [xArrow - tickW, xArrow + tickW], [yA2 yA2], '-', 'Color', aColor, 'LineWidth', 1);
 
-plot(ax, [xA1 xArrow], [yA1 yA1], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
-plot(ax, [xA2 xArrow], [yA2 yA2], '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 0.5);
+plot(ax, [xA1 xArrow], [yA1 yA1], '--', 'Color', colorGuide, 'LineWidth', 0.5);
+plot(ax, [xA2 xArrow], [yA2 yA2], '--', 'Color', colorGuide, 'LineWidth', 0.5);
 
 yMid = (yA1 + yA2) / 2;
 if delta >= 0

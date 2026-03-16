@@ -1,4 +1,4 @@
-% 英文图2G：Divergence vs 首会话命中率 散点图 — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
+﻿% 英文图2G：Divergence vs 首会话命中率 散点图 — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
 %
 % 2×2 布局：行=层(L2/3, L5), 列=组(Naive, Transfer)
 % 关键发现：仅 Transfer L5 显著负相关
@@ -10,7 +10,6 @@
 % Execution:
 %   TransferLearning.英文图2.G_DivVsHitRate_L5_Scatter
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;
@@ -197,8 +196,9 @@ xl.FontSize = 6;
 yl = ylabel(Layout, 'First block hit rate');
 yl.FontSize = 6;
 
-colorNaive    = [0.8500 0.3250 0.0980];  % orange
-colorTransfer = [0 0.4470 0.7410];        % blue
+palette2 = TransferLearning.FigurePalette(2);
+colorNaive = palette2(1,:);
+colorTransfer = palette2(2,:);
 
 % cell array for 2×2: {row, col} = {layer, group}
 divData  = {N_DivL23(kNL23), T_DivL23(kTL23); N_DivL5(kNL5), T_DivL5(kTL5)};
@@ -247,6 +247,7 @@ for iR = 1:2
 end
 
 % --- Export ---
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgPath = fullfile(outDirUNC, "English_Fig2G_DivVsHitRate_L5.svg");
 TransferLearning.PrintFigure(f, svgPath);
 

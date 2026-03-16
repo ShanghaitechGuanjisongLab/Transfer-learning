@@ -12,3 +12,11 @@
 
 # 响应异质性（Response heterogeneity）
 取计算范围内的 1s z-score，将所有回合或会话平均掉，取[-1,1]范围内的细胞，计算它们的标准差。
+
+所有和学习曲线合成同一个脚本的条形图：必须使用透明背景，但不要显示xticklabels，而是用颜色和学习曲线保持对应关系，宽高都是40㎜。所有包含legend或colorbar的图：全脚本所有图使用12pt字号。
+
+除非没有其它方法实现功能，否则禁用try-catch，一律fail-fast。
+
+禁用LightWater、AudioWater等文本标注，一律用emoji标注为💡💧、🔊💧
+
+所有plot线条、坐标轴线、MultiShadowedLines线、xline线、bar框线全部设置线宽为1磅。特别地，包含colorbar或legend的全脚本所有图线宽2磅。legend边框全部去掉。所有scatter的边缘宽0.2磅。

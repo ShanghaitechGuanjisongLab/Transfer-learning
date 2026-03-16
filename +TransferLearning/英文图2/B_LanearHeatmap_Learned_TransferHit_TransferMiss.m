@@ -1,4 +1,4 @@
-% 英文图2B：三泳道热图（Learned AW / Transfer Hit / Transfer Miss）
+﻿% 英文图2B：三泳道热图（Learned AW / Transfer Hit / Transfer Miss）
 %
 % 按 Learned-Miss delta@1s 排序，展示"哪些细胞被复用决定了行为结局"。
 % 数据来源：AudioLightBaseline, Median ZScore NTATS, 0~1.5s
@@ -8,7 +8,6 @@
 % Execution:
 %   TransferLearning.英文图2.B_LanearHeatmap_Learned_TransferHit_TransferMiss
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 DS = TransferLearning.AudioLightBaseline();
 
@@ -87,14 +86,14 @@ climHighAbs = iNiceLimit(sqrt(abs(max(posV, 0))));
 if climLowAbs <= 0, climLowAbs = 1; end
 if climHighAbs <= 0, climHighAbs = 1; end
 CLim = [-climLowAbs, climHighAbs];
+%% 
 
 % --- 7) Plot
-svgName = "English_Fig2B_LanearHeatmap.svg";
 f = figure('Color','w', 'Name', 'English Fig2B Lane Heatmap');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 8];
+f.Position(3:4) = [12,8];
 
-Layout = tiledlayout(f, 1, 3, 'TileSpacing','none', 'Padding','tight');
+Layout = tiledlayout(f, 1, 3, 'TileSpacing','tight', 'Padding','tight');
 subTitles = ["Learned 🔊💧", "Tr 💡💧 Hit", "Tr 💡💧 Miss"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
@@ -106,18 +105,18 @@ subTitles = ["Learned 🔊💧", "Tr 💡💧 Hit", "Tr 💡💧 Miss"];
 	ImagescStyle={'XData', [0, 1.5]}, ...
 	LMHColor=[0,0,1;1,1,1;1,0,0]);
 
-xlabel(Layout, 'Time (s)', 'FontSize', 6);
-ylabel(Layout, sprintf('%d cells', size(laneData,1)), 'FontSize', 6);
+xlabel(Layout, 'Time (s)', 'FontSize', 12);
+ylabel(Layout, sprintf('%d cells', size(laneData,1)), 'FontSize', 12);
 
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
-CB.FontSize = 6;
-CB.Label.FontSize = 6;
+CB.FontSize = 12;
+CB.Label.FontSize = 12;
 
 for iA = 1:numel(Axes)
 	if isgraphics(Axes(iA))
-		Axes(iA).FontSize = 6;
+		Axes(iA).FontSize = 12;
 		Axes(iA).FontName = 'Segoe UI Emoji';
 		xline(Axes(iA), 0, ':k');
 		xline(Axes(iA), 1, '-k');
@@ -126,7 +125,7 @@ for iA = 1:numel(Axes)
 		Axes(iA).Toolbar.Visible = 'off';
 		if isprop(Axes(iA), 'Title') && isgraphics(Axes(iA).Title)
 			Axes(iA).Title.FontName = 'Segoe UI Emoji';
-			Axes(iA).Title.FontSize = 6;
+			Axes(iA).Title.FontSize = 12;
 		end
 	end
 end
@@ -135,6 +134,8 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+svgName = "English_Fig2B_LanearHeatmap.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

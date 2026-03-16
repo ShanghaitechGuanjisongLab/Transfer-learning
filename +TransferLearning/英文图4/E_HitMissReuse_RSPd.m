@@ -88,9 +88,11 @@ if numel(hit) >= 4
 end
 
 Y = [hit(:), miss(:)];
-plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', [0.5 0.5 0.5]);
-scatter(ax, ones(numel(hit),1), hit, 15, [0 0.4470 0.7410], 'filled');
-scatter(ax, 2*ones(numel(miss),1), miss, 15, [0 0.4470 0.7410], 'filled');
+lineColor = [0.7922, 0.7922, 0.7922];
+markerColor = [0, 0, 1];
+plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', lineColor);
+scatter(ax, ones(numel(hit),1), hit, 15, markerColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', markerColor);
+scatter(ax, 2*ones(numel(miss),1), miss, 15, markerColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', markerColor);
 set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 
 grid(ax,'off');

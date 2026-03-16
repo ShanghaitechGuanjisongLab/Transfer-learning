@@ -1,4 +1,4 @@
-% 英文图1H：四泳道平均线图（与1F相同细胞集）
+﻿% 英文图1H：四泳道平均线图（与1F相同细胞集）
 %
 % 四条线：Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater
 % 细胞筛选：与1F相同，仅保留在 Learned AudioWater 和 Transfer LightWater 两阶段1s处均活跃的细胞
@@ -8,7 +8,6 @@
 % Execution:
 %   TransferLearning.英文图1.H_LaneMeanLines
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 DS = TransferLearning.AudioLightBaseline();
 
@@ -74,13 +73,13 @@ end
 % --- 6) Plot
 f = figure('Color', 'w', 'Name', 'English Fig1H Lane Mean Lines');
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 7.6]; % 60mm x 40mm
+f.Position(3:4) = [9, 8];
 
 ax = axes(f);
 hold(ax, 'on');
 ax.FontSize = 12;
 
-laneColors2 = GlobalOptimization.ColorAllocate(2,[1,1,1;1,1,1]);
+laneColors2 = TransferLearning.FigurePalette(2);
 % Cue相同的线用相同颜色：Audio(1,3)同色，Light(2,4)同色
 laneColors = laneColors2([1; 2; 1; 2], :);
 
@@ -104,6 +103,7 @@ lg = legend(Patches, laneLabels, 'Location', MATLAB.Graphics.OptimizedLegendLoca
 ax.Toolbar.Visible = 'off';
 
 % --- 7) Export
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

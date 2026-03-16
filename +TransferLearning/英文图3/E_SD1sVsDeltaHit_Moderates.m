@@ -230,7 +230,8 @@ end
 %% ===== 6) Export 2 histogram SVGs (60 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-pairColors = {[0 0.4470 0.7410]; [0.8500 0.3250 0.0980]};  % Transfer=blue, Naive=orange
+palette3 = TransferLearning.FigurePalette(3);
+pairColors = {palette3(1,:); palette3(2,:)};
 histTitles = ["Transfer", "Naive"];
 
 histFigs = gobjects(1, 2);
@@ -249,7 +250,7 @@ for iS = 1:2
 
 	histogram(ax, v, binEdges, 'Normalization', 'probability', ...
 		'FaceColor', pairColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-	xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+	xline(ax, mean(v), '--', 'Color', pairColors{iS}, 'LineWidth', 1);
 
 	xlim(ax, [-1, 1]);
 	ax.XTick = [-1, 0, 1];

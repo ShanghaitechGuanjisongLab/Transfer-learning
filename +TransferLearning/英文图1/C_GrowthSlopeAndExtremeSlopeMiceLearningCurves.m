@@ -1,4 +1,4 @@
-% English Fig1C (merged from Fig1D + Fig1M): growth slope + extreme slope mice curves
+﻿% English Fig1C (merged from Fig1D + Fig1M): growth slope + extreme slope mice curves
 %
 % This script outputs TWO SVG figures, both labeled as panel C:
 %   1) Growth slope comparison (formerly Fig1D)
@@ -14,14 +14,13 @@
 %     Naive:    Naive -> Learned
 %     Transfer: Transfer -> Final
 % - Exclude LAInterspersed mice whose Naive blocks mix AudioWater trials.
-% - Export SVG only to \\Data-Server-2\个人数据\张天夫\202601
+% - Export SVG only to \\Data-Server-2\个人数据\张天夫\202602
 %
 % Execution (hard requirements):
 % - This file MUST remain a SCRIPT.
 % - Do NOT use run.
 % - Open in MATLAB Editor and Run/F5.
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded (for UniExp)
 try
@@ -142,23 +141,25 @@ Groups = struct('Naive', {xNaiveRaw(:)}, 'Trans', {xTranRaw(:)});
 f1 = figure('Color','none', 'Name', 'English Fig1C Growth slope');
 set(f1, 'InvertHardcopy', 'off');
 set(f1, 'Units', 'centimeters', 'Position', [5 5 4 4]);
+set(f1, 'PaperUnits', 'centimeters', 'PaperSize', [4 4], 'PaperPositionMode', 'auto');
 [~, ~, Bars, ErrorBars] = UniExp.BarScatterCompare(Groups, false);
 ax=gca;
 
-ax.FontSize = 6;
-ax.XTick = 1:2;
-ax.XTickLabel = {'Naive', 'Transfer'};
+ax.FontSize = 12;
+ax.Color = 'none';
+ax.XAxis.Visible = 'off';
+ax.XTick = [];
 
 for b = Bars(:)'
-	b.LineWidth = 0.5;
+	b.LineWidth = 2;
 end
 for eb = ErrorBars.Object(:)'
-	eb.LineWidth = 0.5;
+	eb.LineWidth = 2;
 end
 
-% Match bar colors to Fig1B lines – reference palette from 范例 SVGs
-colorNaive = [230/255, 0, 18/255];    % #e60012
-colorTrans = [0, 112/255, 192/255];   % #0070c0
+palette2 = TransferLearning.FigurePalette(2);
+colorNaive = palette2(1,:);
+colorTrans = palette2(2,:);
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorNaive; colorTrans];
@@ -166,7 +167,7 @@ if isscalar(Bars)
 	Bars.FaceAlpha = 1/3;
 end
 ax.XLim = [0.5, 2.5];
-title('Learning slope', 'FontSize', 6, 'FontWeight', 'normal');
+title('Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
 
 
 % P-line annotation (asterisk) using ANCOVA p-value
@@ -179,6 +180,7 @@ box off
 
 % Export SVG
 try
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
@@ -186,7 +188,7 @@ catch
 end
 svgPath1 = fullfile(outDirUNC, 'English_Fig1C_GrowthSlope.svg');
 try
-	TransferLearning.PrintFigure(f1, svgPath1);
+	TransferLearning.PrintFigure(f1, svgPath1, ForceLegendOrColorbar=true);
 	fprintf('Wrote: %s\n', svgPath1);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -276,7 +278,7 @@ f2.Units = "centimeters";
 f2.Position(3:4) = [12, 8];
 ax2=gca;
 hold(ax2, 'on');
-cols = lines(2);
+cols = [colorTrans; colorNaive];
 
 iPlotMouseCurve(ax2, allSessionsPlot, mouseMax, cols(1,:), "A transfer mouse");
 iPlotMouseCurve(ax2, allSessionsPlot, mouseMin, cols(2,:), "A naive mouse");
@@ -285,14 +287,14 @@ xlabel(ax2, 'Block');
 ylabel(ax2, 'Hit rate');
 box(ax2, 'off');
 grid(ax2, 'off');
-ax2.FontSize = 6;
-xlabel(ax2, 'Block', 'FontSize', 6);
-ylabel(ax2, 'Hit rate', 'FontSize', 6);
-legend(ax2, 'Location','northeastoutside', 'FontSize', 6);
+ax2.FontSize = 12;
+xlabel(ax2, 'Block', 'FontSize', 12);
+ylabel(ax2, 'Hit rate', 'FontSize', 12);
+legend(ax2, 'Location','northeastoutside', 'FontSize', 12);
 
 svgPath2 = fullfile(outDirUNC, 'English_Fig1C_ExtremeSlopeMiceLearningCurves.svg');
 try
-	TransferLearning.PrintFigure(f2, svgPath2);
+	TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
 	fprintf('Wrote: %s\n', svgPath2);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

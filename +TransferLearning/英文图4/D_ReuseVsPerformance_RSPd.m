@@ -71,14 +71,15 @@ hold(ax,'on');
 ax.FontSize = 6;
 ax.Toolbar.Visible = 'off';
 
-scatter(ax, x(use), y(use), 5, [0 0.4470 0.7410], 'LineWidth', 0.2);
+palette3 = TransferLearning.FigurePalette(3);
+scatter(ax, x(use), y(use), 5, palette3(1,:), 'LineWidth', 0.2);
 
 % Fit line
 if nnz(use) >= 2 && std(x(use),'omitnan') > 0
 	b = polyfit(x(use), y(use), 1);
 	xFit = [min(x(use)), max(x(use))];
 	yFit = polyval(b, xFit);
-	plot(ax, xFit, yFit, '-', 'Color', [0.85 0.325 0.098], 'LineWidth', 1, 'HandleVisibility','off');
+	plot(ax, xFit, yFit, '-', 'Color', palette3(2,:), 'LineWidth', 1, 'HandleVisibility','off');
 end
 
 [rho, p] = TransferLearning.Fig36.iSpearman(x(use), y(use));

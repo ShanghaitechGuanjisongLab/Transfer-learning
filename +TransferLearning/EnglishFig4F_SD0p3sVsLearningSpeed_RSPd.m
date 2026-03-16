@@ -1,5 +1,4 @@
-function EnglishFig4F_SD0p3sVsLearningSpeed_RSPd()
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+﻿function EnglishFig4F_SD0p3sVsLearningSpeed_RSPd()
 
 RSP = TransferLearning.RSPd();
 xsSec = seconds(TransferLearning.Xs);
@@ -48,13 +47,10 @@ f.Position(3:4) = [9, 8];
 
 ax = axes(f);
 hold(ax,'on');
-ax.FontSize = 6;
+ax.FontSize = 12;
 ax.Toolbar.Visible = 'off';
 
-% Reference palette from 范例 SVGs: #e60012, #0070c0, #f39800
-cols = [243/255, 152/255, 0;        % Learned AW   – #f39800 orange
-        0,       112/255, 192/255;  % Transfer Hit – #0070c0 blue
-        230/255, 0,       18/255];  % Transfer Miss – #e60012 crimson
+cols = TransferLearning.FigurePalette(3);
 meanCells = {meanL(:), meanH(:), meanM(:)};
 semCells  = {semL(:),  semH(:),  semM(:)};
 
@@ -65,13 +61,14 @@ xline(ax, 1, '-k');
 
 box(ax,'off');
 grid(ax,'off');
-xlabel(ax, 'Time (s)', 'FontSize', 6);
-ylabel(ax, 'z-score', 'FontSize', 6);
+xlabel(ax, 'Time (s)', 'FontSize', 12);
+ylabel(ax, 'z-score', 'FontSize', 12);
 
 labels = {'🔊💧', '💡💧 Hit', '💡💧 Miss'};
-legend(Patches, labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box','off', 'FontSize', 6);
-title('🔊💧 active cells', 'FontSize', 6, 'FontWeight', 'normal');
+legend(Patches, labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box','off', 'FontSize', 12);
+title('🔊💧 active cells', 'FontSize', 12, 'FontWeight', 'normal');
 
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig4F_RSPd_LearnedActive_Curves.svg";
 svgPath = fullfile(outDirUNC, svgName);

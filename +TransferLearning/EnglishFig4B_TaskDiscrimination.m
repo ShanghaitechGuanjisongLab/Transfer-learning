@@ -1,5 +1,4 @@
-function EnglishFig4B_TaskDiscrimination()
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+﻿function EnglishFig4B_TaskDiscrimination()
 
 RSP = TransferLearning.RSPd();
 
@@ -64,7 +63,6 @@ if climLowAbs <= 0, climLowAbs = 1; end
 if climHighAbs <= 0, climHighAbs = 1; end
 CLim = [-climLowAbs, climHighAbs];
 
-svgName = "English_Fig4B_RSPd_TaskDiscrimination.svg";
 f = figure('Color','w', 'Name','English Fig4B RSPd Heatmap');
 f.Units = 'centimeters';
 f.Position(3:4) = [12.0, 8.0];
@@ -81,14 +79,14 @@ subTitles = ["🔊💧 Learned", "💡💧 Tr Hit", "💡💧 Tr Miss"];
 	ImagescStyle={'XData', [0, 3]}, ...
 	LMHColor=[0,0,1;1,1,1;1,0,0]);
 
-xlabel(Layout, 'Time (s)', 'FontSize', 6);
-ylabel(Layout, sprintf('%d cells', size(laneData,1)), 'FontSize', 6);
+xlabel(Layout, 'Time (s)', 'FontSize', 12);
+ylabel(Layout, sprintf('%d cells', size(laneData,1)), 'FontSize', 12);
 
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
-CB.FontSize = 6;
-CB.Label.FontSize = 6;
+CB.FontSize = 12;
+CB.Label.FontSize = 12;
 
 laneXTicks = {[0 1], [0 1], [0 1]};
 laneXTickLabels = {{"🔊","💧"}, {"💡","💧"}, {"💡","💧"}};
@@ -96,7 +94,7 @@ laneXTickLabels = {{"🔊","💧"}, {"💡","💧"}, {"💡","💧"}};
 for iA = 1:numel(Axes)
 	A = Axes(iA);
 	if ~isgraphics(A), continue; end
-	A.FontSize = 6;
+	A.FontSize = 12;
 	xline(A, 0, ':k');
 	xline(A, 1, '-k');
 	A.XTick = laneXTicks{iA};
@@ -104,14 +102,16 @@ for iA = 1:numel(Axes)
 	A.TickDir = 'in';
 	box(A, 'on');
 	if isprop(A, 'Title') && isgraphics(A.Title)
-		A.Title.FontSize = 6;
+		A.Title.FontSize = 12;
 	end
 	if isprop(A, 'Toolbar') && ~isempty(A.Toolbar)
 		A.Toolbar.Visible = 'off';
 	end
 end
 
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+svgName = "English_Fig4B_RSPd_TaskDiscrimination.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

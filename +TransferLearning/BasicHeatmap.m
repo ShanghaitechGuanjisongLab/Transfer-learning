@@ -32,6 +32,8 @@ ylabel(Layout,'Cell');
 CB=colorbar;
 CB.Layout.Tile='east';
 CB.Label.String='ΔF/F_0';
+CB.FontSize = 12;
+CB.Label.FontSize = 12;
 Axes=Axes';
 for A=Axes
 	xline(A,0,':',Color=Colors(3,:));

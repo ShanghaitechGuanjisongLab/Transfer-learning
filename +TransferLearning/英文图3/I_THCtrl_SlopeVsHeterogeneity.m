@@ -16,19 +16,19 @@ end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-colorC = [238 124 121] / 255;
-colorT = [0 0.4470 0.7410];
+palette3 = TransferLearning.FigurePalette(3);
+colorC = palette3(1,:);
+colorT = palette3(2,:);
+colorFit = palette3(3,:);
 
 f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl slope vs Response heterogeneity');
 f.Units = 'centimeters';
-f.Position(3:4) = [6, 4];
+f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 6, 4];
-f.PaperSize = [6, 4];
+f.PaperSize = [12, 8];
 
 tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
-xlabel(tl, 'Response heterogeneity', 'FontSize', 6);
+xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
 hLegend = gobjects(2, 1);
 axAll = gobjects(numel(layers), 1);
 
@@ -58,7 +58,7 @@ for iL = 1:numel(layers)
 
     ax = nexttile(tl, iL);
     hold(ax, 'on');
-    ax.FontSize = 6;
+    ax.FontSize = 12;
     box(ax, 'off');
 
     maskC = use & (groupAll == "Ctrl");
@@ -67,17 +67,17 @@ for iL = 1:numel(layers)
     hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 5, colorT, 's', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hC; hT];
-        ylabel(ax, 'Learning slope', 'FontSize', 6);
+        ylabel(ax, 'Learning slope', 'FontSize', 12);
     else
         ax.YAxis.Visible = 'off';
     end
     if nnz(use) >= 2 && std(sdAll(use)) > 0
         fitP = polyfit(sdAll(use), slopeAll(use), 1);
         xFit = [min(sdAll(use)), max(sdAll(use))];
-        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', [0.4 0.4 0.4], 'LineWidth', 1);
+        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', colorFit, 'LineWidth', 1);
     end
-    title(ax, layerLabels(iL), 'FontSize', 6);
-    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
+    title(ax, layerLabels(iL), 'FontSize', 12);
+    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
     axAll(iL) = ax;
 
     fprintf('\n=== Fig3I %s ===\n', layerLabels(iL));
@@ -88,14 +88,13 @@ end
 
 MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
 
-lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 6, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, 'English_Fig3I_THCtrl_SlopeVsHeterogeneity.svg');
-TransferLearning.PrintFigure(f, svgPath);
+TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
-close(f);
 
 function [slopeVec, sdVec, miceKept] = iSingleDatasetCohortDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)
 Sess = iLightWaterSessions(DS);

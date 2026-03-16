@@ -1,4 +1,4 @@
-% 英文图2C：Inter-trial divergence PCA（2 tiles）
+﻿% 英文图2C：Inter-trial divergence PCA（2 tiles）
 %
 % v6 Panel C: PCA 散度图 — Naive AO (散) vs Learned AW (聚)
 %
@@ -12,7 +12,6 @@
 % Execution:
 %   TransferLearning.英文图2.C_InterTrialDivergence_PCA
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % Time (s) to use as PCA origin after cropping (0 = cue time).
 originSec = 0.0;
@@ -53,7 +52,6 @@ G_audioOnly_plot = iAverageAdjacentTrials(G_audioOnly, 2);
 
 %% 
 % --- 3) Plot (two tiles)
-svgName = "English_Fig2C_InterTrialDivergence_PCA.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2C Inter-trial divergence PCA');
 f.Units = 'centimeters';
 f.Position(3:4) = [6.0, 4.0]; % 60mm x 40mm
@@ -66,10 +64,11 @@ catch
 end
 
 ax1 = nexttile(Layout, 1);
-iPlotPcaOnAxes(ax1, G_audioOnly_plot, "Naive🔊", originSec);
+palette2 = TransferLearning.FigurePalette(2);
+iPlotPcaOnAxes(ax1, G_audioOnly_plot, "Naive🔊", originSec, palette2(1,:));
 
 ax2 = nexttile(Layout, 2);
-iPlotPcaOnAxes(ax2, G_learn_plot, "🔊💧100%", originSec);
+iPlotPcaOnAxes(ax2, G_learn_plot, "🔊💧100%", originSec, palette2(2,:));
 
 % Unify axis ranges across tiles
 try
@@ -80,12 +79,14 @@ end
 
 % --- 4) Export
 try
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
 catch
 end
 
+svgName = "English_Fig2C_InterTrialDivergence_PCA.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
@@ -279,7 +280,7 @@ ntats = MATLAB.DataTypes.NDTable(Xg);
 GroupNtatsOut = table(ntats, 'VariableNames', "NTATS");
 end
 
-function iPlotPcaOnAxes(ax, GroupNtats, titleText, originSec)
+function iPlotPcaOnAxes(ax, GroupNtats, titleText, originSec, lineColor)
 PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2);
 PcaLines = PcaTable.Score;
 
@@ -310,17 +311,8 @@ box(ax, 'off');
 grid(ax, 'off');
 hold(ax, 'on');
 
-% Same-hue gradient for trajectories
 nLines = size(PcaData, 3);
-cDark = [0.16 0.36 0.64];
-cLight = [0.72 0.83 0.95];
-if nLines >= 2
-	cmap = interp1([0 1], [cLight; cDark], linspace(0, 1, nLines));
-	colormap(ax, cmap);
-else
-	colormap(ax, cDark);
-	cmap = cDark;
-end
+cmap = iTintRamp(lineColor, nLines);
 
 Markers = table;
 Markers.Index = numel(idxPlotTime);
@@ -355,3 +347,14 @@ try
 catch
 end
 end
+
+	function cmap = iTintRamp(baseColor, nLines)
+	if nLines <= 1
+		cmap = baseColor;
+		return;
+	end
+
+	mix = linspace(0.45, 1.00, nLines)';
+	darkFloor = 0.10;
+	cmap = baseColor .* mix + darkFloor .* (1 - mix);
+	end

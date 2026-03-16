@@ -41,8 +41,9 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-colorA = [1 0 0];
-colorB = [0 0 1];
+palette2 = TransferLearning.FigurePalette(2);
+colorA = palette2(1,:);
+colorB = palette2(2,:);
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 nexttile(Layout, 1);

@@ -34,6 +34,8 @@ end
 CB=colorbar;
 CB.Layout.Tile='east';
 CB.Label.String='ΔF/F_0';
+CB.FontSize = 12;
+CB.Label.FontSize = 12;
 for A=1:numel(Axes)
 	xline(Axes(A),0,':');
 	xline(Axes(A),1,'-');

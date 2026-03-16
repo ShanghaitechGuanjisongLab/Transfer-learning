@@ -50,6 +50,7 @@ xlabel(sprintf('PC1 (%.2g%%)',PcaTable.Explained(1))); %[output:2d542abc]
 ylabel(sprintf('PC2 (%.2g%%)',PcaTable.Explained(2))); %[output:2d542abc]
 zlabel(sprintf('PC3 (%.2g%%)',PcaTable.Explained(3))); %[output:2d542abc]
 title('●0s ▲1s ■3s') %[output:2d542abc]
+set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12); %[output:2d542abc]
 %%
 % n = randsample(1:30, 6);
 n =[10 13 19 21 3 7];
@@ -71,6 +72,7 @@ xlabel(sprintf('PC1 (%.2g%%)',PcaTable.Explained(1))); %[output:438e3381]
 ylabel(sprintf('PC2 (%.2g%%)',PcaTable.Explained(2))); %[output:438e3381]
 zlabel(sprintf('PC3 (%.2g%%)',PcaTable.Explained(3))); %[output:438e3381]
 title('●0s ▲1s ■3s') %[output:438e3381]
+set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12); %[output:438e3381]
 %%
 QueryTableLL=QueryTableL2A([1 5 9]+1,:);
 % n = randsample(1:30, 6);
@@ -93,6 +95,7 @@ xlabel(sprintf('PC1 (%.2g%%)',PcaTable.Explained(1))); %[output:4e2ceee7]
 ylabel(sprintf('PC2 (%.2g%%)',PcaTable.Explained(2))); %[output:4e2ceee7]
 zlabel(sprintf('PC3 (%.2g%%)',PcaTable.Explained(3))); %[output:4e2ceee7]
 title('●0s ▲1s ■3s') %[output:4e2ceee7]
+set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12); %[output:4e2ceee7]
 %%
 % n = randsample(1:30, 6);
 n=[12 13 18 23 27 8];
@@ -114,6 +117,7 @@ xlabel(sprintf('PC1 (%.2g%%)',PcaTable.Explained(1))); %[output:3718bfef]
 ylabel(sprintf('PC2 (%.2g%%)',PcaTable.Explained(2))); %[output:3718bfef]
 zlabel(sprintf('PC3 (%.2g%%)',PcaTable.Explained(3))); %[output:3718bfef]
 title('●0s ▲1s ■3s') %[output:3718bfef]
+set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12); %[output:3718bfef]
 %%
 %[text] 到此结束
 

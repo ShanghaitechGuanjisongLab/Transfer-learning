@@ -5,9 +5,9 @@
 % - Naive session (all trials within that session)
 % - Learned session (all trials within that session)
 %
-% Output: SVG to \\Data-Server-2\个人数据\张天夫\202601
+% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % Time (s) to use as PCA origin after cropping (0 = cue time).
 originSec = 0.0;
@@ -63,13 +63,14 @@ if hasAudioOnly
 end
 
 % --- 4) Plot + export
-[fNaive, axNaive] = iPlotPca(G_naive, sprintf('Naive AudioWater  (SuperMouse, nCell=%d, nTrial=%d)', info_naive.NCells, info_naive.NTrials), originSec);
-[fLearn, axLearn] = iPlotPca(G_learn_plot, sprintf('Learned AudioWater  (SuperMouse, nCell=%d, nLine=%d)', info_learn.NCells, iGetNTrials(G_learn_plot)), originSec);
+palette3 = TransferLearning.FigurePalette(3);
+[fNaive, axNaive] = iPlotPca(G_naive, sprintf('Naive AudioWater  (SuperMouse, nCell=%d, nTrial=%d)', info_naive.NCells, info_naive.NTrials), originSec, palette3(1,:));
+[fLearn, axLearn] = iPlotPca(G_learn_plot, sprintf('Learned AudioWater  (SuperMouse, nCell=%d, nLine=%d)', info_learn.NCells, iGetNTrials(G_learn_plot)), originSec, palette3(2,:));
 
 fAudioOnly = [];
 axAudioOnly = [];
 if hasAudioOnly
-	[fAudioOnly, axAudioOnly] = iPlotPca(G_audioOnly_plot, sprintf('Naive AudioOnly  (SuperMouse, nCell=%d, nLine=%d)', info_audioOnly.NCells, iGetNTrials(G_audioOnly_plot)), originSec);
+	[fAudioOnly, axAudioOnly] = iPlotPca(G_audioOnly_plot, sprintf('Naive AudioOnly  (SuperMouse, nCell=%d, nLine=%d)', info_audioOnly.NCells, iGetNTrials(G_audioOnly_plot)), originSec, palette3(3,:));
 end
 
 % Unify axis ranges across Naive vs Learned/Transfer
@@ -252,7 +253,7 @@ end
 keepUids = cellUIDs(keepMask);
 end
 
-function [f, ax] = iPlotPca(GroupNtats, titleText, originSec)
+function [f, ax] = iPlotPca(GroupNtats, titleText, originSec, lineColor)
 PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2);
 PcaLines = PcaTable.Score;
 
@@ -299,7 +300,7 @@ Markers.Index = numel(idxPlotTime);
 Markers.Shape = "^";
 
 [~, scatters] = UniExp.SegmentFadePlot( ...
-	table(permute(PcaData, [3, 1, 2]), 'VariableNames', "Points"), ...
+	table(permute(PcaData, [3, 1, 2]), repmat(lineColor, size(PcaData, 3), 1), 'VariableNames', ["Points", "Color"]), ...
 	Markers, ax, ...
 	'PatchArguments', {'LineWidth', 1}, ...
 	'ScatterArguments', {'SizeData', 36, 'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'w', 'LineWidth', 0.75, 'MarkerFaceAlpha', 1});

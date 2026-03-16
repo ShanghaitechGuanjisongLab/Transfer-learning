@@ -1,5 +1,4 @@
-function EnglishFig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry()
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+﻿function EnglishFig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry()
 
 rspPath     = "\\Data-Server-2\个人数据\张天夫\202505\RSP-Gi 化学遗传学抑制 声转光.v2.mat";
 mopCtrlPath = "\\Data-Server-2\个人数据\张天夫\202409\Mop-Gi运动皮层化学遗传学抑制声光（无功能对照）.mat";
@@ -20,24 +19,23 @@ RSPdMoTable.Group(:) = "RSPd+MOp";
 
 Summary = UniExp.LearningSummarize(MATLAB.DataTypes.MergeTables(RSPdTable, ControlTable, RSPdMoTable));
 Summary.Properties.RowNames = replace(Summary.Properties.RowNames, 'MOp', 'M1');
-% Reference palette from 范例 SVGs: #e60012, #0070c0, #009245
-RED   = [230/255,  0,       18/255 ]; % mCherry (ctrl) – #e60012 crimson
-BLUE  = [0,        112/255, 192/255]; % RSPd           – #0070c0 blue
-GREEN = [0,        146/255,  69/255]; % RSPd+M1        – #009245 forest green
+palette3 = TransferLearning.FigurePalette(3);
+RED = palette3(1,:);
+BLUE = palette3(2,:);
+GREEN = palette3(3,:);
 rn = string(Summary.Properties.RowNames);
 Colors = zeros(height(Summary), 3);
 Colors(rn == "mCherry", :) = RED;
 Colors(rn == "RSPd",    :) = BLUE;
 Colors(~(rn == "mCherry" | rn == "RSPd"), :) = GREEN;
 
-svgName = 'English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg';
 f = figure('Color','w', 'Name','English Fig4H Learning Curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 
 ax = axes(f);
 hold(ax,'on');
-ax.FontSize = 6;
+ax.FontSize = 12;
 ax.Toolbar.Visible = 'off';
 
 meanCells = cellfun(@(C) C(1:min(10, numel(C))), Summary.MeanCurve, UniformOutput=false);
@@ -48,19 +46,21 @@ nEach = cellfun(@height, Summary.LearnedSessions);
 labels = Summary.Properties.RowNames + " n=" + string(nEach);
 
 lg = legend(Patches, labels,Location='northeastoutside');
-lg.FontSize = 6;
+lg.FontSize = 12;
 lg.Box = 'off';
 lg.Title.String = '💡💧';
-lg.Title.FontSize = 6;
+lg.Title.FontSize = 12;
 
 box(ax,'off');
 grid(ax,'off');
-ylabel(ax, 'Hit rate', 'FontSize', 6);
-xlabel(ax, 'Block', 'FontSize', 6);
+ylabel(ax, 'Hit rate', 'FontSize', 12);
+xlabel(ax, 'Block', 'FontSize', 12);
 
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+svgName = 'English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg';
 svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 
 Tn = table(Summary.Properties.RowNames, nEach(:), 'VariableNames', {'Group','N'});
@@ -77,12 +77,13 @@ if isempty(mcherryColorIdx), mcherryColorIdx = 2; end
 
 f2 = figure('Color','none', 'Name','English Fig4H First-session performance');
 f2.Units = 'centimeters';
+f2.Position(3:4) = [4, 4];
 f2.PaperUnits = 'centimeters';
-f2.PaperSize = [4, 3];
+f2.PaperSize = [4, 4];
 f2.PaperPositionMode = 'auto';
 f2.InvertHardcopy = 'off';
 
-tiledlayout(1,1,'TileSpacing','compact','Padding','compact');
+tiledlayout(1,1,'TileSpacing','normal','Padding','normal');
 nexttile;
 
 DataCell = {rspFirst, mcherryFirst};
@@ -90,15 +91,15 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 [~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 
 ax2 = gca;
-ax2.FontSize = 6;
+ax2.FontSize = 12;
 ax2.Color = 'none';
-ax2.XTick = [1, 2];
-ax2.XTickLabel = {'RSPd', 'mCh.'};
+ax2.XAxis.Visible = 'off';
+ax2.XTick = [];
 legend(ax2, 'off');
 
 if isfield(Optional2, 'MultiCompare') && ismember('PText', Optional2.MultiCompare.Properties.VariableNames)
 	for pt = Optional2.MultiCompare.PText(:)'
-		pt.FontSize = 6;
+		pt.FontSize = 12;
 	end
 end
 
@@ -107,27 +108,27 @@ if numel(Bars2) == 1
 	Bars2.FaceColor = 'flat';
 	Bars2.CData = Colors(barColorIdx, :);
 	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 0.5;
+	Bars2.LineWidth = 2;
 	Bars2.FaceAlpha = 1/3;
 else
 	for ib = 1:min(2, numel(Bars2))
 		Bars2(ib).FaceColor = Colors(barColorIdx(ib), :);
-		Bars2(ib).LineWidth = 0.5;
+		Bars2(ib).LineWidth = 2;
 		Bars2(ib).FaceAlpha = 1/3;
 	end
 end
 for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 0.5;
+	eb.LineWidth = 2;
 end
 ax2.XLim = [0.5, 2.5];
-ylabel(ax2, 'Hit rate', 'FontSize', 6);
-title(ax2, 'First block', 'FontSize', 6, 'FontWeight', 'normal');
+ylabel(ax2, 'Hit rate', 'FontSize', 12);
+title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 ax2.Toolbar.Visible = 'off';
 
 svgPath2 = fullfile(outDirUNC, 'English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg');
 MATLAB.Graphics.PLineRetune(Optional2.MultiCompare.PLine,Optional2.MultiCompare.PText);
-TransferLearning.PrintFigure(f2, svgPath2);
+TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath2);
 end
 

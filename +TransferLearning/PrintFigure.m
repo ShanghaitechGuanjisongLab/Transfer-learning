@@ -12,6 +12,7 @@ arguments
 	figHandle
 	outPath (1,1) string
 	options.Resolution (1,1) double = 300
+	options.ForceLegendOrColorbar (1,1) logical = false
 end
 
 outPath = string(outPath);
@@ -35,6 +36,8 @@ try
 	end
 catch
 end
+
+TransferLearning.PrepareFigureForExport(figHandle, ForceLegendOrColorbar=options.ForceLegendOrColorbar);
 
 ext = lower(string(ext));
 outPathChar = char(outPath);

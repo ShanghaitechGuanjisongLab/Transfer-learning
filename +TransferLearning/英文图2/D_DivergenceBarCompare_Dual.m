@@ -1,4 +1,4 @@
-% 英文图2D：散度条形图（双比较）
+﻿% 英文图2D：散度条形图（双比较）
 %
 % 上面板：Naive AudioOnly vs Learned AudioWater（配对 signrank，全细胞）
 %   — 学习使群体 trial 轨迹从分散压缩为聚敛
@@ -18,7 +18,6 @@
 % Execution:
 %   TransferLearning.英文图2.D_DivergenceBarCompare_Dual
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;   % index 24
@@ -210,8 +209,9 @@ Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');
 yl.FontSize = 6;
 
-colorNaive = [1 0 0];
-colorLearn = [0 0 1];
+palette2 = TransferLearning.FigurePalette(2);
+colorNaive = palette2(1,:);
+colorLearn = palette2(2,:);
 
 % --- Top: NaiveAO vs LearnedAW (paired) ---
 nexttile(Layout, 1);
@@ -264,8 +264,8 @@ legend(ax2, 'off');
 box(ax2, 'off');
 grid(ax2, 'off');
 
-cInh = [0.8 0.2 0.2];
-cNon = [0.5 0.5 0.5];
+cInh = palette2(1,:);
+cNon = palette2(2,:);
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	Bars2.CData = [cInh; cNon];
@@ -288,6 +288,7 @@ if star2 ~= ""
 end
 
 % --- Export ---
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgPath = fullfile(outDirUNC, "English_Fig2D_DivergenceBarCompare_Dual.svg");
 TransferLearning.PrintFigure(f, svgPath);
 

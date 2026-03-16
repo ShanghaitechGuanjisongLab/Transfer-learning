@@ -12,9 +12,9 @@
 %   - Use ALL trials within each chosen session
 %
 % Plot style: like English Fig1L (UniExp.BarScatterCompare + bar styling)
-% Output: SVG to \\Data-Server-2\个人数据\张天夫\202601
+% Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgName = "AudioWater_Divergence_NaiveVsLearned_LikeEnglishFig1L.svg";
 
 % --- 0) Ensure project loaded (for UniExp)
@@ -110,7 +110,7 @@ nexttile;
 
 [~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax = gca;
-ax.FontSize = 6;
+ax.FontSize = 12;
 
 try
 	ax.XTick = [1, 2, 3];
@@ -122,7 +122,7 @@ end
 % Set asterisk font size
 if isfield(Optional, 'MultiCompare') && ismember('PText', Optional.MultiCompare.Properties.VariableNames)
 	for pt = Optional.MultiCompare.PText(:)'
-		pt.FontSize = 6;
+		pt.FontSize = 12;
 	end
 end
 
@@ -164,7 +164,7 @@ try
 catch
 end
 
-ylabel(ax, 'Divergence', 'FontSize', 6);
+ylabel(ax, 'Divergence', 'FontSize', 12);
 box(ax, 'off');
 try, ax.Toolbar.Visible = 'off'; catch, end
 

@@ -5,7 +5,7 @@ arguments
 	options.PcaAx
 	options.HeatmapScale=MATLAB.Flags.Narrow
 end
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 try
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
@@ -57,18 +57,19 @@ switch Target
 		title(Layout,Title);
 		MATLAB.Graphics.FigureAspectRatio(8,5,options.HeatmapScale);
 end
-print(fullfile(outDirUNC, sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
+TransferLearning.PrintFigure(gcf, string(fullfile(outDirUNC, sprintf('%s.热图.%s.svg',SheetName,Target))));
 [~,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 FullNew=isempty(PcaAx);
 if FullNew
 	figure;
 end
-PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Naive","Learned","Transfer"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([24;32],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),Legends,Interpreter='none');
+PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Naive","Learned","Transfer"]},[3,1,2]),TransferLearning.FigurePalette(3),'VariableNames',["Points","Color"]),table([24;32],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),Legends,Interpreter='none');
 UniExp.PcAxLabels(table(PCs',Explained,'VariableNames',["Index","Explained"],'RowNames',["X";"Y";"Z"]),PcaAx{:});
 UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNew
 	title('●0s(cue) ■1s(water)');
+	set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12);
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-	print(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
+	TransferLearning.PrintFigure(gcf, string(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName))));
 end

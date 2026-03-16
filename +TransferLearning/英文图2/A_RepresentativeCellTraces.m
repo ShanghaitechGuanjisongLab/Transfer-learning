@@ -1,4 +1,4 @@
-% 英文图2A：3个代表性细胞 × 3阶段 × 3回合 = 27条DeltaF曲线
+﻿% 英文图2A：3个代表性细胞 × 3阶段 × 3回合 = 27条DeltaF曲线
 %
 % 从声转光组(AudioLightBaseline)中自动挑选3个细胞和9个回合，
 % 以彰显Naive阶段活跃模式的不稳定性和Learned/Transfer阶段的稳定性。
@@ -13,7 +13,6 @@
 % Execution:
 %   TransferLearning.英文图2.A_RepresentativeCellTraces
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 rng(42); % 固定随机种子，确保可复现
 
@@ -260,7 +259,6 @@ end
 
 %% 
 % --- Plot: 3 rows (cells) × 3 columns (phases)
-svgName = "English_Fig2A_RepresentativeCellTraces.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2A Representative Cell Traces');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
@@ -268,7 +266,7 @@ f.Position(3:4) = [9, 8];
 tlo = tiledlayout(f, 3, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 
 phaseNames = ["Naïve", "Learned", "Transfer"];
-trialColors = lines(3);
+trialColors = TransferLearning.FigurePalette(3);
 trialLabels = ["Trial 1", "Trial 2", "Trial 3"];
 hLeg = gobjects(3, 1);
 axPerRow = gobjects(3, 3); % [row, col]
@@ -326,9 +324,11 @@ lg = legend(hLeg, trialLabels, 'Box', 'off', 'Orientation', 'horizontal',FontSiz
 lg.Layout.Tile = 'north';
 
 % --- Export SVG
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
+svgName = "English_Fig2A_RepresentativeCellTraces.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

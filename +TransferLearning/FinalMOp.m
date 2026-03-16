@@ -4,7 +4,7 @@ arguments
 	PCs
 	PcaAx={}
 end
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202601";
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 try
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
@@ -36,7 +36,7 @@ switch Target
 		title(Layout,'Reinforced final network');
 		MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
 end
-print(fullfile(outDirUNC, sprintf('%s.热图.%s.svg',SheetName,Target)),'-dsvg');
+TransferLearning.PrintFigure(gcf, string(fullfile(outDirUNC, sprintf('%s.热图.%s.svg',SheetName,Target))));
 [~,PcaScore]=UnifiedPcaModel(Paradigm,GroupNtats);
 Explained=PcaScore.Explained(PCs);
 if FullNewPca
@@ -44,12 +44,13 @@ if FullNewPca
 else
 	PcaAx={PcaAx};
 end
-PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Learned","Transfer","Final"]},[3,1,2]),GlobalOptimization.ColorAllocate(3,[1,1,1;1,1,1]),'VariableNames',["Points","Color"]),table([30;40],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),SubTitles,Interpreter='none');
+PcaLegend=legend(UniExp.SegmentFadePlot(table(permute(PcaScore.Score{PCs,:,["Learned","Transfer","Final"]},[3,1,2]),TransferLearning.FigurePalette(3),'VariableNames',["Points","Color"]),table([30;40],('os')','VariableNames',["Index","Shape"]),PcaAx{:},PatchArguments={'LineWidth',2}),SubTitles,Interpreter='none');
 UniExp.PcAxLabels(table(PCs',Explained,'VariableNames',["Index","Explained"],'RowNames',["X";"Y";"Z"]),PcaAx{:});
 UniExp.PcaRotate(PcaAx{:},Explained);
 if FullNewPca
 	title('Reinforced final network ●0s(cue) ■1s(water)');
+	set(findall(gcf, '-property', 'FontSize'), 'FontSize', 12);
 	MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
-	print(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName)),'-dpng','-r300');
+	TransferLearning.PrintFigure(gcf, string(fullfile(outDirUNC, sprintf('%s.PCA.png',SheetName))));
 end
 end

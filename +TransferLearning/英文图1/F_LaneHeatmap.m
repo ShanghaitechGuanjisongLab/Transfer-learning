@@ -1,4 +1,4 @@
-% 英文图1F：四泳道热图（Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater）
+﻿% 英文图1F：四泳道热图（Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater）
 %
 % 细胞排序：按1s处 Learned AudioWater 和 Transfer LightWater 中较小值降序
 % 活跃判定：在任一泳道（共4个）1s处 > baseline+3σ
@@ -6,7 +6,6 @@
 % Execution:
 %   TransferLearning.英文图1.F_LaneHeatmap
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded
 try
@@ -117,7 +116,6 @@ CLim = [-climLowAbs, climHighAbs];
 %% 
 
 % --- 7) Plot
-svgName = "English_Fig1F_LaneHeatmap.svg";
 f = figure('Color', 'w', 'Name', 'English Fig1F Lane Heatmap');
 f.Units = 'centimeters';
 f.Position(3:4) = [12.0, 8.0]; % 120mm x 80mm
@@ -141,6 +139,7 @@ CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
 CB.FontSize = 12;
+CB.Label.FontSize = 12;
 
 % Lane-specific xline and xtick settings
 % Lane 1: AudioOnly - only 0s line, xticks(0), xticklabels = emoji speaker
@@ -193,12 +192,14 @@ end
 
 % --- 8) Export
 try
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
 catch
 end
 
+svgName = "English_Fig1F_LaneHeatmap.svg";
 svgPath = fullfile(outDirUNC, svgName);
 try
 	TransferLearning.PrintFigure(f, svgPath);

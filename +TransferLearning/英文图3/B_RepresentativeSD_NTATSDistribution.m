@@ -246,7 +246,8 @@ fprintf('Wrote: %s\n', pngName);
 %% ===== 6) Export representative histogram SVG (58 mm × 15 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-pairColors = {[0.8500 0.3250 0.0980]; [0 0.4470 0.7410]};
+palette2 = TransferLearning.FigurePalette(2);
+pairColors = {palette2(1,:); palette2(2,:)};
 v = vals{repPairIdx, repSessIdx};
 
 fh = figure('Color', 'w');
@@ -258,7 +259,7 @@ hold(ax, 'on');
 
 histogram(ax, v, binEdges, 'Normalization', 'probability', ...
 	'FaceColor', pairColors{repPairIdx}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-xline(ax, mean(v), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+xline(ax, mean(v), '--', 'Color', pairColors{repPairIdx}, 'LineWidth', 0.8);
 
 xlim(ax, [-1, 1]);
 ax.XTick = [-1, 0, 1];

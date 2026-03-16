@@ -1,4 +1,4 @@
-% 英文图1I：复用细胞占比（饼图）
+﻿% 英文图1I：复用细胞占比（饼图）
 %
 % 复用细胞定义：Learned AudioWater 与 Transfer LightWater 在1s处均活跃
 % 活跃判定：1s处 > baseline + 3*std（baseline = -3~0s）
@@ -6,7 +6,6 @@
 % 分母定义（按用户要求）：
 %   只统计“🔊💧Active”的细胞（即英文图1F第3个泳道：Learned AudioWater 在1s处活跃）
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 % --- 0) Ensure project loaded
 try
@@ -77,7 +76,6 @@ nNon = nTotal - nReuse;
 
 %% 
 % --- Plot
-svgName = "English_Fig1I_ReusedCellsPie.svg";
 f = figure('Color', 'w', 'Name', 'English Fig1I Reused Cells Pie');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4]; % 30mm x 40mm
@@ -94,14 +92,18 @@ else
 	pNon   = NaN;
 end
 
-% Same-hue light/dark palette
-cDark  = [231,188,198]/255;
-cLight = [253,207,158]/255;
+majorColor = 0.7922 .* [1 1 1];
+minorColor = [0, 0.6275, 0.9137];
+if pReuse >= pNon
+	wedgeColors = [majorColor; minorColor];
+else
+	wedgeColors = [minorColor; majorColor];
+end
 
 ax = axes(f);
 h = MATLAB.Graphics.NestedPie( ...
 	{[pReuse, pNon]}, ...
-	WedgeColors={[cDark; cLight]}, ...
+	WedgeColors={wedgeColors}, ...
 	LabelText=[string(sprintf('🔊💡\nreactive\ncells')), string(sprintf('🔊💧\nactive\ncells'))], ...
 	PercentStatus="on", ...
 	PercentFontColor='k', ...
@@ -115,12 +117,14 @@ set(findobj(f, 'Type', 'text'), 'FontSize', 6);
 
 % --- Export
 try
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
 catch
 end
 
+svgName = "English_Fig1I_ReusedCellsPie.svg";
 svgPath = fullfile(outDirUNC, svgName);
 try
 	TransferLearning.PrintFigure(f, svgPath);

@@ -356,7 +356,7 @@ for r = 1:numel(AxesRows)
 	axRow = AxesRows{r};
 	for k = 1:numel(axRow)
 		if r == 1 && k <= numel(groupNames)
-			title(axRow(k), titleStrings(k), Interpreter='none', FontSize=8);
+			title(axRow(k), titleStrings(k), Interpreter='none', FontSize=12);
 		end
 		xline(axRow(k), 0, ':k');
 		xline(axRow(k), 1, '-k');
@@ -369,17 +369,26 @@ Axes_Other_MOp23(1).YAxis.Visible = 'on';
 Axes_Other_MOp5(1).YAxis.Visible = 'on';
 
 ylabel(Axes_Hm4d_MOp23(1), sprintf('hM4D(Gi) MOp2/3 (%u)', size(Data_Hm4d_MOp23,1)));
-ylabel(Axes_Hm4d_MOp5(1),  sprintf('hM4D(Gi) MOp5 (%u)',  size(Data_Hm4d_MOp5,1)), FontSize=10);
-ylabel(Axes_Other_MOp23(1), sprintf('Others MOp2/3 (%u)', size(Data_Other_MOp23,1)), FontSize=10);
-ylabel(Axes_Other_MOp5(1),  sprintf('Others MOp5 (%u)',  size(Data_Other_MOp5,1)), FontSize=10);
+ylabel(Axes_Hm4d_MOp5(1),  sprintf('hM4D(Gi) MOp5 (%u)',  size(Data_Hm4d_MOp5,1)), FontSize=12);
+ylabel(Axes_Other_MOp23(1), sprintf('Others MOp2/3 (%u)', size(Data_Other_MOp23,1)), FontSize=12);
+ylabel(Axes_Other_MOp5(1),  sprintf('Others MOp5 (%u)',  size(Data_Other_MOp5,1)), FontSize=12);
 
-Axes_Hm4d_MOp23(1).YLabel.FontSize = 10;
+Axes_Hm4d_MOp23(1).YLabel.FontSize = 12;
 
 xlabel(Layout, 'Time(s) from cue(:) water(|)');
 
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
+CB.FontSize = 12;
+CB.Label.FontSize = 12;
+
+for A = [Axes_Hm4d_MOp23(:); Axes_Hm4d_MOp5(:); Axes_Other_MOp23(:); Axes_Other_MOp5(:)]'
+	try
+		A.FontSize = 12;
+	catch
+	end
+end
 
 try
 	MATLAB.Graphics.FigureAspectRatio(max(2, numel(groupNames)), 4, MATLAB.Flags.Amplify);

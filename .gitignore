@@ -35,3 +35,4 @@ codegen/
 # Excel临时文件
 ~$*
 整合/Thumbs.db
+data

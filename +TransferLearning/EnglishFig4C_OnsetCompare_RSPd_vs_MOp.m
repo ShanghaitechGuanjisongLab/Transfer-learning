@@ -1,5 +1,4 @@
-function EnglishFig4C_OnsetCompare_RSPd_vs_MOp()
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+﻿function EnglishFig4C_OnsetCompare_RSPd_vs_MOp()
 
 RSP = TransferLearning.RSPd();
 MOp = TransferLearning.AudioLightBaseline();
@@ -28,19 +27,16 @@ meanMOp = mean(XMOp, 1, 'omitnan');
 semRSP  = std(XRSP, 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XRSP), 1)));
 semMOp  = std(XMOp, 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XMOp), 1)));
 
-svgName = "English_Fig4C_Onset_RSPd_vs_MOp.svg";
 f = figure('Color','w', 'Name','English Fig4C RSPd vs MOp');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 
 ax = axes(f);
 hold(ax,'on');
-ax.FontSize = 6;
+ax.FontSize = 12;
 ax.Toolbar.Visible = 'off';
 
-% Reference palette from 范例 SVGs: #e60012 (crimson), #0070c0 (blue)
-cols = [230/255, 0,       18/255;   % RSPd  – #e60012
-        0,       112/255, 192/255]; % MOp   – #0070c0
+cols = TransferLearning.FigurePalette(2);
 meanCells = {meanRSP(:), meanMOp(:)};
 semCells  = {semRSP(:),  semMOp(:)};
 
@@ -51,13 +47,15 @@ xline(ax, 1, '-k');
 
 box(ax,'off');
 grid(ax,'off');
-xlabel(ax, 'Time (s)', 'FontSize', 6);
-ylabel(ax, 'z-score', 'FontSize', 6);
+xlabel(ax, 'Time (s)', 'FontSize', 12);
+ylabel(ax, 'z-score', 'FontSize', 12);
 
 labels = {'RSPd', 'MOp'};
-legend(Patches, labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box','off', 'FontSize', 6);
+legend(Patches, labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box','off', 'FontSize', 12);
 
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+svgName = "English_Fig4C_Onset_RSPd_vs_MOp.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

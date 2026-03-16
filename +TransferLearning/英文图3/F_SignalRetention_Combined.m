@@ -138,8 +138,10 @@ fprintf('Left   (split by LW sign): LW+ AW=%.4f+/-%.4f, LW- AW=%.4f+/-%.4f, p=%.
 	mean(meanAW_LWneg(vPN2)), std(meanAW_LWneg(vPN2))/sqrt(sum(vPN2)), pPN2);
 
 %% ===== PLOT =====
-colorPos = [0.85 0.325 0.098];
-colorNeg = [0 0.4470 0.7410];
+palette3 = TransferLearning.FigurePalette(3);
+colorPos = palette3(1,:);
+colorNeg = palette3(2,:);
+colorFit = palette3(3,:);
 fs = 6;
 
 %% 
@@ -163,7 +165,7 @@ scatter(axE, awAll, lwAll, 1, colorNeg, 'LineWidth', 0.2, ...
 xline(axE, 0, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.4);
 yline(axE, 0, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.4);
 pf = polyfit(awAll, lwAll, 1);
-plot(axE, [-1 1], polyval(pf, [-1 1]), '-', 'Color', colorPos, 'LineWidth', 1);
+plot(axE, [-1 1], polyval(pf, [-1 1]), '-', 'Color', colorFit, 'LineWidth', 1);
 hold(axE, 'off');
 
 xlim(axE, [-1.3 1.3]); ylim(axE, [-1.3 1.3]);

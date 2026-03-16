@@ -1,4 +1,4 @@
-% English Fig2N: Vacation7 vs Control — Reactivation & Divergence (双 tile)
+﻿% English Fig2N: Vacation7 vs Control — Reactivation & Divergence (双 tile)
 %
 % v6 Panel N 合并原 K+L:
 %   上面板: Reactivation P(T|L) 条形图
@@ -11,7 +11,6 @@
 % Execution:
 %   TransferLearning.英文图2.N_Vacation7VsCtrl_ReactivationRate
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 
 sampleRate = 8;
 idxCue = 3 * sampleRate;
@@ -134,7 +133,6 @@ pDiv = ranksum(xDivCtrl, xDivV7);
 fprintf('  ranksum p=%.4g\n', pDiv);
 
 %% ===== 4) Plot (tiledlayout 2×1) =====
-svgName = "English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg";
 f = figure('Color', 'w', 'Name', 'English Fig2N Vacation7 Reactivation + Divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
@@ -145,15 +143,16 @@ f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 
-colorA = [230/255, 0, 18/255];
-colorB = [0, 112/255, 192/255];
+palette2 = TransferLearning.FigurePalette(2);
+colorA = palette2(1,:);
+colorB = palette2(2,:);
 
 % --- Tile 1: Reactivation ---
 nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare( ...
 	{double(xReactCtrl(:)), double(xReactV7(:))}, false);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB1.Object(:)', eb.LineWidth = 1; end
 
 ax1 = gca;
 ax1.FontSize = 6;
@@ -171,11 +170,11 @@ if isscalar(Bars1)
 	nB = numel(Bars1.YData);
 	Bars1.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars1.CData = Bars1.CData(1:nB, :);
-	Bars1.BarWidth = 0.5; Bars1.LineWidth = 0.5; Bars1.FaceAlpha = 1/3;
+	Bars1.BarWidth = 0.5; Bars1.LineWidth = 1; Bars1.FaceAlpha = 1/3;
 else
 	if numel(Bars1) >= 2
-		Bars1(1).FaceColor = colorA; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 0.5;
-		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 0.5;
+		Bars1(1).FaceColor = colorA; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 1;
+		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 1;
 	end
 end
 
@@ -190,7 +189,7 @@ nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare( ...
 	{double(xDivCtrl(:)), double(xDivV7(:))}, false);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB2.Object(:)', eb.LineWidth = 1; end
 
 ax2 = gca;
 ax2.FontSize = 6;
@@ -207,11 +206,11 @@ if isscalar(Bars2)
 	nB2 = numel(Bars2.YData);
 	Bars2.CData = repmat([colorA; colorB], ceil(nB2/2), 1);
 	Bars2.CData = Bars2.CData(1:nB2, :);
-	Bars2.BarWidth = 0.5; Bars2.LineWidth = 0.5; Bars2.FaceAlpha = 1/3;
+	Bars2.BarWidth = 0.5; Bars2.LineWidth = 1; Bars2.FaceAlpha = 1/3;
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
-		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
+		Bars2(1).FaceColor = colorA; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 1;
+		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 1;
 	end
 end
 
@@ -222,7 +221,9 @@ Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0
 for t = PT2(:)', t.FontSize = 6; end
 
 %% ===== 5) Export =====
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+svgName = "English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
