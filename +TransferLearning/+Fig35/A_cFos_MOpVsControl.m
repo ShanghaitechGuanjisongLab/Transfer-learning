@@ -255,6 +255,7 @@ try
 catch ME
 	warning(ME.identifier, 'Exportgraphics failed: %s', ME.message);
 	try
+		TransferLearning.PrepareFigureForExport(f);
 		print(f, svgPath, '-dsvg');
 		fprintf('Wrote (print -dsvg): %s\n', svgPath);
 	catch ME2

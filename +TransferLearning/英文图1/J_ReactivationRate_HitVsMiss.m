@@ -65,11 +65,10 @@ if nnz(mask) >= 4
 end
 
 Y = [hit(mask), miss(mask)];
-lineColor = [0.7922, 0.7922, 0.7922];
-markerColor = [0, 0, 1];
-plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', lineColor);
-scatter(ax, ones(nnz(mask),1), hit(mask), 15, markerColor, 'filled');
-scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, markerColor, 'filled');
+palette3 = TransferLearning.FigurePalette(3);
+plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', palette3(3,:));
+scatter(ax, ones(nnz(mask),1), hit(mask), 15, palette3(1,:), 'filled');
+scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, palette3(2,:), 'filled');
 set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 ylim(ax, [0 1]);
 grid(ax,'off');

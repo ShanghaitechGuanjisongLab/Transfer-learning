@@ -128,10 +128,10 @@ histAxes = gobjects(1, 2);
 for iS = 1:2
     fh = figure('Color', 'w');
     fh.Units = 'centimeters';
-    fh.Position(3:4) = [5.8, 1.7];
+    fh.Position(3:4) = [6, 4];
     fh.PaperUnits = 'centimeters';
     fh.PaperPositionMode = 'auto';
-    fh.PaperSize = [5.8, 1.7];
+    fh.PaperSize = [6, 4];
     ax = axes(fh);
     disableDefaultInteractivity(ax);
     ax.Toolbar.Visible = 'off';

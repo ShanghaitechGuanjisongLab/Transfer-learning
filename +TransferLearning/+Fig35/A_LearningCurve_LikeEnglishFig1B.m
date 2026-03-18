@@ -110,11 +110,7 @@ MATLAB.Graphics.FigureAspectRatio(90, 80, 1);
 ax = axes(f);
 hold(ax,'on');
 
-try
-	edgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
-catch
-	edgeColors = lines(2);
-end
+edgeColors = TransferLearning.FigurePalette(2);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 

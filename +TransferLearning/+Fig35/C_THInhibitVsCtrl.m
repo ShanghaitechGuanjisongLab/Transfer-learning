@@ -227,11 +227,7 @@ end
 tlo = tiledlayout(f, 1, 3, 'TileSpacing','compact', 'Padding','compact');
 
 % Colors
-try
-	cols = GlobalOptimization.ColorAllocate(2, [1,1,1;1,1,1]);
-catch
-	cols = lines(2);
-end
+cols = TransferLearning.FigurePalette(2);
 
 % 5.1 Full LightWater learning curve (required: LearningSummarize + MultiShadowedLines)
 ax1 = nexttile(tlo, 1);

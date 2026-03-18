@@ -114,11 +114,7 @@ end
 ax = axes('Parent', f);
 hold(ax, 'on');
 
-try
-	edgeColors = GlobalOptimization.ColorAllocate(3, [1,1,1;1,1,1]);
-catch
-	edgeColors = lines(3);
-end
+edgeColors = TransferLearning.FigurePalette(3);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, X=xsSec(xMask), EdgeColors=edgeColors(1:3,:));
 

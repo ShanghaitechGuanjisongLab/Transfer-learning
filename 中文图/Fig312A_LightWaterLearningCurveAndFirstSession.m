@@ -1,4 +1,4 @@
-% Fig32A：光水初始/迁移学习曲线 + 首会话条形图
+% Fig312A：光水初始/迁移学习曲线 + 首会话条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -51,7 +51,7 @@ PValueLS = nan;
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["Naive","Transfer"]);
 nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
-f = figure('Color','w', 'Name', 'Fig32A LightWater learning curve');
+f = figure('Color','w', 'Name', 'Fig312A LightWater learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
@@ -98,7 +98,7 @@ outDir = '\\Data-Server-2\个人数据\张天夫\202602';
 if ~isfolder(outDir)
 	mkdir(outDir);
 end
-svgPath = fullfile(outDir, '中文图Fig32A_LightWater_LearningCurve.svg');
+svgPath = fullfile(outDir, '中文图Fig312A_LightWater_LearningCurve.svg');
 TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -120,7 +120,7 @@ tranFirst  = double(firstSess.Performance(string(firstSess.Group) == "Transfer")
 naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
 
-f2 = figure('Color','none', 'Name', 'Fig32A LightWater first-session performance');
+f2 = figure('Color','none', 'Name', 'Fig312A LightWater first-session performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
@@ -155,7 +155,7 @@ grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = fullfile(outDir, '中文图Fig32A_LightWater_FirstSessionPerformance.svg');
+svgPath2 = fullfile(outDir, '中文图Fig312A_LightWater_FirstSessionPerformance.svg');
 TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath2);
 

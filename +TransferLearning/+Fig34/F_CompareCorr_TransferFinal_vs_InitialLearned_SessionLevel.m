@@ -297,7 +297,7 @@ end
 
 try
 	svgPath = fullfile(outDirUNC, svgName);
-	print(f, svgPath, '-dsvg', '-painters');
+	TransferLearning.PrintFigure(f, string(svgPath));
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

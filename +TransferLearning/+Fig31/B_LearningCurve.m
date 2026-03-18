@@ -105,7 +105,7 @@ hold(ax,'on'); %[output:5c266b7f]
 axes(ax); %[output:5c266b7f]
 
 % Avoid white lines on white background
-EdgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
+EdgeColors = TransferLearning.FigurePalette(2);
 
 % MultiShadowedLines 要求：若 Y 为矩阵则 X/Shadow 尺寸必须与 Y 相同。
 % 这里使用 cell 输入以适配不同组的有效长度（避免 NaN padding 影响绘图）。

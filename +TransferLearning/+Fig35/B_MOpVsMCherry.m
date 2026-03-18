@@ -174,6 +174,7 @@ try
 	TransferLearning.PrintFigure(f, exportPath);
 catch
 	try
+		TransferLearning.PrepareFigureForExport(f);
 		print(f, exportPath, '-dsvg');
 	catch
 	end

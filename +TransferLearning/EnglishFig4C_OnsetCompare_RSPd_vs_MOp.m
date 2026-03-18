@@ -27,7 +27,7 @@ meanMOp = mean(XMOp, 1, 'omitnan');
 semRSP  = std(XRSP, 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XRSP), 1)));
 semMOp  = std(XMOp, 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XMOp), 1)));
 
-f = figure('Color','w', 'Name','English Fig4C RSP vs MOp');
+f = figure('Color','w', 'Name','English Fig4C RSPd vs MOp');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 
@@ -50,12 +50,12 @@ grid(ax,'off');
 xlabel(ax, 'Time (s)', 'FontSize', 12);
 ylabel(ax, 'z-score', 'FontSize', 12);
 
-labels = {'RSP', 'MOp'};
+labels = {'RSPd', 'MOp'};
 legend(Patches, labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box','off', 'FontSize', 12);
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgName = "English_Fig4C_Onset_RSP_vs_MOp.svg";
+svgName = "English_Fig4C_Onset_RSPd_vs_MOp.svg";
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);

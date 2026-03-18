@@ -85,22 +85,22 @@ ax1 = nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare({double(naiveL23(:)), double(tranL23(:))}, false, ...
 	table([1 2], 'VariableNames', {'GroupPair'}));
 delete(findobj(ax1, 'Type', 'Scatter'));
-delete(EB1.Object(isgraphics(EB1.Object)));
+for eb = EB1.Object(:)'
+	eb.LineWidth = 0.5;
+end
 iStyleAxes(ax1, 'L2/3');
 iStyleBars(Bars1, RED, BLUE);
-iDrawUpperErrorBars(ax1, [1 2], [mean(naiveL23) mean(tranL23)], ...
-	[std(naiveL23)/sqrt(numel(naiveL23)) std(tranL23)/sqrt(numel(tranL23))], [RED; BLUE]);
 
 ax2 = nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare({double(naiveL5(:)), double(tranL5(:))}, false, ...
 	table([1 2], 'VariableNames', {'GroupPair'}));
 delete(findobj(ax2, 'Type', 'Scatter'));
-delete(EB2.Object(isgraphics(EB2.Object)));
+for eb = EB2.Object(:)'
+	eb.LineWidth = 0.5;
+end
 iStyleAxes(ax2, 'L5');
 xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
 iStyleBars(Bars2, RED, BLUE);
-iDrawUpperErrorBars(ax2, [1 2], [mean(naiveL5) mean(tranL5)], ...
-	[std(naiveL5)/sqrt(numel(naiveL5)) std(tranL5)/sqrt(numel(tranL5))], [RED; BLUE]);
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgPath = fullfile(outDirUNC, 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg');
@@ -347,26 +347,6 @@ else
 		Bars(2).FaceAlpha = 1/3;
 		Bars(1).LineWidth = 0.5;
 		Bars(2).LineWidth = 0.5;
-	end
-	end
-end
-
-function iDrawUpperErrorBars(ax, xs, ys, errs, colors)
-capWidth = 0.18;
-hold(ax, 'on');
-for i = 1:numel(xs)
-	if ~isfinite(ys(i)) || ~isfinite(errs(i))
-		continue;
-	end
-	yTop = ys(i) + errs(i);
-	v = line(ax, [xs(i) xs(i)], [ys(i) yTop], 'Color', colors(i, :), 'LineWidth', 1);
-	setappdata(v, 'TransferLearningPreserveLineWidth', true);
-	h = line(ax, [xs(i)-capWidth/2 xs(i)+capWidth/2], [yTop yTop], 'Color', colors(i, :), 'LineWidth', 1);
-	setappdata(h, 'TransferLearningPreserveLineWidth', true);
-	try
-		v.Annotation.LegendInformation.IconDisplayStyle = 'off';
-		h.Annotation.LegendInformation.IconDisplayStyle = 'off';
-	catch
 	end
 	end
 end

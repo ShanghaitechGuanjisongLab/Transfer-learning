@@ -114,11 +114,7 @@ hold(ax, 'on');
 
 meanCells = {muA(:), muI(:)};
 semCells  = {seA(:), seI(:)};
-try
-	edgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1;1,1,1]);
-catch
-	edgeColors = lines(2);
-end
+edgeColors = TransferLearning.FigurePalette(2);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, X=xsSec(xMask), EdgeColors=edgeColors(1:2,:));
 

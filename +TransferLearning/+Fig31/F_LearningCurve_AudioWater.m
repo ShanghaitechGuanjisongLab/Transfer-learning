@@ -92,7 +92,7 @@ ax = axes(f);
 hold(ax,'on');
 axes(ax);
 
-EdgeColors = GlobalOptimization.ColorAllocate(2, [1,1,1; 1,1,1]);
+EdgeColors = TransferLearning.FigurePalette(2);
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 Patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=EdgeColors(1:2,:));
 
