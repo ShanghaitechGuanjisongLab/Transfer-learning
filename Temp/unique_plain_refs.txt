@@ -1,0 +1,46 @@
+﻿Barnett, S. M., & Ceci, S. J. (2002). When and where do we apply what we learn? A taxonomy for far transfer. Psychological Bulletin, 128(4), 612-637.
+Lawrence, D. H. (1949). Acquired distinctiveness of cues: Transfer between discriminations on the basis of familiarity with the stimulus. Journal of Experimental Psychology, 39(6), 770-784.
+Vorhees, C. V., & Williams, M. T. (2006). Morris water maze: Procedures for assessing spatial and related forms of learning and memory. Nature Protocols, 1(2), 848-858.
+Song, Y. H., Kim, J. H., Jeong, H. W., Choi, I., Jeong, D., Kim, K., & Lee, S. H. (2017). A neural circuit for auditory dominance over visual perception. Neuron, 93(4), 940-954.e6.
+Guo, Z. V., Hires, S. A., Li, N., O'Connor, D. H., Komiyama, T., Ophir, E., et al. (2014). Procedures for Behavioral Experiments in Head-Fixed Mice. PLoS ONE, 9(2), e88678.
+Bouton, M. E., & García-Gutiérrez, A. (2006). Intertrial interval as a contextual stimulus. Behavioural Processes, 71(2-3), 307-317.
+Niemi, P., & Näätänen, R. (1981). Foreperiod and simple reaction time. Psychological Bulletin, 89(1), 133-162.
+Howard, R. W. (2000). Generalization and transfer: An interrelation of paradigms and a taxonomy of knowledge extension processes. Review of General Psychology, 4(3), 211-237.
+Sreenivasan, V., Esmaeili, V., Kiritani, T., Galan, K., Crochet, S., & Petersen, C. C. H. (2016). Movement initiation signals in mouse whisker motor cortex. Neuron, 92(6), 1368-1382.
+Esmaeili, V., Tamura, K., Crochet, S., & Petersen, C. C. H. (2021). Rapid suppression and sustained activation of distinct cortical regions for a delayed sensory-triggered motor response. Neuron, 109(13), 2183-2201.e9.
+Glorot, X., & Bengio, Y. (2010). Understanding the difficulty of training deep feedforward neural networks. Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics, 9, 249-256.
+Saxe, A. M., McClelland, J. L., & Ganguli, S. (2014). Exact solutions to the nonlinear dynamics of learning in deep linear neural networks. International Conference on Learning Representations.
+Golub, M. D., Sadtler, P. T., Oby, E. R., Quick, K. M., Ryu, S. I., Tyler-Kabara, E. C., Batista, A. P., Yu, B. M., & Chase, S. M. (2018). Learning by neural reassociation. Nature Neuroscience, 21(4), 607-616.
+Hennig, J. A., Oby, E. R., Golub, M. D., Bahureksa, L. A., Sadtler, P. T., Quick, K. M., Ryu, S. I., Tyler-Kabara, E. C., Batista, A. P., & Chase, S. M. (2021). Learning is shaped by abrupt changes in neural engagement. Nature Neuroscience, 24(5), 727-736.
+Svoboda, K., & Li, N. (2018). Neural mechanisms of movement planning: motor cortex and beyond. Current Opinion in Neurobiology, 49, 33-41.
+MacDowell, C. J., & Buschman, T. J. (2020). Low-dimensional spatio-temporal dynamics underlie cortex-wide neural activity. Current Biology, 30(14), 2665-2680.e8.
+Sun, X., Bernstein, M. J., Meng, M., Rao, S., Sørensen, A. T., Yao, L., Zhang, X., Anikeeva, P. O., & Lin, Y. (2020). Functionally distinct neuronal ensembles within the memory engram. Cell, 181(2), 410-423.e17.
+Nambu, M. F., Lin, Y.-J., Reuschenbach, J., & Tanaka, K. Z. (2022). What does engram encode?: Heterogeneous memory engrams for different aspects of experience. Current Opinion in Neurobiology, 75, 102568.
+Xu, W., & Südhof, T. C. (2013). A neural circuit for memory specificity and generalization. Science, 339(6125), 1290-1295.
+Grosso, A., Santoni, G., Manassero, E., Renna, A., & Sacchetti, B. (2018). A neuronal basis for fear discrimination in the lateral amygdala. Nature Communications, 9, 1214.
+Yokoyama, M., & Matsuo, N. (2016). Loss of ensemble segregation in dentate gyrus, but not in somatosensory cortex, during contextual fear memory generalization. Frontiers in Behavioral Neuroscience, 10, 218.
+Rajbhandari, A. K., Zhu, R., Adling, C., Fanselow, M. S., & Waschek, J. A. (2016). Graded fear generalization enhances the level of cfos positive neurons specifically in the basolateral amygdala. Journal of Neuroscience Research, 94(12), 1393-1399.
+Makino, H., Ren, C., Liu, H., Kim, A. N., Kondapaneni, N., Liu, X., Kuzum, D., & Komiyama, T. (2017). Transformation of cortex-wide emergent properties during motor learning. Neuron, 94(4), 880-890.e8.
+Hwang, E. J., Dahlen, J. E., Hu, Y. Y., Aguilar, K., Yu, B., Mukundan, M., Mitani, A., & Komiyama, T. (2019). Disengagement of motor cortex from movement control during long-term learning. Science Advances, 5(10), eaay0001.
+Hwang, E. J., Dahlen, J. E., Mukundan, M., & Komiyama, T. (2021). Disengagement of motor cortex during long-term learning tracks the performance level of learned movements. Journal of Neuroscience, 41(33), 7029-7047.
+Gallego, J. A., Perich, M. G., Chowdhury, R. H., Solla, S. A., & Miller, L. E. (2020). Long-term stability of cortical population dynamics underlying consistent behavior. Nature Neuroscience, 23(2), 260-270.
+Masamizu, Y., Okada, T., Ishibashi, H., Takemoto, K., Ko, T., & Komiyama, T. (2014). Two distinct layer-specific dynamics of cortical ensembles during learning of a motor task. Nature Neuroscience, 17(7), 987-994.
+Heindorf, M., Arber, S., & Keller, G. B. (2018). Mouse motor cortex coordinates the behavioral response to unpredicted sensory feedback. Neuron, 99(5), 1040-1054.e5.
+Oswald, M. J., Tantirigama, M. L. S., Sonntag, I., Hughes, S. M., & Empson, R. M. (2013). Diversity of layer 5 projection neurons in the mouse motor cortex. Frontiers in Cellular Neuroscience, 7, 174.
+Currie, S. P., Ammer, J. J., Premchand, B., Dacre, J., Wu, Y., Eleftheriou, C., Colligan, M., Clarke, T., Mitchell, L., Faisal, A. A., Hennig, M. H., & Duguid, I. (2022). Movement-specific signaling is differentially distributed across motor cortex layer 5 projection neuron classes. Cell Reports, 39(6), 110801.
+Koya, E., Golden, S. A., Harvey, B. K., Guez-Barber, D. H., Berkow, A., Simmons, D. E., Bossert, J. M., Nair, S. G., Uejima, J. L., Marin, M. T., Mitchell, T. B., Farquhar, D., Ghosh, S. C., Mattson, B. J., & Hope, B. T. (2009). Targeted disruption of cocaine-activated nucleus accumbens neurons prevents context-specific sensitization. Nature Neuroscience, 12(8), 1069-1073.
+Liu, X., Ramirez, S., Pang, P. T., Puryear, C. B., Govindarajan, A., Deisseroth, K., & Tonegawa, S. (2012). Optogenetic stimulation of a hippocampal engram activates fear memory recall. Nature, 484(7394), 381-385.
+Wiltgen, B. J., & Silva, A. J. (2007). Memory for context becomes less specific with time. Learning & Memory, 14(4), 313-317.
+Hooks, B. M., Mao, T., Gutnisky, D. A., Yamawaki, N., Svoboda, K., & Shepherd, G. M. G. (2013). Organization of cortical and thalamic input to pyramidal neurons in mouse motor cortex. Journal of Neuroscience, 33(2), 748-760.
+Casas-Torremocha, D., Clascá, F., & Núñez, Á. (2017). Posterior thalamic nucleus modulation of tactile stimuli processing in rat motor and primary somatosensory cortices. Frontiers in Neural Circuits, 11, 69.
+Casas-Torremocha, D., Clascá, F., & Núñez, Á. (2019). Posterior thalamic nucleus axon terminals have different structure and functional impact in the motor and somatosensory vibrissal cortices. Brain Structure and Function, 224(4), 1627-1645.
+Takahashi, N., Moberg, S., Zolnik, T. A., Catanese, J., Sachdev, R. N. S., Larkum, M. E., & Jaeger, D. (2021). Thalamic input to motor cortex facilitates goal-directed action initiation. Current Biology, 31(18), 4148-4155.e4.
+Smith, D. M., Barredo, J., & Mizumori, S. J. Y. (2012). Complimentary roles of the hippocampus and retrosplenial cortex in behavioral context discrimination. Hippocampus, 22(5), 1121-1133.
+Vedder, L. C., Miller, A. M. P., Harrison, M. B., & Smith, D. M. (2017). Retrosplenial cortical neurons encode navigational cues, trajectories and reward locations during goal directed navigation. Cerebral Cortex, 27(7), 3713-3723.
+Harris, K. D., & Shepherd, G. M. G. (2015). The neocortical circuit: themes and variations. Nature Neuroscience, 18(2), 170-181.
+Brodt, S., & Gais, S. (2021). Memory engrams in the neocortex. Neuroscientist, 27(4), 427-444.
+Alexander, A. S., Place, R., Starrett, M. J., Chrastil, E. R., & Nitz, D. A. (2023). Rethinking retrosplenial cortex: Perspectives and predictions. Neuron, 111(2), 150-175.
+Schneidman, E., Berry, M. J., II, Segev, R., & Bialek, W. (2006). Weak pairwise correlations imply strongly correlated network states in a neural population. Nature, 440(7087), 1007-1012.
+Stringer, C., Pachitariu, M., Steinmetz, N., Carandini, M., & Harris, K. D. (2019). High-dimensional geometry of population responses in visual cortex. Nature, 571(7765), 361-365.
+Churchland, M. M., Yu, B. M., Cunningham, J. P., Sugrue, L. P., Cohen, M. R., Corrado, G. S., Newsome, W. T., Clark, A. M., Hosseini, P., Scott, B. B., Bradley, D. C., Smith, M. A., Kohn, A., Movshon, J. A., Armstrong, K. M., Moore, T., Chang, S. W. C., Snyder, L. H., Lisberger, S. G., & Shenoy, K. V. (2010). Stimulus onset quenches neural variability: A widespread cortical phenomenon. Nature Neuroscience, 13(3), 369-378.
+Murakami, M., Vicente, M. I., Costa, G. M., & Mainen, Z. F. (2014). Neural antecedents of self-initiated actions in secondary motor cortex. Nature Neuroscience, 17(11), 1574-1582.

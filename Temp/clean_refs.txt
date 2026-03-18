@@ -1,0 +1,120 @@
+﻿# 参考文献
+- [1] Thorndike E L, Woodworth R S. The influence of improvement in one mental function upon the efficiency of other functions[J]. Psychological Review, 1901, 8(3): 247-261.
+- [2] Perkins D N, Salomon G. Transfer of learning[C]//Husen T, Postlethwaite T N, eds. International Encyclopedia of Education. 2nd ed. Oxford: Pergamon Press, 1994.
+- [3] Barnett S M, Ceci S J. When and where do we apply what we learn?: A taxonomy for far transfer[J]. Psychological Bulletin, 2002, 128(4): 612-637.
+- [4] Bransford J D, Schwartz D L. Rethinking transfer: A simple proposal with multiple implications[C]//Review of Research in Education. Washington, DC: American Educational Research Association, 1999: 61-100.
+- [5] Harlow H F. The formation of learning sets[J]. Psychological Review, 1949, 56(1): 51-65.
+- [6] Lawrence D H. Acquired distinctiveness of cues: I. Transfer between discriminations on the basis of familiarity with the stimulus[J]. Journal of Experimental Psychology, 1949, 39(6): 770-784. doi:10.1037/h0058097.
+- [7] Sutherland N S, Mackintosh N J. Mechanisms of Animal Discrimination Learning[M]. New York: Academic Press, 1971.
+- [8] Squire L R. Memory systems of the brain: A brief history and current perspective[J]. Neurobiology of Learning and Memory, 2004, 82(3): 171-177.
+- [9] Chen T W, Wardill T J, Sun Y, et al. Ultrasensitive fluorescent proteins for imaging neuronal activity[J]. Nature, 2013, 499: 295-300.
+- [10] Guenthner C J, Miyamichi K, Yang H H, et al. Permanent genetic access to transiently active neurons via TRAP: targeted recombination in active populations[J]. Neuron, 2013, 78(5): 773-784.
+- [11] Roth B L. DREADDs for neuroscientists[J]. Neuron, 2016, 89(4): 683-694.
+- [12] Wang W, Wildes C P, Pattarabanjird T, et al. A light- and calcium-gated transcription factor for imaging and manipulating activated neurons[J]. Nature Biotechnology, 2017, 35(9): 864-871. doi:10.1038/nbt.3909.
+- [13] Gallego J A, Perich M G, Miller L E, Solla S A. Neural manifolds for the control of movement[J]. Neuron, 2017, 94(5): 978-984.
+- [14] Gallego J A, Perich M G, Naufel S N, et al. Cortical population activity within a preserved neural manifold underlies multiple motor behaviors[J]. Nature Communications, 2018, 9: 4233.
+- [15] Perich M G, Gallego J A, Miller L E. A neural population mechanism for rapid learning[J]. Neuron, 2018, 100(4): 964-976.
+- [16] Sadtler P T, Quick K M, Golub M D, et al. Neural constraints on learning[J]. Nature, 2014, 512: 423-426.
+- [17] Soderstrom N C, Bjork R A. Learning versus performance: An integrative review[J]. Perspectives on Psychological Science, 2015, 10(2): 176-199. doi:10.1177/1745691615569000.
+- [18] Aston-Jones G, Cohen J D. An integrative theory of locus coeruleus-norepinephrine function: adaptive gain and optimal performance[J]. Annual Review of Neuroscience, 2005, 28: 403-450. doi:10.1146/annurev.neuro.28.061604.135709.
+- [19] Yerkes R M, Dodson J D. The relation of strength of stimulus to rapidity of habit-formation[J]. Journal of Comparative Neurology and Psychology, 1908, 18: 459-482. doi:10.1002/cne.920180503.
+- [20] Boksem M A S, Tops M. Mental fatigue: costs and benefits[J]. Brain Research Reviews, 2008, 59(1): 125-139. doi:10.1016/j.brainresrev.2008.07.001.
+- [21] Niv Y, Daw N D, Joel D, Dayan P. Tonic dopamine: opportunity costs and the control of response vigor[J]. Psychopharmacology, 2007, 191: 507-520. doi:10.1007/s00213-006-0502-4.
+- [22] Salamone J D, Correa M. The mysterious motivational functions of mesolimbic dopamine[J]. Neuron, 2012, 76(3): 470-485. doi:10.1016/j.neuron.2012.10.021.
+- [23] Girven K S, Sparta D R. Probing deep brain circuitry: new advances in in vivo calcium measurement strategies[J]. ACS Chemical Neuroscience, 2017, 8(2): 243-251. doi:10.1021/acschemneuro.6b00307.
+- [24] Tonegawa S, Liu X, Ramirez S, Redondo R. Memory engram cells have come of age[J]. Nature Reviews Neuroscience, 2015, 16(9): 521-534. doi:10.1038/nrn4004.
+- [25] Schultz W, Dayan P, Montague P R. A neural substrate of prediction and reward[J]. Science, 1997, 275(5306): 1593-1599. doi:10.1126/science.275.5306.1593.
+- [26] Bastos A M, Usrey W M, Adams R A, et al. Canonical microcircuits for predictive coding[J]. Neuron, 2012, 76(4): 695-711. doi:10.1016/j.neuron.2012.10.038.
+- [27] Keller G B, Mrsic-Flogel T D. Predictive processing: a canonical cortical computation[J]. Neuron, 2018, 100(2): 424-435. doi:10.1016/j.neuron.2018.10.003.
+- [28] Kok P, Rahnev D, Jehee J F M, et al. Attention reverses the effect of prediction in silencing sensory signals[J]. Cerebral Cortex, 2012, 22(9): 2197-2206. doi:10.1093/cercor/bhr310.
+- [29] Schneider D M, Sundararajan J, Mooney R. A cortical filter that learns to suppress the acoustic consequences of movement[J]. Nature, 2018, 561: 391-395. doi:10.1038/s41586-018-0520-5.
+- [30] Pan S J, Yang Q. A survey on transfer learning[J]. IEEE Transactions on Knowledge and Data Engineering, 2010, 22(10): 1345-1359. doi:10.1109/TKDE.2009.191.
+- [31] Yosinski J, Clune J, Bengio Y, Lipson H. How transferable are features in deep neural networks[EB/OL]. arXiv:1411.1792, 2014. doi:10.48550/arXiv.1411.1792.
+- [32] Howard J, Ruder S. Universal language model fine-tuning for text classification[C]//Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2018: 328-339. doi:10.18653/v1/P18-1031.
+- [33] Mackintosh N J. A theory of attention: Variations in the associability of stimuli with reinforcement[J]. Psychological Review, 1975, 82(4): 276-298. doi:10.1037/h0076778.
+- [34] Pearce J M, Hall G. A model for Pavlovian learning: Variations in the effectiveness of conditioned but not of unconditioned stimuli[J]. Psychological Review, 1980, 87(6): 532-552. doi:10.1037/0033-295X.87.6.532.
+- [35] McClelland J L, McNaughton B L, O'Reilly R C. Why there are complementary learning systems in the hippocampus and neocortex: Insights from the successes and failures of connectionist models of learning and memory[J]. Psychological Review, 1995, 102(3): 419-457. doi:10.1037/0033-295X.102.3.419.
+- [36] Frankland P W, Bontempi B. The organization of recent and remote memories[J]. Nature Reviews Neuroscience, 2005, 6: 119-130. doi:10.1038/nrn1607.
+- [37] Tse D, Langston R F, Kakeyama M, et al. Schemas and memory consolidation[J]. Science, 2007, 316(5821): 76-82. doi:10.1126/science.1135935.
+- [38] van Kesteren M T R, Ruiter D J, Fernández G, Henson R N. How schema and novelty augment memory formation[J]. Trends in Neurosciences, 2012, 35(4): 211-219. doi:10.1016/j.tins.2012.02.001.
+- [39] Yin H H, Knowlton B J. The role of the basal ganglia in habit formation[J]. Nature Reviews Neuroscience, 2006, 7(6): 464-476. doi:10.1038/nrn1919.
+- [40] Packard M G, McGaugh J L. Inactivation of hippocampus or caudate nucleus with lidocaine differentially affects expression of place and response learning[J]. Neurobiology of Learning and Memory, 1996, 65(1): 65-72.
+- [41] Shenoy K V, Sahani M, Churchland M M. Cortical control of arm movements: a dynamical systems perspective[J]. Annual Review of Neuroscience, 2013, 36: 337-359. doi:10.1146/annurev-neuro-062111-150509.
+- [42] Cunningham J P, Yu B M. Dimensionality reduction for large-scale neural recordings[J]. Nature Neuroscience, 2014, 17(11): 1500-1509. doi:10.1038/nn.3776.
+- [43] Vyas S, Golub M D, Sussillo D, Shenoy K V. Computation through neural population dynamics[J]. Annual Review of Neuroscience, 2020, 43: 249-275. doi:10.1146/annurev-neuro-092619-094115.
+- [44] Komiyama T, Sato T R, O'Connor D H, et al. Learning-related fine-scale specificity imaged in motor cortex circuits of behaving mice[J]. Nature, 2010, 464: 1182-1186. doi:10.1038/nature08886.
+- [45] Kawai R, Markman T, Poddar R, et al. Motor cortex is required for learning but not for executing a motor skill[J]. Neuron, 2015, 86(3): 800-812. doi:10.1016/j.neuron.2015.03.024.
+- [46] Guo Z V, Hires S A, Li N, et al. Cortex commands the performance of skilled movement[J]. eLife, 2015, 4: e10774. doi:10.7554/eLife.10774.
+- [47] Li N, Chen T W, Guo Z V, et al. A motor cortex circuit for motor planning and movement[J]. Nature, 2015, 519: 51-56. doi:10.1038/nature14178.
+- [48] Vann S D, Aggleton J P, Maguire E A. What does the retrosplenial cortex do?[J]. Nature Reviews Neuroscience, 2009, 10(11): 792-802. doi:10.1038/nrn2733.
+- [49] Miller A M P, Vedder L C, Law L M, Smith D M. Cues, context, and long-term memory: the role of the retrosplenial cortex in spatial cognition[J]. Frontiers in Human Neuroscience, 2014, 8: 586. doi:10.3389/fnhum.2014.00586.
+- [50] Mao D, Kandler S, McNaughton B L, Bonin V. Sparse orthogonal population representation of spatial context in the retrosplenial cortex[J]. Nature Communications, 2017, 8: 243. doi:10.1038/s41467-017-00180-9.
+- [51] Theyel B B, Llano D A, Sherman S M. The corticothalamocortical circuit drives higher-order cortex in the mouse[J]. Nature Neuroscience, 2010, 13(1): 84-88. doi:10.1038/nn.2449.
+- [52] Halassa M M, Sherman S M. Thalamocortical circuit motifs: a general framework[J]. Neuron, 2019, 103(5): 762-770. doi:10.1016/j.neuron.2019.06.005.
+- [53] Saalmann Y B, Pinsk M A, Wang L, Li X, Kastner S. The pulvinar regulates information transmission between cortical areas based on attention demands[J]. Science, 2012, 337(6095): 753-756. doi:10.1126/science.1223082.
+- [54] Deisseroth K. Optogenetics: 10 years of microbial opsins in neuroscience[J]. Nature Neuroscience, 2015, 18(9): 1213-1225. doi:10.1038/nn.4091.
+- [55] Josselyn S A, Tonegawa S. Memory engrams: recalling the past and imagining the future[J]. Science, 2020, 367(6473): eaaw4325. doi:10.1126/science.aaw4325.
+- [56] DeNardo L A, Liu C D, Allen W E, et al. Temporal evolution of cortical ensembles promoting remote memory retrieval[J]. Nature Neuroscience, 2019, 22: 460-469. doi:10.1038/s41593-018-0318-7.
+- [57] Hyun J H, Nagahama K, Namkung H, et al. Tagging active neurons by soma-targeted Cal-light[J]. Nature Communications, 2022, 13: 7692. doi:10.1038/s41467-022-35406-y.
+- [58] Bayer H M, Glimcher P W. Midbrain dopamine neurons encode a quantitative reward prediction error signal[J]. Neuron, 2005, 47(1): 129-141. doi:10.1016/j.neuron.2005.05.020.
+- [59] Rao R P N, Ballard D H. Predictive coding in the visual cortex: a functional interpretation of some extra-classical receptive-field effects[J]. Nature Neuroscience, 1999, 2(1): 79-87. doi:10.1038/4580.
+- [60] Kirkpatrick J, Pascanu R, Rabinowitz N, et al. Overcoming catastrophic forgetting in neural networks[J]. Proceedings of the National Academy of Sciences of the United States of America, 2017, 114(13): 3521-3526. doi:10.1073/pnas.1611835114.
+- [61] Chung L. A Brief Introduction to the Transduction of Neural Activity into Fos Signal[J]. Development & Reproduction, 2015, 19(2): 61-67. doi:10.12717/DR.2015.19.2.061.
+- [62] Perrin-Terrin A S, Pichon A, Frugière A, et al. The c-FOS Protein Immunohistological Detection: A Useful Tool As a Marker of Central Pathways Involved in Specific Physiological Responses In Vivo and Ex Vivo[J]. Journal of Visualized Experiments, 2016: e53613. doi:10.3791/53613.
+- [63] Tonegawa S, Morrissey M D, Kitamura T. The role of engram cells in the systems consolidation of memory[J]. Nature Reviews Neuroscience, 2018, 19: 485-498. doi:10.1038/s41583-018-0031-2.
+- [64] Thorndike E L. Animal intelligence: An experimental study of the associative processes in animals[M]. Psychological Review Monograph Supplements, 1898, 2(4): i-109.
+- [65] Wylie H H. An experimental study of transfer of response in white rats[D]. Chicago: The University of Chicago, 1917. Available: https://archive.org/details/experimentalstud0000harr.
+- [66] Welniarz Q, Dusart I, Roze E. The corticospinal tract: Evolution, development, and human disorders[J]. Developmental Neurobiology, 2017, 77: 810-829. doi:10.1002/dneu.22455.
+- [67] Shepherd G M G, Yamawaki N. Untangling the cortico-thalamo-cortical loop: cellular pieces of a knotty circuit puzzle[J]. Nature Reviews Neuroscience, 2021, 22: 389-406. doi:10.1038/s41583-021-00459-2.
+- [68] Borst A, Theunissen F E. Information theory and neural coding[J]. Nature Neuroscience, 1999, 2(11): 947-957. doi:10.1038/14731.
+- [69] Quian Quiroga R, Panzeri S. Extracting information from neuronal populations: information theory and decoding approaches[J]. Nature Reviews Neuroscience, 2009, 10(3): 173-185. doi:10.1038/nrn2578.
+- [70] Timme N M, Lapish C. A Tutorial for Information Theory in Neuroscience[J]. eNeuro, 2018, 5(3): ENEURO.0052-18.2018. doi:10.1523/ENEURO.0052-18.2018.
+- [71] Murakami H, Yamada N. Unveiling Learning Strategies in the Mirror-Drawing Task: A Single-Case Study of Movement Stability and Complexity Using Entropy[J]. Entropy, 2025, 27(5): 484. doi:10.3390/e27050484.
+- [72] Brynildsen J K, Fotiadis P, Szymula K P, et al. Habit learning is associated with efficiently controlled network dynamics in naive macaque monkeys[J]. npj Complexity, 2026, 3: 4. doi:10.1038/s44260-025-00066-8.
+- [73] Cai D J, Aharoni D, Shuman T, et al. A shared neural ensemble links distinct contextual memories encoded close in time[J]. Nature, 2016, 534(7605): 115-118. doi:10.1038/nature17955.
+- [74] Yokose J, Okubo-Suzuki R, Nomoto M, et al. Overlapping memory trace indispensable for linking, but not recalling, individual memories[J]. Science, 2017, 355(6323): 398-403. doi:10.1126/science.aal2690.
+- [75] Reijmers L G, Perkins B L, Matsuo N, Mayford M. Localization of a stable neural correlate of associative memory[J]. Science, 2007, 317(5842): 1230-1233. doi:10.1126/science.1143839.
+- [76] Mocle A J, Ramsaran A I, Jacob A D, et al. Excitability mediates allocation of pre-configured ensembles to a hippocampal engram supporting contextual conditioned threat in mice[J]. Neuron, 2024, 112(9): 1487-1497.e6. doi:10.1016/j.neuron.2024.02.007.
+- [77] Grewe B F, Gründemann J, Kitch L J, et al. Neural ensemble dynamics underlying a long-term associative memory[J]. Nature, 2017, 543: 670-675. doi:10.1038/nature21682.
+- [78] Papale A E, Hooks B M. Circuit changes in motor cortex during motor skill learning[J]. Neuroscience, 2018, 368: 283-297. doi:10.1016/j.neuroscience.2017.09.010.
+- [79] Fischer L F, Mojica Soto-Albors R, Buck F, Harnett M T. Representation of visual landmarks in retrosplenial cortex[J]. eLife, 2020, 9: e51458. doi:10.7554/eLife.51458.
+- [80] Sit K K, Goard M J. Coregistration of heading to visual cues in retrosplenial cortex[J]. Nature Communications, 2023, 14: 1992. doi:10.1038/s41467-023-37704-5.
+- [81] Jacob P Y, Casali G, Spieser L, et al. An independent, landmark-dominated head-direction signal in dysgranular retrosplenial cortex[J]. Nature Neuroscience, 2017, 20: 173-175. doi:10.1038/nn.4465.
+- [82] Robinson S, Keene C S, Iaccarino H F, et al. Involvement of the retrosplenial cortex in forming associations between multiple sensory stimuli[J]. Behavioral Neuroscience, 2011, 125(4): 578-587. doi:10.1037/a0024262.
+- [83] Robinson S, Todd T P, Pasternak A R, et al. Chemogenetic silencing of neurons in retrosplenial cortex disrupts sensory preconditioning[J]. The Journal of Neuroscience, 2014, 34(33): 10982-10988. doi:10.1523/JNEUROSCI.1349-14.2014.
+- [84] van Groen T, Wyss J M. Connections of the retrosplenial granular b cortex in the rat[J]. The Journal of Comparative Neurology, 2003, 463: 249-263. doi:10.1002/cne.10757.
+- [85] Sugar J, Witter M P, van Strien N M, Cappaert N L M. The retrosplenial cortex: intrinsic connectivity and connections with the (para)hippocampal region in the rat. An interactive connectome[J]. Frontiers in Neuroinformatics, 2011, 5: 7. doi:10.3389/fninf.2011.00007.
+- [86] Oh S W, Harris J A, Ng L, et al. A mesoscale connectome of the mouse brain[J]. Nature, 2014, 508: 207-214. doi:10.1038/nature13186.
+- [87] Ranganath C, Ritchey M. Two cortical systems for memory-guided behaviour[J]. Nature Reviews Neuroscience, 2012, 13: 713-726. doi:10.1038/nrn3338.
+- [88] Ritchey M, Libby L A, Ranganath C. Cortico-hippocampal systems involved in memory and cognition: the PMAT framework[J]. Progress in Brain Research, 2015, 219: 45-64. doi:10.1016/bs.pbr.2015.04.001.
+- [89] Wang Q, Ding S-L, Li Y, et al. The Allen Mouse Brain Common Coordinate Framework: A 3D Reference Atlas[J]. Cell, 2020, 181(4): 936-953.e20. doi:10.1016/j.cell.2020.04.007.
+- [90] Paxinos G, Franklin K B J. The Mouse Brain in Stereotaxic Coordinates[M]. 5th ed. Amsterdam: Academic Press, 2019.
+- [91] Heathcote A, Brown S, Mewhort D J K. The power law repealed: The case for an exponential law of practice[J]. Psychonomic Bulletin & Review, 2000, 7(2): 185-207. doi:10.3758/BF03212979.
+- [92] Baayen R H, Davidson D J, Bates D M. Mixed-effects modeling with crossed random effects for subjects and items[J]. Journal of Memory and Language, 2008, 59(4): 390-412. doi:10.1016/j.jml.2007.12.005.
+- [93] Smith M A, Ghazizadeh A, Shadmehr R. Interacting adaptive processes with different timescales underlie short-term motor learning[J]. PLoS Biology, 2006, 4(6): e179. doi:10.1371/journal.pbio.0040179.
+- [94] Herzfeld D J, Vaswani P A, Marko M K, Shadmehr R. A memory of errors in sensorimotor learning[J]. Science, 2014, 345(6202): 1349-1353. doi:10.1126/science.1253138.
+- [95] Krakauer J W, Hadjiosif A M, Xu J, Wong A L, Haith A M. Motor Learning[J]. Comprehensive Physiology, 2019, 9: 613-663. doi:10.1002/cphy.c170043.
+- [96] Shadmehr R, Krakauer J W. A computational neuroanatomy for motor control[J]. Experimental Brain Research, 2008, 185: 359-381. doi:10.1007/s00221-008-1280-5.
+- [97] Diedrichsen J, Kornysheva K. Motor skill learning between selection and execution[J]. Trends in Cognitive Sciences, 2015, 19(4): 227-233. doi:10.1016/j.tics.2015.02.003.
+- [98] Remington E D, Narain D, Hosseini E A, Jazayeri M. Flexible sensorimotor computations through rapid reconfiguration of cortical dynamics[J]. Neuron, 2018, 98(5): 1005-1019.e5. doi:10.1016/j.neuron.2018.05.020.
+- [99] Driscoll L N, Pettit N L, Minderer M, Chettih S N, Harvey C D. Dynamic reorganization of neuronal activity patterns in parietal cortex[J]. Cell, 2017, 170(5): 986-999.e16. doi:10.1016/j.cell.2017.07.021.
+- [100] Rule M E, O'Leary T, Harvey C D. Causes and consequences of representational drift[J]. Current Opinion in Neurobiology, 2019, 58: 141-147. doi:10.1016/j.conb.2019.08.005.
+- [101] Hennig J A, Golub M D, Lund P J, et al. Constraints on neural redundancy[J]. eLife, 2018, 7: e36774. doi:10.7554/eLife.36774.
+- [102] Musall S, Kaufman M T, Juavinett A L, Gluf S, Churchland A K. Single-trial neural dynamics are dominated by richly varied movements[J]. Nature Neuroscience, 2019, 22: 1677-1686. doi:10.1038/s41593-019-0502-4.
+- [103] Stringer C, Pachitariu M, Steinmetz N, et al. Spontaneous behaviors drive multidimensional, brainwide activity[J]. Science, 2019, 364(6437): eaav7893. doi:10.1126/science.aav7893.
+- [104] Peters A J, Lee J, Hedrick N G, O'Neil K, Komiyama T. Reorganization of corticospinal output during motor learning[J]. Nature Neuroscience, 2017, 20: 1133-1141. doi:10.1038/nn.4596.
+- [105] Makino H, Hwang E J, Hedrick N G, Komiyama T. Circuit mechanisms of sensorimotor learning[J]. Neuron, 2016, 92(4): 705-721. doi:10.1016/j.neuron.2016.10.029.
+- [106] Hattori R, Komiyama T. Longitudinal two-photon calcium imaging of neuronal populations[J]. Cold Spring Harbor Protocols, 2022, 2022(7): pdb.top107713. doi:10.1101/pdb.top107713.
+- [107] Peters A J, Chen S X, Komiyama T. Emergence of reproducible spatiotemporal activity during motor learning[J]. Nature, 2014, 510: 263-267. doi:10.1038/nature13235.
+- [108] Li J, Guo Z V. Motor cortex, feedback, and flexible sensorimotor routing[J]. Current Opinion in Neurobiology, 2021, 70: 34-41. doi:10.1016/j.conb.2021.06.002.
+- [109] Sauerbrei B A, Guo J Z, Cohen J D, et al. Cortical pattern generation during dexterous movement is input-driven[J]. Nature, 2020, 577: 386-391. doi:10.1038/s41586-019-1869-9.
+- [110] Economo M N, Viswanathan S, Tasic B, et al. Distinct descending motor cortex pathways and their roles in movement[J]. Nature, 2018, 563: 79-84. doi:10.1038/s41586-018-0642-9.
+- [111] Inagaki H K, Inagaki M, Romani S, Svoboda K. Low-dimensional and monotonic preparatory activity in mouse anterior lateral motor cortex[J]. The Journal of Neuroscience, 2018, 38(17): 4163-4185. doi:10.1523/JNEUROSCI.3152-17.2018.
+- [112] Pinto L, Dan Y. Cell-type-specific activity in prefrontal cortex during goal-directed behavior[J]. Neuron, 2015, 87(2): 437-450. doi:10.1016/j.neuron.2015.06.021.
+- [113] Hattori R, Danskin B, Babic Z, et al. Area-specificity and plasticity of history-dependent value coding during learning[J]. Cell, 2019, 177(7): 1858-1872.e15. doi:10.1016/j.cell.2019.04.027.
+- [114] Ceballo S, Bourg J, Kempf A, et al. Cortical recruitment determines learning dynamics and strategy[J]. Nature, 2020, 577: 731-735. doi:10.1038/s41586-019-1892-x.
+- [115] Ramesh R N, Burgess C R, Sugden A U, et al. Intermingled ensembles in visual association cortex encode stimulus identity or predicted outcome[J]. Neuron, 2018, 100(4): 900-915.e9. doi:10.1016/j.neuron.2018.10.011.
+- [116] Delamare A, Fouquet C, Chéreau R, et al. Long-term functional plasticity in sensorimotor circuits[J]. Nature Reviews Neuroscience, 2022, 23: 721-739. doi:10.1038/s41583-022-00631-3.
+- [117] Karni A, Meyer G, Rey-Hipolito C, et al. The acquisition of skilled motor performance: fast and slow experience-driven changes in primary motor cortex[J]. Proceedings of the National Academy of Sciences of the United States of America, 1998, 95(3): 861-868. doi:10.1073/pnas.95.3.861.
+- [118] Monfils M H, Cowansage K K, Klann E, LeDoux J E. Extinction-reconsolidation boundaries: key to persistent attenuation of fear memories[J]. Science, 2009, 324(5929): 951-955. doi:10.1126/science.1167975.
+- [119] Gershman S J, Niv Y. Learning latent structure: carving nature at its joints[J]. Current Opinion in Neurobiology, 2010, 20(2): 251-256. doi:10.1016/j.conb.2010.02.008.
