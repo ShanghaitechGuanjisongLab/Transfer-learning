@@ -25,10 +25,10 @@ tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 palette2 = TransferLearning.FigurePalette(2);
 
 ax1 = nexttile(tlo, 1);
-iPlotMouseTrajectory(ax1, Naive.Points, Naive.Explained, palette2(1, :), sprintf('Naive  %s', Naive.Mouse));
+iPlotMouseTrajectory(ax1, Naive.Points, Naive.Explained, palette2(1, :), 'Naive');
 
 ax2 = nexttile(tlo, 2);
-iPlotMouseTrajectory(ax2, Transfer.Points, Transfer.Explained, palette2(2, :), sprintf('Transfer  %s', Transfer.Mouse));
+iPlotMouseTrajectory(ax2, Transfer.Points, Transfer.Explained, palette2(2, :), 'Transfer');
 
 MATLAB.Graphics.UnifyAxesLims([ax1, ax2], @xlim);
 MATLAB.Graphics.UnifyAxesLims([ax1, ax2], @ylim);

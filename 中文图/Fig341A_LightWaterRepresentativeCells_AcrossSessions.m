@@ -38,7 +38,7 @@ for iSess = 1:nCol
 	ax = nexttile(tlo, iSess);
 	if iSess <= size(Naive.Signals, 1)
 		if iSess == 1
-			headerText = sprintf('Naive  %s\nCell %u', Naive.Mouse, Naive.CellUID);
+			headerText = sprintf('Naive\nCell %u', Naive.CellUID);
 		else
 			headerText = '';
 		end
@@ -56,7 +56,7 @@ for iSess = 1:nCol
 	ax = nexttile(tlo, nCol + iSess);
 	if iSess <= size(Transfer.Signals, 1)
 		if iSess == 1
-			headerText = sprintf('Transfer  %s\nCell %u', Transfer.Mouse, Transfer.CellUID);
+			headerText = sprintf('Transfer\nCell %u', Transfer.CellUID);
 		else
 			headerText = '';
 		end
