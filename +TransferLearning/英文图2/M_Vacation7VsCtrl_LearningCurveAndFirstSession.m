@@ -174,9 +174,9 @@ else
 		try, Bars2(2).FaceAlpha = 1/3; catch, end
 	end
 end
-for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 2;
-end
+delete(ErrorBars2.Object(isgraphics(ErrorBars2.Object)));
+iDrawUpperErrorBars(ax2, [1 2], [mean(xCtrl) mean(xV7)], ...
+	[std(xCtrl)/sqrt(numel(xCtrl)) std(xV7)/sqrt(numel(xV7))], [colorA; colorB], 2);
 ax2.XLim = [0.5, 2.5];
 
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
@@ -195,3 +195,23 @@ end
 assignin('base', 'English_Fig2M_Sessions', Sess);
 assignin('base', 'English_Fig2M_LearningSummarizeP', PValueLS);
 assignin('base', 'English_Fig2M_FirstSessionP', pFS);
+
+function iDrawUpperErrorBars(ax, xs, ys, errs, colors, lineWidth)
+capWidth = 0.18;
+hold(ax, 'on');
+for i = 1:numel(xs)
+	if ~isfinite(ys(i)) || ~isfinite(errs(i))
+		continue;
+	end
+	yTop = ys(i) + errs(i);
+	v = line(ax, [xs(i) xs(i)], [ys(i) yTop], 'Color', colors(i, :), 'LineWidth', lineWidth);
+	setappdata(v, 'TransferLearningPreserveLineWidth', true);
+	h = line(ax, [xs(i)-capWidth/2 xs(i)+capWidth/2], [yTop yTop], 'Color', colors(i, :), 'LineWidth', lineWidth);
+	setappdata(h, 'TransferLearningPreserveLineWidth', true);
+	try
+		v.Annotation.LegendInformation.IconDisplayStyle = 'off';
+		h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+	catch
+	end
+end
+end

@@ -52,6 +52,9 @@ f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 title(Layout, 'Response heterogeneity', 'FontSize', 6, 'FontWeight', 'normal');
+pLineAll = gobjects(0, 1);
+pTextAll = gobjects(0, 1);
+axList = gobjects(2, 1);
 
 palette3 = TransferLearning.FigurePalette(3);
 colorNaive    = palette3(1,:);
@@ -79,6 +82,7 @@ for iL = 1:numel(layers)
 	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 0.05);
 	for eb = EB.Object(:)', eb.LineWidth = 0.5; end
 	ax = gca;
+	axList(iL) = ax;
 	ax.FontSize = 6;
 	ax.XTick = [1 2 3];
 	if iL == 1
@@ -111,6 +115,27 @@ for iL = 1:numel(layers)
 	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
 		for pt = Opt.MultiCompare.PText(:)', pt.FontSize = 6; end
 	end
+	if isfield(Opt, 'MultiCompare') && istable(Opt.MultiCompare)
+		if ismember('PLine', Opt.MultiCompare.Properties.VariableNames)
+			pLine = Opt.MultiCompare.PLine;
+			pLine = pLine(isgraphics(pLine));
+			if ~isempty(pLine)
+				pLineAll(end+1:end+numel(pLine), 1) = pLine(:); %#ok<AGROW>
+			end
+		end
+		if ismember('PText', Opt.MultiCompare.Properties.VariableNames)
+			pText = Opt.MultiCompare.PText;
+			pText = pText(isgraphics(pText));
+			if ~isempty(pText)
+				pTextAll(end+1:end+numel(pText), 1) = pText(:); %#ok<AGROW>
+			end
+		end
+	end
+end
+
+MATLAB.Graphics.UnifyAxesLims(axList, @ylim);
+if ~isempty(pLineAll) || ~isempty(pTextAll)
+	MATLAB.Graphics.PLineRetune(pLineAll, pTextAll);
 end
 
 % --- Export

@@ -182,7 +182,7 @@ f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 4];
 try, f2.InvertHardcopy = 'off'; catch, end
 
-[~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.FontSize = 12;
 ax2.Color = 'none';
@@ -208,14 +208,19 @@ else
 		Bars2(2).FaceColor = colorB; Bars2(2).LineWidth = 2; try, Bars2(2).FaceAlpha = 1/3; catch, end
 	end
 end
-for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 2;
-end
+iKeepUpperErrorBarOnly(ax2, ErrorBars2, Bars2, colorA, colorB);
 ax2.XLim = [0.5, 2.5];
 
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
+for pt = iFindPText(Optional2)'
+	pt.FontSize = 12;
+end
+[	pLine2, pText2] = iCollectPLineHandles(Optional2);
+if ~isempty(pLine2) || ~isempty(pText2)
+	MATLAB.Graphics.PLineRetune(pLine2, pText2);
+end
 
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
@@ -230,3 +235,45 @@ assignin('base', 'English_Fig3G_Sessions', Sess);
 assignin('base', 'English_Fig3G_BarSessions', barSess);
 assignin('base', 'English_Fig3G_LearningSummarizeP', PValueLS);
 assignin('base', 'English_Fig3G_FirstSessionP', pFS);
+
+function iKeepUpperErrorBarOnly(~, errorBars, ~, ~, ~)
+for eb = errorBars.Object(:)'
+	if ~isgraphics(eb)
+		continue;
+	end
+	if ~isprop(eb, 'YPositiveDelta') || ~isprop(eb, 'YNegativeDelta')
+		continue;
+	end
+	eb.YNegativeDelta = zeros(size(eb.YPositiveDelta));
+	eb.LineWidth = 2;
+	eb.Color = [0 0 0];
+	eb.HandleVisibility = 'off';
+	if isprop(eb, 'Marker')
+		eb.Marker = 'none';
+	end
+end
+end
+
+function pText = iFindPText(optional)
+pText = gobjects(0, 1);
+if isstruct(optional) && isfield(optional, 'MultiCompare') && istable(optional.MultiCompare) && ismember('PText', optional.MultiCompare.Properties.VariableNames)
+	pText = optional.MultiCompare.PText;
+end
+end
+
+function [pLine, pText] = iCollectPLineHandles(optional)
+pLine = gobjects(0, 1);
+pText = gobjects(0, 1);
+if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+mc = optional.MultiCompare;
+if ismember('PLine', mc.Properties.VariableNames)
+	pLine = mc.PLine;
+	pLine = pLine(isgraphics(pLine));
+end
+if ismember('PText', mc.Properties.VariableNames)
+	pText = mc.PText;
+	pText = pText(isgraphics(pText));
+end
+end

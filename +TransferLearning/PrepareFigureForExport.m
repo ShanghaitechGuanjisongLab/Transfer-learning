@@ -15,6 +15,9 @@ lineWidthTarget = 1 + hasLegendOrColorbar;
 
 lineWidthHandles = findall(figHandle, '-property', 'LineWidth');
 for handle = lineWidthHandles(:)'
+	if isappdata(handle, 'TransferLearningPreserveLineWidth') && getappdata(handle, 'TransferLearningPreserveLineWidth')
+		continue;
+	end
 	handle.LineWidth = lineWidthTarget;
 end
 

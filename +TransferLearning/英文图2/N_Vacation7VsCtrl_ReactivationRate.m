@@ -152,7 +152,7 @@ nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare( ...
 	{double(xReactCtrl(:)), double(xReactV7(:))}, false);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB1.Object(:)', eb.LineWidth = 1; end
+delete(EB1.Object(isgraphics(EB1.Object)));
 
 ax1 = gca;
 ax1.FontSize = 6;
@@ -177,19 +177,19 @@ else
 		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 1;
 	end
 end
+iDrawUpperErrorBars(ax1, [1 2], [mean(xReactCtrl) mean(xReactV7)], ...
+	[std(xReactCtrl)/sqrt(numel(xReactCtrl)) std(xReactV7)/sqrt(numel(xReactV7))], [colorA; colorB], 1);
 
 star1 = iAsterisk(pReact);
-Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[~, PT1] = MATLAB.Graphics.PLine(Desc1);
-for t = PT1(:)', t.FontSize = 6; end
+iDrawSigLabel(ax1, [1 2], [mean(xReactCtrl) mean(xReactV7)], ...
+	[std(xReactCtrl)/sqrt(numel(xReactCtrl)) std(xReactV7)/sqrt(numel(xReactV7))], star1, 6);
 
 % --- Tile 2: Divergence ---
 nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare( ...
 	{double(xDivCtrl(:)), double(xDivV7(:))}, false);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB2.Object(:)', eb.LineWidth = 1; end
+delete(EB2.Object(isgraphics(EB2.Object)));
 
 ax2 = gca;
 ax2.FontSize = 6;
@@ -213,12 +213,12 @@ else
 		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 1;
 	end
 end
+iDrawUpperErrorBars(ax2, [1 2], [mean(xDivCtrl) mean(xDivV7)], ...
+	[std(xDivCtrl)/sqrt(numel(xDivCtrl)) std(xDivV7)/sqrt(numel(xDivV7))], [colorA; colorB], 1);
 
 star2 = iAsterisk(pDiv);
-Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[~, PT2] = MATLAB.Graphics.PLine(Desc2);
-for t = PT2(:)', t.FontSize = 6; end
+iDrawSigLabel(ax2, [1 2], [mean(xDivCtrl) mean(xDivV7)], ...
+	[std(xDivCtrl)/sqrt(numel(xDivCtrl)) std(xDivV7)/sqrt(numel(xDivV7))], star2, 6);
 
 %% ===== 5) Export =====
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
@@ -301,4 +301,57 @@ elseif p < 0.05
 else
 	s = "n.s.";
 end
+end
+
+function iDrawUpperErrorBars(ax, xs, ys, errs, colors, lineWidth)
+capWidth = 0.18;
+hold(ax, 'on');
+for i = 1:numel(xs)
+	if ~isfinite(ys(i)) || ~isfinite(errs(i))
+		continue;
+	end
+	yTop = ys(i) + errs(i);
+	v = line(ax, [xs(i) xs(i)], [ys(i) yTop], 'Color', colors(i, :), 'LineWidth', lineWidth);
+	setappdata(v, 'TransferLearningPreserveLineWidth', true);
+	h = line(ax, [xs(i)-capWidth/2 xs(i)+capWidth/2], [yTop yTop], 'Color', colors(i, :), 'LineWidth', lineWidth);
+	setappdata(h, 'TransferLearningPreserveLineWidth', true);
+	try
+		v.Annotation.LegendInformation.IconDisplayStyle = 'off';
+		h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+	catch
+	end
+end
+end
+
+function iDrawSigLabel(ax, xs, ys, errs, label, fontSize)
+if label == ""
+	return;
+end
+hold(ax, 'on');
+yl = ylim(ax);
+yMax = max(ys + errs, [], 'omitnan');
+if ~isfinite(yMax)
+	yMax = yl(2);
+end
+yRange = yl(2) - yl(1);
+if ~isfinite(yRange) || yRange <= 0
+	yRange = max(1, abs(yMax));
+end
+yLine = yMax + 0.04 * yRange;
+yTick = 0.02 * yRange;
+yText = yLine + 0.02 * yRange;
+
+hl = line(ax, [xs(1) xs(1) xs(2) xs(2)], [yLine-yTick yLine yLine yLine-yTick], ...
+	'Color', 'k', 'LineWidth', 1);
+setappdata(hl, 'TransferLearningPreserveLineWidth', true);
+ht = text(ax, mean(xs), yText, label, 'HorizontalAlignment', 'center', ...
+	'VerticalAlignment', 'bottom', 'FontSize', fontSize, 'Color', 'k');
+try
+	hl.Annotation.LegendInformation.IconDisplayStyle = 'off';
+	ht.Annotation.LegendInformation.IconDisplayStyle = 'off';
+catch
+end
+
+newTop = max(yl(2), yText + 0.05 * yRange);
+ylim(ax, [yl(1) newTop]);
 end

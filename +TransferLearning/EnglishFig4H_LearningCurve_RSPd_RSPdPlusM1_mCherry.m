@@ -6,7 +6,7 @@ rspMoPath   = "\\data-server-2\个人数据\张天夫\202507\MOP+RSP化学遗传
 
 RSPd = UniExp.DataSet(rspPath);
 RSPdTable = RSPd.TableQuery(["Mouse","DateTime","Performance"], Design="LightWater");
-RSPdTable.Group(:) = "RSPd";
+RSPdTable.Group(:) = "RSP";
 
 MOpControl = UniExp.DataSet(mopCtrlPath);
 MOpControlTable = MOpControl.TableQuery(["Mouse","DateTime","Performance"], Design="LightWater");
@@ -15,10 +15,9 @@ ControlTable.Group(:) = "mCherry";
 
 RSPdMo = UniExp.DataSet(rspMoPath);
 RSPdMoTable = RSPdMo.TableQuery(["Mouse","DateTime","Performance","Phase"], Design="LightWater");
-RSPdMoTable.Group(:) = "RSPd+MOp";
+RSPdMoTable.Group(:) = "RSP+MOp";
 
 Summary = UniExp.LearningSummarize(MATLAB.DataTypes.MergeTables(RSPdTable, ControlTable, RSPdMoTable));
-Summary.Properties.RowNames = replace(Summary.Properties.RowNames, 'MOp', 'M1');
 palette3 = TransferLearning.FigurePalette(3);
 RED = palette3(1,:);
 BLUE = palette3(2,:);
@@ -26,8 +25,8 @@ GREEN = palette3(3,:);
 rn = string(Summary.Properties.RowNames);
 Colors = zeros(height(Summary), 3);
 Colors(rn == "mCherry", :) = RED;
-Colors(rn == "RSPd",    :) = BLUE;
-Colors(~(rn == "mCherry" | rn == "RSPd"), :) = GREEN;
+Colors(rn == "RSP",    :) = BLUE;
+Colors(~(rn == "mCherry" | rn == "RSP"), :) = GREEN;
 
 f = figure('Color','w', 'Name','English Fig4H Learning Curve');
 f.Units = 'centimeters';
@@ -58,7 +57,7 @@ xlabel(ax, 'Block', 'FontSize', 12);
 
 outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgName = 'English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg';
+svgName = 'English_Fig4H_LearningCurve_RSP_RSPPlusMOp_mCherry.svg';
 svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
@@ -70,7 +69,7 @@ rspFirst = iFirstSessionPerformance(RSPdTable);
 mcherryFirst = iFirstSessionPerformance(ControlTable);
 
 rn = string(Summary.Properties.RowNames);
-rspColorIdx = find(rn == "RSPd", 1);
+rspColorIdx = find(rn == "RSP", 1);
 mcherryColorIdx = find(rn == "mCherry", 1);
 if isempty(rspColorIdx), rspColorIdx = 1; end
 if isempty(mcherryColorIdx), mcherryColorIdx = 2; end
@@ -126,7 +125,7 @@ title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 ax2.Toolbar.Visible = 'off';
 
-svgPath2 = fullfile(outDirUNC, 'English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg');
+svgPath2 = fullfile(outDirUNC, 'English_Fig4H_FirstSessionPerformance_RSP_vs_mCherry.svg');
 MATLAB.Graphics.PLineRetune(Optional2.MultiCompare.PLine,Optional2.MultiCompare.PText);
 TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath2);
