@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="180mm"
-   height="40mm"
-   viewBox="0 0 180 40"
+   width="90mm"
+   height="80mm"
+   viewBox="0 0 89.999998 80"
    version="1.1"
    id="svg1"
    xml:space="preserve"
@@ -26,7 +26,7 @@
      inkscape:document-units="mm"
      inkscape:zoom="1.4378367"
      inkscape:cx="293.49647"
-     inkscape:cy="-12.171062"
+     inkscape:cy="99.107221"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -1823,7 +1823,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g54-2"
-       transform="matrix(0.34782609,0,0,0.34858388,90,0)"><g
+       transform="matrix(0.34782609,0,0,0.34858388,0,40.000001)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -2362,14 +2362,14 @@
            id="text52">n=11</text></g></g><text
        xml:space="preserve"
        style="font-size:3.175px;font-family:'Microsoft YaHei';-inkscape-font-specification:'Microsoft YaHei';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777"
-       x="89.844971"
-       y="2.4417114"
+       x="-0.1550293"
+       y="42.441711"
        id="text8"><tspan
          sodipodi:role="line"
          id="tspan3"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352778"
-         x="89.844971"
-         y="2.4417114">C</tspan></text><g
+         x="-0.1550293"
+         y="42.441711">C</tspan></text><g
        fill="none"
        stroke="#000000"
        stroke-width="1"
@@ -2377,7 +2377,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g36"
-       transform="matrix(0.34782609,0,0,0.34858388,150,0)"><g
+       transform="matrix(0.34782609,0,0,0.34858388,60,40.000001)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -2968,14 +2968,14 @@
            id="text34">p=0.017</text></g></g><text
        xml:space="preserve"
        style="font-size:3.175px;font-family:'Microsoft YaHei';-inkscape-font-specification:'Microsoft YaHei';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777"
-       x="149.68994"
-       y="2.4014037"
+       x="59.689941"
+       y="42.401405"
        id="text10"><tspan
          sodipodi:role="line"
          id="tspan8"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352778"
-         x="149.68994"
-         y="2.4014037">E</tspan></text><g
+         x="59.689941"
+         y="42.401405">E</tspan></text><g
        fill="none"
        stroke="#000000"
        stroke-width="1"
@@ -2983,7 +2983,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g36-8"
-       transform="matrix(0.34782609,0,0,0.34858388,120,0)"><g
+       transform="matrix(0.34782609,0,0,0.34858388,30,40.000001)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -3508,11 +3508,11 @@
            id="text34-8">0.6</text></g></g><text
        xml:space="preserve"
        style="font-size:3.175px;font-family:'Microsoft YaHei';-inkscape-font-specification:'Microsoft YaHei';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777"
-       x="119.68994"
-       y="2.4417114"
+       x="29.689941"
+       y="42.441711"
        id="text11"><tspan
          sodipodi:role="line"
          id="tspan10"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352778"
-         x="119.68994"
-         y="2.4417114">D</tspan></text></g></svg>
+         x="29.689941"
+         y="42.441711">D</tspan></text></g></svg>
