@@ -16,8 +16,7 @@ RSPdMoTable = RSPdMo.TableQuery(["Mouse","DateTime","Performance","Phase"], Desi
 RSPdMoTable.Group(:) = "RSPd+MOp";
 
 Summary = UniExp.LearningSummarize(MATLAB.DataTypes.MergeTables(RSPdTable, ControlTable, RSPdMoTable));
-Summary.Properties.RowNames = replace(Summary.Properties.RowNames, 'RSPd', 'RSP');
-Summary.Properties.RowNames = replace(Summary.Properties.RowNames, 'MOp', 'MOp');
+Summary.Properties.RowNames = replace(Summary.Properties.RowNames, 'MOp', 'M1');
 palette3 = TransferLearning.FigurePalette(3);
 RED = palette3(1,:);
 BLUE = palette3(2,:);
@@ -25,8 +24,8 @@ GREEN = palette3(3,:);
 rn = string(Summary.Properties.RowNames);
 Colors = zeros(height(Summary), 3);
 Colors(rn == "mCherry", :) = RED;
-Colors(rn == "RSP",     :) = BLUE;
-Colors(~(rn == "mCherry" | rn == "RSP"), :) = GREEN;
+Colors(rn == "RSPd",    :) = BLUE;
+Colors(~(rn == "mCherry" | rn == "RSPd"), :) = GREEN;
 
 f = figure('Color','w', 'Name','English Fig4H Learning Curve');
 f.Units = 'centimeters';
@@ -42,7 +41,7 @@ semCells  = cellfun(@(C) C(1:min(10, numel(C))), Summary.SemCurve,  UniformOutpu
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(height(Summary)+1), EdgeColors=Colors);
 
 nEach = cellfun(@height, Summary.LearnedSessions);
-labels = Summary.Properties.RowNames;
+labels = Summary.Properties.RowNames + " n=" + string(nEach);
 
 lg = legend(Patches, labels,Location='northeastoutside');
 lg.FontSize = 12;
@@ -69,7 +68,7 @@ rspFirst = iFirstSessionPerformance(RSPdTable);
 mcherryFirst = iFirstSessionPerformance(ControlTable);
 
 rn = string(Summary.Properties.RowNames);
-rspColorIdx = find(rn == "RSP", 1);
+rspColorIdx = find(rn == "RSPd", 1);
 mcherryColorIdx = find(rn == "mCherry", 1);
 if isempty(rspColorIdx), rspColorIdx = 1; end
 if isempty(mcherryColorIdx), mcherryColorIdx = 2; end
@@ -117,18 +116,7 @@ else
 	end
 end
 for eb = ErrorBars2.Object(:)'
-	if ~isgraphics(eb)
-		continue;
-	end
-	if isprop(eb, 'YNegativeDelta') && isprop(eb, 'YPositiveDelta')
-		eb.YNegativeDelta = zeros(size(eb.YPositiveDelta));
-	end
 	eb.LineWidth = 2;
-	eb.Color = [0 0 0];
-	eb.HandleVisibility = 'off';
-	if isprop(eb, 'Marker')
-		eb.Marker = 'none';
-	end
 end
 ax2.XLim = [0.5, 2.5];
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
