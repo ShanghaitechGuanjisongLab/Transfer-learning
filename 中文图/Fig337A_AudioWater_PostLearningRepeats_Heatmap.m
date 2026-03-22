@@ -8,10 +8,8 @@ negV = min(laneData, [], 'all', 'omitnan');
 posV = max(laneData, [], 'all', 'omitnan');
 if ~isfinite(negV), negV = -1; end
 if ~isfinite(posV), posV = 1; end
-climLowAbs = iNiceLimit(sqrt(abs(min(negV, 0))));
-climHighAbs = iNiceLimit(sqrt(abs(max(posV, 0))));
-if climLowAbs <= 0, climLowAbs = 1; end
-if climHighAbs <= 0, climHighAbs = 1; end
+climLowAbs = sqrt(abs(min(negV, 0)));
+climHighAbs = sqrt(abs(max(posV, 0)));
 CLim = [-climLowAbs, climHighAbs];
 
 f = figure('Color', 'w', 'Name', '中文图337A AudioWater post-learning repeats heatmap');

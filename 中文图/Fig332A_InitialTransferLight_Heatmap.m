@@ -45,9 +45,9 @@ end
 if ~isfinite(posV)
 	posV = 1;
 end
-climLowAbs = iNiceLimit(sqrt(abs(min(negV, 0))));
-climHighAbs = iNiceLimit(sqrt(abs(max(posV, 0))));
-CLim = [-max(climLowAbs, 1), max(climHighAbs, 1)];
+climLowAbs = sqrt(abs(min(negV, 0)));
+climHighAbs = sqrt(abs(max(posV, 0)));
+CLim = [-climLowAbs, climHighAbs];
 %% 
 
 f = figure('Color', 'w', 'Name', '中文图332A 初始/迁移光水热图');
