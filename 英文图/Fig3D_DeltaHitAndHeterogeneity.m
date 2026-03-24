@@ -53,7 +53,7 @@ f.PaperSize = [3, 4];
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 title(Layout, 'Response heterogeneity', 'FontSize', 6, 'FontWeight', 'normal');
 
-palette3 = TransferLearning.FigurePalette(3);
+palette3 = [1, 0, 0; 0, 0, 1; 0, 0, 0];
 colorNaive    = palette3(1,:);
 colorTransfer = palette3(2,:);
 colorLearned  = palette3(3,:);
@@ -77,9 +77,15 @@ for iL = 1:numel(layers)
 
 	nexttile(Layout, iL);
 	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 0.05);
-	for eb = EB.Object(:)', eb.LineWidth = 0.5; end
+	for eb = EB.Object(:)'
+		eb.LineWidth = 1;
+		if isprop(eb, 'CapSize'), eb.CapSize = 0; end
+	end
 	ax = gca;
 	ax.FontSize = 6;
+	ax.FontName = 'Segoe UI Emoji';
+	ax.TickLabelInterpreter = 'none';
+	ax.LineWidth = 1;
 	ax.XTick = [1 2 3];
 	if iL == 1
 		ax.XTickLabel = {};
@@ -97,14 +103,14 @@ for iL = 1:numel(layers)
 		Bars.CData = repmat([colorNaive; colorTransfer; colorLearned], ceil(nB/3), 1);
 		Bars.CData = Bars.CData(1:nB, :);
 		Bars.BarWidth = 0.5;
-		Bars.LineWidth = 0.5;
+		Bars.LineStyle = 'none';
 		Bars.FaceAlpha = 1/3;
 	elseif numel(Bars) >= 3
 		Bars(1).FaceColor = colorNaive;
 		Bars(2).FaceColor = colorTransfer;
 		Bars(3).FaceColor = colorLearned;
 		for ib = 1:3
-			Bars(ib).LineWidth = 0.5;
+			Bars(ib).LineStyle = 'none';
 			try, Bars(ib).FaceAlpha = 1/3; catch, end
 		end
 	end
@@ -116,7 +122,7 @@ end
 % --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, 'English_Fig3D_DeltaHitAndHeterogeneity.svg');
-TransferLearning.PrintFigure(f, svgPath);
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 %% ===== Local functions =====
