@@ -10,7 +10,7 @@
 % Execution:
 %   TransferLearning.英文图3.J_THInhibitVsCtrl_DeltaHitAndSD
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 CtrlDS = TransferLearning.AudioLightBaseline();
 THDS = TransferLearning.THInhibit();
@@ -41,16 +41,17 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-palette2 = TransferLearning.FigurePalette(2);
+palette2 = [1, 0, 0; 0, 0, 1];
 colorA = palette2(1,:);
 colorB = palette2(2,:);
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 nexttile(Layout, 1);
 [~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({dhC, dhT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
-for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB1.Object(:)', eb.LineWidth = 1; end
 ax1 = gca;
 ax1.FontSize = 6;
+ax1.LineWidth = 1;
 ax1.XTick = [1 2];
 ax1.XTickLabel = {};
 ylabel(ax1, 'ΔHit', 'FontSize', 6);
@@ -62,18 +63,23 @@ if isscalar(Bars1)
 	Bars1.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars1.CData = Bars1.CData(1:nB, :);
 	Bars1.BarWidth = 0.5;
-	Bars1.LineWidth = 0.5;
+	Bars1.LineWidth = 1;
+	Bars1.EdgeColor = 'none';
 	Bars1.FaceAlpha = 1/3;
 end
 if isfield(Opt1, 'MultiCompare') && ismember('PText', Opt1.MultiCompare.Properties.VariableNames)
 	for pt = Opt1.MultiCompare.PText(:)', pt.FontSize = 6; end
 end
+for ln = findobj(ax1, 'Type', 'Line')'
+	ln.LineWidth = 1;
+end
 
 nexttile(Layout, 2);
 [~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdC, sdT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
-for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB2.Object(:)', eb.LineWidth = 1; end
 ax2 = gca;
 ax2.FontSize = 6;
+ax2.LineWidth = 1;
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Ctrl', 'TH'};
 ylabel(ax2, 'Response heterogeneity', 'FontSize', 6);
@@ -85,16 +91,20 @@ if isscalar(Bars2)
 	Bars2.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars2.CData = Bars2.CData(1:nB, :);
 	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 0.5;
+	Bars2.LineWidth = 1;
+	Bars2.EdgeColor = 'none';
 	Bars2.FaceAlpha = 1/3;
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
 	for pt = Opt2.MultiCompare.PText(:)', pt.FontSize = 6; end
 end
+for ln = findobj(ax2, 'Type', 'Line')'
+	ln.LineWidth = 1;
+end
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 close(f);
 

@@ -15,7 +15,7 @@
 % Execution:
 %   TransferLearning.英文图3.E_SD1sVsDeltaHit_Moderates
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 % --- Time axis
 xs = TransferLearning.Xs;

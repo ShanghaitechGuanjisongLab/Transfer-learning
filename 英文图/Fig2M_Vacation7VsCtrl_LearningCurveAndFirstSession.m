@@ -107,7 +107,7 @@ ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgLC = fullfile(outDirUNC, 'English_Fig2M_Vacation7_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end

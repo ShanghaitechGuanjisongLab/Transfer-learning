@@ -117,7 +117,7 @@ lg.FontName = 'Segoe UI Emoji';
 ax.Toolbar.Visible = 'off';
 
 % --- 7) Export
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

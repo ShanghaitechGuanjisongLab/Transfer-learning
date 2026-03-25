@@ -13,7 +13,7 @@
 % Execution:
 %   TransferLearning.英文图3.B_RepresentativeSD_NTATSDistribution
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 DS = TransferLearning.AudioLightBaseline();
 

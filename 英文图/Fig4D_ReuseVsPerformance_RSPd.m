@@ -5,7 +5,7 @@
 % Execution:
 %   TransferLearning.英文图4.C_ReuseVsPerformance_RSPd
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 RSP = TransferLearning.RSPd();
 xsSec = seconds(TransferLearning.Xs);

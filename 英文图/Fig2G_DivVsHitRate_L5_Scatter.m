@@ -252,7 +252,7 @@ for iR = 1:2
 end
 
 % --- Export ---
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgPath = fullfile(outDirUNC, "English_Fig2G_DivVsHitRate_L5.svg");
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);

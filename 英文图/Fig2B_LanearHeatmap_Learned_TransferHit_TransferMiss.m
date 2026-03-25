@@ -150,7 +150,7 @@ for iA = 1:numel(Axes)
 end
 
 % --- 8) Export
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

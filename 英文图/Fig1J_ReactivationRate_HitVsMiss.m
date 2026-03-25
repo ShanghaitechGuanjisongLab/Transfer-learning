@@ -123,7 +123,7 @@ text(ax, 0.02, 0.98, sprintf('n=%d', nnz(mask)), 'Units','normalized', ...
 
 % Export
 try
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end

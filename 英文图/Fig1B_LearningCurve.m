@@ -129,7 +129,7 @@ box(ax, 'off'); %[output:5c266b7f]
 % title removed per user request
 
 % --- 5) Export (SVG only)
-outDirUNC = '\\Data-Server-2\个人数据\张天夫\202602';
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

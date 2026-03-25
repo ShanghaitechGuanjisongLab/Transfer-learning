@@ -1,6 +1,6 @@
 % English Fig3M: TH/Ctrl per-mouse learning slope vs Response heterogeneity
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 CtrlDS = TransferLearning.AudioLightBaseline();
 THDS = TransferLearning.THInhibit();

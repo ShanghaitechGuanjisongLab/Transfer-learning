@@ -1,6 +1,6 @@
 % English Fig3M2: TH/Ctrl pairwise ΔHit vs Response heterogeneity
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 CtrlDS = TransferLearning.AudioLightBaseline();
 THDS = TransferLearning.THInhibit();

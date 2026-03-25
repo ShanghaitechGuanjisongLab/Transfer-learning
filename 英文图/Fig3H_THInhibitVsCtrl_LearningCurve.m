@@ -13,7 +13,7 @@
 % Execution:
 %   TransferLearning.英文图3.H_THInhibitVsCtrl_LearningCurve
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgNameLC = "English_Fig3H_THInhibitVsCtrl_LearningCurve.svg";
 svgNameFS = "English_Fig3H_THInhibitVsCtrl_FirstSessionHitRate.svg";
 

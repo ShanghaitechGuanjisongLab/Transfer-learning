@@ -38,7 +38,7 @@ yticklabels(ax, ["Epileptic", "Knowledgeable", "Naive", "Dead"]);
 ylabel(ax, '>Information entropy>', 'FontSize', 6);
 box(ax, 'off');
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

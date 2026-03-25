@@ -185,7 +185,7 @@ box(ax, 'off');
 grid(ax, 'off');
 
 % Export learning curve
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgLC = fullfile(outDirUNC, 'English_Fig2K_cFos_LearningCurve.svg');
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end

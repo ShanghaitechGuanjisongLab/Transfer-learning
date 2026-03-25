@@ -97,7 +97,7 @@ CB.Label.String = 'z-score';
 CB.FontSize = 12;
 CB.Label.FontSize = 12;
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

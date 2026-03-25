@@ -1,6 +1,6 @@
 % 中文图333D：模仿英文图2G算法、英文图3I样式，比较首会话命中率与散度的相关性
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 LAB = TransferLearning.LightAudioBaseline();
 LAI = TransferLearning.LAInterspersed();

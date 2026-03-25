@@ -105,7 +105,7 @@ annotation(f, 'textbox', [0.38 0.865 0.15 0.07], 'String', 'Learned', 'EdgeColor
 annotation(f, 'textbox', [0.60 0.855 0.25 0.08], 'String', 'Accelerators', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 6, 'FontWeight', 'bold');
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

@@ -36,7 +36,7 @@ lgd.FontSize = 12;
 lgd.FontName = 'Segoe UI Emoji';
 lgd.ItemTokenSize = [8, 8];
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end

@@ -91,7 +91,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-outDir = '\\Data-Server-2\个人数据\张天夫\202602';
+outDir = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDir)
 	mkdir(outDir);
 end

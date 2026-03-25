@@ -10,7 +10,7 @@
 %
 % Style: scatter + fit line + partial Spearman annotation.
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 % --- Load dataset
 DS = TransferLearning.AudioLightBaseline();

@@ -226,7 +226,7 @@ end
 for t = findobj(ax2, 'Type', 'Text')', t.FontSize = 6; end
 
 % --- Export ---
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgPath = fullfile(outDirUNC, "English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg");
 TransferLearning.PrintFigure(f, svgPath);
 

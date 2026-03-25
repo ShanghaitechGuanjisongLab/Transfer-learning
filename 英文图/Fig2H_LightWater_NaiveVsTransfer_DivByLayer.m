@@ -102,7 +102,7 @@ iStyleAxes(ax2, 'L5');
 xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
 iStyleBars(Bars2, RED, BLUE);
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgPath = fullfile(outDirUNC, 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg');
 TransferLearning.PrintFigure(f, svgPath);
 

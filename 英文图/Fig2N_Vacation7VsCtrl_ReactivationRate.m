@@ -221,7 +221,7 @@ Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0
 for t = PT2(:)', t.FontSize = 6; end
 
 %% ===== 5) Export =====
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg";
 svgPath = fullfile(outDirUNC, svgName);

@@ -1,9 +1,9 @@
-% 中文图334D：Non-specific inhibition 学习曲线
+% 中文图334E：Non-specific inhibition 学习曲线
 % 数据源与算法：模仿 Fig35B 第一个 tile（hM4D(Gi) vs mCherry 的 LightWater learning curve）
 % 样式：模仿英文图2K（颜色、线宽、ylabel、整体布局）
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
-svgName = "中文图Fig334D_NonSpecificInhibition_LearningCurve.svg";
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
+svgName = "中文图Fig334E_NonSpecificInhibition_LearningCurve.svg";
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -22,7 +22,7 @@ DS_mCh = UniExp.DataSet(pathmCh);
 BInh = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Gi, false);
 BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_mCh, false);
 if isempty(BInh) || isempty(BCtrl)
-	error('Fig334D:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
+	error('Fig334E:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
 
 BInh.Group = repmat("hM4D(Gi)", height(BInh), 1);
@@ -61,7 +61,7 @@ if ~isempty(rowGrp)
 	pCurve = lmeAnova.pValue(rowGrp);
 end
 
-f = figure('Color','w', 'Name', '中文图334D Non-specific inhibition learning curve');
+f = figure('Color','w', 'Name', '中文图334E Non-specific inhibition learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
@@ -96,6 +96,6 @@ fprintf('Wrote: %s\n', svgPath);
 fprintf('Learning curve overall p = %.4g\n', pCurve);
 fprintf('LearningSummarize p = %.4g\n', pSumm);
 
-assignin('base', 'Fig334D_Sessions', Sess);
-assignin('base', 'Fig334D_LearningSummarizeP', pSumm);
-assignin('base', 'Fig334D_LMECurveP', pCurve);
+assignin('base', 'Fig334E_Sessions', Sess);
+assignin('base', 'Fig334E_LearningSummarizeP', pSumm);
+assignin('base', 'Fig334E_LMECurveP', pCurve);
