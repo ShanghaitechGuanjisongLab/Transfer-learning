@@ -100,6 +100,7 @@ CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
 CB.FontSize = 12;
 CB.Label.FontSize = 12;
+CB.Box = 'off';
 
 for iA = 1:numel(Axes)
 	A = Axes(iA);

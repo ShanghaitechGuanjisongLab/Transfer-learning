@@ -1,4 +1,4 @@
-% 中文图35A：声水 Naive/Learned 代表性细胞曲线
+% 中文图324B：Naive/Learned 代表性细胞曲线
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -20,59 +20,53 @@ xsPlot = xsSec(plotMask);
 [idx0, ok0] = iFindTimeIndex(xsSec, 0, 0.25);
 [idx1, ok1] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~okNeg1 || ~ok0 || ~ok1
-	error('中文图35A:BadTimeIndex', 'Cannot find samples close to -1s, 0s and 1s.');
+	error('中文图324B:BadTimeIndex', 'Cannot find samples close to -1s, 0s and 1s.');
 end
 
 G = struct();
-G.NaiveAudio = DS.QueryNTATS(struct('Phase', 'Naive', 'Stimulus', 'AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-G.LearnedAudio = DS.QueryNTATS(struct('Phase', 'Learned', 'Stimulus', 'AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.Naive = DS.QueryNTATS(struct('Phase', 'Naive', 'Stimulus', 'AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+G.Learned = DS.QueryNTATS(struct('Phase', 'Learned', 'Stimulus', 'AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 S = UniExp.NtatsCellStrip(G);
 cellMeta = DS.Cells(:, intersect(["CellUID", "Mouse"], string(DS.Cells.Properties.VariableNames), 'stable'));
 if ~all(ismember(["CellUID", "Mouse"], string(cellMeta.Properties.VariableNames)))
-	error('中文图35A:MissingCellMeta', 'DS.Cells lacks CellUID/Mouse metadata.');
+	error('中文图324B:MissingCellMeta', 'DS.Cells lacks CellUID/Mouse metadata.');
 end
 cellMeta.Mouse = string(cellMeta.Mouse);
 S = outerjoin(S, cellMeta, 'Keys', 'CellUID', 'MergeKeys', true, 'Type', 'left');
 X = iGetNtats3D(S);
 
-if size(X, 3) < 2
-	error('中文图35A:BadNTATS', 'Expected 2 lanes for Naive/Learned AudioWater.');
-end
-if ~all(ismember(["CellUID", "Mouse"], string(S.Properties.VariableNames)))
-	error('中文图35A:MissingMeta', 'NtatsCellStrip output lacks CellUID/Mouse.');
-end
-
 naiveNeg1 = X(:, idxNeg1, 1);
-learnNeg1 = X(:, idxNeg1, 2);
+learnedNeg1 = X(:, idxNeg1, 2);
 naive0 = X(:, idx0, 1);
-learn0 = X(:, idx0, 2);
+learned0 = X(:, idx0, 2);
 naive1 = X(:, idx1, 1);
-learn1 = X(:, idx1, 2);
+learned1 = X(:, idx1, 2);
 
-valid = isfinite(naiveNeg1) & isfinite(learnNeg1) & isfinite(naive0) & isfinite(learn0) & isfinite(naive1) & isfinite(learn1);
+valid = isfinite(naiveNeg1) & isfinite(learnedNeg1) & isfinite(naive0) & isfinite(learned0) & isfinite(naive1) & isfinite(learned1);
 
-dNaiveNeg1 = naiveNeg1 - naive0;
-dLearnNeg1 = learnNeg1 - learn0;
-dNaive1 = naive1 - naive0;
-dLearn1 = learn1 - learn0;
+posMask = valid ...
+	& naiveNeg1 < naive0 & naive0 < naive1 ...
+	& learnedNeg1 < learned0 & learned0 < learned1 ...
+	& learned1 > naive1;
 
-posMask = valid & dNaiveNeg1 > 0 & dLearnNeg1 > 0 & dNaive1 > 0 & dLearn1 > 0 & learn1 > naive1;
-negMask = valid & dNaiveNeg1 < 0 & dLearnNeg1 < 0 & dNaive1 < 0 & dLearn1 < 0 & learn1 < naive1;
+negMask = valid ...
+	& naiveNeg1 > naive0 & naive0 > naive1 ...
+	& learnedNeg1 > learned0 & learned0 > learned1 ...
+	& naive1 > learned1;
 
 if ~any(posMask)
-	error('中文图35A:NoPositiveCell', 'No cell satisfies the positive representative-cell criterion.');
+	error('中文图324B:NoPositiveCell', 'No cell satisfies the positive criterion.');
 end
 if ~any(negMask)
-	error('中文图35A:NoNegativeCell', 'No cell satisfies the negative representative-cell criterion.');
+	error('中文图324B:NoNegativeCell', 'No cell satisfies the negative criterion.');
 end
 
-learnedNeg0Diff = abs(learn0 - learnNeg1);
-learned01Diff = abs(learn1 - learn0);
+learnedNeg0Diff = abs(learned0 - learnedNeg1);
+learned01Diff = abs(learned1 - learned0);
 learnedMinStepDiff = min(learnedNeg0Diff, learned01Diff);
-posScore = 100 * learnedMinStepDiff + (learn1 - naive1) + 0.2 * (dNaiveNeg1 + dLearnNeg1 + dNaive1 + dLearn1);
-negScore = 100 * learnedMinStepDiff + (naive1 - learn1) + 0.2 * (-(dNaiveNeg1 + dLearnNeg1 + dNaive1 + dLearn1));
-
+posScore = 100 * learnedMinStepDiff + (learned1 - naive1) + 0.1 * ((naive1 - naive0) + (naive0 - naiveNeg1) + (learned1 - learned0) + (learned0 - learnedNeg1));
+negScore = 100 * learnedMinStepDiff + (naive1 - learned1) + 0.1 * ((naiveNeg1 - naive0) + (naive0 - naive1) + (learnedNeg1 - learned0) + (learned0 - learned1));
 posScore(~posMask) = -inf;
 negScore(~negMask) = -inf;
 
@@ -86,29 +80,28 @@ if negIdx == posIdx
 	end
 end
 
-palette = TransferLearning.FigurePalette(2);
-colorNaive = palette(1, :);
-colorLearn = palette(2, :);
+colorNaive = [1, 0, 0];
+colorLearned = [0, 0, 1];
 
-f = figure('Color', 'w', 'Name', '中文图35A 声水代表性细胞');
+f = figure('Color', 'w', 'Name', '中文图324B Naive Learned 代表性细胞');
 f.Units = 'centimeters';
 f.Position(3:4) = [7.5, 4];
 
 ax1 = axes(f, 'Units', 'normalized', 'Position', [0.12 0.22 0.31 0.58]);
-[hNaive, hLearn] = iPlotOneCell(ax1, xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), colorNaive, colorLearn, uint64(S.CellUID(posIdx)));
+[hNaive, hLearned] = iPlotOneCell(ax1, xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), colorNaive, colorLearned, uint64(S.CellUID(posIdx)), 'Naive', 'Learned');
 
 ax2 = axes(f, 'Units', 'normalized', 'Position', [0.56 0.20 0.34 0.58]);
-iPlotOneCell(ax2, xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), colorNaive, colorLearn, uint64(S.CellUID(negIdx)));
+iPlotOneCell(ax2, xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), colorNaive, colorLearned, uint64(S.CellUID(negIdx)), 'Naive', 'Learned');
+
 annotation(f, 'textbox', [0.40 0.03 0.20 0.06], 'String', 'Time (s)', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 6);
-
 annotation(f, 'line', [0.10 0.18], [0.90 0.90], 'Color', colorNaive, 'LineWidth', 1);
 annotation(f, 'textbox', [0.18 0.865 0.12 0.07], 'String', 'Naive', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'FontSize', 6);
-annotation(f, 'line', [0.30 0.38], [0.90 0.90], 'Color', colorLearn, 'LineWidth', 1);
+annotation(f, 'line', [0.30 0.38], [0.90 0.90], 'Color', colorLearned, 'LineWidth', 1);
 annotation(f, 'textbox', [0.38 0.865 0.15 0.07], 'String', 'Learned', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'FontSize', 6);
-annotation(f, 'textbox', [0.62 0.855 0.22 0.08], 'String', 'Switchers', 'EdgeColor', 'none', ...
+annotation(f, 'textbox', [0.60 0.855 0.25 0.08], 'String', 'Accelerators', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 6, 'FontWeight', 'bold');
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
@@ -116,8 +109,8 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig35A_AudioWaterRepresentativeCells.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = fullfile(outDirUNC, '中文图Fig324B_NaiveLearnedRepresentativeCells.svg');
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 picked = table;
@@ -125,40 +118,42 @@ picked.Kind = ["Positive"; "Negative"];
 picked.CellUID = uint64([S.CellUID(posIdx); S.CellUID(negIdx)]);
 picked.Mouse = string([S.Mouse(posIdx); S.Mouse(negIdx)]);
 picked.NaiveAtMinus1 = [naiveNeg1(posIdx); naiveNeg1(negIdx)];
-picked.LearnedAtMinus1 = [learnNeg1(posIdx); learnNeg1(negIdx)];
 picked.NaiveAt0 = [naive0(posIdx); naive0(negIdx)];
-picked.LearnedAt0 = [learn0(posIdx); learn0(negIdx)];
 picked.NaiveAt1 = [naive1(posIdx); naive1(negIdx)];
-picked.LearnedAt1 = [learn1(posIdx); learn1(negIdx)];
-assignin('base', 'Fig35A_PickedCells', picked);
-assignin('base', 'Fig35A_CellStrip', S);
+picked.LearnedAtMinus1 = [learnedNeg1(posIdx); learnedNeg1(negIdx)];
+picked.LearnedAt0 = [learned0(posIdx); learned0(negIdx)];
+picked.LearnedAt1 = [learned1(posIdx); learned1(negIdx)];
+assignin('base', 'Fig324B_PickedCells', picked);
 
-function [hNaive, hLearn] = iPlotOneCell(ax, xsPlot, yNaive, yLearn, colorNaive, colorLearn, cellUID)
+function [hLower, hUpper] = iPlotOneCell(ax, xsPlot, yLower, yUpper, colorLower, colorUpper, cellUID, lowerLabel, upperLabel)
 hold(ax, 'on');
 baseMaskLocal = (xsPlot >= -1) & (xsPlot < 0);
-baseNaive = mean(yNaive(baseMaskLocal), 'omitnan');
-baseLearn = mean(yLearn(baseMaskLocal), 'omitnan');
+baseLower = mean(yLower(baseMaskLocal), 'omitnan');
+baseUpper = mean(yUpper(baseMaskLocal), 'omitnan');
 
 gap = 1.2;
-offsetNaive = -baseNaive;
-yNaiveShift = yNaive + offsetNaive;
-offsetLearn = (max(yNaiveShift, [], 'omitnan') - min(yLearn, [], 'omitnan')) + gap;
-yLearnShift = yLearn + offsetLearn;
-baseNaiveShift = baseNaive + offsetNaive;
-baseLearnShift = baseLearn + offsetLearn;
+offsetLower = -baseLower;
+yLowerShift = yLower + offsetLower;
+offsetUpper = (max(yLowerShift, [], 'omitnan') - min(yUpper, [], 'omitnan')) + gap;
+yUpperShift = yUpper + offsetUpper;
+baseLowerShift = baseLower + offsetLower;
+baseUpperShift = baseUpper + offsetUpper;
 
-hNaive = plot(ax, xsPlot, yNaiveShift, 'Color', colorNaive, 'LineWidth', 1, 'DisplayName', 'Naive');
-hLearn = plot(ax, xsPlot, yLearnShift, 'Color', colorLearn, 'LineWidth', 1, 'DisplayName', 'Learned');
+hLower = plot(ax, xsPlot, yLowerShift, 'Color', colorLower, 'LineWidth', 1);
+hUpper = plot(ax, xsPlot, yUpperShift, 'Color', colorUpper, 'LineWidth', 1);
 xline(ax, 0, ':k', 'LineWidth', 1);
 xline(ax, 1, '-k', 'LineWidth', 1);
+[anchorX, anchorY] = iAnchorTriplet(xsPlot, yUpperShift);
+plot(ax, anchorX, anchorY, '--', 'Color', [0, 0.6809, 0], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 xlim(ax, [-1 2]);
 ax.FontSize = 6;
 ax.LineWidth = 1;
 ax.TickDir = 'in';
+ax.FontName = 'Segoe UI Emoji';
 box(ax, 'off');
 grid(ax, 'off');
-ax.YTick = [baseNaiveShift, baseLearnShift];
-ax.YTickLabel = {'Naive', 'Learned'};
+ax.YTick = [baseLowerShift, baseUpperShift];
+ax.YTickLabel = {lowerLabel, upperLabel};
 xt = ax.XTick;
 xtl = string(ax.XTickLabel);
 idx0 = find(xt == 0, 1, 'first');
@@ -170,7 +165,6 @@ if ~isempty(idx1x)
 	xtl(idx1x) = "💧";
 end
 ax.XTickLabel = xtl;
-ax.FontName = 'Segoe UI Emoji';
 title(ax, sprintf('Cell %u', cellUID), 'FontSize', 6, 'FontWeight', 'normal');
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -180,6 +174,16 @@ end
 function [idx, ok] = iFindTimeIndex(xsSec, targetSec, tolSec)
 [d, idx] = min(abs(xsSec - targetSec));
 ok = isfinite(d) && d <= tolSec;
+end
+
+function [xAnchor, yAnchor] = iAnchorTriplet(xsPlot, y)
+targets = [-1, 0, 1];
+idx = zeros(size(targets));
+for i = 1:numel(targets)
+	[~, idx(i)] = min(abs(xsPlot - targets(i)));
+end
+xAnchor = xsPlot(idx);
+yAnchor = y(idx);
 end
 
 function X = iGetNtats3D(S)
@@ -205,5 +209,5 @@ if isnumeric(nt)
 	return;
 end
 
-	error('中文图35A:BadNTATSContainer', 'Unsupported NTATS container type: %s', class(nt));
+	error('中文图324B:BadNTATSContainer', 'Unsupported NTATS container type: %s', class(nt));
 end

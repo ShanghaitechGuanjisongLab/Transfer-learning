@@ -56,6 +56,10 @@ assignin('base', 'Fig351B_Stats', Stats);
 function iStyleOneAxis(ax, Bars, ErrorBars, optional, colorNaive, colorTransfer, yLabelText, hideX)
 	ax.FontSize = 6;
 	ax.LineWidth = 1;
+	if isprop(ax.XAxis, 'LineWidth')
+		ax.XAxis.LineWidth = 1;
+		ax.YAxis.LineWidth = 1;
+	end
 	ax.TickDir = 'out';
 	box(ax, 'off');
 	grid(ax, 'off');
@@ -71,6 +75,11 @@ function iStyleOneAxis(ax, Bars, ErrorBars, optional, colorNaive, colorTransfer,
 	ylabel(ax, yLabelText, 'FontSize', 6);
 	for pt = iFindPText(optional)'
 		pt.FontSize = 6;
+	end
+	if isstruct(optional) && isfield(optional, 'MultiCompare') && istable(optional.MultiCompare) && ismember('PLine', optional.MultiCompare.Properties.VariableNames)
+		for pl = optional.MultiCompare.PLine(:)'
+			pl.LineWidth = 1;
+		end
 	end
 	iStyleBars(Bars, colorNaive, colorTransfer);
 	iKeepUpperErrorBarOnly(ErrorBars, Bars, colorNaive, colorTransfer);
@@ -91,12 +100,18 @@ function iStyleBars(Bars, colorNaive, colorTransfer)
 		Bars.CData = Bars.CData(1:nBar, :);
 		Bars.BarWidth = 0.5;
 		Bars.LineWidth = 1;
+		Bars.BaseLine.LineWidth = 1;
+		Bars.EdgeColor = 'none';
 		Bars.FaceAlpha = 1/3;
 	else
 		Bars(1).FaceColor = colorNaive;
 		Bars(2).FaceColor = colorTransfer;
 		Bars(1).LineWidth = 1;
+		Bars(1).BaseLine.LineWidth = 1;
 		Bars(2).LineWidth = 1;
+		Bars(2).BaseLine.LineWidth = 1;
+		Bars(1).EdgeColor = 'none';
+		Bars(2).EdgeColor = 'none';
 		Bars(1).FaceAlpha = 1/3;
 		Bars(2).FaceAlpha = 1/3;
 	end

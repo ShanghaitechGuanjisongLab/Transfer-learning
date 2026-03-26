@@ -146,12 +146,17 @@ set(f1, 'PaperUnits', 'centimeters', 'PaperSize', [4 4], 'PaperPositionMode', 'a
 ax=gca;
 
 ax.FontSize = 12;
+ax.LineWidth = 2;
 ax.Color = 'none';
 ax.XAxis.Visible = 'off';
 ax.XTick = [];
 
 for b = Bars(:)'
 	b.LineWidth = 2;
+	b.EdgeColor = 'none';
+end
+for eb = ErrorBars.Object(:)'
+	eb.LineWidth = 2;
 end
 
 palette2 = TransferLearning.FigurePalette(2);
@@ -171,7 +176,10 @@ title('Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
 if isfinite(pAnnot) && pAnnot < 0.05 && height(ErrorBars) >= 1
 	Descriptors = table(ErrorBars.Object(1), "*", ...
 		'VariableNames', {'ObjectA','Text'});
-	MATLAB.Graphics.PLine(Descriptors);
+	PL = MATLAB.Graphics.PLine(Descriptors);
+	for pl = PL(:)'
+		pl.LineWidth = 2;
+	end
 end
 iKeepUpperErrorBarOnly(ErrorBars, Bars, colorNaive, colorTrans);
 box off

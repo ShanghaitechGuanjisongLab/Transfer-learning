@@ -227,7 +227,7 @@ for iS = 1:2
 	fprintf('Wrote: %s\n', pngName);
 end
 
-%% ===== 6) Export 2 histogram SVGs (60 mm × 16 mm) =====
+%% ===== 6) Export 2 histogram SVGs (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 pairColors = {[0 0.4470 0.7410]; [0.8500 0.3250 0.0980]};  % Transfer=blue, Naive=orange
@@ -240,7 +240,7 @@ for iS = 1:2
 
 	fh = figure('Color', 'w');
 	fh.Units = 'centimeters';
-	fh.Position(3:4) = [5.8, 1.6];
+	fh.Position(3:4) = [5.7, 1.6];
 
 	ax = axes(fh);
 	disableDefaultInteractivity(ax);
@@ -249,11 +249,16 @@ for iS = 1:2
 
 	histogram(ax, v, binEdges, 'Normalization', 'probability', ...
 		'FaceColor', pairColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-	xline(ax, mean(v), '--', 'Color', pairColors{iS}, 'LineWidth', 0.8);
+	xline(ax, mean(v), '--', 'Color', pairColors{iS}, 'LineWidth', 1);
 
 	xlim(ax, [-1, 1]);
 	ax.XTick = [-1, 0, 1];
 	ax.FontSize = 6;
+	ax.LineWidth = 1;
+	if isprop(ax.XAxis, 'LineWidth')
+		ax.XAxis.LineWidth = 1;
+		ax.YAxis.LineWidth = 1;
+	end
 	box(ax, 'off');
 	grid(ax, 'off');
 

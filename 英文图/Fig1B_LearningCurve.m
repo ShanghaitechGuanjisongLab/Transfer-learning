@@ -186,6 +186,7 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	[~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05); %[output:4cd90a67]
 	ax2 = gca;
 	ax2.FontSize = 12; %[output:4cd90a67]
+	ax2.LineWidth = 2; %[output:4cd90a67]
 	ax2.Color = 'none'; %[output:4cd90a67]
 	ax2.XAxis.Visible = 'off'; %[output:4cd90a67]
 	ax2.XTick = []; %[output:4cd90a67]
@@ -195,6 +196,11 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	if isfield(Optional2, 'MultiCompare') && ismember('PText', Optional2.MultiCompare.Properties.VariableNames)
 		for pt = Optional2.MultiCompare.PText(:)'
 			pt.FontSize = 12; %[output:4cd90a67]
+		end
+	end
+	if isfield(Optional2, 'MultiCompare') && ismember('PLine', Optional2.MultiCompare.Properties.VariableNames)
+		for pl = Optional2.MultiCompare.PLine(:)'
+			pl.LineWidth = 2;
 		end
 	end
 
@@ -210,6 +216,7 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 		Bars2.CData = Bars2.CData(1:nBars, :); %[output:4cd90a67]
 		Bars2.BarWidth = 0.5; %[output:4cd90a67]
 		Bars2.LineWidth = 2; %[output:4cd90a67]
+		Bars2.EdgeColor = 'none'; %[output:4cd90a67]
 		Bars2.FaceAlpha = 1/3; %[output:4cd90a67]
 	else
 		if numel(Bars2) >= 2
@@ -217,11 +224,14 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 			Bars2(2).FaceColor = colorTrans;
 			Bars2(1).LineWidth = 2;
 			Bars2(2).LineWidth = 2;
+			Bars2(1).EdgeColor = 'none';
+			Bars2(2).EdgeColor = 'none';
 			Bars2(1).FaceAlpha = 1/3;
 			Bars2(2).FaceAlpha = 1/3;
 		else
 			Bars2.FaceColor = colorNaive;
 			Bars2.LineWidth = 2;
+			Bars2.EdgeColor = 'none';
 			Bars2.FaceAlpha = 1/3;
 		end
 	end

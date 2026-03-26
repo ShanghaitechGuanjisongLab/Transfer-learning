@@ -92,7 +92,7 @@ for iS = 1:2
 
     wX = nTime * sX;
     wY = nCellsHere * sY;
-    wZ = nTrials * sZ;
+wZ = nTrials * sZ;
     ct = [(1+nTime)/2*sX, (1+nCellsHere)/2*sY, (1+nTrials)/2*sZ];
     dist = max([wX, wY, wZ]) * 2.0;
     elev = 25;
@@ -128,19 +128,24 @@ histAxes = gobjects(1, 2);
 for iS = 1:2
     fh = figure('Color', 'w');
     fh.Units = 'centimeters';
-    fh.Position(3:4) = [6, 4];
+    fh.Position(3:4) = [5.7, 1.6];
     fh.PaperUnits = 'centimeters';
     fh.PaperPositionMode = 'auto';
-    fh.PaperSize = [6, 4];
+    fh.PaperSize = [5.7, 1.6];
     ax = axes(fh);
     disableDefaultInteractivity(ax);
     ax.Toolbar.Visible = 'off';
     hold(ax, 'on');
     hHist = histogram(ax, vals{iS}, binEdges, 'Normalization', 'probability', 'FaceColor', histColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-    xline(ax, mean(vals{iS}), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.8);
+    xline(ax, mean(vals{iS}), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 1);
     xlim(ax, [-1 1]);
     ax.XTick = [-1 0 1];
     ax.FontSize = 6;
+    ax.LineWidth = 1;
+    if isprop(ax.XAxis, 'LineWidth')
+        ax.XAxis.LineWidth = 1;
+        ax.YAxis.LineWidth = 1;
+    end
     box(ax, 'off');
     grid(ax, 'off');
     yMax = max(hHist.Values, [], 'omitnan');
@@ -399,5 +404,5 @@ SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end
 
 function dt = iNormDT(dt)
-try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch; end
+try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch, end
 end

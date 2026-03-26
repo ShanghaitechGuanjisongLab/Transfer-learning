@@ -152,6 +152,11 @@ plot(axE, [-1 1], polyval(pf, [-1 1]), '-', 'Color', colorFit, 'LineWidth', 1);
 hold(axE, 'off');
 xlim(axE, [-1.3 1.3]); ylim(axE, [-1.3 1.3]);
 axE.FontSize = fs;
+axE.LineWidth = 1;
+if isprop(axE.XAxis, 'LineWidth')
+	axE.XAxis.LineWidth = 1;
+	axE.YAxis.LineWidth = 1;
+end
 axE.XTick = [-1 0 1]; axE.YTick = [-1 0 1];
 xlh = xlabel(axE, '🔊💧 z-score');
 ylh = ylabel(axE, '💡💧 z-score');
@@ -176,21 +181,31 @@ mP1 = mean(valsP1); seP1 = std(valsP1)/sqrt(numel(valsP1));
 hold(axT, 'on');
 bb = bar(axT, [1 2], [mN1 mP1], 0.5);
 bb.FaceColor = 'flat'; bb.CData = [colorNeg; colorPos];
-bb.FaceAlpha = 1/3; bb.LineWidth = 0.5;
-for ib = 1:2
-	vals = [mN1 mP1]; ses = [seN1 seP1]; xPos = [1 2];
-	yEnd = vals(ib) + sign(vals(ib)) * ses(ib);
-	if vals(ib) == 0, yEnd = ses(ib); end
-	plot(axT, [xPos(ib) xPos(ib)], [vals(ib) yEnd], 'k-', 'LineWidth', 0.5);
-	plot(axT, xPos(ib)+[-0.08 0.08], [yEnd yEnd], 'k-', 'LineWidth', 0.5);
+bb.FaceAlpha = 1/3; bb.LineWidth = 1; bb.BaseLine.LineWidth = 1; bb.EdgeColor = 'none';
+lowErrT = [NaN NaN];
+highErrT = [seN1 seP1];
+if mN1 < 0
+	lowErrT(1) = seN1;
+	highErrT(1) = NaN;
 end
+if mP1 < 0
+	lowErrT(2) = seP1;
+	highErrT(2) = NaN;
+end
+ebT = errorbar(axT, [1 2], [mN1 mP1], lowErrT, highErrT, 'k', 'LineStyle', 'none', 'LineWidth', 1);
+if isprop(ebT, 'CapSize'), ebT.CapSize = 6; end
 yBrk = max(abs(mN1)+seN1, abs(mP1)+seP1) + 0.015;
-plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
-plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
-plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
+plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
 text(axT, 1.5, yBrk+0.005, iAsterisk(pPN1), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
 hold(axT, 'off');
 axT.FontSize = fs;
+axT.LineWidth = 1;
+if isprop(axT.XAxis, 'LineWidth')
+	axT.XAxis.LineWidth = 1;
+	axT.YAxis.LineWidth = 1;
+end
 axT.XTick = [1 2]; axT.XTickLabel = {'−', '+'};
 axT.XAxisLocation = 'bottom';
 axT.YAxisLocation = 'left';
@@ -203,21 +218,31 @@ mP2 = mean(valsP2); seP2 = std(valsP2)/sqrt(numel(valsP2));
 hold(axR, 'on');
 bh = barh(axR, [1 2], [mN2 mP2], 0.5);
 bh.FaceColor = 'flat'; bh.CData = [colorNeg; colorPos];
-bh.FaceAlpha = 1/3; bh.LineWidth = 0.5;
-for ib = 1:2
-	vals = [mN2 mP2]; ses = [seN2 seP2]; yPos = [1 2];
-	xEnd = vals(ib) + sign(vals(ib)) * ses(ib);
-	if vals(ib) == 0, xEnd = ses(ib); end
-	plot(axR, [vals(ib) xEnd], [yPos(ib) yPos(ib)], 'k-', 'LineWidth', 0.5);
-	plot(axR, [xEnd xEnd], yPos(ib)+[-0.08 0.08], 'k-', 'LineWidth', 0.5);
+bh.FaceAlpha = 1/3; bh.LineWidth = 1; bh.BaseLine.LineWidth = 1; bh.EdgeColor = 'none';
+negErr = [NaN NaN];
+posErr = [seN2 seP2];
+if mN2 < 0
+	negErr(1) = seN2;
+	posErr(1) = NaN;
 end
+if mP2 < 0
+	negErr(2) = seP2;
+	posErr(2) = NaN;
+end
+ebR = errorbar(axR, [mN2 mP2], [1 2], negErr, posErr, 'horizontal', 'k', 'LineStyle', 'none', 'LineWidth', 1);
+if isprop(ebR, 'CapSize'), ebR.CapSize = 6; end
 xBrk = max(abs(mN2)+seN2, abs(mP2)+seP2) + 0.015;
-plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
-plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
-plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
+plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
 text(axR, xBrk+0.01, 1.5, iAsterisk(pPN2), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270);
 hold(axR, 'off');
 axR.FontSize = fs;
+axR.LineWidth = 1;
+if isprop(axR.XAxis, 'LineWidth')
+	axR.XAxis.LineWidth = 1;
+	axR.YAxis.LineWidth = 1;
+end
 axR.YTick = [1 2]; axR.YTickLabel = {'−', '+'};
 axR.YAxisLocation = 'left';
 box(axR, 'off');

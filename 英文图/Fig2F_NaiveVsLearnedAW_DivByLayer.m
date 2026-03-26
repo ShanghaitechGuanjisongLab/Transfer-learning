@@ -169,10 +169,15 @@ nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare({divNaiveL23, divLearnedL23}, true, ...
 	table([1 2], 'VariableNames', {'GroupPair'}));
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB1.Object(:)', eb.LineWidth = 1; end
 ax1 = gca;
 ax1.FontSize = 6;
 ax1.FontName = 'Arial';
+ax1.LineWidth = 1;
+if isprop(ax1.XAxis, 'LineWidth')
+	ax1.XAxis.LineWidth = 1;
+	ax1.YAxis.LineWidth = 1;
+end
 ax1.XTick = [1 2];
 ax1.XTickLabel = {'Naive', 'Learned'};
 title(ax1, 'L2/3', 'FontSize', 6);
@@ -184,12 +189,14 @@ if isscalar(Bars1)
 	Bars1.FaceColor = 'flat';
 	Bars1.CData = [colorNaive; colorLearn];
 	Bars1.BarWidth = 0.5;
-	Bars1.LineWidth = 0.5;
+	Bars1.LineWidth = 1;
+	Bars1.BaseLine.LineWidth = 1;
+	Bars1.EdgeColor = 'none';
 	Bars1.FaceAlpha = 1/3;
 else
 	for ib = 1:numel(Bars1)
 		if mod(ib,2)==1, Bars1(ib).FaceColor = colorNaive; else, Bars1(ib).FaceColor = colorLearn; end
-		Bars1(ib).FaceAlpha = 1/3; Bars1(ib).LineWidth = 0.5;
+		Bars1(ib).FaceAlpha = 1/3; Bars1(ib).LineWidth = 1; Bars1(ib).BaseLine.LineWidth = 1; Bars1(ib).EdgeColor = 'none';
 	end
 end
 for t = findobj(ax1, 'Type', 'Text')', t.FontSize = 6; end
@@ -199,10 +206,15 @@ nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare({divNaiveL5, divLearnedL5}, true, ...
 	table([1 2], 'VariableNames', {'GroupPair'}));
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB2.Object(:)', eb.LineWidth = 1; end
 ax2 = gca;
 ax2.FontSize = 6;
 ax2.FontName = 'Arial';
+ax2.LineWidth = 1;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 1;
+	ax2.YAxis.LineWidth = 1;
+end
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Naive', 'Learned'};
 title(ax2, 'L5', 'FontSize', 6);
@@ -215,12 +227,14 @@ if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	Bars2.CData = [colorNaive; colorLearn];
 	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 0.5;
+	Bars2.LineWidth = 1;
+	Bars2.BaseLine.LineWidth = 1;
+	Bars2.EdgeColor = 'none';
 	Bars2.FaceAlpha = 1/3;
 else
 	for ib = 1:numel(Bars2)
 		if mod(ib,2)==1, Bars2(ib).FaceColor = colorNaive; else, Bars2(ib).FaceColor = colorLearn; end
-		Bars2(ib).FaceAlpha = 1/3; Bars2(ib).LineWidth = 0.5;
+		Bars2(ib).FaceAlpha = 1/3; Bars2(ib).LineWidth = 1; Bars2(ib).BaseLine.LineWidth = 1; Bars2(ib).EdgeColor = 'none';
 	end
 end
 for t = findobj(ax2, 'Type', 'Text')', t.FontSize = 6; end

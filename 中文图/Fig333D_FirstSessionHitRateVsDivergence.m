@@ -35,15 +35,15 @@ colorFit = palette3(3, :);
 
 f = figure('Color', 'w', 'Name', 'Fig333D First-session hit rate vs divergence');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
+f.Position(3:4) = [6, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.PaperPosition = [0, 0, 6, 8];
+f.PaperSize = [6, 8];
 
 tl = tiledlayout(f, 1, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 xl = xlabel(tl, 'Divergence');
-xl.FontSize = 6;
+xl.FontSize = 12;
 
 Stats = table("All", nan, nan, nan, nan, ...
 	'VariableNames', {'Panel', 'Rho', 'PValue', 'NNaive', 'NTransfer'});
@@ -66,23 +66,27 @@ maskTran = use & (string(Data.Group) == "Transfer");
 ax = nexttile(tl, 1);
 hold(ax, 'on');
 box(ax, 'off');
-ax.FontSize = 6;
-ax.LineWidth = 1;
+ax.FontSize = 12;
+ax.LineWidth = 2;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
 hN = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), 5, colorNaive, 'o', 'filled', 'LineWidth', 0.2);
 hT = scatter(ax, Data.Divergence(maskTran), Data.HitRate(maskTran), 8, colorTransfer, '^', 'filled', 'LineWidth', 0.2);
-ylabel(ax, 'First session hit rate', 'FontSize', 6);
+ylabel(ax, 'First session hit rate', 'FontSize', 12);
 
 fitP = polyfit(xAll, yAll, 1);
 xFit = [min(xAll), max(xAll)];
 yFit = polyval(fitP, xFit);
-plot(ax, xFit, yFit, '-', 'Color', colorFit, 'LineWidth', 1);
+hFit = plot(ax, xFit, yFit, '-', 'Color', colorFit, 'LineWidth', 2);
+
+lgd = legend(ax, [hN, hT], {'Naive', 'Transfer'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
+lgd.FontSize = 12;
+lgd.Box = 'off';
 
 text(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
-	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
+	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 Stats.Rho(1) = rho;
 Stats.PValue(1) = p;

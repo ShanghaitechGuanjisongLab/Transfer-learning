@@ -132,6 +132,7 @@ nexttile;
 [~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.FontSize = 12;
+ax2.LineWidth = 2;
 ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
 ax2.XTick = [];
@@ -139,6 +140,11 @@ legend(ax2, 'off');
 if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
 	for pt = optional2.MultiCompare.PText(:)'
 		pt.FontSize = 12;
+	end
+end
+if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
+	for pl = optional2.MultiCompare.PLine(:)'
+		pl.LineWidth = 2;
 	end
 end
 
@@ -412,12 +418,15 @@ if numel(barsObj) == 1
 	barsObj.CData = barsObj.CData(1:nBars, :);
 	barsObj.BarWidth = 0.5;
 	barsObj.LineWidth = 2;
+	barsObj.EdgeColor = 'none';
 	barsObj.FaceAlpha = 1/3;
 else
 	barsObj(1).FaceColor = colorNaive;
 	barsObj(2).FaceColor = colorTrans;
 	barsObj(1).LineWidth = 2;
 	barsObj(2).LineWidth = 2;
+	barsObj(1).EdgeColor = 'none';
+	barsObj(2).EdgeColor = 'none';
 	barsObj(1).FaceAlpha = 1/3;
 	barsObj(2).FaceAlpha = 1/3;
 end
@@ -434,7 +443,7 @@ for idx = 1:numel(errorBars.Object)
 	x = eb.XData(:);
 	y = eb.YData(:);
 	up = eb.YPositiveDelta(:);
-	lineWidth = eb.LineWidth;
+	lineWidth = 2;
 	capWidth = 0.16;
 	delete(eb);
 	valid = isfinite(x) & isfinite(y) & isfinite(up) & up > 0;

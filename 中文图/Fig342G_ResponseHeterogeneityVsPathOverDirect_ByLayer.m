@@ -1,4 +1,4 @@
-% 中文图342F：响应异质性 vs 路程/直线距离（全细胞，Naive/Transfer 分色）
+% 中文图342G：响应异质性 vs 路程/直线距离（全细胞，Naive/Transfer 分色）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -10,7 +10,7 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgName = "中文图Fig342F_ResponseHeterogeneityVsPathOverDirect_AllCells_v2.svg";
+svgName = "中文图Fig342G_ResponseHeterogeneityVsPathOverDirect_AllCells_v2.svg";
 
 StateData = TransferLearning.Fig341.BuildStateSpaceSummary(true, UniExp.Flags.No_special_operation);
 States = StateData.MouseStates;
@@ -30,7 +30,7 @@ else
 end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('中文图342F:Bad1sIndex', 'Cannot find sample close to 1 s in TransferLearning.Xs.');
+	error('中文图342G:Bad1sIndex', 'Cannot find sample close to 1 s in TransferLearning.Xs.');
 end
 
 FirstSess = table(strings(0,1), strings(0,1), strings(0,1), NaT(0,1), ...
@@ -90,20 +90,20 @@ for iSrc = 1:numel(srcList)
 end
 
 if isempty(Rows)
-	error('中文图342F:NoHeterogeneityRows', 'No mouse-level response heterogeneity data were built.');
+	error('中文图342G:NoHeterogeneityRows', 'No mouse-level response heterogeneity data were built.');
 end
 
 Het = struct2table(Rows);
 Data = innerjoin(Het, Metrics, 'Keys', {'Mouse', 'Group', 'Source'});
 if isempty(Data)
-	error('中文图342F:NoMatchedRows', 'No matched rows between heterogeneity and PathOverDirect.');
+	error('中文图342G:NoMatchedRows', 'No matched rows between heterogeneity and PathOverDirect.');
 end
 
 palette2 = TransferLearning.FigurePalette(2);
 colorNaive = palette2(1, :);
 colorTransfer = palette2(2, :);
 
-f = figure('Color', 'w', 'Name', '中文图342F Response heterogeneity vs Path/direct');
+f = figure('Color', 'w', 'Name', '中文图342G Response heterogeneity vs Path/direct');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5 4.0];
 f.PaperUnits = 'centimeters';
@@ -117,7 +117,7 @@ Stats = table(nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), ...
 
 use = isfinite(Data.PathOverDirect) & isfinite(Data.ResponseHeterogeneity);
 if nnz(use) < 3
-	error('中文图342F:TooFewPoints', 'Too few valid mice for all-cell correlation.');
+	error('中文图342G:TooFewPoints', 'Too few valid mice for all-cell correlation.');
 end
 R = Data(use, :);
 x = double(R.PathOverDirect);
@@ -170,8 +170,8 @@ svgPath = fullfile(outDirUNC, svgName);
 TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig342F_MatchedData', R);
-assignin('base', 'Fig342F_Stats', Stats);
+assignin('base', 'Fig342G_MatchedData', R);
+assignin('base', 'Fig342G_Stats', Stats);
 
 function row = iEmptyHetRow()
 row = struct(...
@@ -185,7 +185,7 @@ end
 
 function CellMap = iCellMap(DS)
 if ~isprop(DS, 'Cells')
-	error('中文图342F:MissingCells', 'DataSet %s has no Cells table.', class(DS));
+	error('中文图342G:MissingCells', 'DataSet %s has no Cells table.', class(DS));
 end
 CellMap = DS.Cells(:, {'CellUID', 'ZLayer'});
 CellMap.CellUID = uint64(CellMap.CellUID);

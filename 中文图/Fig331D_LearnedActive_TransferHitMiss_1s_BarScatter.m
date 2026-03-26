@@ -65,6 +65,11 @@ CompareGroup = table(["Hit", "Miss"], 'VariableNames', {'GroupPair'});
 ax = gca;
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
+ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
 ylabel(ax, 'z-score');
 ax.XTickLabel = {'Hit', 'Miss'};
 box(ax, 'off');
@@ -78,6 +83,8 @@ if isscalar(Bars)
 	Bars.CData = [colorHit; colorMiss];
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
 	Bars.FaceAlpha = 1/3;
 else
 	for ib = 1:numel(Bars)
@@ -88,10 +95,15 @@ else
 		end
 		Bars(ib).FaceAlpha = 1/3;
 		Bars(ib).LineWidth = 1;
+		Bars(ib).BaseLine.LineWidth = 1;
+		Bars(ib).EdgeColor = 'none';
 	end
 	end
 for eb = EB.Object(:)'
 	eb.LineWidth = 1;
+	end
+	for ln = findobj(ax, 'Type', 'Line')'
+		ln.LineWidth = 1;
 	end
 
 scatters = findobj(ax, 'Type', 'Scatter');

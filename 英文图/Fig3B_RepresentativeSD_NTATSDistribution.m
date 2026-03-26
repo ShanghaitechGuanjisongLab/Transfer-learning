@@ -243,7 +243,7 @@ pngName = 'English_Fig3B_Volshow_Representative.png';
 exportapp(fig, fullfile(outDirUNC, pngName));
 fprintf('Wrote: %s\n', pngName);
 
-%% ===== 6) Export representative histogram SVG (58 mm × 15 mm) =====
+%% ===== 6) Export representative histogram SVG (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 palette2 = TransferLearning.FigurePalette(2);
@@ -252,18 +252,23 @@ v = vals{repPairIdx, repSessIdx};
 
 fh = figure('Color', 'w');
 fh.Units = 'centimeters';
-fh.Position(3:4) = [5.8, 1.5]; % 58 mm × 15 mm
+fh.Position(3:4) = [5.7, 1.6]; % 57 mm × 16 mm
 
 ax = axes(fh);
 hold(ax, 'on');
 
 histogram(ax, v, binEdges, 'Normalization', 'probability', ...
 	'FaceColor', pairColors{repPairIdx}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-xline(ax, mean(v), '--', 'Color', pairColors{repPairIdx}, 'LineWidth', 0.8);
+xline(ax, mean(v), '--', 'Color', pairColors{repPairIdx}, 'LineWidth', 1);
 
 xlim(ax, [-1, 1]);
 ax.XTick = [-1, 0, 1];
 ax.FontSize = 6;
+ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
 box(ax, 'off');
 grid(ax, 'off');
 

@@ -138,6 +138,7 @@ CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
 CB.FontSize = 12;
 CB.Label.FontSize = 12;
+CB.Box = 'off';
 
 % Lane-specific xline and xtick settings
 % Lane 1: AudioOnly - only 0s line, xticks(0), xticklabels = emoji speaker
@@ -151,11 +152,12 @@ for iA = 1:numel(Axes)
 	if ~isgraphics(A), continue; end
 	A.FontSize = 12;
 	A.FontName = 'Segoe UI Emoji';
+	A.LineWidth = 2;
 	
 	% xline: all lanes get 0s, lanes 3&4 also get 1s
-	xline(A, 0, ':k');
+	xline(A, 0, ':k', 'LineWidth', 2);
 	if iA >= 3
-		xline(A, 1, '-k');
+		xline(A, 1, '-k', 'LineWidth', 2);
 	end
 	
 	% xticks and xticklabels per lane
@@ -199,12 +201,8 @@ end
 
 svgName = "English_Fig1F_LaneHeatmap.svg";
 svgPath = fullfile(outDirUNC, svgName);
-try
-	TransferLearning.PrintFigure(f, svgPath);
-	fprintf('Wrote: %s\n', svgPath);
-catch ME
-	warning(ME.identifier, 'Export failed: %s', ME.message);
-end
+print(f, svgPath, '-dsvg');
+fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig1F_SortIdx', sortIdx);
 assignin('base', 'Fig1F_SortKey_Min1s', sortKey);

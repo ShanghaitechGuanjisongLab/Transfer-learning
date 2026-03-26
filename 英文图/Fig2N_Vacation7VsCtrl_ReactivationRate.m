@@ -156,6 +156,11 @@ for eb = EB1.Object(:)', eb.LineWidth = 1; end
 
 ax1 = gca;
 ax1.FontSize = 6;
+ax1.LineWidth = 1;
+if isprop(ax1.XAxis, 'LineWidth')
+	ax1.XAxis.LineWidth = 1;
+	ax1.YAxis.LineWidth = 1;
+end
 ax1.XTick = [1 2];
 ax1.XTickLabel = {'Ctrl', 'Vac7'};
 ax1.XAxis.Visible = 'off';
@@ -170,19 +175,20 @@ if isscalar(Bars1)
 	nB = numel(Bars1.YData);
 	Bars1.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars1.CData = Bars1.CData(1:nB, :);
-	Bars1.BarWidth = 0.5; Bars1.LineWidth = 1; Bars1.FaceAlpha = 1/3;
+	Bars1.BarWidth = 0.5; Bars1.LineWidth = 1; Bars1.BaseLine.LineWidth = 1; Bars1.EdgeColor = 'none'; Bars1.FaceAlpha = 1/3;
 else
 	if numel(Bars1) >= 2
-		Bars1(1).FaceColor = colorA; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 1;
-		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 1;
+		Bars1(1).FaceColor = colorA; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 1; Bars1(1).BaseLine.LineWidth = 1; Bars1(1).EdgeColor = 'none';
+		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 1; Bars1(2).BaseLine.LineWidth = 1; Bars1(2).EdgeColor = 'none';
 	end
 end
 
 star1 = iAsterisk(pReact);
 Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
 	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[~, PT1] = MATLAB.Graphics.PLine(Desc1);
+[PL1, PT1] = MATLAB.Graphics.PLine(Desc1);
 for t = PT1(:)', t.FontSize = 6; end
+for pl = PL1(:)', pl.LineWidth = 1; end
 
 % --- Tile 2: Divergence ---
 nexttile(Layout, 2);
@@ -193,6 +199,11 @@ for eb = EB2.Object(:)', eb.LineWidth = 1; end
 
 ax2 = gca;
 ax2.FontSize = 6;
+ax2.LineWidth = 1;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 1;
+	ax2.YAxis.LineWidth = 1;
+end
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Ctrl', 'Vac7'};
 legend(ax2, 'off');
@@ -206,19 +217,20 @@ if isscalar(Bars2)
 	nB2 = numel(Bars2.YData);
 	Bars2.CData = repmat([colorA; colorB], ceil(nB2/2), 1);
 	Bars2.CData = Bars2.CData(1:nB2, :);
-	Bars2.BarWidth = 0.5; Bars2.LineWidth = 1; Bars2.FaceAlpha = 1/3;
+	Bars2.BarWidth = 0.5; Bars2.LineWidth = 1; Bars2.BaseLine.LineWidth = 1; Bars2.EdgeColor = 'none'; Bars2.FaceAlpha = 1/3;
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 1;
-		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 1;
+		Bars2(1).FaceColor = colorA; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 1; Bars2(1).BaseLine.LineWidth = 1; Bars2(1).EdgeColor = 'none';
+		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 1; Bars2(2).BaseLine.LineWidth = 1; Bars2(2).EdgeColor = 'none';
 	end
 end
 
 star2 = iAsterisk(pDiv);
 Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
 	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[~, PT2] = MATLAB.Graphics.PLine(Desc2);
+[PL2, PT2] = MATLAB.Graphics.PLine(Desc2);
 for t = PT2(:)', t.FontSize = 6; end
+for pl = PL2(:)', pl.LineWidth = 1; end
 
 %% ===== 5) Export =====
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));

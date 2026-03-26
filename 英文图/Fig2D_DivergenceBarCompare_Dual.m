@@ -217,10 +217,15 @@ colorLearn = palette2(2,:);
 nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare({divAO, divAW}, true);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB1.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB1.Object(:)', eb.LineWidth = 1; end
 ax1 = gca;
 ax1.FontSize = 6;
 ax1.FontName = 'Segoe UI Emoji';
+ax1.LineWidth = 1;
+if isprop(ax1.XAxis, 'LineWidth')
+	ax1.XAxis.LineWidth = 1;
+	ax1.YAxis.LineWidth = 1;
+end
 ax1.XTick = [1, 2];
 ax1.XTickLabel = {'🔊', '🔊💧'};
 legend(ax1, 'off');
@@ -231,12 +236,14 @@ if isscalar(Bars1)
 	Bars1.FaceColor = 'flat';
 	Bars1.CData = [colorNaive; colorLearn];
 	Bars1.BarWidth = 0.5;
-	Bars1.LineWidth = 0.5;
+	Bars1.LineWidth = 1;
+	Bars1.BaseLine.LineWidth = 1;
+	Bars1.EdgeColor = 'none';
 	Bars1.FaceAlpha = 1/3;
 else
 	if numel(Bars1) >= 2
-		Bars1(1).FaceColor = colorNaive; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 0.5;
-		Bars1(2).FaceColor = colorLearn; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 0.5;
+		Bars1(1).FaceColor = colorNaive; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 1; Bars1(1).BaseLine.LineWidth = 1; Bars1(1).EdgeColor = 'none';
+		Bars1(2).FaceColor = colorLearn; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 1; Bars1(2).BaseLine.LineWidth = 1; Bars1(2).EdgeColor = 'none';
 	end
 end
 
@@ -244,18 +251,24 @@ star1 = iAsterisk(pPaired);
 if star1 ~= ""
 	Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
 		'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-	[~, PT1] = MATLAB.Graphics.PLine(Desc1);
+	[PL1, PT1] = MATLAB.Graphics.PLine(Desc1);
 	for t = PT1(:)', t.FontSize = 6; end
+	for pl = PL1(:)', pl.LineWidth = 1; end
 end
 
 % --- Bottom: All cells Div(inherited) vs Div(non-inherited) (paired) ---
 nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare({divI_all, divN_all}, true);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB2.Object(:)', eb.LineWidth = 0.5; end
+for eb = EB2.Object(:)', eb.LineWidth = 1; end
 ax2 = gca;
 ax2.FontSize = 6;
 ax2.FontName = 'Segoe UI Emoji';
+ax2.LineWidth = 1;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 1;
+	ax2.YAxis.LineWidth = 1;
+end
 ax2.XTick = [1, 2];
 ax2.XTickLabel = {'Active', 'Inact.'};
 title(ax2, 'Cell subgroups of 💡💧');
@@ -270,12 +283,14 @@ if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	Bars2.CData = [cInh; cNon];
 	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 0.5;
+	Bars2.LineWidth = 1;
+	Bars2.BaseLine.LineWidth = 1;
+	Bars2.EdgeColor = 'none';
 	Bars2.FaceAlpha = 1/3;
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = cInh; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 0.5;
-		Bars2(2).FaceColor = cNon; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 0.5;
+		Bars2(1).FaceColor = cInh; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 1; Bars2(1).BaseLine.LineWidth = 1; Bars2(1).EdgeColor = 'none';
+		Bars2(2).FaceColor = cNon; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 1; Bars2(2).BaseLine.LineWidth = 1; Bars2(2).EdgeColor = 'none';
 	end
 end
 
@@ -283,8 +298,9 @@ star2 = iAsterisk(pDecomp);
 if star2 ~= ""
 	Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
 		'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-	[~, PT2] = MATLAB.Graphics.PLine(Desc2);
+	[PL2, PT2] = MATLAB.Graphics.PLine(Desc2);
 	for t = PT2(:)', t.FontSize = 6; end
+	for pl = PL2(:)', pl.LineWidth = 1; end
 end
 
 % --- Export ---

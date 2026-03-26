@@ -186,7 +186,7 @@ try, f2.InvertHardcopy = 'off'; catch, end
 [~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.FontSize = 12;
-ax2.LineWidth = 2;
+	ax2.LineWidth = 2;
 ax2.Color = 'none';
 ax2.XTick = [];
 legend(ax2, 'off');
@@ -222,9 +222,6 @@ if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properti
 	for pl = Opt2.MultiCompare.PLine(:)'
 		pl.LineWidth = 2;
 	end
-end
-for ln = findobj(ax2, 'Type', 'Line')'
-	ln.LineWidth = 2;
 end
 ax2.XLim = [0.5, 2.5];
 

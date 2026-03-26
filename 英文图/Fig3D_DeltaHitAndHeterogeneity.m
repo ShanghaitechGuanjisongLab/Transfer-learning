@@ -77,20 +77,24 @@ for iL = 1:numel(layers)
 
 	nexttile(Layout, iL);
 	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 0.05);
+	delete(findobj(gca, 'Type', 'Scatter'));
 	for eb = EB.Object(:)'
 		eb.LineWidth = 1;
-		if isprop(eb, 'CapSize'), eb.CapSize = 0; end
 	end
 	ax = gca;
 	ax.FontSize = 6;
 	ax.FontName = 'Segoe UI Emoji';
 	ax.TickLabelInterpreter = 'none';
 	ax.LineWidth = 1;
+	if isprop(ax.XAxis, 'LineWidth')
+		ax.XAxis.LineWidth = 1;
+		ax.YAxis.LineWidth = 1;
+	end
 	ax.XTick = [1 2 3];
 	if iL == 1
 		ax.XTickLabel = {};
 	else
-		ax.XTickLabel = {'Naive💡', 'Tran.💡', 'Lear.🔊'};
+		ax.XTickLabel = {'Naive💡', 'Transfer💡', 'Learned🔊'};
 	end
 	ylabel(ax, layerLabel, 'FontSize', 6);
 	legend(ax, 'off');
@@ -103,14 +107,18 @@ for iL = 1:numel(layers)
 		Bars.CData = repmat([colorNaive; colorTransfer; colorLearned], ceil(nB/3), 1);
 		Bars.CData = Bars.CData(1:nB, :);
 		Bars.BarWidth = 0.5;
-		Bars.LineStyle = 'none';
+		Bars.LineWidth = 1;
+		Bars.BaseLine.LineWidth = 1;
+		Bars.EdgeColor = 'none';
 		Bars.FaceAlpha = 1/3;
 	elseif numel(Bars) >= 3
 		Bars(1).FaceColor = colorNaive;
 		Bars(2).FaceColor = colorTransfer;
 		Bars(3).FaceColor = colorLearned;
 		for ib = 1:3
-			Bars(ib).LineStyle = 'none';
+			Bars(ib).LineWidth = 1;
+			Bars(ib).BaseLine.LineWidth = 1;
+			Bars(ib).EdgeColor = 'none';
 			try, Bars(ib).FaceAlpha = 1/3; catch, end
 		end
 	end

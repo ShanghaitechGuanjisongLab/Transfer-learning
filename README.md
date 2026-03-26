@@ -4,7 +4,7 @@
 
 特别提供作图用到的各类数据库的生成代码。
 # 作图
-每张图对应一个脚本文件，中文图放在中文图目录下，英文图放在英文图目录下，文件名统一为【Fig+图号】格式，例如`中文图/Fig341B_LightWaterLearningTrajectory_PCA.m`或`英文图/Fig4C_OnsetCompare_RSPd_vs_MOp.m`。脚本文件结构：
+每张图对应一个脚本文件，中文图放在中文图目录下，英文图放在英文图目录下，文件名统一为【Fig+图号】格式，例如`中文图/Fig341C_LightWaterLearningTrajectory_PCA.m`或`英文图/Fig4C_OnsetCompare_RSPd_vs_MOp.m`。脚本文件结构：
 1. 脚本依赖的工具箱链接和版本号
 2. 运行此脚本之前必须先运行的前置脚本或必须准备好的数据库等
 3. 图注

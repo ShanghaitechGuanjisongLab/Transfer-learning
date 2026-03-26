@@ -86,7 +86,7 @@ ax1 = nexttile(Layout, 1);
 	table([1 2], 'VariableNames', {'GroupPair'}));
 delete(findobj(ax1, 'Type', 'Scatter'));
 for eb = EB1.Object(:)'
-	eb.LineWidth = 0.5;
+	eb.LineWidth = 1;
 end
 iStyleAxes(ax1, 'L2/3');
 iStyleBars(Bars1, RED, BLUE);
@@ -96,7 +96,7 @@ ax2 = nexttile(Layout, 2);
 	table([1 2], 'VariableNames', {'GroupPair'}));
 delete(findobj(ax2, 'Type', 'Scatter'));
 for eb = EB2.Object(:)'
-	eb.LineWidth = 0.5;
+	eb.LineWidth = 1;
 end
 iStyleAxes(ax2, 'L5');
 xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
@@ -318,6 +318,11 @@ end
 function iStyleAxes(ax, titleText)
 ax.FontName = 'Arial';
 ax.FontSize = 6;
+ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
 ax.XTick = [1 2];
 ax.XTickLabel = {'Naive', 'Transfer'};
 legend(ax, 'off');
@@ -337,7 +342,9 @@ if isscalar(Bars)
 	Bars.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars.CData = Bars.CData(1:nB, :);
 	Bars.BarWidth = 0.5;
-	Bars.LineWidth = 0.5;
+	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
 	Bars.FaceAlpha = 1/3;
 else
 	if numel(Bars) >= 2
@@ -345,8 +352,12 @@ else
 		Bars(2).FaceColor = colorB;
 		Bars(1).FaceAlpha = 1/3;
 		Bars(2).FaceAlpha = 1/3;
-		Bars(1).LineWidth = 0.5;
-		Bars(2).LineWidth = 0.5;
+		Bars(1).LineWidth = 1;
+		Bars(2).LineWidth = 1;
+		Bars(1).BaseLine.LineWidth = 1;
+		Bars(2).BaseLine.LineWidth = 1;
+		Bars(1).EdgeColor = 'none';
+		Bars(2).EdgeColor = 'none';
 	end
 	end
 end

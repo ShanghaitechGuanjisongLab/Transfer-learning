@@ -156,6 +156,7 @@ compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 [~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare(dataCell, false, compareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.FontSize = 12;
+ax2.LineWidth = 2;
 ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
 ax2.XTick = [];
@@ -164,6 +165,11 @@ legend(ax2, 'off');
 if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
 	for pt = optional2.MultiCompare.PText(:)'
 		pt.FontSize = 12;
+	end
+end
+if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
+	for pl = optional2.MultiCompare.PLine(:)'
+		pl.LineWidth = 2;
 	end
 end
 
@@ -177,6 +183,7 @@ if numel(bars2) == 1
 	bars2.CData = bars2.CData(1:nBars, :);
 	bars2.BarWidth = 0.5;
 	bars2.LineWidth = 2;
+	bars2.EdgeColor = 'none';
 	bars2.FaceAlpha = 1/3;
 else
 	if numel(bars2) >= 2
@@ -184,11 +191,14 @@ else
 		bars2(2).FaceColor = colorTrans;
 		bars2(1).LineWidth = 2;
 		bars2(2).LineWidth = 2;
+		bars2(1).EdgeColor = 'none';
+		bars2(2).EdgeColor = 'none';
 		bars2(1).FaceAlpha = 1/3;
 		bars2(2).FaceAlpha = 1/3;
 	else
 		bars2.FaceColor = colorNaive;
 		bars2.LineWidth = 2;
+		bars2.EdgeColor = 'none';
 		bars2.FaceAlpha = 1/3;
 	end
 end

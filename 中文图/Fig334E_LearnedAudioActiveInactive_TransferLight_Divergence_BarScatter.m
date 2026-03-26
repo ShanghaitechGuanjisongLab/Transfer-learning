@@ -1,4 +1,4 @@
-% 中文图334A：模仿英文图2H的风格，比较声水学会活跃/不活跃细胞在光水迁移首会话中的相对散度
+% 中文图334E：模仿英文图2H的风格，比较声水学会活跃/不活跃细胞在光水迁移首会话中的相对散度
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -23,13 +23,13 @@ end
 [idx0, ok0] = iFindTimeIndex(xsSec, 0, 0.25);
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok0 || ~ok1s
-	error('Fig334A:TimeIndexMissing', 'Cannot find 0 s or 1 s sample in TransferLearning.Xs.');
+	error('Fig334E:TimeIndexMissing', 'Cannot find 0 s or 1 s sample in TransferLearning.Xs.');
 end
 
 TTransfer = DS.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex"], Phase="Transfer", Stimulus="LightWater");
 TLearned = DS.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex"], Phase="Learned", Stimulus="AudioWater");
 if isempty(TTransfer) || isempty(TLearned)
-	error('Fig334A:EmptySessions', 'Transfer or Learned sessions are missing.');
+	error('Fig334E:EmptySessions', 'Transfer or Learned sessions are missing.');
 end
 TTransfer.Mouse = string(TTransfer.Mouse);
 TLearned.Mouse = string(TLearned.Mouse);
@@ -103,7 +103,7 @@ for iM = 1:nMice
 	end
 end
 
-f = figure('Color', 'w', 'Name', 'Fig334A Learned active/inactive transfer divergence');
+f = figure('Color', 'w', 'Name', 'Fig334E Learned active/inactive transfer divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -112,7 +112,10 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-yl = ylabel(Layout, 'Divergence');
+xl = xlabel(Layout, '🔊💧');
+xl.FontName = 'Arial';
+xl.FontSize = 6;
+yl = ylabel(Layout, '💡💧 Divergence');
 yl.FontName = 'Arial';
 yl.FontSize = 6;
 
@@ -127,7 +130,7 @@ for iL = 1:numel(layers)
 	vA = vA(use);
 	vI = vI(use);
 	if numel(vA) < 3
-		error('Fig334A:TooFewPairs', 'Too few paired mice for %s.', layerLabels(iL));
+		error('Fig334E:TooFewPairs', 'Too few paired mice for %s.', layerLabels(iL));
 	end
 	p = signrank(vA, vI);
 	Stats.MeanActive(iL) = mean(vA, 'omitnan');
@@ -138,8 +141,11 @@ for iL = 1:numel(layers)
 	ax = nexttile(Layout, iL);
 	[~, ~, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}));
 	delete(findobj(ax, 'Type', 'Scatter'));
+	for b = Bars(:)'
+		b.EdgeColor = 'none';
+	end
 	for eb = EB.Object(:)'
-		eb.LineWidth = 0.5;
+		eb.LineWidth = 1;
 	end
 	iStyleAxes(ax, layerLabels(iL), iL == 2);
 	if iL == 2
@@ -153,7 +159,7 @@ for iL = 1:numel(layers)
 
 	iStyleBars(Bars, palette2(1, :), palette2(2, :));
 
-	fprintf('\n=== Fig334A %s ===\n', layerLabels(iL));
+	fprintf('\n=== Fig334E %s ===\n', layerLabels(iL));
 	fprintf('Active:   %.3f ± %.3f (n=%d)\n', mean(vA), std(vA)/sqrt(numel(vA)), numel(vA));
 	fprintf('Inactive: %.3f ± %.3f (n=%d)\n', mean(vI), std(vI)/sqrt(numel(vI)), numel(vI));
 	fprintf('signrank p = %.6g\n', p);
@@ -162,12 +168,12 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig334A_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
+svgPath = fullfile(outDirUNC, '中文图Fig334E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig334A_Stats', Stats);
-assignin('base', 'Fig334A_Data', struct('Mouse', mice, 'DivActive', DivActive, 'DivInactive', DivInactive, 'Layers', layers));
+assignin('base', 'Fig334E_Stats', Stats);
+assignin('base', 'Fig334E_Data', struct('Mouse', mice, 'DivActive', DivActive, 'DivInactive', DivInactive, 'Layers', layers));
 
 function CellMap = iCellMap(DS)
 CellMap = DS.Cells(:, {'CellUID', 'ZLayer'});
@@ -252,6 +258,11 @@ end
 function iStyleAxes(ax, titleText, showX)
 ax.FontName = 'Arial';
 ax.FontSize = 6;
+ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
 ax.XTick = [1 2];
 if ~showX
 	ax.XTickLabel = {};
@@ -274,7 +285,8 @@ if isscalar(Bars)
 	Bars.CData = Bars.CData(1:nB, :);
 	Bars.BarWidth = 0.5;
 	Bars.FaceAlpha = 1/3;
-	Bars.LineWidth = 0.5;
+	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
 	return;
 end
 if numel(Bars) >= 2
@@ -282,7 +294,9 @@ if numel(Bars) >= 2
 	Bars(2).FaceColor = colorB;
 	Bars(1).FaceAlpha = 1/3;
 	Bars(2).FaceAlpha = 1/3;
-	Bars(1).LineWidth = 0.5;
-	Bars(2).LineWidth = 0.5;
+	Bars(1).LineWidth = 1;
+	Bars(1).BaseLine.LineWidth = 1;
+	Bars(2).LineWidth = 1;
+	Bars(2).BaseLine.LineWidth = 1;
 end
 end

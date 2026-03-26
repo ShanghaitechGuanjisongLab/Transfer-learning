@@ -87,6 +87,10 @@ assignin('base', 'Fig343H_ReactivationP5', p5);
 function iStyleTile(ax, bars, errorBars, showXTick, titleText)
 ax.FontSize = 6;
 ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
 ax.YLim(1) = 0;
 ax.XTick = [1 2];
 if showXTick
@@ -111,16 +115,19 @@ if isscalar(bars)
 	bars.CData = barColors(1:nBars, :);
 	bars.BarWidth = 0.5;
 	bars.LineWidth = 1;
+	bars.BaseLine.LineWidth = 1;
 	try, bars.FaceAlpha = 1/3; catch, end
 	try, bars.EdgeColor = 'none'; catch, end
 else
 	if numel(bars) >= 2
 		bars(1).FaceColor = colorCtrl;
 		bars(1).LineWidth = 1;
+		bars(1).BaseLine.LineWidth = 1;
 		try, bars(1).FaceAlpha = 1/3; catch, end
 		try, bars(1).EdgeColor = 'none'; catch, end
 		bars(2).FaceColor = colorTH;
 		bars(2).LineWidth = 1;
+		bars(2).BaseLine.LineWidth = 1;
 		try, bars(2).FaceAlpha = 1/3; catch, end
 		try, bars(2).EdgeColor = 'none'; catch, end
 	end
@@ -139,6 +146,11 @@ if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember
 	for pt = options.MultiCompare.PText(:)'
 		pt.FontSize = 6;
 		pt.String = iFormatPValue(pValue);
+	end
+end
+if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PLine', options.MultiCompare.Properties.VariableNames)
+	for pl = options.MultiCompare.PLine(:)'
+		pl.LineWidth = 1;
 	end
 end
 end

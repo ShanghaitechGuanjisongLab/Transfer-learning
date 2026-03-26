@@ -57,6 +57,10 @@ ax = axTop;
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
 ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
 ylabel(ax, 'z-score');
 ax.XTick = [];
 ax.XTickLabel = {};
@@ -71,6 +75,8 @@ if isscalar(Bars)
 	Bars.CData = [colorInitial; colorTransfer];
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
 	Bars.FaceAlpha = 1/3;
 else
 	for ib = 1:numel(Bars)
@@ -81,6 +87,8 @@ else
 		end
 		Bars(ib).FaceAlpha = 1/3;
 		Bars(ib).LineWidth = 1;
+		Bars(ib).BaseLine.LineWidth = 1;
+		Bars(ib).EdgeColor = 'none';
 	end
 end
 
@@ -90,6 +98,10 @@ end
 
 [means, sems, xPos, yPos] = iBarStats(Bars, vInitial, vTransfer);
 iDrawOneSidedErrorbars(ax, xPos, means, sems, yPos);
+
+for ln = findobj(ax, 'Type', 'Line')'
+	ln.LineWidth = 1;
+end
 
 scatters = findobj(ax, 'Type', 'Scatter');
 for is = 1:numel(scatters)
@@ -123,6 +135,10 @@ bars2.FaceAlpha = 1/3;
 axBottom.FontSize = 6;
 axBottom.FontName = 'Segoe UI Emoji';
 axBottom.LineWidth = 1;
+if isprop(axBottom.XAxis, 'LineWidth')
+	axBottom.XAxis.LineWidth = 1;
+	axBottom.YAxis.LineWidth = 1;
+end
 axBottom.XTick = [1 2];
 axBottom.XTickLabel = {'Naive', 'Tran.'};
 ylabel(axBottom, 'active fraction');

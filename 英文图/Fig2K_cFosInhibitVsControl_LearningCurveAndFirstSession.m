@@ -239,9 +239,10 @@ try, f2.PaperPositionMode = 'auto'; catch, end
 try, f2.PaperUnits = 'centimeters'; f2.PaperSize = [4, 4]; catch, end
 try, f2.InvertHardcopy = 'off'; catch, end
 
-[~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.FontSize = 12;
+ax2.LineWidth = 2;
 ax2.Color = 'none';
 ax2.XAxis.Visible = false;
 ax2.XTick = [];
@@ -259,6 +260,7 @@ if isscalar(Bars2)
 	Bars2.CData = Bars2.CData(1:nBars, :);
 	Bars2.BarWidth = 0.5;
 	Bars2.LineWidth = 2;
+	try, Bars2.EdgeColor = 'none'; catch, end
 	try, Bars2.FaceAlpha = 1/3; catch, end
 else
 	if numel(Bars2) >= 2
@@ -266,12 +268,19 @@ else
 		Bars2(2).FaceColor = colorB;
 		Bars2(1).LineWidth = 2;
 		Bars2(2).LineWidth = 2;
+		try, Bars2(1).EdgeColor = 'none'; catch, end
+		try, Bars2(2).EdgeColor = 'none'; catch, end
 		try, Bars2(1).FaceAlpha = 1/3; catch, end
 		try, Bars2(2).FaceAlpha = 1/3; catch, end
 	end
 end
 for eb = ErrorBars2.Object(:)'
 	eb.LineWidth = 2;
+end
+if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
+	for pl = Opt2.MultiCompare.PLine(:)'
+		pl.LineWidth = 2;
+	end
 end
 ax2.XLim = [0.5, 2.5];
 

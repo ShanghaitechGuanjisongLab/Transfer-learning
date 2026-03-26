@@ -1,4 +1,4 @@
-% 中文图35C：Switchers / Accelerators / Others 占全细胞比例（饼图）
+% 中文图324C：Switchers / Accelerators / Others 占全细胞比例（饼图）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -17,7 +17,7 @@ xsSec = seconds(xs);
 [idx0, ok0] = iFindTimeIndex(xsSec, 0, 0.25);
 [idx1, ok1] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~okNeg1 || ~ok0 || ~ok1
-	error('中文图35C:BadTimeIndex', 'Cannot find samples close to -1s, 0s and 1s.');
+	error('中文图324C:BadTimeIndex', 'Cannot find samples close to -1s, 0s and 1s.');
 end
 
 G = struct();
@@ -26,7 +26,7 @@ G.Learned = DS.QueryNTATS(struct('Phase', 'Learned', 'Stimulus', 'AudioWater'), 
 X = iGetNtats3D(G.Learned);
 
 if size(X, 3) < 1
-	error('中文图35C:BadNTATS', 'Expected Learned AudioWater NTATS.');
+	error('中文图324C:BadNTATS', 'Expected Learned AudioWater NTATS.');
 end
 
 learnedNeg1 = X(:, idxNeg1, 1);
@@ -55,7 +55,7 @@ fractions = [nSwitchers, nAccelerators, nOthers] ./ nTotal;
 labels = ["Switchers", "Accelerators", "Others"];
 colors = [1 0 0; 0 0 1; 0.7922 0.7922 0.7922];
 
-f = figure('Color', 'w', 'Name', '中文图35C Switchers Accelerators Pie');
+f = figure('Color', 'w', 'Name', '中文图324C Switchers Accelerators Pie');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -101,15 +101,15 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig35C_SwitchersAcceleratorsOthersPie.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = fullfile(outDirUNC, '中文图Fig324C_SwitchersAcceleratorsOthersPie.svg');
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 counts = table;
 counts.Category = labels.';
 counts.Count = [nSwitchers; nAccelerators; nOthers];
 counts.Fraction = fractions.';
-assignin('base', 'Fig35C_PieCounts', counts);
+assignin('base', 'Fig324C_PieCounts', counts);
 
 function X = iGetNtats3D(S)
 if istable(S)
@@ -137,13 +137,13 @@ if isnumeric(nt)
 		return;
 	end
 	if ndims(nt) ~= 3
-		error('中文图35C:BadNTATSContainer', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('中文图324C:BadNTATSContainer', 'Expected NTATS to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-	error('中文图35C:BadNTATSContainer', 'Unsupported NTATS container type: %s', class(nt));
+	error('中文图324C:BadNTATSContainer', 'Unsupported NTATS container type: %s', class(nt));
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)

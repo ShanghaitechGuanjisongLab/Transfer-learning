@@ -52,6 +52,10 @@ for eb = EB1.Object(:)', eb.LineWidth = 1; end
 ax1 = gca;
 ax1.FontSize = 6;
 ax1.LineWidth = 1;
+if isprop(ax1.XAxis, 'LineWidth')
+	ax1.XAxis.LineWidth = 1;
+	ax1.YAxis.LineWidth = 1;
+end
 ax1.XTick = [1 2];
 ax1.XTickLabel = {};
 ylabel(ax1, 'ΔHit', 'FontSize', 6);
@@ -64,6 +68,7 @@ if isscalar(Bars1)
 	Bars1.CData = Bars1.CData(1:nB, :);
 	Bars1.BarWidth = 0.5;
 	Bars1.LineWidth = 1;
+	Bars1.BaseLine.LineWidth = 1;
 	Bars1.EdgeColor = 'none';
 	Bars1.FaceAlpha = 1/3;
 end
@@ -80,6 +85,10 @@ for eb = EB2.Object(:)', eb.LineWidth = 1; end
 ax2 = gca;
 ax2.FontSize = 6;
 ax2.LineWidth = 1;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 1;
+	ax2.YAxis.LineWidth = 1;
+end
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Ctrl', 'TH'};
 ylabel(ax2, 'Response heterogeneity', 'FontSize', 6);
@@ -92,6 +101,7 @@ if isscalar(Bars2)
 	Bars2.CData = Bars2.CData(1:nB, :);
 	Bars2.BarWidth = 0.5;
 	Bars2.LineWidth = 1;
+	Bars2.BaseLine.LineWidth = 1;
 	Bars2.EdgeColor = 'none';
 	Bars2.FaceAlpha = 1/3;
 end

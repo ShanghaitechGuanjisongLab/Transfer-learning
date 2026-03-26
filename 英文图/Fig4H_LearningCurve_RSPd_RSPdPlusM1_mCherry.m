@@ -90,6 +90,7 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 ax2 = gca;
 ax2.FontSize = 12;
+	ax2.LineWidth = 2;
 ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
 ax2.XTick = [];
@@ -100,6 +101,11 @@ if isfield(Optional2, 'MultiCompare') && ismember('PText', Optional2.MultiCompar
 		pt.FontSize = 12;
 	end
 end
+if isfield(Optional2, 'MultiCompare') && ismember('PLine', Optional2.MultiCompare.Properties.VariableNames)
+	for pl = Optional2.MultiCompare.PLine(:)'
+		pl.LineWidth = 2;
+	end
+end
 
 barColorIdx = [rspColorIdx, mcherryColorIdx];
 if numel(Bars2) == 1
@@ -107,11 +113,13 @@ if numel(Bars2) == 1
 	Bars2.CData = Colors(barColorIdx, :);
 	Bars2.BarWidth = 0.5;
 	Bars2.LineWidth = 2;
+	Bars2.EdgeColor = 'none';
 	Bars2.FaceAlpha = 1/3;
 else
 	for ib = 1:min(2, numel(Bars2))
 		Bars2(ib).FaceColor = Colors(barColorIdx(ib), :);
 		Bars2(ib).LineWidth = 2;
+		Bars2(ib).EdgeColor = 'none';
 		Bars2(ib).FaceAlpha = 1/3;
 	end
 end
