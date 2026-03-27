@@ -1,0 +1,60 @@
+111: AllGroups.Pair=["NaiveLight","LearnedLight";"LearnedAudio","TransferLight";"TransferLight","FinalLight";"LearnedAudio","FinalLight"];
+112: AllGroups.Legends=["Naive ","Learned ";"Learned ","Transfer ";"Transfer ","Final ";"Learned ","Final "];
+113: UNCompareVariables=["Naive→Learned","Learned→Transfer","Transfer→Final","Learned→Final"];
+114: UNCompare=table('DimensionNames',["Usage","Pair"]);
+115: for G=1:numel(UNCompareVariables) %[output:group:3dd9c651]
+116: 	GroupPair=innerjoin(unique(InfoEntro.(AllGroups.Pair(G,1))(:,["Mouse","BlockUID"])),unique(InfoEntro.(AllGroups.Pair(G,2))(:,["Mouse","BlockUID"])),Keys="Mouse");
+117: 	for M=1:height(GroupPair)
+118: 		PairLeft=BlockMC.Cells{BlockMC.BlockUID==GroupPair.BlockUID_left(M)};
+119: 		PairRight=BlockMC.Cells{BlockMC.BlockUID==GroupPair.BlockUID_right(M)};
+120: 		BlockPair=innerjoin(PairLeft,PairRight,Keys="CellUID",LeftVariables=["CellUID","BlockSignal"],RightVariables=["BlockSignal"]);
+121: 		Logical=ismember(PairLeft.CellUID,BlockPair.CellUID);
+122: 		BlockPair.Covariance_PairLeft=PairLeft.Covariance(Logical,Logical);
+123: 		Logical=ismember(PairRight.CellUID,BlockPair.CellUID);
+124: 		BlockPair.Covariance_PairRight=PairRight.Covariance(Logical,Logical);
+125: 		BlockPair.Samples=BlockPair{:,["BlockSignal_PairLeft","BlockSignal_PairRight"]};
+126: 		BlockPair.Covariance=MATLAB.DataFun.ShrinkageCov(BlockPair.Samples,1,2);
+127: 		[~,BlockPair.JointEntropy]=MATLAB.DataFun.CovarianceToEntropy(BlockPair.Covariance,2,1);
+128: 		[~,BlockPair.LeftEntropy]=MATLAB.DataFun.CovarianceToEntropy(BlockPair.Covariance_PairLeft,2,1);
+129: 		[~,BlockPair.RightEntropy]=MATLAB.DataFun.CovarianceToEntropy(BlockPair.Covariance_PairRight,2,1);
+130: 		BlockPair.SharedEntropy=BlockPair.LeftEntropy+BlockPair.RightEntropy-BlockPair.JointEntropy;
+131: 		BlockPair.UnusedOld=BlockPair.JointEntropy-BlockPair.RightEntropy;
+132: 		BlockPair.NewlyLearned=BlockPair.JointEntropy-BlockPair.LeftEntropy;
+133: 		GroupPair.Blocks{M}=BlockPair;
+134: 		GroupPair.UNS{M}=BlockPair(:,["UnusedOld","NewlyLearned","SharedEntropy"]);
+135: 		fprintf('%u ',M); %[output:0242c303]
+136: 	end
+137: 	AllGroups.Mice{G}=GroupPair;
+138: 	UNS=vertcat(GroupPair.UNS{:});
+139: 	UNCompare.(UNCompareVariables(G)){"Unused old"}=UNS.UnusedOld;
+140: 	UNCompare.(UNCompareVariables(G)){"Newly learned"}=UNS.NewlyLearned;
+141: 	AllGroups.UNS{G}=UNS;
+142: 	AllGroups{G,["UnusedOld","NewlyLearned","SharedEntropy"]}=mean(UNS{:,["UnusedOld","NewlyLearned","SharedEntropy"]},1);
+143: end %[output:group:3dd9c651]
+144: %%
+145: Fig=figure; %[output:911ec3f5]
+146: Layout=tiledlayout(2,2,TileSpacing='tight'); %[output:911ec3f5]
+147: MATLAB.Graphics.FigureAspectRatio(8,5,2); %[output:911ec3f5]
+148: for G=1:3
+149: 	nexttile; %[output:911ec3f5]
+150: 	Knowledge=reshape([0,AllGroups{G,["UnusedOld","NewlyLearned","SharedEntropy"]}],2,2);
+151: 	[Circles,Texts]=MATLAB.Graphics.Venn(Knowledge,MATLAB.SignificantFixedpoint(Knowledge,2));
+152: 	axis off
+153: 	legend(Circles,AllGroups.Legends(G,:),Location=MATLAB.Graphics.OptimizedLegendLocation(Texts(2:end)));
+154: end
+155: title(Layout,'Average knowledge bits for each cell: naive has to learn a lot',FontSize=20); %[output:911ec3f5]
+156: nexttile; %[output:911ec3f5]
+157: [~,Optional]=UniExp.BarScatterCompare(UNCompare,table(table(["Naive→Learned","Learned→Transfer";"Naive→Learned","Learned→Transfer"],["Unused old","Unused old";"Newly learned","Newly learned"],'VariableNames',["Pair","Usage"]),'VariableNames',"GroupPair"),AsteriskThreshold=0.01); %[output:911ec3f5]
+158: Optional.Legend.Location='northwest'; %[output:911ec3f5]
+159: print(Fig,'\\Data-Server-2\个人数据\张天夫\202512\知识增减.svg','-dsvg'); %[output:911ec3f5]
+160: 
+161: %[appendix]{"version":"1.0"}
+162: %---
+163: %[metadata:view]
+164: %   data: {"layout":"inline"}
+165: %---
+166: %[output:52fe3918]
+167: %   data: {"dataType":"warning","outputData":{"text":"警告: UniExp:Exception:Block_must_warn：\n    BlockUID           MustWarn        \n    ________    _______________________\n\n      117       \"2次中断拍摄，无法对齐回合\"\n"}}
+168: %---
+169: %[output:23b8b0b6]
+170: %   data: {"dataType":"text","outputData":{"text":"B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B ","truncated":false}}

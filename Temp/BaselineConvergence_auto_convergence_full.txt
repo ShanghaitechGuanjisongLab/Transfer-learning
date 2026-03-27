@@ -1,0 +1,123 @@
+5: Phases=["LearnedAudio","NaiveLight","TransferLightHit","TransferLightMiss"];
+6: LegendLabels=["Learn. ","Naive ","Tran.H ","Tran.M "];
+7: NumPhases=numel(Phases);
+8: Deviation=zeros(25,NumPhases,2);
+9: BaselineConvergentRate=struct;
+10: FluorescenceDelta=struct;
+11: CellStdMedian=struct;
+12: CellConvergence=struct;
+13: for P=1:NumPhases %[output:group:8dec0d6f]
+14: 	PP=Phases(P);
+15: 	Table=InfoEntro.(PP);
+16: 	CSM=groupsummary(Table,"CellUID",["var","median"],"TrialSignal");
+17: 	CellStdMedian.(PP)=CSM;
+18: 	BaselineConvergentRate.(PP)=log2(CSM.std_TrialSignal(:,1)./CSM.std_TrialSignal(:,22)); %[output:034a0a3e]
+19: 	FluorescenceDelta.(PP)=CSM.median_TrialSignal(:,22)./CSM.median_TrialSignal(:,1)-1;
+20: 	if Phases(P)=="LearnedAudio"
+21: 		Table=sortrows(Table,["CellUID","TrialRI"]);
+22: 		SampleSignal=permute(reshape(Table.TrialSignal(ismember(Table.CellUID,CSM.CellUID(CSM.GroupCount==30)),1:24),30,[],24),[3,1,2]);
+23: 		[Coeff,~,Explained]=UniExp.DimensionalPca(SampleSignal([1,24],:,:),[false,false,true],2);
+24: 		Explained=MATLAB.SignificantFixedpoint(Explained,2);
+25: 	end
+26: 	[Deviation(:,P,1),Deviation(:,P,2)]=MATLAB.DataFun.MeanSem(log2(CSM.std_TrialSignal(:,1:25)./CSM.std_TrialSignal(:,25)),1);
+27: end %[output:group:8dec0d6f]
+28: %%
+29: Fig=figure;
+30: Layout=tiledlayout('flow',TileSpacing='tight');
+31: MATLAB.Graphics.FigureAspectRatio(8,5,2);
+32: title(Layout,'Baseline auto-convergence',FontSize=20);
+33: nexttile;
+34: Lines=MATLAB.Graphics.MultiShadowedLines(Deviation(:,:,1),Deviation(:,:,2),1/(NumPhases+1),X=TransferLearning.Xs(1:25),EdgeColors=GlobalOptimization.ColorAllocate(NumPhases,[1,1,1;1,1,1]));
+35: legend(Lines,LegendLabels,Location='southwest');
+36: title('Inter-trial log_2(SD) normalized to 0s');
+37: nexttile;
+38: UniExp.BarScatterCompare(BaselineConvergentRate,false,table(["NaiveLight","TransferLightHit";"NaiveLight","LearnedAudio";"TransferLightHit","TransferLightMiss"],'VariableNames',"GroupPair"),AsteriskThreshold=0.01);
+39: xticklabels(LegendLabels);
+40: title('Convergence rate of -3→-0.3s');
+41: nexttile;
+42: UniExp.BarScatterCompare(FluorescenceDelta,false,table(["NaiveLight","TransferLightHit";"NaiveLight","LearnedAudio";"TransferLightHit","TransferLightMiss"],'VariableNames',"GroupPair"),AsteriskThreshold=0.01);
+43: xticklabels(LegendLabels);
+44: ylabel('(F_{-0.3}/F_{-3})-1');
+45: print(Fig,'\\Data-Server-2\个人数据\张天夫\202512\基线自动收敛.svg','-dsvg');
+46: %%
+47: LearnedTransferOverlap=table;
+48: LearnedTransferOverlap(:,["CellUID","LearnedSignal","LearnedStd"])=CellStdMedian.LearnedAudio(:,["CellUID","median_TrialSignal","std_TrialSignal"]);
+49: LearnedTransferOverlap=innerjoin(LearnedTransferOverlap,CellStdMedian.TransferLightHit,Keys="CellUID",RightVariables=["median_TrialSignal","std_TrialSignal"]);
+50: LearnedTransferOverlap(:,["TransferSignal","TransferStd"])=LearnedTransferOverlap(:,["median_TrialSignal","std_TrialSignal"]);
+51: LearnedTransferOverlap{:,["LearnedMean","TransferMean"]}=[mean(LearnedTransferOverlap.LearnedSignal,2),mean(LearnedTransferOverlap.TransferSignal,2)];
+52: LearnedTransferOverlap{:,["LearnedTimeStd","TransferTimeStd"]}=[std(LearnedTransferOverlap.LearnedSignal(:,1:24),[],2),std(LearnedTransferOverlap.TransferSignal(:,1:24),[],2)];
+53: LearnedTransferOverlap=innerjoin(LearnedTransferOverlap,MB.Cells,RightVariables="ZLayer");
+54: LearnedMatrix=accumarray([LearnedTransferOverlap.LearnedStd(:,1)>LearnedTransferOverlap.LearnedStd(:,25),LearnedTransferOverlap.LearnedSignal(:,1)<LearnedTransferOverlap.LearnedSignal(:,25)]+1,1,[2,2]);
+55: TransferMatrix=accumarray([LearnedTransferOverlap.TransferStd(:,1)>LearnedTransferOverlap.TransferStd(:,25),LearnedTransferOverlap.TransferSignal(:,1)<LearnedTransferOverlap.TransferSignal(:,25)]+1,1,[2,2]);
+56: ConvergentOverlap=[min(LearnedTransferOverlap.LearnedStd(:,1:8),[],2)>max(LearnedTransferOverlap.LearnedStd(:,16:24),[],2),min(LearnedTransferOverlap.TransferStd(:,1:8),[],2)>max(LearnedTransferOverlap.TransferStd(:,16:24),[],2)];
+57: LTMatrix=accumarray(ConvergentOverlap+1,1,[2,2]);
+58: ChanceLevel=prod(mean(ConvergentOverlap,1),2);
+59: [~,ConvergentP]=fishertest([sum(ConvergentOverlap(:,1)&ConvergentOverlap(:,2)),sum(ConvergentOverlap(:,1)&~ConvergentOverlap(:,2));sum(~ConvergentOverlap(:,1)&ConvergentOverlap(:,2)),sum(~ConvergentOverlap(:,1)&~ConvergentOverlap(:,2))],Tail='right');
+60: LTTags=MATLAB.SignificantFixedpoint(LTMatrix./height(LearnedTransferOverlap)*100,2)+"%";
+61: if ConvergentP<0.05
+62: 	LTTags(end)=LTTags(end)+"*";
+63: end
+64: BlockTagSignals=MB.TableQuery(["BlockUID","BlockTags"],Paradigm="声光无穿插",Phase=["Learned","Transfer"]);
+65: BlockTagSignals=innerjoin(BlockTagSignals,groupsummary(MB.BlockSignals(ismember(MB.BlockSignals.BlockUID,BlockTagSignals.BlockUID),:),'BlockUID',@(BS){vertcat(BS{:})},'BlockSignal'),RightVariables="fun1_BlockSignal");
+66: for B=1:height(BlockTagSignals)
+67: 	CD1=BlockTagSignals.BlockTags{B}.CD1;
+68: 	CD2=BlockTagSignals.BlockTags{B}.CD2;
+69: 	CD2=CD2>mean(CD2)+std(CD2);
+70: 	LickStarts=find(CD2&movsum(CD2,[24,0])<=1&~movsum(CD1>mean(CD1)+std(CD1),[24,0]));
+71: 	BeforeLickStarts=LickStarts(LickStarts>24)+(-24:0);
+72: 	AfterLickStarts=LickStarts(LickStarts+24<numel(CD2))+(0:24);
+73: 	BlockTagSignals.BeforeLickStarts{B}=std(reshape(BlockTagSignals.fun1_BlockSignal{B}(:,BeforeLickStarts(:)),[],height(BeforeLickStarts),25),[],2);
+74: 	BlockTagSignals.AfterLickStarts{B}=std(reshape(BlockTagSignals.fun1_BlockSignal{B}(:,AfterLickStarts(:)),[],height(AfterLickStarts),25),[],2);
+75: 	BlockTagSignals.Licking{B}=CD2(AfterLickStarts);
+76: end
+77: BALickStarts=[vertcat(BlockTagSignals.BeforeLickStarts{:}),vertcat(BlockTagSignals.AfterLickStarts{:})];
+78: BALickStarts(:,1,:)=BALickStarts(:,1,:)-BALickStarts(:,1,end);
+79: BALickStarts(:,2,:)=BALickStarts(:,2,:)-BALickStarts(:,2,1);
+80: [StdMean,StdSem]=MATLAB.DataFun.MeanSem(permute(BALickStarts,[3,2,1]),3);
+81: [BehaviorMean,BehaviorSem]=MATLAB.DataFun.MeanSem(vertcat(BlockTagSignals.Licking{:}).',2);
+82: Fig=figure;
+83: Layout=tiledlayout('flow',TileSpacing='tight');
+84: MATLAB.Graphics.FigureAspectRatio(8,5,MATLAB.Flags.Narrow);
+85: title(Layout,'Convergence is inheritable and drives licking');
+86: Ax=nexttile;
+87: [Circles,Texts]=MATLAB.Graphics.Venn(LearnedMatrix,MATLAB.SignificantFixedpoint(LearnedMatrix./height(LearnedTransferOverlap)*100,2)+"%");
+88: legend(Circles,["Convergent","Brightened"],Location=MATLAB.Graphics.OptimizedLegendLocation(Texts(2:end)));
+89: Ax.XAxis.Visible=false;
+90: yticks([]);
+91: ylabel('Converge-active cells');
+92: title('Learned ');
+93: nexttile;
+94: MATLAB.Graphics.Venn(TransferMatrix,MATLAB.SignificantFixedpoint(TransferMatrix./height(LearnedTransferOverlap)*100,2)+"%");
+95: axis off;
+96: title('Transfer ');
+97: Ax=nexttile;
+98: [Circles,Texts]=MATLAB.Graphics.Venn(LTMatrix,LTTags);
+99: legend(Circles,["Learned ","Transfer "],Location=MATLAB.Graphics.OptimizedLegendLocation(Texts(2:end)));
+100: title('Overlap of highly convergent cells');
+101: Ax.YAxis.Visible=false;
+102: xticks([]);
+103: xlabel("(Chance overlap "+MATLAB.SignificantFixedpoint(prod(mean(ConvergentOverlap,1),2)*100,2)+"%)");
+104: nexttile;
+105: colororder([0.5,0,0.5;0,0.6809,0]);
+106: yyaxis left;
+107: Lines=MATLAB.Graphics.MultiShadowedLines(StdMean,StdSem,1/4,X=TransferLearning.Xs(24:end),EdgeColors=[1,0,0;0,0,1]);
+108: ylabel('Inter-trial SD');
+109: yyaxis right;
+110: MATLAB.Graphics.MultiShadowedLines(BehaviorMean,BehaviorSem,1/4,X=TransferLearning.Xs(24:end),EdgeColors=[0,0.6809,0]);
+111: ylabel('Lick probability');
+112: legend(Lines,["Before ","After "],Location='northeast');
+113: title('Inter-trial SD B/A spontaneous lick');
+114: print(Fig,'\\Data-Server-2\个人数据\张天夫\202512\收敛继承驱动舔水.svg','-dsvg');
+115: 
+116: %[appendix]{"version":"1.0"}
+117: %---
+118: %[metadata:view]
+119: %   data: {"layout":"inline"}
+120: %---
+121: %[output:9750670a]
+122: %   data: {"dataType":"warning","outputData":{"text":"警告: UniExp:Exception:Block_must_warn：\n    BlockUID           MustWarn        \n    ________    _______________________\n\n      117       \"2次中断拍摄，无法对齐回合\"\n"}}
+123: %---
+124: %[output:034a0a3e]
+125: %   data: {"dataType":"error","outputData":{"errorType":"runtime","text":"错误使用 <a href=\"matlab:matlab.lang.internal.introspective.errorDocCallback('tabular\/dotParenReference', 'C:\\Program Files\\MATLAB\\R2025b\\toolbox\\matlab\\datatypes\\tabular\\@tabular\\dotParenReference.m', 76)\" style=\"font-weight:bold\">tabular\/dotParenReference<\/a> (<a href=\"matlab: opentoline('C:\\Program Files\\MATLAB\\R2025b\\toolbox\\matlab\\datatypes\\tabular\\@tabular\\dotParenReference.m',76,0)\">第 76 行<\/a>)\n无法识别表变量名称 'std_TrialSignal'。"}}
+126: %---
+127: 

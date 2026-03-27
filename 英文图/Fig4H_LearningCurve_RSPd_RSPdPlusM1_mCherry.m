@@ -34,16 +34,28 @@ f.Position(3:4) = [9, 8];
 ax = axes(f);
 hold(ax,'on');
 ax.FontSize = 12;
-ax.Toolbar.Visible = 'off';
+ax.LineWidth = 2;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 2;
+	ax.YAxis.LineWidth = 2;
+end
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
+end
 
 meanCells = cellfun(@(C) C(1:min(10, numel(C))), Summary.MeanCurve, UniformOutput=false);
 semCells  = cellfun(@(C) C(1:min(10, numel(C))), Summary.SemCurve,  UniformOutput=false);
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(height(Summary)+1), EdgeColors=Colors);
+for iPatch = 1:numel(Patches)
+	if isprop(Patches(iPatch), 'LineWidth')
+		Patches(iPatch).LineWidth = 2;
+	end
+end
 
 nEach = cellfun(@height, Summary.LearnedSessions);
-labels = Summary.Properties.RowNames + " n=" + string(nEach);
+labels = Summary.Properties.RowNames;
 
-lg = legend(Patches, labels,Location='northeastoutside');
+lg = legend(Patches, labels,Location='southeast');
 lg.FontSize = 12;
 lg.Box = 'off';
 lg.Title.String = '💡💧';
@@ -53,6 +65,9 @@ box(ax,'off');
 grid(ax,'off');
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
+for ln = findobj(ax, 'Type', 'Line')'
+	ln.LineWidth = 2;
+end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
@@ -90,9 +105,13 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 ax2 = gca;
 ax2.FontSize = 12;
-	ax2.LineWidth = 2;
+ax2.LineWidth = 2;
 ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 2;
+	ax2.YAxis.LineWidth = 2;
+end
 ax2.XTick = [];
 legend(ax2, 'off');
 
@@ -130,7 +149,12 @@ ax2.XLim = [0.5, 2.5];
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
-ax2.Toolbar.Visible = 'off';
+for ln = findobj(ax2, 'Type', 'Line')'
+	ln.LineWidth = 2;
+end
+if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
+	ax2.Toolbar.Visible = 'off';
+end
 
 svgPath2 = fullfile(outDirUNC, 'English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg');
 MATLAB.Graphics.PLineRetune(Optional2.MultiCompare.PLine,Optional2.MultiCompare.PText);
