@@ -73,11 +73,22 @@ ax = axes(f);
 hold(ax, 'on');
 edgeColors = TransferLearning.FigurePalette(2);
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
+for p = Patches(:)'
+	if isprop(p, 'LineWidth')
+		p.LineWidth = 2;
+	end
+end
 
 title(ax, 'Non-specific inhibition', 'FontSize', 12, 'FontWeight', 'normal');
 
-legend(ax, Patches(1:2), cellstr(grpLabels), 'Location', 'best');
+lg = legend(ax, Patches(1:2), cellstr(grpLabels), 'Location', 'best');
+lg.Box = 'off';
 ax.FontSize = 12;
+ax.LineWidth = 2;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 2;
+	ax.YAxis.LineWidth = 2;
+end
 xlabel(ax, 'Session', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);

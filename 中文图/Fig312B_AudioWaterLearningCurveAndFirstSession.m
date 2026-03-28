@@ -53,11 +53,21 @@ f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
 ax.FontSize = 12;
+ax.LineWidth = 2;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 2;
+	ax.YAxis.LineWidth = 2;
+end
 hold(ax,'on');
 
 edgeColors = TransferLearning.FigurePalette(2);
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
+for p = patches(:)'
+	if isprop(p, 'LineWidth')
+		p.LineWidth = 2;
+	end
+end
 
 curveP = iLearningCurvePValue(allSessions, PValueLS);
 if isfinite(curveP) && numel(x) >= 2
@@ -131,8 +141,13 @@ tiledlayout(1,1,'TileSpacing','normal','Padding','normal');
 nexttile;
 [~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
+delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
 ax2.LineWidth = 2;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 2;
+	ax2.YAxis.LineWidth = 2;
+end
 ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
 ax2.XTick = [];
@@ -147,9 +162,11 @@ if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompar
 		pl.LineWidth = 2;
 	end
 end
+for eb = errorBars2.Object(:)'
+	eb.LineWidth = 2;
+end
 
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
-iKeepUpperErrorBarOnly(errorBars2, bars2, edgeColors(1,:), edgeColors(2,:));
 ax2.XLim = [0.5, 2.5];
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
@@ -418,6 +435,7 @@ if numel(barsObj) == 1
 	barsObj.CData = barsObj.CData(1:nBars, :);
 	barsObj.BarWidth = 0.5;
 	barsObj.LineWidth = 2;
+	barsObj.BaseLine.LineWidth = 2;
 	barsObj.EdgeColor = 'none';
 	barsObj.FaceAlpha = 1/3;
 else
@@ -425,66 +443,11 @@ else
 	barsObj(2).FaceColor = colorTrans;
 	barsObj(1).LineWidth = 2;
 	barsObj(2).LineWidth = 2;
+	barsObj(1).BaseLine.LineWidth = 2;
+	barsObj(2).BaseLine.LineWidth = 2;
 	barsObj(1).EdgeColor = 'none';
 	barsObj(2).EdgeColor = 'none';
 	barsObj(1).FaceAlpha = 1/3;
 	barsObj(2).FaceAlpha = 1/3;
 end
-end
-
-function iKeepUpperErrorBarOnly(errorBars, barsObj, colorNaive, colorTrans)
-barSpec = iBarSpecs(barsObj, colorNaive, colorTrans);
-for idx = 1:numel(errorBars.Object)
-	eb = errorBars.Object(idx);
-	if ~isprop(eb, 'XData') || ~isprop(eb, 'YData') || ~isprop(eb, 'YPositiveDelta')
-		continue;
-	end
-	ax = ancestor(eb, 'axes');
-	x = eb.XData(:);
-	y = eb.YData(:);
-	up = eb.YPositiveDelta(:);
-	lineWidth = 2;
-	capWidth = 0.16;
-	delete(eb);
-	valid = isfinite(x) & isfinite(y) & isfinite(up) & up > 0;
-	for i = find(valid)'
-		color = iColorForBarX(x(i), barSpec, colorNaive);
-		line(ax, [x(i), x(i)], [y(i), y(i) + up(i)], 'Color', color, 'LineWidth', lineWidth, 'Clipping', 'on', 'HandleVisibility', 'off');
-		line(ax, [x(i) - capWidth/2, x(i) + capWidth/2], [y(i) + up(i), y(i) + up(i)], 'Color', color, 'LineWidth', lineWidth, 'Clipping', 'on', 'HandleVisibility', 'off');
-	end
-end
-end
-
-function spec = iBarSpecs(barsObj, colorNaive, colorTrans)
-if numel(barsObj) == 1
-	if isprop(barsObj, 'XEndPoints')
-		x = barsObj.XEndPoints(:);
-	else
-		x = (1:numel(barsObj.YData))';
-	end
-	nBars = numel(x);
-	reps = ceil(nBars / 2);
-	colors = repmat([colorNaive; colorTrans], reps, 1);
-	colors = colors(1:nBars, :);
-else
-	x = nan(numel(barsObj), 1);
-	for i = 1:numel(barsObj)
-		if isprop(barsObj(i), 'XEndPoints') && ~isempty(barsObj(i).XEndPoints)
-			x(i) = barsObj(i).XEndPoints(1);
-		else
-			x(i) = i;
-		end
-	end
-	colors = [colorNaive; colorTrans];
-end
-spec = table(x, colors, 'VariableNames', {'X','Color'});
-end
-
-function color = iColorForBarX(x, barSpec, fallbackColor)
-if isempty(barSpec)
-	color = fallbackColor;
-	return;
-end
-[~, idx] = min(abs(barSpec.X - x));
-color = barSpec.Color(idx, :);
 end

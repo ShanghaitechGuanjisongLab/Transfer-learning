@@ -16,7 +16,7 @@ end
 xsSec = seconds(xs);
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('中文图332C:No1s', 'Cannot find sample close to 1s.');
+	error('%s', 'Cannot find sample close to 1s.');
 end
 baseMask = (xsSec >= -3) & (xsSec < 0);
 kSigma = 3;
@@ -53,6 +53,7 @@ f.PaperSize = [3, 4];
 TL = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 axTop = nexttile(TL, 1);
 [~, ~, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}));
+delete(findobj(axTop, 'Type', 'Scatter'));
 ax = axTop;
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
@@ -93,11 +94,14 @@ else
 end
 
 for eb = EB.Object(:)'
-	delete(eb);
+	eb.LineWidth = 1;
+	if isprop(eb, 'Color')
+		eb.Color = [0 0 0];
+	end
+	if isprop(eb, 'LineStyle')
+		eb.LineStyle = 'none';
+	end
 end
-
-[means, sems, xPos, yPos] = iBarStats(Bars, vInitial, vTransfer);
-iDrawOneSidedErrorbars(ax, xPos, means, sems, yPos);
 
 for ln = findobj(ax, 'Type', 'Line')'
 	ln.LineWidth = 1;
@@ -145,7 +149,10 @@ ylabel(axBottom, 'active fraction');
 box(axBottom, 'off');
 grid(axBottom, 'off');
 
-iDrawOneSidedErrorbars(axBottom, [1 2], [pNaive pTransfer], [seNaive seTransfer], [pNaive pTransfer]);
+bars2.LineWidth = 1;
+bars2.BaseLine.LineWidth = 1;
+bars2.EdgeColor = 'none';
+errorbar(axBottom, [1 2], [pNaive pTransfer], [], [seNaive seTransfer], 'k', 'LineStyle', 'none', 'LineWidth', 1, 'CapSize', 5.28);
 
 yTop = max([pNaive + seNaive, pTransfer + seTransfer]);
 if ~isfinite(yTop)
@@ -246,7 +253,7 @@ if isnumeric(nt) && ismatrix(nt)
 	X = double(nt);
 	return;
 end
-	error('中文图332C:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+	error('Unsupported NTATS container type: %s', class(nt));
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
@@ -259,42 +266,6 @@ baseMu = mean(X(:, baseMask), 2, 'omitnan');
 baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
 v1 = X(:, idx1s);
 mask = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
-end
-
-function [means, sems, xPos, yPos] = iBarStats(Bars, vInitial, vTransfer)
-means = [mean(vInitial, 'omitnan'), mean(vTransfer, 'omitnan')];
-sems = [std(vInitial, 0, 'omitnan') / sqrt(max(sum(isfinite(vInitial)), 1)), std(vTransfer, 0, 'omitnan') / sqrt(max(sum(isfinite(vTransfer)), 1))];
-if isscalar(Bars)
-	xPos = Bars.XEndPoints;
-	yPos = Bars.YEndPoints;
-else
-	xPos = arrayfun(@(b) b.XEndPoints, Bars);
-	yPos = arrayfun(@(b) b.YEndPoints, Bars);
-end
-end
-
-function iDrawOneSidedErrorbars(ax, xPos, means, sems, yPos)
-capHalfWidth = 0.10;
-for i = 1:numel(xPos)
-	mu = means(i);
-	se = sems(i);
-	if ~isfinite(mu) || ~isfinite(se)
-		continue;
-	end
-	x = xPos(i);
-	yBar = yPos(i);
-	if yBar >= 0
-		y1 = mu;
-		y2 = mu + se;
-		line(ax, [x x], [y1 y2], 'Color', 'k', 'LineWidth', 1);
-		line(ax, [x-capHalfWidth, x+capHalfWidth], [y2 y2], 'Color', 'k', 'LineWidth', 1);
-	else
-		y1 = mu - se;
-		y2 = mu;
-		line(ax, [x x], [y1 y2], 'Color', 'k', 'LineWidth', 1);
-		line(ax, [x-capHalfWidth, x+capHalfWidth], [y1 y1], 'Color', 'k', 'LineWidth', 1);
-	end
-	end
 end
 
 function out = iPTextToStars(in)

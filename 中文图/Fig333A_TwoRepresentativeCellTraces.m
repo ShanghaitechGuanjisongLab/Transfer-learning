@@ -71,6 +71,8 @@ for ax = allAxes
 	box(ax, 'off');
 	grid(ax, 'off');
 	xlim(ax, [xsPlot(1), xsPlot(end)]);
+	xline(ax, 0, ':k', 'LineWidth', 1, 'HandleVisibility', 'off');
+	xline(ax, 1, '-k', 'LineWidth', 1, 'HandleVisibility', 'off');
 	ax.XTick = [0 1];
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';

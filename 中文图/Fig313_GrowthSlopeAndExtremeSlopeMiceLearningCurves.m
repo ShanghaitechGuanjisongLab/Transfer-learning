@@ -144,6 +144,7 @@ set(f1, 'Units', 'centimeters', 'Position', [5 5 4 4]);
 set(f1, 'PaperUnits', 'centimeters', 'PaperSize', [4 4], 'PaperPositionMode', 'auto');
 [~, ~, Bars, ErrorBars] = UniExp.BarScatterCompare(Groups, false);
 ax=gca;
+delete(findobj(ax, 'Type', 'Scatter'));
 
 ax.FontSize = 12;
 ax.LineWidth = 2;
@@ -166,7 +167,15 @@ if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorNaive; colorTrans];
 	Bars.BarWidth = 0.5;
+	Bars.BaseLine.LineWidth = 2;
 	Bars.FaceAlpha = 1/3;
+elseif numel(Bars) >= 2
+	Bars(1).FaceColor = colorNaive;
+	Bars(2).FaceColor = colorTrans;
+	Bars(1).FaceAlpha = 1/3;
+	Bars(2).FaceAlpha = 1/3;
+	Bars(1).BaseLine.LineWidth = 2;
+	Bars(2).BaseLine.LineWidth = 2;
 end
 ax.XLim = [0.5, 2.5];
 title('Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
@@ -181,7 +190,6 @@ if isfinite(pAnnot) && pAnnot < 0.05 && height(ErrorBars) >= 1
 		pl.LineWidth = 2;
 	end
 end
-iKeepUpperErrorBarOnly(ErrorBars, Bars, colorNaive, colorTrans);
 box off
 
 % Export SVG
@@ -691,58 +699,3 @@ T = vertcat(out{:});
 T = sortrows(T, {'Group','Mouse','DateTime'});
 end
 
-function iKeepUpperErrorBarOnly(errorBars, barsObj, colorNaive, colorTrans)
-barSpec = iBarSpecs(barsObj, colorNaive, colorTrans);
-for eb = errorBars.Object(:)'
-	if ~isprop(eb, 'XData') || ~isprop(eb, 'YData') || ~isprop(eb, 'YPositiveDelta')
-		continue;
-	end
-	ax = ancestor(eb, 'axes');
-	x = eb.XData(:);
-	y = eb.YData(:);
-	up = eb.YPositiveDelta(:);
-	lineWidth = eb.LineWidth;
-	capWidth = 0.16;
-	delete(eb);
-	valid = isfinite(x) & isfinite(y) & isfinite(up) & up > 0;
-	for i = find(valid)'
-		color = iColorForBarX(x(i), barSpec, colorNaive);
-		line(ax, [x(i), x(i)], [y(i), y(i) + up(i)], 'Color', color, 'LineWidth', lineWidth, 'Clipping', 'on', 'HandleVisibility', 'off');
-		line(ax, [x(i) - capWidth/2, x(i) + capWidth/2], [y(i) + up(i), y(i) + up(i)], 'Color', color, 'LineWidth', lineWidth, 'Clipping', 'on', 'HandleVisibility', 'off');
-	end
-end
-end
-
-function spec = iBarSpecs(barsObj, colorNaive, colorTrans)
-if numel(barsObj) == 1
-	if isprop(barsObj, 'XEndPoints')
-		x = barsObj.XEndPoints(:);
-	else
-		x = (1:numel(barsObj.YData))';
-	end
-	nBars = numel(x);
-	reps = ceil(nBars / 2);
-	colors = repmat([colorNaive; colorTrans], reps, 1);
-	colors = colors(1:nBars, :);
-else
-	x = nan(numel(barsObj), 1);
-	for i = 1:numel(barsObj)
-		if isprop(barsObj(i), 'XEndPoints') && ~isempty(barsObj(i).XEndPoints)
-			x(i) = barsObj(i).XEndPoints(1);
-		else
-			x(i) = i;
-		end
-	end
-	colors = [colorNaive; colorTrans];
-end
-spec = table(x, colors, 'VariableNames', {'X','Color'});
-end
-
-function color = iColorForBarX(x, barSpec, fallbackColor)
-if isempty(barSpec)
-	color = fallbackColor;
-	return;
-end
-[~, idx] = min(abs(barSpec.X - x));
-color = barSpec.Color(idx, :);
-end
