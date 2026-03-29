@@ -83,9 +83,11 @@ title(ax, '💡💧', 'FontSize', 6, 'FontWeight', 'normal');
 
 if isfinite(p)
 	if p < 0.001
-		pLabel = 'p<0.001';
+		pLabel = 'p < 0.001';
+	elseif p < 0.01
+		pLabel = sprintf('p = %.3f', p);
 	else
-		pLabel = sprintf('p=%.3f', p);
+		pLabel = sprintf('p = %.2f', p);
 	end
 	text(ax, 0.95, 0.95, pLabel, 'Units','normalized', ...
 		'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6, 'FontWeight', 'bold');

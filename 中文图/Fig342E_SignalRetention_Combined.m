@@ -165,12 +165,14 @@ xlh.Units = 'normalized';
 xlh.Position(1) = (sW/2 + G/2 + bwR/2) / sW;
 ylh.Units = 'normalized';
 ylh.Position(2) = (sH/2 + G/2 + bhT/2) / sH;
-if pCorr == 0 || pCorr < 1e-10
-	pStr = 'p<10^{-10}';
+if ~isfinite(pCorr)
+	pStr = 'p = NaN';
 elseif pCorr < 0.001
-	pStr = sprintf('p=%.1e', pCorr);
+	pStr = 'p < 0.001';
+elseif pCorr < 0.01
+	pStr = sprintf('p = %.3f', pCorr);
 else
-	pStr = sprintf('p=%.2g', pCorr);
+	pStr = sprintf('p = %.2f', pCorr);
 end
 text(axE, 0.03, 0.97, pStr, 'Units', 'normalized', 'FontSize', fs, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 

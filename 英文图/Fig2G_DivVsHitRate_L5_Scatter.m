@@ -246,7 +246,7 @@ for iR = 1:2
 		end
 
 		% p-value annotation (top-right corner)
-		text(ax, 0.95, 0.95, sprintf('p=%.2g', pVals(iR, iC)), ...
+		text(ax, 0.95, 0.95, iFormatPValue(pVals(iR, iC)), ...
 			'Units', 'normalized', 'FontSize', 6, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right');
 	end
 end
@@ -323,4 +323,16 @@ end
 idx0 = 3 * sampleRate;
 CTT = CTT - CTT(:, :, idx0);
 cellUIDs = keepU;
+end
+
+function txt = iFormatPValue(p)
+if ~isfinite(p)
+	txt = 'p = NaN';
+elseif p < 0.001
+	txt = 'p < 0.001';
+elseif p < 0.01
+	txt = sprintf('p = %.3f', p);
+else
+	txt = sprintf('p = %.2f', p);
+end
 end

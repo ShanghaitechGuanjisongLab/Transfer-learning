@@ -315,7 +315,7 @@ end
 
 function txt = iFormatPValue(p)
 if ~isfinite(p)
-	txt = 'p=NaN';
+	txt = 'p = NaN';
 elseif p < 0.001
 	txt = '***';
 elseif p < 0.01
@@ -323,6 +323,6 @@ elseif p < 0.01
 elseif p < 0.05
 	txt = '*';
 else
-	txt = sprintf('p=%.3f', p);
+	txt = sprintf('p = %.2f', p);
 end
 end

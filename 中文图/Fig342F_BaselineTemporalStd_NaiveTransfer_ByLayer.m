@@ -299,12 +299,12 @@ end
 
 function s = iFormatPValue(p)
 	if ~isfinite(p)
-		s = 'p=nan';
-	elseif p == 0 || p < 1e-10
-		s = 'p<10^{-10}';
+		s = 'p = NaN';
 	elseif p < 0.001
-		s = sprintf('p=%.1e', p);
+		s = 'p < 0.001';
+	elseif p < 0.01
+		s = sprintf('p = %.3f', p);
 	else
-		s = sprintf('p=%.2g', p);
+		s = sprintf('p = %.2f', p);
 	end
 end

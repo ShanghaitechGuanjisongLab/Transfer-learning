@@ -209,12 +209,12 @@ end
 
 function txt = iPLabel(p)
 if ~isfinite(p)
-	txt = 'p=NaN';
+	txt = 'p = NaN';
 elseif p < 0.001
-	txt = sprintf('p=%.1e', p);
+	txt = 'p < 0.001';
 elseif p < 0.01
-	txt = sprintf('p=%.4f', p);
+	txt = sprintf('p = %.3f', p);
 else
-	txt = sprintf('p=%.2f', p);
+	txt = sprintf('p = %.2f', p);
 end
 end

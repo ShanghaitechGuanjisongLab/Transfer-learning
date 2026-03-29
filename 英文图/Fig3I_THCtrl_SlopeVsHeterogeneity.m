@@ -48,12 +48,14 @@ for iL = 1:numel(layers)
         p = NaN;
     end
 
-    if p < 0.001
-        pLabel = sprintf('p=%.1e', p);
+    if ~isfinite(p)
+        pLabel = 'p = NaN';
+    elseif p < 0.001
+        pLabel = 'p < 0.001';
     elseif p < 0.01
-        pLabel = sprintf('p=%.4f', p);
+        pLabel = sprintf('p = %.3f', p);
     else
-        pLabel = sprintf('p=%.2f', p);
+        pLabel = sprintf('p = %.2f', p);
     end
 
     ax = nexttile(tl, iL);
