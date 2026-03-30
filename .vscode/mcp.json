@@ -5,7 +5,7 @@
 			"args": ["--from", "git+https://github.com/Ebola-Chan-bot/mcp-images", "mcp-image-server"]
 		},
 		"MATLAB": {
-			"command": "D:\\Users\\张天夫\\AppData\\Roaming\\MathWorks\\MATLAB Add-Ons\\Toolboxes\\MATLAB MCP Core Server\\.bin\\win64\\matlab-mcp-core-server.exe",
+			"command": "C:\\Users\\77590\\AppData\\Roaming\\MathWorks\\MATLAB Add-Ons\\Toolboxes\\MATLAB MCP Core Server\\.bin\\win64\\matlab-mcp-core-server.exe",
 			"args": [
 				"--existing-session-only"
 			]

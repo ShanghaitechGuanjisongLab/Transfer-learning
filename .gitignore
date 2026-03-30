@@ -38,3 +38,4 @@ codegen/
 data
 Temp
 *.tmp
+.vscode/mcp.json
