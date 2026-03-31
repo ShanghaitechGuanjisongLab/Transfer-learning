@@ -3,7 +3,7 @@
 % Minimal rate-model simulation for three qualitative findings:
 % 1) transfer starts from a higher first-session performance than naive,
 % 2) TH-dependent inhibitory competition increases process-averaged response heterogeneity,
-% 3) larger learning-process L2/3 heterogeneity accelerates subsequent learning.
+% 3) larger learning-process L2/3 heterogeneity correlates with faster subsequent learning.
 %
 % The model contains:
 % - excitatory populations in L2/3 and L5,
@@ -181,9 +181,9 @@ Params.LearnTo5 = 0.54;
 Params.PriorTo5 = 0.18;
 Params.THPatternTo5 = 0.46;
 Params.BaselinePenalty = 1.00;
-Params.LearnFromH23 = 1.55;
-Params.H23Threshold = 0.29;
-Params.PriorThresholdShift = 0.14;
+Params.LearnFromCoactivity23 = 2.20;
+Params.CoactivityThreshold23 = 0.18;
+Params.PriorThresholdShift = 0.22;
 Params.EligibilityDecay = 0.58;
 Params.MaxEligibilityTrace = 1.15;
 Params.BaselineTHFraction = 0.55;
@@ -250,10 +250,10 @@ Summary.CorrMouse = Summary.AllMouse(Summary.AllMouse.Condition ~= "THOff", :);
 end
 
 function Mouse = iDrawMouse(Params)
-Mouse.HeteroGain = max(0.35, 1 + 0.52 * randn());
+Mouse.HeteroGain = max(0.30, 1 + 0.72 * randn());
 Mouse.Cue23 = iStandardize(randn(Params.NE23, 1) + 0.55 * sign(randn(Params.NE23, 1)));
 Mouse.Learn23 = Mouse.HeteroGain * iStandardize(0.80 * Mouse.Cue23 + 0.30 * randn(Params.NE23, 1));
-Mouse.Prior23 = iStandardize(0.55 * Mouse.Cue23 + 0.18 * Mouse.Learn23 + 0.40 * randn(Params.NE23, 1));
+Mouse.Prior23 = iStandardize(0.55 * Mouse.Cue23 + 0.32 * Mouse.Learn23 + 0.34 * randn(Params.NE23, 1));
 Mouse.Base23 = iStandardize(0.35 * randn(Params.NE23, 1));
 Mouse.WIE = abs(0.72 + 0.20 * randn(Params.NI, Params.NE23));
 Mouse.WEI23 = abs(0.88 + 0.26 * randn(Params.NE23, Params.NI));
@@ -261,11 +261,11 @@ Mouse.WEI5 = abs(0.95 + 0.24 * randn(Params.NE5, Params.NI));
 Mouse.W523 = 0.28 * randn(Params.NE5, Params.NE23);
 Mouse.Cue5 = iStandardize(0.35 * (Mouse.W523 * Mouse.Cue23) + 0.80 * randn(Params.NE5, 1));
 Mouse.Learn5 = Mouse.HeteroGain * iStandardize(0.25 * Mouse.Cue5 + 0.30 * (Mouse.W523 * Mouse.Learn23) + 0.75 * randn(Params.NE5, 1));
-Mouse.Prior5 = iStandardize(0.55 * Mouse.Cue5 + 0.18 * Mouse.Learn5 + 0.55 * randn(Params.NE5, 1));
+Mouse.Prior5 = iStandardize(0.55 * Mouse.Cue5 + 0.30 * Mouse.Learn5 + 0.45 * randn(Params.NE5, 1));
 Mouse.Base5 = iStandardize(0.30 * randn(Params.NE5, 1));
 Mouse.THToI = abs(0.72 + 0.18 * randn(Params.NI, 1));
 Mouse.THL5Pattern = iStandardize(0.55 * (Mouse.WEI5 * iStandardize(Mouse.THToI)) + 0.45 * Mouse.Cue5);
-Mouse.Readout = iStandardize(0.95 * Mouse.Cue5 + 0.30 * Mouse.Learn5 + 0.20 * randn(Params.NE5, 1));
+Mouse.Readout = iStandardize(0.92 * Mouse.Cue5 + 0.40 * Mouse.Learn5 + 0.18 * randn(Params.NE5, 1));
 end
 
 function Result = iSimulateMouse(Mouse, Params, Cond)
@@ -281,11 +281,11 @@ for iSess = 1:Params.NumSessions
 	[perf(iSess), cellMean23, cellMean5] = iSimulateSession(Mouse, learnState, Params, Cond);
 	sessionMean23(:, iSess) = cellMean23;
 	sessionMean5(:, iSess) = cellMean5;
-	sessionH23 = iRestrictedStd(cellMean23);
+	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
 	h23(iSess) = iRestrictedStd(mean(sessionMean23(:, 1:iSess), 2, 'omitnan'));
 	h5(iSess) = iRestrictedStd(mean(sessionMean5(:, 1:iSess), 2, 'omitnan'));
-	eligibilityThreshold = max(0.05, Params.H23Threshold - Params.PriorThresholdShift * Cond.PriorGain);
-	learnEligibility = Params.LearnFromH23 * max(sessionH23 - eligibilityThreshold, 0);
+	eligibilityThreshold = max(0.05, Params.CoactivityThreshold23 - Params.PriorThresholdShift * Cond.PriorGain);
+	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - eligibilityThreshold, 0);
 	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
 	learnGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
 	rewardSignal = max(perf(iSess), 0);
@@ -380,6 +380,13 @@ if numel(x) < 3
 else
 	s = std(x, 0, 'omitnan');
 end
+end
+
+function c = iPositiveCoactivity(x, axisVector)
+x = x(:);
+axisVector = axisVector(:);
+coactivity = x .* axisVector;
+c = mean(max(coactivity, 0), 'omitnan');
 end
 
 function idx = iRepresentativeIndex(x)
