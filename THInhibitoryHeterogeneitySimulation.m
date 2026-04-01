@@ -185,8 +185,14 @@ Params.THPatternTo5 = 0.60;
 Params.BaselinePenalty = 1.00;
 Params.LearnFromCoactivity23 = 2.80;
 Params.CoactivityThreshold23 = 0.14;
-Params.SchemaThresholdShift = 0.60;
 Params.SchemaReuseFraction = 0.15;
+Params.OvernightRetention = 0.85;
+Params.OvernightNoise = 0.03;
+Params.OvernightPatternDrift = 0.20;
+Params.SchemaDriftDamping = 1.50;
+Params.SchemaRetentionBoost = 0.10;
+Params.DriftAttenuationRate = 0.30;
+Params.DriftLearnDecay = 0.50;
 Params.EligibilityDecay = 0.58;
 Params.MaxEligibilityTrace = 1.15;
 Params.BaselineTHFraction = 0.55;
@@ -274,6 +280,9 @@ Mouse.THToI = abs(0.72 + 0.18 * randn(Params.NI, 1));
 Mouse.THL5Pattern = iStandardize(0.55 * (Mouse.WEI5 * iStandardize(Mouse.THToI)) + 0.45 * Mouse.Cue5);
 Mouse.PreReadout = iStandardize(1.00 * Mouse.Learn5 + 0.04 * randn(Params.NE5, 1));
 Mouse.Readout = iStandardize(0.60 * Mouse.Cue5 + 0.80 * Mouse.Learn5 + 0.18 * randn(Params.NE5, 1));
+% Cell-specific drift vulnerability (Hainmueller & Bartos 2018; Grosmark & Buzsaki 2016)
+Mouse.DriftVulnerability23 = exp(0.60 * randn(Params.NE23, 1));
+Mouse.DriftVulnerability5 = exp(0.60 * randn(Params.NE5, 1));
 end
 
 function schemaState0 = iPretrainMouse(Mouse, Params)
@@ -295,6 +304,9 @@ for iSess = 1:Params.MaxPretrainSessions
 	if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
 		return;
 	end
+	% Overnight consolidation: synaptic homeostasis + representational drift
+	schemaState0 = Params.OvernightRetention * schemaState0 + Params.OvernightNoise * randn();
+	schemaState0 = max(0, schemaState0);
 end
 
 error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final expected hit = %.3f, final schema state = %.3f.', Params.MaxPretrainSessions, lastPerfExpected, schemaState0);
@@ -310,20 +322,54 @@ h5 = nan(1, Params.NumSessions);
 sessionMean23 = nan(Params.NE23, Params.NumSessions);
 sessionMean5 = nan(Params.NE5, Params.NumSessions);
 
+% Cell-level representational drift accumulators (Driscoll et al. 2017)
+% Schema provides attractor-based damping (Tse et al. 2007)
+driftAccum23 = zeros(Params.NE23, 1);
+driftAccum5 = zeros(Params.NE5, 1);
+schemaDamping = min(1, Params.SchemaDriftDamping * schemaCarry);
+
 for iSess = 1:Params.NumSessions
-	[perf(iSess), cellMean23, cellMean5] = iSimulateSession(Mouse, learnState, schemaCarry, Params, Cond, false);
+	% Apply accumulated drift to learned patterns for this session
+	if Params.OvernightPatternDrift > 0
+		SessionMouse = Mouse;
+		SessionMouse.Learn23 = Mouse.Learn23 + driftAccum23;
+		SessionMouse.Learn5 = Mouse.Learn5 + driftAccum5;
+	else
+		SessionMouse = Mouse;
+	end
+	[perf(iSess), cellMean23, cellMean5] = iSimulateSession(SessionMouse, learnState, schemaCarry, Params, Cond, false);
 	sessionMean23(:, iSess) = cellMean23;
 	sessionMean5(:, iSess) = cellMean5;
 	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
 	h23(iSess) = iRestrictedStd(mean(sessionMean23(:, 1:iSess), 2, 'omitnan'));
 	h5(iSess) = iRestrictedStd(mean(sessionMean5(:, 1:iSess), 2, 'omitnan'));
-	eligibilityThreshold = max(0.05, Params.CoactivityThreshold23 - Params.SchemaThresholdShift * min(schemaCarry, 1));
-	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - eligibilityThreshold, 0);
+	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
 	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
 	learnGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
 	rewardSignal = max(perf(iSess), 0);
 	learnState = min(Params.MaxLearnState, learnState + Params.BaseLearnRate * learnGate * eligibilityTrace * rewardSignal + Params.LearnNoise * randn());
 	learnState = max(0, learnState);
+	% Overnight consolidation: schema-congruent retention + synaptic homeostasis (Tse et al. 2007)
+	if iSess < Params.NumSessions
+		schemaRetBonus = Params.SchemaRetentionBoost * min(1, schemaCarry);
+		effectiveRetention = min(0.98, Params.OvernightRetention + schemaRetBonus);
+		learnState = effectiveRetention * learnState + Params.OvernightNoise * randn();
+		learnState = max(0, learnState);
+		% Cell-level representational drift (random walk with schema-dependent damping)
+		% Experience-dependent attenuation: drift decreases with training (Deitch et al. 2021; Kentros et al. 2004)
+		% Cell-specific vulnerability: stable vs drifting neurons (Hainmueller & Bartos 2018)
+		if Params.OvernightPatternDrift > 0
+			driftGain = 1 / (1 + Params.DriftAttenuationRate * iSess);
+			driftStep23 = Params.OvernightPatternDrift * driftGain * Mouse.DriftVulnerability23 .* randn(Params.NE23, 1);
+			driftStep5 = Params.OvernightPatternDrift * driftGain * Mouse.DriftVulnerability5 .* randn(Params.NE5, 1);
+			driftAccum23 = (1 - schemaDamping) * (driftAccum23 + driftStep23);
+			driftAccum5 = (1 - schemaDamping) * (driftAccum5 + driftStep5);
+			% Drift-induced association decay: pattern misalignment degrades
+			% stimulus-response mapping fidelity (RMS drift as proxy)
+			driftRMS = sqrt(mean(driftAccum23.^2)) + sqrt(mean(driftAccum5.^2));
+			learnState = learnState * exp(-Params.DriftLearnDecay * driftRMS);
+		end
+	end
 end
 
 first100 = find(perf >= Params.Ceiling, 1, 'first');

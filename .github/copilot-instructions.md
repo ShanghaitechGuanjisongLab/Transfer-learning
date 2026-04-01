@@ -1,4 +1,4 @@
-始终用MCP工具执行MATLAB代码，不得用 matlab batch。修改代码后，自动运行输出图到`\\Data-Server-2\个人数据\张天夫\yyyyMM`，其中yyyyMM为当前年月。运行结束返回后，再用fetch_images进行视觉验证（MATLAB运行和fetch_images不能同时运行）。脚本撰写中尽量用向量化算法，避免循环。禁止使用 clear all 等非针对性的全局清理命令。，
+始终用MCP工具执行MATLAB代码，不得用 matlab batch。修改代码后，自动运行输出图到`\\Data-Server-2\个人数据\张天夫\yyyyMM`，其中yyyyMM为当前年月。脚本撰写中尽量用向量化算法，避免循环。禁止使用 clear all 等非针对性的全局清理命令。，
 
 取单回合数据用UniExp.DataSet.QueryNTS，取会话整体数据用UniExp.DataSet.QueryNTATS。两种方法都要使用ZScore归一化。两种方法都支持表格化批量查询，以及多条件查询，应尽量避免循环调用，而是将所有查询条件一次性输入。
 
