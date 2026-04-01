@@ -9,7 +9,7 @@
 % - excitatory populations in L2/3 and L5,
 % - an explicit inhibitory population driven by cortical excitation and TH,
 % - an explicit cue-input pathway,
-% - a reusable transfer prior inherited from pre-training,
+% - a reusable schema state acquired by pre-training on an alternate cue,
 % - separable TH effects on network-state expression versus plasticity gating.
 
 rng(20260330, 'twister');
@@ -76,7 +76,7 @@ title(ax2, 'Running L2/3 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal')
 
 ax3 = nexttile(tl, 3);
 hold(ax3, 'on');
-for iCond = 1:2
+for iCond = 1:height(Cond)
 	mask = Summary.CorrMouse.Condition == Cond.Name(iCond);
 	scatter(ax3, Summary.CorrMouse.MeanH23(mask), Summary.CorrMouse.Slope(mask), 20, colors(iCond, :), 'filled', ...
 		'MarkerFaceAlpha', 0.55, 'MarkerEdgeColor', colors(iCond, :), 'LineWidth', 0.2);
@@ -95,7 +95,7 @@ text(ax3, 0.97, 0.97, iPLabel(pL23, rhoL23), 'Units', 'normalized', 'HorizontalA
 ax4 = nexttile(tl, 4);
 hold(ax4, 'on');
 iStripMeanSem(ax4, Summary.PerMouse, Cond, 'MeanH5');
-iAnnotateH5Stats(ax4, Summary.PerMouse, Cond);
+iAnnotateMetricStats(ax4, Summary.PerMouse, Cond, 'MeanH5');
 iStyleScatterPanel(ax4);
 xlabel(ax4, '', 'FontSize', 12);
 ylabel(ax4, 'Mean L5 heterogeneity', 'FontSize', 12);
@@ -105,11 +105,12 @@ ax4.XTickLabelRotation = 0;
 
 ax5 = nexttile(tl, 5);
 hold(ax5, 'on');
-iStripMeanSem(ax5, Summary.PerMouse, Cond, 'MeanDeltaHit');
+iStripMeanSem(ax5, Summary.PerMouse, Cond, 'Slope');
+iAnnotateMetricStats(ax5, Summary.PerMouse, Cond, 'Slope');
 iStyleScatterPanel(ax5);
 xlabel(ax5, '', 'FontSize', 12);
-ylabel(ax5, 'Mean Delta Hit', 'FontSize', 12);
-title(ax5, 'Mean Delta Hit', 'FontSize', 12, 'FontWeight', 'normal');
+ylabel(ax5, 'Learning slope', 'FontSize', 12);
+title(ax5, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
 ax5.XTickLabel = {};
 ax5.XTickLabelRotation = 0;
 
@@ -165,28 +166,31 @@ Params.Comp23 = 0.95;
 Params.Comp5 = 1.35;
 Params.BaseLearnRate = 0.52;
 Params.LearnNoise = 0.010;
-Params.MaxLearnState = 1.80;
-Params.ReadoutGain = 11.0;
-Params.HitThreshold = 0.40;
+Params.MaxLearnState = 4.00;
+Params.ReadoutGain = 14.0;
+Params.HitThreshold = 0.48;
 Params.InitialLearnState = 0.00;
 Params.Ceiling = 1.00;
+Params.PretrainCueGain = 6.00;
 Params.CueTo23 = 0.22;
 Params.BaseTo23 = 0.08;
 Params.LearnTo23 = 0.88;
-Params.PriorTo23 = 0.30;
+Params.SchemaTo23 = 1.00;
 Params.Coupling23To5 = 0.24;
 Params.CueTo5 = 0.06;
 Params.BaseTo5 = 0.06;
 Params.LearnTo5 = 0.54;
-Params.PriorTo5 = 0.18;
-Params.THPatternTo5 = 0.46;
+Params.SchemaTo5 = 0.85;
+Params.THPatternTo5 = 0.60;
 Params.BaselinePenalty = 1.00;
-Params.LearnFromCoactivity23 = 2.20;
-Params.CoactivityThreshold23 = 0.18;
-Params.PriorThresholdShift = 0.22;
+Params.LearnFromCoactivity23 = 2.80;
+Params.CoactivityThreshold23 = 0.14;
+Params.SchemaThresholdShift = 0.60;
+Params.SchemaReuseFraction = 0.15;
 Params.EligibilityDecay = 0.58;
 Params.MaxEligibilityTrace = 1.15;
 Params.BaselineTHFraction = 0.55;
+Params.MaxPretrainSessions = 150;
 end
 
 function Cond = iConditionTable()
@@ -194,9 +198,7 @@ Cond = table;
 Cond.Name = ["Naive"; "Transfer"; "THOff"];
 Cond.Label = ["Naive"; "Transfer"; "TH inhibited"];
 Cond.Color = [1, 0, 0; 0, 0, 1; 0, 0, 0];
-Cond.PriorGain = [0.00; 0.68; 0.68];
-Cond.PriorBias = [0.00; 0.00; 0.00];
-Cond.THNetworkLevel = [1.00; 1.00; 0.82];
+Cond.THNetworkLevel = [1.00; 1.00; 0.70];
 Cond.THPlasticityLevel = [1.00; 1.00; 0.35];
 end
 
@@ -221,7 +223,12 @@ for iCond = 1:height(Cond)
 	repProcessL5 = cell(Params.NumMice, 1);
 	for iMouse = 1:Params.NumMice
 		Mouse = iDrawMouse(Params);
-		MouseResult = iSimulateMouse(Mouse, Params, Cond(iCond, :));
+		if Cond.Name(iCond) == "Naive"
+			schemaState0 = 0;
+		else
+			schemaState0 = iPretrainMouse(Mouse, Params);
+		end
+		MouseResult = iSimulateMouse(Mouse, Params, Cond(iCond, :), schemaState0);
 		perf(iMouse, :) = MouseResult.Performance;
 		h23(iMouse, :) = MouseResult.H23;
 		h5(iMouse, :) = MouseResult.H5;
@@ -246,14 +253,14 @@ for iCond = 1:height(Cond)
 end
 
 Summary.AllMouse = table(AllCond, AllSlope, AllH23, AllH5, 'VariableNames', {'Condition','Slope','MeanH23','MeanH5'});
-Summary.CorrMouse = Summary.AllMouse(Summary.AllMouse.Condition ~= "THOff", :);
+Summary.CorrMouse = Summary.AllMouse;
 end
 
 function Mouse = iDrawMouse(Params)
 Mouse.HeteroGain = max(0.30, 1 + 0.72 * randn());
 Mouse.Cue23 = iStandardize(randn(Params.NE23, 1) + 0.55 * sign(randn(Params.NE23, 1)));
 Mouse.Learn23 = Mouse.HeteroGain * iStandardize(0.80 * Mouse.Cue23 + 0.30 * randn(Params.NE23, 1));
-Mouse.Prior23 = iStandardize(0.55 * Mouse.Cue23 + 0.32 * Mouse.Learn23 + 0.34 * randn(Params.NE23, 1));
+Mouse.PreCue23 = iStandardize(1.00 * Mouse.Learn23 + 0.08 * randn(Params.NE23, 1));
 Mouse.Base23 = iStandardize(0.35 * randn(Params.NE23, 1));
 Mouse.WIE = abs(0.72 + 0.20 * randn(Params.NI, Params.NE23));
 Mouse.WEI23 = abs(0.88 + 0.26 * randn(Params.NE23, Params.NI));
@@ -261,15 +268,41 @@ Mouse.WEI5 = abs(0.95 + 0.24 * randn(Params.NE5, Params.NI));
 Mouse.W523 = 0.28 * randn(Params.NE5, Params.NE23);
 Mouse.Cue5 = iStandardize(0.35 * (Mouse.W523 * Mouse.Cue23) + 0.80 * randn(Params.NE5, 1));
 Mouse.Learn5 = Mouse.HeteroGain * iStandardize(0.25 * Mouse.Cue5 + 0.30 * (Mouse.W523 * Mouse.Learn23) + 0.75 * randn(Params.NE5, 1));
-Mouse.Prior5 = iStandardize(0.55 * Mouse.Cue5 + 0.30 * Mouse.Learn5 + 0.45 * randn(Params.NE5, 1));
+Mouse.PreCue5 = iStandardize(1.00 * Mouse.Learn5 + 0.08 * randn(Params.NE5, 1));
 Mouse.Base5 = iStandardize(0.30 * randn(Params.NE5, 1));
 Mouse.THToI = abs(0.72 + 0.18 * randn(Params.NI, 1));
 Mouse.THL5Pattern = iStandardize(0.55 * (Mouse.WEI5 * iStandardize(Mouse.THToI)) + 0.45 * Mouse.Cue5);
-Mouse.Readout = iStandardize(0.92 * Mouse.Cue5 + 0.40 * Mouse.Learn5 + 0.18 * randn(Params.NE5, 1));
+Mouse.PreReadout = iStandardize(1.00 * Mouse.Learn5 + 0.04 * randn(Params.NE5, 1));
+Mouse.Readout = iStandardize(0.60 * Mouse.Cue5 + 0.80 * Mouse.Learn5 + 0.18 * randn(Params.NE5, 1));
 end
 
-function Result = iSimulateMouse(Mouse, Params, Cond)
+function schemaState0 = iPretrainMouse(Mouse, Params)
+pretrainTH.THNetworkLevel = 1.00;
+pretrainTH.THPlasticityLevel = 1.00;
+schemaState0 = 0;
+eligibilityTrace = 0;
+lastPerfExpected = NaN;
+
+for iSess = 1:Params.MaxPretrainSessions
+	[perfObserved, cellMean23, ~, perfExpected] = iSimulateSession(Mouse, Params.InitialLearnState, schemaState0, Params, pretrainTH, true);
+	lastPerfExpected = perfExpected;
+	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
+	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
+	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
+	rewardSignal = max(perfExpected, 0);
+	schemaState0 = min(Params.MaxLearnState, schemaState0 + Params.BaseLearnRate * eligibilityTrace * rewardSignal + Params.LearnNoise * randn());
+	schemaState0 = max(0, schemaState0);
+	if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
+		return;
+	end
+end
+
+error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final expected hit = %.3f, final schema state = %.3f.', Params.MaxPretrainSessions, lastPerfExpected, schemaState0);
+end
+
+function Result = iSimulateMouse(Mouse, Params, Cond, schemaState0)
 learnState = Params.InitialLearnState;
+schemaCarry = Params.SchemaReuseFraction * schemaState0;
 eligibilityTrace = 0;
 perf = nan(1, Params.NumSessions);
 h23 = nan(1, Params.NumSessions);
@@ -278,13 +311,13 @@ sessionMean23 = nan(Params.NE23, Params.NumSessions);
 sessionMean5 = nan(Params.NE5, Params.NumSessions);
 
 for iSess = 1:Params.NumSessions
-	[perf(iSess), cellMean23, cellMean5] = iSimulateSession(Mouse, learnState, Params, Cond);
+	[perf(iSess), cellMean23, cellMean5] = iSimulateSession(Mouse, learnState, schemaCarry, Params, Cond, false);
 	sessionMean23(:, iSess) = cellMean23;
 	sessionMean5(:, iSess) = cellMean5;
 	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
 	h23(iSess) = iRestrictedStd(mean(sessionMean23(:, 1:iSess), 2, 'omitnan'));
 	h5(iSess) = iRestrictedStd(mean(sessionMean5(:, 1:iSess), 2, 'omitnan'));
-	eligibilityThreshold = max(0.05, Params.CoactivityThreshold23 - Params.PriorThresholdShift * Cond.PriorGain);
+	eligibilityThreshold = max(0.05, Params.CoactivityThreshold23 - Params.SchemaThresholdShift * min(schemaCarry, 1));
 	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - eligibilityThreshold, 0);
 	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
 	learnGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
@@ -337,8 +370,22 @@ Result.MeanH5 = resultMeanH5;
 Result.ProcessMeanL5 = finalMean5;
 end
 
-function [perf, cueMean23, cueMean5] = iSimulateSession(Mouse, LearnState, Params, Cond)
-cue23Drive = Params.CueTo23 * Mouse.Cue23 + Params.LearnTo23 * LearnState * Mouse.Learn23 + Params.PriorTo23 * Cond.PriorGain * Mouse.Prior23;
+function [perf, cueMean23, cueMean5, perfExpected] = iSimulateSession(Mouse, LearnState, SchemaState, Params, Cond, usePreCue)
+if usePreCue
+	cue23Pattern = Mouse.PreCue23;
+	cue5Pattern = Mouse.PreCue5;
+	readoutVector = Mouse.PreReadout;
+	cue23Gain = Params.PretrainCueGain * Params.CueTo23;
+	cue5Gain = Params.PretrainCueGain * Params.CueTo5;
+else
+	cue23Pattern = Mouse.Cue23;
+	cue5Pattern = Mouse.Cue5;
+	readoutVector = Mouse.Readout;
+	cue23Gain = Params.CueTo23;
+	cue5Gain = Params.CueTo5;
+end
+
+cue23Drive = cue23Gain * cue23Pattern + Params.LearnTo23 * LearnState * Mouse.Learn23 + Params.SchemaTo23 * SchemaState * Mouse.Learn23;
 base23Drive = Params.BaseTo23 * Mouse.Base23;
 pre23Cue = cue23Drive + Params.Noise23 * randn(Params.NE23, Params.NumTrials);
 pre23Base = base23Drive + Params.Noise23 * randn(Params.NE23, Params.NumTrials);
@@ -355,16 +402,17 @@ r23Base = Params.ResponseScale * tanh(pre23Base - Params.Comp23 * (Mouse.WEI23 *
 
 thPatternCue = Params.THPatternTo5 * Cond.THNetworkLevel * Mouse.THL5Pattern * ones(1, Params.NumTrials);
 thPatternBase = 0.12 * Params.THPatternTo5 * Cond.THNetworkLevel * Mouse.THL5Pattern * ones(1, Params.NumTrials);
-pre5Cue = Params.CueTo5 * Mouse.Cue5 + Params.Coupling23To5 * (Mouse.W523 * r23Cue) / sqrt(Params.NE23) + Params.LearnTo5 * LearnState * Mouse.Learn5 + Params.PriorTo5 * Cond.PriorGain * Mouse.Prior5 + thPatternCue + Params.Noise5 * randn(Params.NE5, Params.NumTrials);
+pre5Cue = cue5Gain * cue5Pattern + Params.Coupling23To5 * (Mouse.W523 * r23Cue) / sqrt(Params.NE23) + Params.LearnTo5 * LearnState * Mouse.Learn5 + Params.SchemaTo5 * SchemaState * Mouse.Learn5 + thPatternCue + Params.Noise5 * randn(Params.NE5, Params.NumTrials);
 pre5Base = Params.BaseTo5 * Mouse.Base5 + 0.65 * Params.Coupling23To5 * (Mouse.W523 * r23Base) / sqrt(Params.NE23) + thPatternBase + Params.Noise5 * randn(Params.NE5, Params.NumTrials);
 r5Cue = Params.ResponseScale * tanh(pre5Cue - Params.Comp5 * (Mouse.WEI5 * inhCue) / Params.NI);
 r5Base = Params.ResponseScale * tanh(pre5Base - Params.Comp5 * (Mouse.WEI5 * inhBase) / Params.NI);
 
-readoutCue = mean(Mouse.Readout .* r5Cue, 1);
-readoutBase = mean(Mouse.Readout .* r5Base, 1);
-decision = readoutCue - Params.BaselinePenalty * readoutBase + Cond.PriorBias;
+readoutCue = mean(readoutVector .* r5Cue, 1);
+readoutBase = mean(readoutVector .* r5Base, 1);
+decision = readoutCue - Params.BaselinePenalty * readoutBase;
 pHit = 1 ./ (1 + exp(-Params.ReadoutGain * (decision - Params.HitThreshold)));
 perf = mean(rand(1, Params.NumTrials) < pHit);
+perfExpected = mean(pHit, 'omitnan');
 
 cueMean23 = mean(r23Cue - r23Base, 2, 'omitnan');
 cueMean5 = mean(r5Cue - r5Base, 2, 'omitnan');
@@ -450,10 +498,10 @@ ax.XTickLabel = cellstr(Cond.Label);
 ax.XTickLabelRotation = 20;
 end
 
-function iAnnotateH5Stats(ax, PerMouse, Cond)
-naive = PerMouse.(Cond.Name(1)).MeanH5;
-transfer = PerMouse.(Cond.Name(2)).MeanH5;
-thOff = PerMouse.(Cond.Name(3)).MeanH5;
+function iAnnotateMetricStats(ax, PerMouse, Cond, fieldName)
+naive = PerMouse.(Cond.Name(1)).(fieldName);
+transfer = PerMouse.(Cond.Name(2)).(fieldName);
+thOff = PerMouse.(Cond.Name(3)).(fieldName);
 
 naive = naive(isfinite(naive));
 transfer = transfer(isfinite(transfer));
@@ -463,7 +511,7 @@ p12 = ranksum(naive, transfer);
 p23 = ranksum(transfer, thOff);
 p13 = ranksum(naive, thOff);
 pAll = kruskalwallis([naive; transfer; thOff], ...
-	[repmat({'Naive'}, numel(naive), 1); repmat({'Transfer'}, numel(transfer), 1); repmat({'TH inhibited'}, numel(thOff), 1)], 'off');
+	[repmat(cellstr(Cond.Label(1)), numel(naive), 1); repmat(cellstr(Cond.Label(2)), numel(transfer), 1); repmat(cellstr(Cond.Label(3)), numel(thOff), 1)], 'off');
 
 yAll = [naive; transfer; thOff];
 yMin = min(yAll, [], 'omitnan');
