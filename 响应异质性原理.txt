@@ -3,9 +3,12 @@
 后部丘脑（PO核）向皮层提供的输入信号与躯体感觉及运动执行具有更强的功能耦合，据此推测，该通路的信号可能固有地具有较低的跨日漂移幅度（本研究假说）。
 上述机制的叠加效应可为Transfer组在回合间及训练日间表征漂移较低的观测结果提供解释。
 Naive组中较高的表征漂移使得大量神经元在不同回合或训练日之间发生响应极性反转——即原先的正响应细胞转变为负响应，反之亦然。这与Driscoll et al.（2017）在后顶叶皮层中的发现一致：单个神经元在学习过程中反复获得和丧失任务选择性。当响应极性不稳定的细胞群在跨回合或跨会话平均中叠加时，正、负信号因极性随机翻转而趋于相互抵消，导致群体水平的响应异质性下降。Transfer组中，由于先前经验已部分稳定了群体功能架构，漂移幅度较低，神经元的响应极性得以跨回合保持一致，平均后正负亚群信号不被抵消，因此呈现出更高的响应异质性。
-综上，响应异质性可被视为网络动态重构幅度的间接度量。Naive网络在学习进程中反复经历大幅度重构，先前训练日中建立的突触连接与功能组织在后续会话中易被覆写或消解——行为层面表现为命中率的非单调波动（即性能回退），群体层面则表现为正/负响应分布的持续漂移——因而学习曲线增长缓慢。Transfer网络由于继承了先前任务中已部分稳定的群体架构，重构幅度较小，行为上呈现更为单调的递增轨迹，群体正/负响应极化也更为稳定，因而学习效率更高。这一解释与群体几何和神经流形理论相契合：有利的初始群体组织（如先前经验所遗留的低维表征结构）可对后续学习的动态轨迹施加约束，使状态空间推进沿更高效的方向展开，而非在全部可能的网络构型中进行无约束搜索（Sadtler et al., 2014; Gallego et al., 2020; Vyas et al., 2020）。
+综上，响应异质性可被视为网络动态重构幅度的间接度量。Naive网络在学习进程中反复经历大幅度重构，先前训练日中建立的突触连接与功能组织在后续会话中易被覆写或消解——行为层面表现为命中率的非单调波动（即行为表现回落），群体层面则表现为正/负响应分布的持续漂移——因而学习曲线增长缓慢。Transfer网络由于继承了先前任务中已部分稳定的群体架构，重构幅度较小，行为上呈现更为单调的递增轨迹，群体正/负响应极化也更为稳定，因而学习效率更高。这一解释与群体几何和神经流形理论相契合：有利的初始群体组织（如先前经验所遗留的低维表征结构）可对后续学习的动态轨迹施加约束，使状态空间推进沿更高效的方向展开，而非在全部可能的网络构型中进行无约束搜索（Sadtler et al., 2014; Gallego et al., 2020; Vyas et al., 2020）。
 
-
+丘脑后部输入的作用：
+以PO为中心的丘脑后部核群向MOp提供稳定化输入。解剖学研究表明，POm作为高阶体感丘脑核，接收S1 L5的驱动型输入并以兴奋性突触向M1上层神经元（L2/3及L5A）投射（Hooks et al., 2013），构成S1 L5→POm→M1跨丘脑皮层-皮层（transthalamic corticothalamocortical）通路的关键中继，其终末具有Class 1驱动型突触特性（Mo & Sherman, 2019; Halassa & Sherman, 2019）。该通路将运动执行伴随的躯体感觉再传入信号（sensory reafference）经S1→POm中继传递至M1（Ahissar & Kleinfeld, 2003）。功能层面，丘脑源性突触前小结（bouton）在运动学习晚期趋于结构性稳定化（Hasegawa et al., 2020），提示该通路在运动技能巩固后达到稳态。由于舔水动作模式贯穿迁移学习全程未变，其所伴随的口面部躯体感觉再传入信号在跨日间具有高度一致性，可合理推测经S1→PO→MOp通路传递的感觉反馈在Naive和Transfer条件下均保持相对恒定（尚缺直接纵向记录证据）。与该假说一致，丘脑后部抑制实验中MOp群体响应异质性显著下降，学习曲线呈现非单调振荡与行为表现回落，表现出类Naive表型。
+然而，丘脑后部输入的功能贡献主要限于新关联形成阶段。丘脑后部抑制对先前已建立的关联记忆的行为表达影响有限；迁移学习首日的命中率在抑制组与对照组之间无显著差异；对🔊💧任务活跃细胞的影响主要见于刺激后1 s之后的晚期时段，而刺激后即时响应未受显著改变。
+综上，丘脑后部输入主要参与新关联记忆的编码过程，对已有关联记忆的提取影响有限。这一编码-提取功能解离与其他丘脑-皮层环路中的发现相一致：前内侧丘脑向前扣带皮层的投射在训练期间被抑制时导致显著的记忆巩固缺陷，但对已巩固记忆的提取无明显影响（Toader et al., 2023）。
 
 ---
 ## 引用文献
@@ -22,6 +25,11 @@ Naive组中较高的表征漂移使得大量神经元在不同回合或训练日
 - Cruikshank, S. J., Lewis, T. J., & Connors, B. W. (2007). Synaptic basis for intense thalamocortical activation of feedforward inhibitory cells in neocortex. Nat Neurosci, 10, 462-468.
 - Gabernet, L., Jadhav, S. P., Feldman, D. E., Carandini, M., & Scanziani, M. (2005). Somatosensory integration controlled by dynamic thalamocortical feed-forward inhibition. Neuron, 48, 315-327.
 - Halassa, M. M., & Sherman, S. M. (2019). Thalamocortical circuit motifs: a general framework. Neuron, 103(5), 762-770.
+- Hooks, B. M., Mao, T., Gutnisky, D. A., Yamawaki, N., Svoboda, K., & Shepherd, G. M. G. (2013). Organization of cortical and thalamic input to pyramidal neurons in mouse motor cortex. J Neurosci, 33(2), 748-760.
+- Mo, C., & Sherman, S. M. (2019). A sensorimotor pathway via higher-order thalamus. J Neurosci, 39(4), 692-704.
+- Ahissar, E., & Kleinfeld, D. (2003). Closed-loop neuronal computations: focus on vibrissa somatosensation in rat. Cereb Cortex, 13(1), 53-62.
+- Hasegawa, R., Ebina, T., Tanaka, Y. R., Kobayashi, K., & Matsuzaki, M. (2020). Structural dynamics and stability of corticocortical and thalamocortical axon terminals during motor learning. PLoS ONE, 15(6), e0234930.
+- Toader, A. C., Regalado, J. M., Li, Y. R., et al. (2023). Anteromedial thalamus gates the selection and stabilization of long-term memories. Cell, 186(7), 1369-1381.
 - Sadtler, P. T., et al. (2014). Neural constraints on learning. Nature, 512, 423-426.
 - Gallego, J. A., et al. (2020). Long-term stability of cortical population dynamics underlying consistent behavior. Nat Neurosci, 23, 260-270.
 - Vyas, S., Golub, M. D., Sussillo, D., & Shenoy, K. V. (2020). Computation through neural population dynamics. Annu Rev Neurosci, 43, 249-275.
