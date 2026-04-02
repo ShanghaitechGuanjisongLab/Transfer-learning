@@ -164,7 +164,7 @@ Params.Noise5 = 0.12;
 Params.NoiseI = 0.12;
 Params.Comp23 = 0.95;
 Params.Comp5 = 1.35;
-Params.BaseLearnRate = 0.52;
+Params.BaseLearnRate = 0.30;
 Params.LearnNoise = 0.010;
 Params.MaxLearnState = 4.00;
 Params.ReadoutGain = 14.0;
@@ -184,19 +184,21 @@ Params.SchemaTo5 = 0.85;
 Params.THPatternTo5 = 0.60;
 Params.BaselinePenalty = 1.00;
 Params.LearnFromCoactivity23 = 2.80;
-Params.CoactivityThreshold23 = 0.14;
-Params.SchemaReuseFraction = 0.15;
+Params.CoactivityThreshold23 = 0.20;
+Params.SchemaReuseFraction = 0.10;
+Params.SchemaLearnBoost = 8.0;
 Params.OvernightRetention = 0.85;
 Params.OvernightNoise = 0.03;
-Params.OvernightPatternDrift = 0.20;
+Params.OvernightPatternDrift = 0.00;
 Params.SchemaDriftDamping = 1.50;
 Params.SchemaRetentionBoost = 0.10;
 Params.DriftAttenuationRate = 0.30;
-Params.DriftLearnDecay = 0.50;
+Params.DriftLearnDecay = 0.00;
 Params.EligibilityDecay = 0.58;
 Params.MaxEligibilityTrace = 1.15;
 Params.BaselineTHFraction = 0.55;
 Params.MaxPretrainSessions = 150;
+Params.PostCeilingSessions = 2;
 end
 
 function Cond = iConditionTable()
@@ -205,7 +207,7 @@ Cond.Name = ["Naive"; "Transfer"; "THOff"];
 Cond.Label = ["Naive"; "Transfer"; "TH inhibited"];
 Cond.Color = [1, 0, 0; 0, 0, 1; 0, 0, 0];
 Cond.THNetworkLevel = [1.00; 1.00; 0.70];
-Cond.THPlasticityLevel = [1.00; 1.00; 0.35];
+Cond.THPlasticityLevel = [1.00; 1.00; 0.25];
 end
 
 function Summary = iRunCohortModel(Params, Cond)
@@ -291,6 +293,7 @@ pretrainTH.THPlasticityLevel = 1.00;
 schemaState0 = 0;
 eligibilityTrace = 0;
 lastPerfExpected = NaN;
+postCeilingCount = 0;
 
 for iSess = 1:Params.MaxPretrainSessions
 	[perfObserved, cellMean23, ~, perfExpected] = iSimulateSession(Mouse, Params.InitialLearnState, schemaState0, Params, pretrainTH, true);
@@ -299,10 +302,17 @@ for iSess = 1:Params.MaxPretrainSessions
 	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
 	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
 	rewardSignal = max(perfExpected, 0);
-	schemaState0 = min(Params.MaxLearnState, schemaState0 + Params.BaseLearnRate * eligibilityTrace * rewardSignal + Params.LearnNoise * randn());
+	% Dual-channel: schema-mediated + coactivity-mediated (pretrainTH has full TH)
+	pretrainSchemaCarry = Params.SchemaReuseFraction * schemaState0;
+	schemaLearn = Params.SchemaLearnBoost * pretrainSchemaCarry * rewardSignal;
+	coactLearn = Params.BaseLearnRate * eligibilityTrace * rewardSignal;
+	schemaState0 = min(Params.MaxLearnState, schemaState0 + schemaLearn + coactLearn + Params.LearnNoise * randn());
 	schemaState0 = max(0, schemaState0);
 	if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
-		return;
+		postCeilingCount = postCeilingCount + 1;
+		if postCeilingCount >= Params.PostCeilingSessions
+			return;
+		end
 	end
 	% Overnight consolidation: synaptic homeostasis + representational drift
 	schemaState0 = Params.OvernightRetention * schemaState0 + Params.OvernightNoise * randn();
@@ -314,8 +324,12 @@ end
 
 function Result = iSimulateMouse(Mouse, Params, Cond, schemaState0)
 learnState = Params.InitialLearnState;
-schemaCarry = Params.SchemaReuseFraction * schemaState0;
+% Schema carry modulated by THNetworkLevel (TH inhibition reduces schema expression)
+schemaCarry = Params.SchemaReuseFraction * schemaState0 * Cond.THNetworkLevel;
+% Schema-mediated learning gated by THPlasticityLevel^2 (combinatorial TH effect)
+schemaGate = Cond.THPlasticityLevel^2;
 eligibilityTrace = 0;
+baseCoactivity23 = NaN;
 perf = nan(1, Params.NumSessions);
 h23 = nan(1, Params.NumSessions);
 h5 = nan(1, Params.NumSessions);
@@ -341,13 +355,21 @@ for iSess = 1:Params.NumSessions
 	sessionMean23(:, iSess) = cellMean23;
 	sessionMean5(:, iSess) = cellMean5;
 	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
+	% Fixed initial coactivity: use session-1 coactivity for all sessions
+	% (removes positive feedback loop where learnState inflates coactivity)
+	if iSess == 1
+		baseCoactivity23 = sessionCoactivity23;
+	end
 	h23(iSess) = iRestrictedStd(mean(sessionMean23(:, 1:iSess), 2, 'omitnan'));
 	h5(iSess) = iRestrictedStd(mean(sessionMean5(:, 1:iSess), 2, 'omitnan'));
-	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
+	learnEligibility = Params.LearnFromCoactivity23 * max(baseCoactivity23 - Params.CoactivityThreshold23, 0);
 	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
 	learnGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
 	rewardSignal = max(perf(iSess), 0);
-	learnState = min(Params.MaxLearnState, learnState + Params.BaseLearnRate * learnGate * eligibilityTrace * rewardSignal + Params.LearnNoise * randn());
+	% Dual-channel learning: schema-mediated + coactivity-mediated
+	schemaLearn = Params.SchemaLearnBoost * schemaGate * schemaCarry * rewardSignal;
+	coactLearn = Params.BaseLearnRate * learnGate * eligibilityTrace * rewardSignal;
+	learnState = min(Params.MaxLearnState, learnState + schemaLearn + coactLearn + Params.LearnNoise * randn());
 	learnState = max(0, learnState);
 	% Overnight consolidation: schema-congruent retention + synaptic homeostasis (Tse et al. 2007)
 	if iSess < Params.NumSessions

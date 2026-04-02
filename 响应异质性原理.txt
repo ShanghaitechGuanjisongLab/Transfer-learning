@@ -1,4 +1,27 @@
-每个Trial都有一部分正响应和一部分负响应细胞。负响应细胞来自正响应细胞驱动的抑制性神经元。在未经学习的初始状态，正/负群体的分布不稳定，在Trial和训练日之间都会有较大的随机漂移。
-学习过程会让部分皮层神经元抵抗漂移。在同一场景中反复训练时，漂移也会衰减。后端TH输入信号与舔水行为和体感更接近，天然更抵抗漂移。这些机制综合起来，导致Transfer组在Trial和训练日之间漂移更低。
-Naive的高漂移会导致许多正/负响应细胞发生交换，从而在平均之后相互抵消，降低了响应异质性。这种漂移在Transfer中较弱，所以Transfer的正负响应细胞角色得到保留，平均后不会抵消，响应异质性较高。
-因此响应异质性实际上反映了网络的重构幅度。Naive网络在学习过程中经常发生重构，导致早期习得的网络/连接容易在后期又被废弃（行为上有折返，响应群体正负特征漂移），因而增长缓慢。而Transfer网络较为稳定，行为上单调增，响应群体正负特征也较为稳定，因而增长更快。
+每一回合（trial）中，群体神经元可依据刺激诱发的钙信号方向划分为正响应亚群与负响应亚群。负响应的主要来源是皮层兴奋-抑制微回路：感觉驱动的兴奋性输入在激活一部分锥体细胞的同时，经前馈与反馈抑制通路同步招募GABAergic中间神经元，从而对周围锥体细胞施加突触后抑制，压低其活动至基线以下（Isaacson & Scanziani, 2011）。在双光子钙成像中，这种抑制效应表现为刺激锁定的荧光信号负偏——即所谓"负响应"。由此，正、负响应亚群的比例与空间分布共同反映了局部网络中兴奋-抑制平衡的即时状态。在未经训练的Naive条件下，上述正/负亚群的组成具有高度不稳定性，在回合间和训练日间均呈现显著的表征漂移（representational drift）。这一现象已在多个皮层区域和海马中得到广泛验证：梨状皮层（Schoonover et al., 2021）、后顶叶皮层（Driscoll et al., 2017）及海马CA1区（Ziv et al., 2013）均报告了感觉诱发响应在数日至数周尺度上的系统性漂移（综述见Rule et al., 2019）。
+学习可使部分皮层神经元的活动模式趋于稳定并抵抗漂移。计算模型表明，STDP等Hebbian可塑性规则能驱动网络表征向低维流形收敛，进而抑制随机漂移（Morales et al., 2025 PNAS）；实验层面，嗅觉皮层中经过关联学习的气味所对应的神经表征，其漂移速率显著低于未学习气味（Morales et al., 2025）。在运动皮层中，学习促使功能相似的神经元对之间形成更精细、更可复现的时空活动模式，同样指向表征稳定化（Peters et al., 2014; Komiyama et al., 2010）。此外，对同一刺激的反复暴露本身亦可减缓漂移速率（Schoonover et al., 2021）。
+后部丘脑（PO核）向皮层提供的输入信号与躯体感觉及运动执行具有更强的功能耦合，据此推测，该通路的信号可能固有地具有较低的跨日漂移幅度（本研究假说）。
+上述机制的叠加效应可为Transfer组在回合间及训练日间表征漂移较低的观测结果提供解释。
+Naive组中较高的表征漂移使得大量神经元在不同回合或训练日之间发生响应极性反转——即原先的正响应细胞转变为负响应，反之亦然。这与Driscoll et al.（2017）在后顶叶皮层中的发现一致：单个神经元在学习过程中反复获得和丧失任务选择性。当响应极性不稳定的细胞群在跨回合或跨会话平均中叠加时，正、负信号因极性随机翻转而趋于相互抵消，导致群体水平的响应异质性下降。Transfer组中，由于先前经验已部分稳定了群体功能架构，漂移幅度较低，神经元的响应极性得以跨回合保持一致，平均后正负亚群信号不被抵消，因此呈现出更高的响应异质性。
+综上，响应异质性可被视为网络动态重构幅度的间接度量。Naive网络在学习进程中反复经历大幅度重构，先前训练日中建立的突触连接与功能组织在后续会话中易被覆写或消解——行为层面表现为命中率的非单调波动（即性能回退），群体层面则表现为正/负响应分布的持续漂移——因而学习曲线增长缓慢。Transfer网络由于继承了先前任务中已部分稳定的群体架构，重构幅度较小，行为上呈现更为单调的递增轨迹，群体正/负响应极化也更为稳定，因而学习效率更高。这一解释与群体几何和神经流形理论相契合：有利的初始群体组织（如先前经验所遗留的低维表征结构）可对后续学习的动态轨迹施加约束，使状态空间推进沿更高效的方向展开，而非在全部可能的网络构型中进行无约束搜索（Sadtler et al., 2014; Gallego et al., 2020; Vyas et al., 2020）。
+
+
+
+---
+## 引用文献
+
+- Isaacson, J. S., & Scanziani, M. (2011). How inhibition shapes cortical activity. Neuron, 72(2), 231-243.
+- Haider, B., Duque, A., Hasenstaub, A. R., & McCormick, D. A. (2006). Neocortical network activity in vivo is generated through a dynamic balance of excitation and inhibition. J Neurosci, 26, 4535-4545.
+- Schoonover, C. E., Ohashi, S. N., Axel, R., & Bhatt, D. K. (2021). Representational drift in primary olfactory cortex. Nature, 594, 541-546.
+- Driscoll, L. N., Pettit, N. L., Minderer, M., Chettih, S. N., & Harvey, C. D. (2017). Dynamic reorganization of neuronal activity patterns in parietal cortex. Cell, 170(5), 986-999.
+- Ziv, Y., Burns, L. D., Cocker, E. D., et al. (2013). Long-term dynamics of CA1 hippocampal place codes. Nat Neurosci, 16, 264-266.
+- Rule, M. E., O'Leary, T., & Harvey, C. D. (2019). Causes and consequences of representational drift. Curr Opin Neurobiol, 58, 141-147.
+- Morales, J. S., et al. (2025). Representational drift and learning-induced stabilization in piriform cortex. PNAS.
+- Peters, A. J., Chen, S. X., & Komiyama, T. (2014). Emergence of reproducible spatiotemporal activity during motor learning. Nature, 510, 263-267.
+- Komiyama, T., et al. (2010). Learning-related fine-scale specificity imaged in motor cortex circuits of behaving mice. Nature, 464, 1182-1186.
+- Cruikshank, S. J., Lewis, T. J., & Connors, B. W. (2007). Synaptic basis for intense thalamocortical activation of feedforward inhibitory cells in neocortex. Nat Neurosci, 10, 462-468.
+- Gabernet, L., Jadhav, S. P., Feldman, D. E., Carandini, M., & Scanziani, M. (2005). Somatosensory integration controlled by dynamic thalamocortical feed-forward inhibition. Neuron, 48, 315-327.
+- Halassa, M. M., & Sherman, S. M. (2019). Thalamocortical circuit motifs: a general framework. Neuron, 103(5), 762-770.
+- Sadtler, P. T., et al. (2014). Neural constraints on learning. Nature, 512, 423-426.
+- Gallego, J. A., et al. (2020). Long-term stability of cortical population dynamics underlying consistent behavior. Nat Neurosci, 23, 260-270.
+- Vyas, S., Golub, M. D., Sussillo, D., & Shenoy, K. V. (2020). Computation through neural population dynamics. Annu Rev Neurosci, 43, 249-275.
