@@ -313,3 +313,79 @@ Result.CorrelationTable
 #### 模型结果图
 
 ![](RHMinimalTransferModelSummary.svg)
+20260402
+提问：寻找一些丘脑到运动皮层的文献，体现丘脑对皮层功能有调控作用的.
+下面这几篇比较适合你这个问题，核心都能支持一句话：丘脑不只是把信息“传给”运动皮层，而是在准备、起始、执行和学习过程中主动调控皮层状态与功能。
+
+优先推荐
+
+Guo ZV, Inagaki HK, Daie K, et al. 2017. Maintenance of persistent activity in a frontal thalamocortical loop. Nature.
+链接：https://www.nature.com/articles/nature22324
+要点：这篇几乎是“丘脑调控运动皮层功能”的经典证据。作者在小鼠 ALM 和丘脑 VM/VAL 记录到相似的准备期持续活动；光抑制丘脑会快速导致 ALM 活动几乎塌陷，并造成行为偏倚。结论非常直接：丘脑对前额叶/前运动皮层样区域的准备活动和选择性是必需的，不是可有可无的背景输入。
+
+Chabrol FP, Blot A, Mrsic-Flogel TD. 2019. Cerebellar contribution to preparatory activity in motor neocortex. Neuron.
+链接：https://doi.org/10.1016/j.neuron.2019.05.022
+要点：强调的是小脑经丘脑通路对运动新皮层准备活动的贡献。也就是说，运动皮层的准备信号并不只是局部皮层自发维持，而是受到丘脑中继的外源驱动和塑形。
+
+Sauerbrei BA, et al. 2020. Cortical pattern generation during dexterous movement is input-driven. Nature.
+链接：https://doi.org/10.1038/s41586-019-1869-9
+要点：这篇偏向执行期。结论是灵巧运动中的皮层活动模式高度依赖输入驱动，而不是完全由皮层内部自主生成。虽然它强调的是“输入驱动”，但在运动系统里丘脑是最关键的上行驱动节点之一，所以这篇很适合拿来支持“皮层功能受外部回路调控”的框架。
+
+Thalamic input to motor cortex facilitates goal-directed action initiation. 2021. Current Biology.
+链接：https://www.cell.com/current-biology/fulltext/S0960-9822(21)00918-0
+要点：从标题和检索摘要看，这篇聚焦 VM 到运动皮层的输入，强调丘脑输入促进目标导向动作的启动。它更贴近“丘脑对动作发起和行为输出的调控”，适合放在你如果要讨论 initiation、gating 或 action selection 的地方。
+
+Nashef A, Mitelman R, Harel R, et al. 2021. Area-specific thalamocortical synchronization underlies the transition from motor planning to execution. PNAS.
+链接：https://pmc.ncbi.nlm.nih.gov/articles/PMC8017695/
+要点：这篇很好，因为它不只是说“丘脑兴奋皮层”，而是更细地说明丘脑对不同运动皮层区有不同作用。运动丘脑与 M1 呈正相关，却与 premotor cortex 呈负相关，提示丘脑能同时增强和抑制不同皮层区的变异性与活动，从而推动“计划”向“执行”的状态转换。这非常符合“丘脑调控皮层状态”的表述。
+
+Motor learning refines thalamic influence on motor cortex. 2025. Nature.
+链接：https://pubmed.ncbi.nlm.nih.gov/40335698/
+要点：这是比较新的工作。根据摘要简介，运动学习会改变丘脑对 M1 的影响，使运动丘脑更 preferentially 激活编码已学会动作的 M1 神经元。这个结果非常适合支持“丘脑对皮层功能的调控不是静态的，而是会随学习重塑”。
+Sherman SM, Guillery RW. Functional connections of cortical areas: a new view from the thalamus. MIT Press, 2013.
+要点：这是理解“高阶丘脑不是中继站，而是皮层间/皮层-皮层下功能连接调度器”的经典理论背景。
+
+Untangling the cortico-thalamo-cortical loop: cellular pieces of a knotty circuit puzzle. 2021. Nature Reviews Neuroscience.
+链接：https://www.nature.com/articles/s41583-021-00459-3
+要点：适合写引言或讨论。它从回路层面总结 cortico-thalamo-cortical loop 如何影响皮层计算，而不是把丘脑看成单纯 relay。{有引用}
+
+
+对上述文献的解析。
+有没有类似2019. Cerebellar contribution to preparatory activity in motor neocortex. Neuron.的文献但是研究的脑区是丘脑（thalamus）而非小脑。文献3（Sauerbrei BA, et al. 2020）认为，模式生成需要输入（Input is required for pattern generation），如果运动皮层在动作执行过程中需要外部输入，那么阻断或中断输入模式应会扰乱运动皮层活动和手臂运动学。丘脑输入调控的不是杂乱小成分，而是神经群体活动最主要、最大方差的那个模式。【可以算是支持我们的结论？】文献4，ALM中VM轴突的化成和光遗传操作表明，VM输入促进了训练小鼠中线索触发和冲动舔舐的启动。VM丘脑皮层输入提高了计划性运动反应启动的概率和活力。[抑制延迟，激活促进]最后，我们测试了VM轴突的短暂激活是否会改变舔舐行为的总体模式。对正在执行任务的熟练小鼠进行100毫秒的短暂光刺激，会诱发虚假警报舔舐。相比之下，同样的光刺激并未在未经训练（初次接触）且缺水的鼠身上诱发舔舐行为。在此实验中，未训练小鼠在随机间隔内获得水奖励。尽管腹内侧核神经元会传递单次舔舐的信号，但在熟练小鼠的命中试验中，光刺激并未影响正在进行的舔舐行为。因此，我们的结果表明，腹内侧核的输入特异性地调节了训练后的目标导向反应，而先前研究发现，这种反应编码于ALM网络的活动之中。文献的以上内容说明，thalamus输入对“熟练/学会“动作有影响，这与我们的结果是相类似的。文献5，认为va，vl与m1正相关，pm负相关，丘脑能同时增强和抑制不同皮层区的变异性（TbyT的放电特点）与活动，推动“计划”向“执行”的状态转换。
+Tanaka YH, Tanaka YR, Kondo M, et al. 2018. Thalamocortical Axonal Activity in Motor Cortex Exhibits Layer-Specific Dynamics during Motor Learning. Neuron.
+链接：https://doi.org/10.1016/j.neuron.2018.08.016
+这篇更偏 motor learning。它说明丘脑到运动皮层的轴突活动会随着学习而变化，而且不同层的动力学不同。若你想把“thalamus 输入与 learned movement 相关”再往学习塑形方向补强，这篇很合适。
+
+## 2026-04-02
+
+### 丘脑后部输入抑制结果的文献支持整合
+
+结合当前实验结果，可以把丘脑后部输入的作用概括为两点。第一，丘脑后部输入对迁移学习首日的行为表达不是决定性的，因为抑制组与对照组在迁移学习首日命中率上无显著差异；第二，丘脑后部输入对后续新关联形成是重要的，因为抑制后总体学习曲线出现非单调震荡与行为表现回落，达到 100% 命中的时间也被延长。这种“对已学会行为表达影响较小、对后续学习推进影响较大”的模式，与丘脑-皮层环路主要参与准备态维持、动作启动门控以及学习相关皮层状态稳定化的观点是一致的，而不支持“丘脑只是提供一个即时感觉驱动”的简单解释。
+
+最直接的支持来自 Guo 等在 ALM-thalamus 环路中的工作。Guo et al. 2017 在小鼠 ALM 与 VM/VAL 记录到相似的准备期持续活动，并且发现抑制丘脑会在短潜伏期内使 ALM 活动几乎塌陷，同时降低行为表现。这说明丘脑输入能够维持运动相关皮层的持续活动与选择性，而不是仅仅附加一个弱小的背景输入。对本研究而言，这提供了一个重要参照：丘脑输入可以作为维持皮层任务相关群体状态的关键节点，因此当后部丘脑输入被抑制时，MOp 群体从较随机、漂移较大的状态收敛到稳定响应结构的过程变慢，是有回路基础可依的。
+
+与此相衔接，Takahashi et al. 2021 进一步表明，VM 到 ALM 的丘脑皮层输入对训练后目标导向动作的启动具有因果作用。该研究显示，VM 轴突在 ALM 中于舔舐启动前瞬时活化；抑制 VM 轴突会延迟 cue-triggered licking 的启动，而激活 VM 轴突会缩短反应时并增加 impulsive licking。尤其关键的是，短暂激活 VM 轴突能够在 expert 小鼠中诱发 false-alarm licking，却不能在 naive、仅缺水但未训练的动物中诱发相同行为；同时，这种激活并不会明显改变已经进行中的舔舐节律。作者据此认为，VM 输入调控的是训练后目标导向反应的启动概率和 vigor，而不是单纯驱动任意舔舐动作。这个结果与本研究高度相似：丘脑输入对“熟练/已学会”动作框架中的行为启动和学习推进有显著影响，但对已经建立的动作模式本身的在线表达影响有限。
+
+如果进一步从“运动皮层活动模式依赖外部输入”这一角度看，Sauerbrei et al. 2020 提供了更一般性的框架。该研究指出，灵巧运动执行期间的皮层模式生成是 input-driven 的；外部输入被阻断时，运动皮层活动与手臂运动学都会受到扰乱。虽然这篇文章并未将效应专门归因于后部丘脑，但它支持这样一个更高层次的判断：运动皮层在执行和学习中所依赖的，并不是少量边缘性的外源成分，而是对群体活动主导动态具有实质塑形能力的输入源。就本研究而言，这可以作为间接支持，即后部丘脑输入更可能参与维持 MOp 的主导群体动态与稳定响应结构，而不是只改变一些零散、低权重的小成分。不过，现有文献并没有直接证明“丘脑专门调控最大方差主成分”，因此若要在论文中表述，最好写成“调控群体活动的主导动态模式”或“主要潜在维度”，而不要过强地写成已经被文献直接证实的“最大方差模式”。
+
+Nashef et al. 2021 从另一角度支持了这一点。该研究在灵长类中发现，运动丘脑与 M1 的相关活动在动作起始前呈正相关，而与 premotor cortex 则呈负相关，提示丘脑并非对所有皮层区做统一增益提升，而是能够以 area-specific 的方式同时增强和抑制不同皮层区的 trial-by-trial 动态，从而推动网络由 motor planning 转入 motor execution。这个结论对本研究有两层启发：一是丘脑确实能够重组皮层群体状态，而不仅是被动中继；二是丘脑影响的对象更可能是皮层群体活动的整体组织方式和状态转换，而不是简单的平均响应幅度。这与本研究中“丘脑后部抑制后 MOp 响应异质性下降，并伴随学习曲线出现类 Naive 的震荡和行为回落”的结果是相容的。
+
+在学习相关层面，Tanaka et al. 2018 与 Hasegawa et al. 2020 进一步提供了“丘脑输入随学习而稳定化”的证据。Tanaka 等发现，运动皮层中的 thalamocortical axonal activity 会随 motor learning 呈现层特异性动态变化；Hasegawa 等则显示，运动学习晚期 thalamocortical boutons 的结构趋于稳定。两篇文章都支持这样一种解释：随着学习推进，丘脑到皮层的输入并不是静态不变的，而会逐步与熟练行为和稳定皮层活动结构相耦合。对应到本研究，可以合理推断后部丘脑输入在迁移学习中帮助 MOp 从漂移较大的随机状态过渡到更稳定的正/负响应极化结构；当这一输入被抑制时，稳定化过程受阻，于是表现为响应异质性下降以及学习进程中的回落与震荡。
+
+因此，当前实验结果可以收敛到两个相对稳健的结论。其一，丘脑后部输入的功能贡献主要限于新关联形成阶段，而不是旧关联记忆的在线提取。行为上，抑制后迁移学习首日命中率并未下降，且对已经学会任务的表现影响有限；钙信号上，对声水偶联任务活跃细胞的影响主要出现在刺激后 1 s 之后的晚期时段，而刺激后即时响应未见明显改变。这说明丘脑后部输入更可能参与学习后期的网络状态维持、动作准备和新关联巩固，而不是直接决定既有感觉-动作映射能否被瞬时读出。其二，丘脑后部输入对 MOp 的作用更像是一种非任务特异的稳定化支持。也就是说，它不一定编码某个特定任务规则本身，而更可能提供一种有利于皮层群体活动保持稳定、减少漂移并维持 learned-like state 的背景性约束。这个观点与 Halassa and Sherman 2019 关于高阶丘脑回路 motif 的框架、以及 Guo 2017、Takahashi 2021、Nashef 2021 所示的丘脑对皮层持续活动、启动概率和状态转换的调控作用相一致。
+
+不过，需要保持一个必要的限定：本研究的数据目前支持“后部丘脑输入参与 MOp 群体稳定化并影响新关联学习效率”这一结论，但尚不能直接证明它是通过压低 representational drift、或直接锁定某个单一低维流形来实现的。这部分仍属于机制性解释，需要未来通过纵向跟踪同一细胞群、群体几何分析或潜变量建模进一步验证。现阶段更稳妥的写法是：后部丘脑输入可能通过维持 MOp 群体活动的主导动态结构，减少跨回合与跨会话的响应极性漂移，从而促进迁移学习中的新关联形成。
+
+### 本节参考文献
+
+- Guo, Z. V., Inagaki, H. K., Daie, K., Druckmann, S., Gerfen, C. R., & Svoboda, K. (2017). Maintenance of persistent activity in a frontal thalamocortical loop. Nature, 545, 181-186.
+- Takahashi, N., Moberg, S., Zolnik, T. A., Catanese, J., Sachdev, R. N. S., Larkum, M. E., & Jaeger, D. (2021). Thalamic input to motor cortex facilitates goal-directed action initiation. Current Biology, 31, 4148-4155.e4.
+- Sauerbrei, B. A., Guo, J.-Z., Cohen, J. D., Mischiati, M., Guo, W., Kabra, M., Verpeut, J. L., et al. (2020). Cortical pattern generation during dexterous movement is input-driven. Nature, 577, 386-391.
+- Nashef, A., Mitelman, R., Harel, R., Joshua, M., & Prut, Y. (2021). Area-specific thalamocortical synchronization underlies the transition from motor planning to execution. Proceedings of the National Academy of Sciences of the United States of America, 118, e2012658118.
+- Tanaka, Y. H., Tanaka, Y. R., Kondo, M., Terada, S.-I., Kawaguchi, Y., & Matsuzaki, M. (2018). Thalamocortical axonal activity in motor cortex exhibits layer-specific dynamics during motor learning. Neuron, 100, 244-258.e12.
+- Hasegawa, R., Ebina, T., Tanaka, Y. R., Kobayashi, K., & Matsuzaki, M. (2020). Structural dynamics and stability of corticocortical and thalamocortical axon terminals during motor learning. PLoS ONE, 15, e0234930.
+- Halassa, M. M., & Sherman, S. M. (2019). Thalamocortical circuit motifs: a general framework. Neuron, 103, 762-770.
+- Hooks, B. M., Mao, T., Gutnisky, D. A., Yamawaki, N., Svoboda, K., & Shepherd, G. M. G. (2013). Organization of cortical and thalamic input to pyramidal neurons in mouse motor cortex. Journal of Neuroscience, 33, 748-760.
+- Mo, C., & Sherman, S. M. (2019). A sensorimotor pathway via higher-order thalamus. Journal of Neuroscience, 39, 692-704.
+- Chabrol, F. P., Blot, A., & Mrsic-Flogel, T. D. (2019). Cerebellar contribution to preparatory activity in motor neocortex. Neuron, 103, 506-519.e4.
+- Toader, A. C., Regalado, J. M., Li, Y. R., et al. (2023). Anteromedial thalamus gates the selection and stabilization of long-term memories. Cell, 186, 1369-1381.
