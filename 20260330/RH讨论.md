@@ -362,9 +362,9 @@ Tanaka YH, Tanaka YR, Kondo M, et al. 2018. Thalamocortical Axonal Activity in M
 
 结合当前实验结果，可以把丘脑后部输入的作用概括为两点。第一，丘脑后部输入对迁移学习首日的行为表达不是决定性的，因为抑制组与对照组在迁移学习首日命中率上无显著差异；第二，丘脑后部输入对后续新关联形成是重要的，因为抑制后总体学习曲线出现非单调震荡与行为表现回落，达到 100% 命中的时间也被延长。这种“对已学会行为表达影响较小、对后续学习推进影响较大”的模式，与丘脑-皮层环路主要参与准备态维持、动作启动门控以及学习相关皮层状态稳定化的观点是一致的，而不支持“丘脑只是提供一个即时感觉驱动”的简单解释。
 
-最直接的支持来自 Guo 等在 ALM-thalamus 环路中的工作。Guo et al. 2017 在小鼠 ALM 与 VM/VAL 记录到相似的准备期持续活动，并且发现抑制丘脑会在短潜伏期内使 ALM 活动几乎塌陷，同时降低行为表现。这说明丘脑输入能够维持运动相关皮层的持续活动与选择性，而不是仅仅附加一个弱小的背景输入。对本研究而言，这提供了一个重要参照：丘脑输入可以作为维持皮层任务相关群体状态的关键节点，因此当后部丘脑输入被抑制时，MOp 群体从较随机、漂移较大的状态收敛到稳定响应结构的过程变慢，是有回路基础可依的。
+如果要为“对已建立行为表达影响较小、但对后续学习或稳定化影响更大”这一点寻找更贴切的支持，Toader et al. 2023 更合适。该研究表明，前内侧丘脑并不是单纯负责即时提取一个已经固定的记忆输出，而是参与长期记忆的选择与稳定化过程；作者将其概括为对 memory consolidation 的门控作用。虽然该研究关注的是记忆系统而非运动皮层，但它提供了一个与本研究逻辑高度一致的丘脑功能框架：丘脑输入的关键贡献可以主要体现在新表征的筛选、巩固和稳定化阶段，而不必表现为对既有行为框架在线表达的同等强依赖。对本研究而言，这意味着后部丘脑输入更可能是在迁移学习过程中帮助 MOp 群体活动逐步收敛并稳定到 learned-like 响应结构；因此，抑制后首日表现仍可由既有任务经验支撑，而后续学习推进却会因群体状态稳定化受阻而变慢。
 
-与此相衔接，Takahashi et al. 2021 进一步表明，VM 到 ALM 的丘脑皮层输入对训练后目标导向动作的启动具有因果作用。该研究显示，VM 轴突在 ALM 中于舔舐启动前瞬时活化；抑制 VM 轴突会延迟 cue-triggered licking 的启动，而激活 VM 轴突会缩短反应时并增加 impulsive licking。尤其关键的是，短暂激活 VM 轴突能够在 expert 小鼠中诱发 false-alarm licking，却不能在 naive、仅缺水但未训练的动物中诱发相同行为；同时，这种激活并不会明显改变已经进行中的舔舐节律。作者据此认为，VM 输入调控的是训练后目标导向反应的启动概率和 vigor，而不是单纯驱动任意舔舐动作。这个结果与本研究高度相似：丘脑输入对“熟练/已学会”动作框架中的行为启动和学习推进有显著影响，但对已经建立的动作模式本身的在线表达影响有限。
+**与此相衔接，Takahashi et al. 2021 进一步表明，VM 到 ALM 的丘脑皮层输入对训练后目标导向动作的启动具有因果作用。该研究显示，VM 轴突在 ALM 中于舔舐启动前瞬时活化；抑制 VM 轴突会延迟 cue-triggered licking 的启动，而激活 VM 轴突会缩短反应时并增加 impulsive licking。尤其关键的是，短暂激活 VM 轴突能够在 expert 小鼠中诱发 false-alarm licking，却不能在 naive、仅缺水但未训练的动物中诱发相同行为；同时，这种激活并不会明显改变已经进行中的舔舐节律。作者据此认为，VM 输入调控的是训练后目标导向反应的启动概率和 vigor，而不是单纯驱动任意舔舐动作。这个结果与本研究高度相似：丘脑输入对“熟练/已学会”动作框架中的行为启动和学习推进有显著影响，但对已经建立的动作模式本身的在线表达影响有限。**（可能采用，其余部分不采用）
 
 如果进一步从“运动皮层活动模式依赖外部输入”这一角度看，Sauerbrei et al. 2020 提供了更一般性的框架。该研究指出，灵巧运动执行期间的皮层模式生成是 input-driven 的；外部输入被阻断时，运动皮层活动与手臂运动学都会受到扰乱。虽然这篇文章并未将效应专门归因于后部丘脑，但它支持这样一个更高层次的判断：运动皮层在执行和学习中所依赖的，并不是少量边缘性的外源成分，而是对群体活动主导动态具有实质塑形能力的输入源。就本研究而言，这可以作为间接支持，即后部丘脑输入更可能参与维持 MOp 的主导群体动态与稳定响应结构，而不是只改变一些零散、低权重的小成分。不过，现有文献并没有直接证明“丘脑专门调控最大方差主成分”，因此若要在论文中表述，最好写成“调控群体活动的主导动态模式”或“主要潜在维度”，而不要过强地写成已经被文献直接证实的“最大方差模式”。
 
@@ -384,8 +384,27 @@ Nashef et al. 2021 从另一角度支持了这一点。该研究在灵长类中�
 - Nashef, A., Mitelman, R., Harel, R., Joshua, M., & Prut, Y. (2021). Area-specific thalamocortical synchronization underlies the transition from motor planning to execution. Proceedings of the National Academy of Sciences of the United States of America, 118, e2012658118.
 - Tanaka, Y. H., Tanaka, Y. R., Kondo, M., Terada, S.-I., Kawaguchi, Y., & Matsuzaki, M. (2018). Thalamocortical axonal activity in motor cortex exhibits layer-specific dynamics during motor learning. Neuron, 100, 244-258.e12.
 - Hasegawa, R., Ebina, T., Tanaka, Y. R., Kobayashi, K., & Matsuzaki, M. (2020). Structural dynamics and stability of corticocortical and thalamocortical axon terminals during motor learning. PLoS ONE, 15, e0234930.
+- Toader, O., Roy, D. S., Moreno, A., Sarsfield, S., Schiavo, J. K., Wang, Y. T., & Tonegawa, S. (2023). Anteromedial thalamus gates the selection and stabilization of long-term memories. Cell, 186, 1848-1863.e18.
 - Halassa, M. M., & Sherman, S. M. (2019). Thalamocortical circuit motifs: a general framework. Neuron, 103, 762-770.
 - Hooks, B. M., Mao, T., Gutnisky, D. A., Yamawaki, N., Svoboda, K., & Shepherd, G. M. G. (2013). Organization of cortical and thalamic input to pyramidal neurons in mouse motor cortex. Journal of Neuroscience, 33, 748-760.
 - Mo, C., & Sherman, S. M. (2019). A sensorimotor pathway via higher-order thalamus. Journal of Neuroscience, 39, 692-704.
 - Chabrol, F. P., Blot, A., & Mrsic-Flogel, T. D. (2019). Cerebellar contribution to preparatory activity in motor neocortex. Neuron, 103, 506-519.e4.
 - Toader, A. C., Regalado, J. M., Li, Y. R., et al. (2023). Anteromedial thalamus gates the selection and stabilization of long-term memories. Cell, 186, 1369-1381.
+
+## 2026-04-03
+
+### 基于模型参数的响应异质性机制补充
+
+如果进一步结合当前模型对 THNetworkLevel、THPlasticityLevel 与 THL5Pattern 的定义，可以把本研究中响应异质性的产生机制写得更具体。
+
+响应异质性并不是由丘脑把所有细胞同向抬高后自然产生的“平均增益副产物”，而是由丘脑对网络状态的在线塑形与对后续可塑性的门控共同造成的群体分化结果。
+
+首先，THNetworkLevel 代表丘脑后部输入对 MOp 局部回路的实时驱动力，它一方面通过前馈抑制和竞争性抑制重排 L2/3 与 L5 兴奋性细胞的相对响应，另一方面保留一部分已有 schema 在新任务中的在线表达。因此，当 THNetworkLevel 下降时，抑制组仍可凭借既有经验维持较高的首日命中率，但网络内不同细胞被拉向正响应或负响应的程度减弱，跨细胞分布更趋于收缩，表现为响应异质性下降。
+
+其次，THPlasticityLevel 代表丘脑对新关联形成所需突触可塑性窗口的门控强度。它不直接决定当下能否做出已学会反应，却决定新任务中哪些瞬时活动能够被保留下来并转化为稳定的会话间结构；因此在抑制条件下，即便即时行为输出尚可，后续学习仍会因 schema 通道和 coactivity 通道同时受限而出现非单调震荡、行为回落，并逐渐呈现出类似 Naive 的学习轨迹。
+
+最后，THL5Pattern 对 L5 的结构化驱动为解释钙信号结果提供了一个关键补充。它意味着丘脑后部输入并非只提供一个均匀背景，而是 preferentially 参与塑造 L5 中与输出、准备态维持和晚期响应相关的空间模式。
+
+这样一来，就可以同时解释两个现象：一是抑制后对声水偶联活跃细胞的影响主要出现在刺激后 1 s 之后，而非刺激后即时响应，因为被削弱的主要是晚期维持和状态收敛过程，而不是最初的感觉触发；二是 L5 响应异质性下降更明显，因为 L5 中原本依赖丘脑结构化输入维持的正/负响应极化最容易在 THL5Pattern 被削弱后塌缩。
+
+按这个框架，响应异质性更适合被理解为一种由丘脑支持的、非任务特异的群体稳定化指标：它反映的是 MOp 网络能否把既有经验与当前线索整合成稳定的正负响应分工，并在跨会话尺度上维持这种分工，从而支持新关联的持续形成，而不是单纯反映某个特定任务记忆是否仍可被瞬时提取。
