@@ -196,6 +196,7 @@ Params.DriftAttenuationRate = 0.30;
 Params.DriftLearnDecay = 0.00;
 Params.EligibilityDecay = 0.58;
 Params.MaxEligibilityTrace = 1.15;
+Params.LearnPatternAdaptRate = 0.05;
 Params.BaselineTHFraction = 0.55;
 Params.MaxPretrainSessions = 150;
 Params.PostCeilingSessions = 2;
@@ -329,7 +330,6 @@ schemaCarry = Params.SchemaReuseFraction * schemaState0 * Cond.THNetworkLevel;
 % Schema-mediated learning gated by THPlasticityLevel^2 (combinatorial TH effect)
 schemaGate = Cond.THPlasticityLevel^2;
 eligibilityTrace = 0;
-baseCoactivity23 = NaN;
 perf = nan(1, Params.NumSessions);
 h23 = nan(1, Params.NumSessions);
 h5 = nan(1, Params.NumSessions);
@@ -355,14 +355,9 @@ for iSess = 1:Params.NumSessions
 	sessionMean23(:, iSess) = cellMean23;
 	sessionMean5(:, iSess) = cellMean5;
 	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
-	% Fixed initial coactivity: use session-1 coactivity for all sessions
-	% (removes positive feedback loop where learnState inflates coactivity)
-	if iSess == 1
-		baseCoactivity23 = sessionCoactivity23;
-	end
 	h23(iSess) = iRestrictedStd(mean(sessionMean23(:, 1:iSess), 2, 'omitnan'));
 	h5(iSess) = iRestrictedStd(mean(sessionMean5(:, 1:iSess), 2, 'omitnan'));
-	learnEligibility = Params.LearnFromCoactivity23 * max(baseCoactivity23 - Params.CoactivityThreshold23, 0);
+	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
 	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
 	learnGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
 	rewardSignal = max(perf(iSess), 0);
@@ -371,6 +366,8 @@ for iSess = 1:Params.NumSessions
 	coactLearn = Params.BaseLearnRate * learnGate * eligibilityTrace * rewardSignal;
 	learnState = min(Params.MaxLearnState, learnState + schemaLearn + coactLearn + Params.LearnNoise * randn());
 	learnState = max(0, learnState);
+	% Experience-dependent adaptation of plasticity landscape (slow Hebbian restructuring)
+	Mouse.Learn23 = iStandardize((1 - Params.LearnPatternAdaptRate) * Mouse.Learn23 + Params.LearnPatternAdaptRate * cellMean23);
 	% Overnight consolidation: schema-congruent retention + synaptic homeostasis (Tse et al. 2007)
 	if iSess < Params.NumSessions
 		schemaRetBonus = Params.SchemaRetentionBoost * min(1, schemaCarry);

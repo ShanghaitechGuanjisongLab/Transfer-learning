@@ -1,16 +1,58 @@
+<#PSScriptInfo
+
+.VERSION 1.0.0
+
+.GUID e3a7c5f8-9b21-4d6e-a0f3-8c1b2d4e5f67
+
+.AUTHOR 埃博拉酱-机器人
+
+.COMPANYNAME 一致行动党
+
+.COPYRIGHT (c) 2026 埃博拉酱-机器人. MIT License.
+
+.TAGS Markdown PDF Pandoc Mermaid MathML CJK 中文 转换
+
+.LICENSEURI https://opensource.org/licenses/MIT
+
+.RELEASENOTES
+    1.0.0 - 初始版本。支持 MathML 数学公式、Mermaid 流程图预渲染、CJK 字体、
+            依赖自动安装（Pandoc / Node.js / mermaid-cli）。
+
+#>
+
 <#
 .SYNOPSIS
     将 Markdown 文件转换为 PDF（支持中文、数学公式、表格、Mermaid 流程图）
 .DESCRIPTION
     使用 Pandoc 生成 HTML（MathML 渲染数学），mmdc 预渲染 Mermaid 流程图，
-    再用 Edge headless 打印为 PDF。缺失依赖时自动安装。
+    再用 Edge / Chrome headless 打印为 PDF。缺失依赖时通过 winget / npm 自动安装。
+
+    支持特性：
+    - TeX 数学公式（通过 MathML，浏览器原生渲染）
+    - Mermaid 流程图（通过 mermaid-cli 预渲染为 SVG）
+    - 中日韩（CJK）字体
+    - 表格、代码块、引用块
+    - 依赖自动检测与安装
 .PARAMETER 路径
-    要转换的 Markdown 文件路径。默认为当前目录下的 *.md。
+    要转换的 Markdown 文件路径。支持通配符。默认为当前目录下的 *.md。
 .PARAMETER 输出目录
     PDF 输出目录。默认与源文件同目录。
 .EXAMPLE
-    .\文档转PDF.ps1 -路径 "响应异质性与学习速度_模型综述.md"
+    .\文档转PDF.ps1 -路径 "论文.md"
+
+    将单个 Markdown 文件转换为同目录下的 PDF。
+.EXAMPLE
     .\文档转PDF.ps1 -路径 *.md -输出目录 D:\Output
+
+    批量转换当前目录所有 .md 文件，输出到 D:\Output。
+.EXAMPLE
+    Get-ChildItem -Recurse -Filter *.md | ForEach-Object { .\文档转PDF.ps1 -路径 $_.FullName }
+
+    递归转换所有子目录中的 Markdown 文件。
+.LINK
+    https://pandoc.org/
+.LINK
+    https://mermaid.js.org/
 #>
 param(
     [Parameter(Position = 0)]
