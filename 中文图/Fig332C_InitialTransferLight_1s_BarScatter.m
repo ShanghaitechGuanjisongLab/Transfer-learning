@@ -144,7 +144,7 @@ if isprop(axBottom.XAxis, 'LineWidth')
 	axBottom.YAxis.LineWidth = 1;
 end
 axBottom.XTick = [1 2];
-axBottom.XTickLabel = {'Naive', 'Tran.'};
+axBottom.XTickLabel = {'Naive', 'Continual'};
 ylabel(axBottom, 'active fraction');
 box(axBottom, 'off');
 grid(axBottom, 'off');

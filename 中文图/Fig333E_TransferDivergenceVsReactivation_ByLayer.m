@@ -40,8 +40,8 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 tl = tiledlayout(f, 1, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-xlabel(tl, 'Reactivation', 'FontSize', 6);
-ylabel(tl, 'Divergence', 'FontSize', 6);
+xlabel(tl, 'Divergence', 'FontSize', 6);
+ylabel(tl, 'Reactivation', 'FontSize', 6);
 
 Stats = table("All", nan, nan, nan, 'VariableNames', {'Panel','Rho','PValue','N'});
 
@@ -54,8 +54,8 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-x = double(M.Reactivation);
-y = double(M.Divergence);
+x = double(M.Divergence);
+y = double(M.Reactivation);
 use = isfinite(x) & isfinite(y);
 if nnz(use) < 3
 	error('Fig333E:TooFewPoints', 'Too few valid mice after layer merge.');

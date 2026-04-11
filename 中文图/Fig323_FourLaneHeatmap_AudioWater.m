@@ -132,7 +132,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig322_FourLaneHeatmap_AudioWater.svg');
+svgPath = fullfile(outDirUNC, '中文图Fig323_FourLaneHeatmap_AudioWater.svg');
 TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 

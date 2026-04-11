@@ -19,20 +19,20 @@ GPlot = iAverageAdjacentTrials(G, 3);
 
 f = figure('Color', 'w', 'Name', '中文图36 Learned AudioWater PCA No Align');
 f.Units = 'centimeters';
-f.Position(3:4) = [6, 8];
+f.Position(3:4) = [6.5, 9.0];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 6, 8];
-f.PaperSize = [6, 8];
+f.PaperPosition = [0, 0, 6.5, 9.0];
+f.PaperSize = [6.5, 9.0];
 
 tlo = tiledlayout(f, 1, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 ax = nexttile(tlo, 1);
 palette2 = TransferLearning.FigurePalette(2);
-[hCue, hWater] = iPlotPcaOnAxes(ax, GPlot, palette2(2, :));
+[hCue, hWater, hTrial, hDrift] = iPlotPcaOnAxes(ax, GPlot, palette2(2, :));
 
-lgd = legend(ax, [hCue, hWater], ["🔊", "💧"], 'Location', 'southoutside', 'Orientation', 'horizontal');
+lgd = legend(ax, [hTrial, hDrift, hCue, hWater], ["Trial", "Resting drift", "🔊", "💧"], 'Location', 'southoutside', 'Orientation', 'horizontal', 'NumColumns', 2);
 lgd.Box = 'off';
-lgd.FontSize = 12;
+lgd.FontSize = 10;
 lgd.FontName = 'Segoe UI Emoji';
 lgd.ItemTokenSize = [8, 8];
 
@@ -105,7 +105,7 @@ ntats = MATLAB.DataTypes.NDTable(Xg);
 GroupNtatsOut = table(ntats, 'VariableNames', "NTATS");
 end
 
-function [hCue, hWater] = iPlotPcaOnAxes(ax, GroupNtats, lineColor)
+function [hCue, hWater, hTrial, hDrift] = iPlotPcaOnAxes(ax, GroupNtats, lineColor)
 PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2);
 PcaLines = PcaTable.Score;
 
@@ -121,6 +121,7 @@ PcaData = PcaDataAll(:, idxPlotTime, :);
 
 ax.FontSize = 12;
 ax.FontName = 'Segoe UI Emoji';
+ax.LineWidth = 2;
 box(ax, 'off');
 grid(ax, 'off');
 hold(ax, 'on');
@@ -129,17 +130,22 @@ nLines = size(PcaData, 3);
 cuePts = squeeze(PcaData(:, 1, :)).';
 waterPts = squeeze(PcaData(:, end, :)).';
 
-	lineColors = iAlphaRamp(lineColor, nLines);
+	lineColors = iAlphaRamp([1 0 0], nLines);
 	for iLine = 1:nLines
 		xy = squeeze(PcaData(:, :, iLine));
-		plot(ax, xy(1, :), xy(2, :), 'LineWidth', 2, 'Color', lineColors(iLine, :));
+		plot(ax, xy(1, :), xy(2, :), '-', 'LineWidth', 2, 'Color', lineColors(iLine, :));
 	end
+
+% Connect 0s points (cue onset) across trials with blue dashed line
+plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', [0 0 1]);
 
 scatter(ax, cuePts(:, 1), cuePts(:, 2), 18, 'o', 'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'w', 'LineWidth', 0.2);
 scatter(ax, waterPts(:, 1), waterPts(:, 2), 20, '^', 'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'w', 'LineWidth', 0.2);
 
 hCue = scatter(ax, nan, nan, 18, 'o', 'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'w', 'LineWidth', 0.2);
 hWater = scatter(ax, nan, nan, 20, '^', 'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'w', 'LineWidth', 0.2);
+hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', [1 0 0]);
+hDrift = plot(ax, nan, nan, '--', 'LineWidth', 1.5, 'Color', [0 0 1]);
 
 	xlabel(ax, sprintf('PC1 (%.1f%%)', PcaTable.Explained(1)), 'FontSize', 12);
 	ylabel(ax, sprintf('PC2 (%.1f%%)', PcaTable.Explained(2)), 'FontSize', 12);

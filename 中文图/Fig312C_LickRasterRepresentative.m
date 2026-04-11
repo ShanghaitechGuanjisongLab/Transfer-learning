@@ -52,12 +52,11 @@ tWater = 1;
 ax1 = nexttile(tl, 1);
 imagesc(ax1, xsWin, 1:size(naiveMat,1), naiveMat);
 hold(ax1, 'on');
-xline(ax1, tLight, '--w', 'LineWidth', 2);
-xline(ax1, tWater, '--w', 'LineWidth', 2);
+xline(ax1, tLight, '--', 'Color', [0 0 1], 'LineWidth', 2);
+xline(ax1, tWater, '-', 'Color', [0 0 1], 'LineWidth', 2);
 ax1.YDir = 'reverse';
 ax1.FontSize = 12;
 ax1.LineWidth = 2;
-ylabel(ax1, 'Trial', 'FontSize', 12);
 title(ax1, 'Naive', 'FontSize', 12, 'FontWeight', 'normal');
 iReplaceTickWithEmoji(ax1, tLight, '💡', tWater, '💧');
 box(ax1, 'off');
@@ -69,21 +68,21 @@ iDrawBehaviorStrip(ax1, naiveBehav, xsWin);
 ax2 = nexttile(tl, 2);
 imagesc(ax2, xsWin, 1:size(tranMat,1), tranMat);
 hold(ax2, 'on');
-xline(ax2, tLight, '--w', 'LineWidth', 2);
-xline(ax2, tWater, '--w', 'LineWidth', 2);
+xline(ax2, tLight, '--', 'Color', [0 0 1], 'LineWidth', 2);
+xline(ax2, tWater, '-', 'Color', [0 0 1], 'LineWidth', 2);
 ax2.YDir = 'reverse';
 ax2.FontSize = 12;
 ax2.LineWidth = 2;
 xlabel(ax2, 'Time (s)', 'FontSize', 12);
-ylabel(ax2, 'Trial', 'FontSize', 12);
-title(ax2, 'Transfer', 'FontSize', 12, 'FontWeight', 'normal');
+ylabel(tl, 'Trial', 'FontSize', 12);
+title(ax2, 'Continual', 'FontSize', 12, 'FontWeight', 'normal');
 iReplaceTickWithEmoji(ax2, tLight, '💡', tWater, '💧');
 box(ax2, 'off');
 
 iDrawBehaviorStrip(ax2, tranBehav, xsWin);
 
 % 使用二值colormap: 白=0(无舔), 蓝=1(舔水)
-cmap2 = [1 1 1; 0.15 0.3 0.8];
+cmap2 = [1 1 1; 0.8 0.15 0.15];
 colormap(ax1, cmap2);
 colormap(ax2, cmap2);
 clim(ax1, [0 1]);
@@ -97,9 +96,7 @@ lg.Box = 'off';
 
 %% 导出
 svgPath = fullfile(outDirUNC, 'Fig312C_LickRaster.svg');
-pngPath = fullfile(outDirLocal, 'Fig312C_LickRaster.png');
 print(f, svgPath, '-dsvg');
-print(f, pngPath, '-dpng', '-r300');
 fprintf('Saved SVG: %s\n', svgPath);
 fprintf('Saved PNG: %s\n', pngPath);
 

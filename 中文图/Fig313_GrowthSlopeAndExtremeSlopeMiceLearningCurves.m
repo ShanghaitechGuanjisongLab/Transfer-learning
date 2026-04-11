@@ -1,4 +1,4 @@
-﻿% 中文图313：增长斜率 + 首会话表现相同的代表性学习曲线
+% 中文图313：增长斜率 + 首会话表现相同的代表性学习曲线
 %
 % This script outputs TWO SVG figures, both labeled as panel C:
 %   1) Growth slope comparison (formerly Fig1D)
@@ -294,14 +294,15 @@ ax2=gca;
 hold(ax2, 'on');
 cols = [colorTrans; colorNaive];
 
-iPlotMouseCurve(ax2, allSessionsPlot, mouseMax, cols(1,:), "A transfer mouse");
-iPlotMouseCurve(ax2, allSessionsPlot, mouseMin, cols(2,:), "A naive mouse");
+iPlotMouseCurve(ax2, allSessionsPlot, mouseMax, cols(1,:), "Continual");
+iPlotMouseCurve(ax2, allSessionsPlot, mouseMin, cols(2,:), "Naive");
 
 xlabel(ax2, 'Block');
 ylabel(ax2, 'Hit rate');
 box(ax2, 'off');
 grid(ax2, 'off');
 ax2.FontSize = 12;
+ax2.LineWidth = 2;
 xlabel(ax2, 'Block', 'FontSize', 12);
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 legend(ax2, 'Location','northeastoutside', 'FontSize', 12);
@@ -322,7 +323,7 @@ Sm = sortrows(Sm, 'Session');
 if nargin < 5 || strlength(string(displayName)) == 0
 	displayName = string(mouseId);
 end
-plot(ax, double(Sm.Session), double(Sm.Performance), '-o', 'Color', col, 'LineWidth', 1, 'MarkerSize', 4, 'DisplayName', char(displayName));
+plot(ax, double(Sm.Session), double(Sm.Performance), '-o', 'Color', col, 'LineWidth', 2, 'MarkerSize', 4, 'DisplayName', char(displayName));
 end
 
 function out = iLightWaterTrajectoryBetweenPhases(DS, sourceName, imagingCohort, startPhase, endPhase, excludeMice)

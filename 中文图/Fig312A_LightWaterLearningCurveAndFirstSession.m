@@ -84,7 +84,7 @@ if isfinite(curveP) && numel(x) >= 2
 	end
 end
 
-labels = {'Naive', 'Transfer'};
+labels = {'Naive', 'Continual'};
 if numel(patches) >= 2
 	lg = legend(ax, patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(patches(1:2)));
 else

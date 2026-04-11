@@ -89,15 +89,24 @@ end
 colorNaive = [1, 0, 0];
 colorLearn = [0, 0, 1];
 
+% Precompute shared Learned baseline for Y-axis label alignment
+gap = 1.2;
+baseMaskPre = (xsPlot >= -1) & (xsPlot < 0);
+bL1 = iComputeLearnBase(xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), baseMaskPre, gap);
+bL2 = iComputeLearnBase(xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), baseMaskPre, gap);
+sharedLearnBase = max(bL1, bL2);
+
 f = figure('Color', 'w', 'Name', '中文图324A 声水代表性细胞');
 f.Units = 'centimeters';
 f.Position(3:4) = [7.5, 4];
 
 ax1 = axes(f, 'Units', 'normalized', 'Position', [0.12 0.22 0.31 0.58]);
-[hNaive, hLearn] = iPlotOneCell(ax1, xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), colorNaive, colorLearn, uint64(S.CellUID(posIdx)));
+[hNaive, hLearn] = iPlotOneCell(ax1, xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), colorNaive, colorLearn, uint64(S.CellUID(posIdx)), sharedLearnBase);
 
-ax2 = axes(f, 'Units', 'normalized', 'Position', [0.56 0.20 0.34 0.58]);
-iPlotOneCell(ax2, xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), colorNaive, colorLearn, uint64(S.CellUID(negIdx)));
+ax2 = axes(f, 'Units', 'normalized', 'Position', [0.56 0.22 0.34 0.58]);
+iPlotOneCell(ax2, xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), colorNaive, colorLearn, uint64(S.CellUID(negIdx)), sharedLearnBase);
+sharedYLim = [min(ax1.YLim(1), ax2.YLim(1)), max(ax1.YLim(2), ax2.YLim(2))];
+set([ax1, ax2], 'YLim', sharedYLim);
 annotation(f, 'textbox', [0.40 0.03 0.20 0.06], 'String', 'Time (s)', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 6);
 
@@ -132,7 +141,7 @@ picked.LearnedAt1 = [learn1(posIdx); learn1(negIdx)];
 assignin('base', 'Fig324A_PickedCells', picked);
 assignin('base', 'Fig324A_CellStrip', S);
 
-function [hNaive, hLearn] = iPlotOneCell(ax, xsPlot, yNaive, yLearn, colorNaive, colorLearn, cellUID)
+function [hNaive, hLearn] = iPlotOneCell(ax, xsPlot, yNaive, yLearn, colorNaive, colorLearn, cellUID, fixedLearnBase)
 hold(ax, 'on');
 baseMaskLocal = (xsPlot >= -1) & (xsPlot < 0);
 baseNaive = mean(yNaive(baseMaskLocal), 'omitnan');
@@ -141,7 +150,11 @@ baseLearn = mean(yLearn(baseMaskLocal), 'omitnan');
 gap = 1.2;
 offsetNaive = -baseNaive;
 yNaiveShift = yNaive + offsetNaive;
-offsetLearn = (max(yNaiveShift, [], 'omitnan') - min(yLearn, [], 'omitnan')) + gap;
+if nargin >= 8 && ~isempty(fixedLearnBase)
+	offsetLearn = fixedLearnBase - baseLearn;
+else
+	offsetLearn = (max(yNaiveShift, [], 'omitnan') - min(yLearn, [], 'omitnan')) + gap;
+end
 yLearnShift = yLearn + offsetLearn;
 baseNaiveShift = baseNaive + offsetNaive;
 baseLearnShift = baseLearn + offsetLearn;
@@ -191,6 +204,15 @@ for i = 1:numel(targets)
 end
 xAnchor = xsPlot(idx);
 yAnchor = y(idx);
+end
+
+function baseLearnShift = iComputeLearnBase(xsPlot, yNaive, yLearn, baseMask, gap)
+baseNaive = mean(yNaive(baseMask), 'omitnan');
+baseLearn = mean(yLearn(baseMask), 'omitnan');
+offsetNaive = -baseNaive;
+yNaiveShift = yNaive + offsetNaive;
+offsetLearn = (max(yNaiveShift, [], 'omitnan') - min(yLearn, [], 'omitnan')) + gap;
+baseLearnShift = baseLearn + offsetLearn;
 end
 
 function X = iGetNtats3D(S)

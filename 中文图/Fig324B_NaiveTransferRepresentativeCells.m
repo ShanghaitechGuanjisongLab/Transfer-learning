@@ -48,12 +48,16 @@ valid = isfinite(naiveNeg1) & isfinite(learnedNeg1) & isfinite(naive0) & isfinit
 posMask = valid ...
 	& naiveNeg1 < naive0 & naive0 < naive1 ...
 	& learnedNeg1 < learned0 & learned0 < learned1 ...
-	& learned1 > naive1;
+	& learned1 > naive1 ...
+	& (naive1 - naive0) > (naive0 - naiveNeg1) ...
+	& (learned1 - learned0) > (learned0 - learnedNeg1);
 
 negMask = valid ...
 	& naiveNeg1 > naive0 & naive0 > naive1 ...
 	& learnedNeg1 > learned0 & learned0 > learned1 ...
-	& naive1 > learned1;
+	& naive1 > learned1 ...
+	& (naive0 - naive1) > (naiveNeg1 - naive0) ...
+	& (learned0 - learned1) > (learnedNeg1 - learned0);
 
 if ~any(posMask)
 	error('中文图324B:NoPositiveCell', 'No cell satisfies the positive criterion.');
@@ -83,15 +87,24 @@ end
 colorNaive = [1, 0, 0];
 colorLearned = [0, 0, 1];
 
+% Precompute shared Learned baseline for Y-axis label alignment
+gap = 1.2;
+baseMaskPre = (xsPlot >= -1) & (xsPlot < 0);
+bL1 = iComputeLearnBase(xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), baseMaskPre, gap);
+bL2 = iComputeLearnBase(xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), baseMaskPre, gap);
+sharedLearnBase = max(bL1, bL2);
+
 f = figure('Color', 'w', 'Name', '中文图324B Naive Learned 代表性细胞');
 f.Units = 'centimeters';
 f.Position(3:4) = [7.5, 4];
 
 ax1 = axes(f, 'Units', 'normalized', 'Position', [0.12 0.22 0.31 0.58]);
-[hNaive, hLearned] = iPlotOneCell(ax1, xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), colorNaive, colorLearned, uint64(S.CellUID(posIdx)), 'Naive', 'Learned');
+[hNaive, hLearned] = iPlotOneCell(ax1, xsPlot, squeeze(X(posIdx, plotMask, 1)), squeeze(X(posIdx, plotMask, 2)), colorNaive, colorLearned, uint64(S.CellUID(posIdx)), 'Naive', 'Learned', sharedLearnBase);
 
-ax2 = axes(f, 'Units', 'normalized', 'Position', [0.56 0.20 0.34 0.58]);
-iPlotOneCell(ax2, xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), colorNaive, colorLearned, uint64(S.CellUID(negIdx)), 'Naive', 'Learned');
+ax2 = axes(f, 'Units', 'normalized', 'Position', [0.56 0.22 0.34 0.58]);
+iPlotOneCell(ax2, xsPlot, squeeze(X(negIdx, plotMask, 1)), squeeze(X(negIdx, plotMask, 2)), colorNaive, colorLearned, uint64(S.CellUID(negIdx)), 'Naive', 'Learned', sharedLearnBase);
+sharedYLim = [min(ax1.YLim(1), ax2.YLim(1)), max(ax1.YLim(2), ax2.YLim(2))];
+set([ax1, ax2], 'YLim', sharedYLim);
 
 annotation(f, 'textbox', [0.40 0.03 0.20 0.06], 'String', 'Time (s)', 'EdgeColor', 'none', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 6);
@@ -125,7 +138,7 @@ picked.LearnedAt0 = [learned0(posIdx); learned0(negIdx)];
 picked.LearnedAt1 = [learned1(posIdx); learned1(negIdx)];
 assignin('base', 'Fig324B_PickedCells', picked);
 
-function [hLower, hUpper] = iPlotOneCell(ax, xsPlot, yLower, yUpper, colorLower, colorUpper, cellUID, lowerLabel, upperLabel)
+function [hLower, hUpper] = iPlotOneCell(ax, xsPlot, yLower, yUpper, colorLower, colorUpper, cellUID, lowerLabel, upperLabel, fixedLearnBase)
 hold(ax, 'on');
 baseMaskLocal = (xsPlot >= -1) & (xsPlot < 0);
 baseLower = mean(yLower(baseMaskLocal), 'omitnan');
@@ -134,7 +147,11 @@ baseUpper = mean(yUpper(baseMaskLocal), 'omitnan');
 gap = 1.2;
 offsetLower = -baseLower;
 yLowerShift = yLower + offsetLower;
-offsetUpper = (max(yLowerShift, [], 'omitnan') - min(yUpper, [], 'omitnan')) + gap;
+if nargin >= 10 && ~isempty(fixedLearnBase)
+	offsetUpper = fixedLearnBase - baseUpper;
+else
+	offsetUpper = (max(yLowerShift, [], 'omitnan') - min(yUpper, [], 'omitnan')) + gap;
+end
 yUpperShift = yUpper + offsetUpper;
 baseLowerShift = baseLower + offsetLower;
 baseUpperShift = baseUpper + offsetUpper;
@@ -184,6 +201,15 @@ for i = 1:numel(targets)
 end
 xAnchor = xsPlot(idx);
 yAnchor = y(idx);
+end
+
+function baseLearnShift = iComputeLearnBase(xsPlot, yNaive, yLearn, baseMask, gap)
+baseNaive = mean(yNaive(baseMask), 'omitnan');
+baseLearn = mean(yLearn(baseMask), 'omitnan');
+offsetNaive = -baseNaive;
+yNaiveShift = yNaive + offsetNaive;
+offsetLearn = (max(yNaiveShift, [], 'omitnan') - min(yLearn, [], 'omitnan')) + gap;
+baseLearnShift = baseLearn + offsetLearn;
 end
 
 function X = iGetNtats3D(S)

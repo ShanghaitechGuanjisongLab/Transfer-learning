@@ -46,6 +46,8 @@ hold(ax, 'on');
 ax.FontSize = 12;
 ax.FontName = 'Segoe UI Emoji';
 ax.LineWidth = 2;
+ax.XAxis.LineWidth = 2;
+ax.YAxis.LineWidth = 2;
 
 palette2 = TransferLearning.FigurePalette(2);
 lineColors = [palette2(1, :); palette2(2, :)];
@@ -55,6 +57,9 @@ Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	EdgeColors=lineColors, ...
 	Ax=ax, ...
 	LineStyles=["-"; "-"]);
+for p = Patches(:)'
+	p.LineWidth = 2;
+end
 
 xline(ax, 0, '--k', 'LineWidth', 2);
 xline(ax, 1, '-k', 'LineWidth', 2);
@@ -65,8 +70,7 @@ ylabel(ax, 'z-score', 'FontSize', 12);
 ax.XTick = [0 1];
 ax.XTickLabel = {"💡", "💧"};
 
-lg = legend(Patches, ["Initial", "Transfer"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box', 'off');
-lg.String = ["Naive", "Transfer"];
+lg = legend(Patches, ["Naive", "Continual"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box', 'off');
 lg.FontSize = 12;
 
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
