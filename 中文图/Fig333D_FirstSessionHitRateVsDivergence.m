@@ -106,7 +106,6 @@ assignin('base', 'Fig333D_FirstSessionData', Data);
 assignin('base', 'Fig333D_Stats', Stats);
 
 function out = iCollectTransferFirstSessionData(DS, idx0, idx1s)
-CellMap = iCellMap(DS);
 T = DS.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex","Behavior","Stimulus","Phase"], Phase="Transfer");
 if isempty(T)
 	out = iEmptyOutputTable();
@@ -129,13 +128,12 @@ for i = 1:numel(mice)
 	end
 	dt = min(Tm.DateTime);
 	Ts = sortrows(Tm(Tm.DateTime == dt, :), 'TrialIndex');
-	Rows{i} = iSessionLayerRows(DS, CellMap, m, dt, Ts, "Transfer", idx0, idx1s);
+	Rows{i} = iSessionRows(DS, m, dt, Ts, "Transfer", idx0, idx1s);
 	end
 out = vertcat(Rows{:});
 end
 
 function out = iCollectNaiveFirstSessionData(DS, sourceName, badMice, idx0, idx1s)
-CellMap = iCellMap(DS);
 T = DS.TableQuery(["Mouse","DateTime","TrialUID","TrialIndex","Behavior","Stimulus","Phase"], Phase="Naive");
 if isempty(T)
 	out = iEmptyOutputTable();
@@ -173,13 +171,13 @@ for i = 1:numel(mice)
 		Rows{i} = iEmptyOutputTable();
 		continue;
 	end
-	Rows{i} = iSessionLayerRows(DS, CellMap, m, chosenDt, chosenTbl, "Naive", idx0, idx1s);
+	Rows{i} = iSessionRows(DS, m, chosenDt, chosenTbl, "Naive", idx0, idx1s);
 	Rows{i}.Source(:) = string(sourceName);
 	end
 out = vertcat(Rows{:});
 end
 
-function out = iSessionLayerRows(DS, CellMap, mouseName, dt, SessTbl, groupName, idx0, idx1s)
+function out = iSessionRows(DS, mouseName, dt, SessTbl, groupName, idx0, idx1s)
 out = iEmptyOutputTable();
 trialUIDs = unique(uint64(SessTbl.TrialUID), 'stable');
 if numel(trialUIDs) < 2
@@ -201,18 +199,14 @@ if isempty(nts)
 	return;
 end
 
-[ctt, cellUIDs] = iBuildCTT(nts, trialUIDs, idx0);
+[ctt, ~] = iBuildCTT(nts, trialUIDs, idx0);
 if isempty(ctt) || size(ctt, 2) < 2
 	return;
 end
 
-[~, loc] = ismember(cellUIDs, CellMap.CellUID);
-zLayer = strings(numel(cellUIDs), 1);
-	has = loc > 0;
-	zLayer(has) = CellMap.ZLayer(loc(has));
-	xAt1 = ctt(:, :, idx1s);
+xAt1 = ctt(:, :, idx1s);
 
-	divValue = iAllCellDivergence(xAt1, zLayer);
+divValue = iAllCellDivergence(xAt1);
 	out = iOneRow(mouseName, groupName, hitRate, divValue, dt);
 end
 
@@ -221,13 +215,12 @@ row = table(string(mouseName), string(groupName), double(hitRate), double(divVal
 	'VariableNames', {'Mouse','Group','HitRate','Divergence','DateTime','Source'});
 end
 
-function div = iAllCellDivergence(xAt1, zLayer)
-mask = (zLayer == "MOp2/3") | (zLayer == "MOp5");
-if nnz(mask) < 3
+function div = iAllCellDivergence(xAt1)
+if size(xAt1, 1) < 3
 	div = NaN;
 	return;
 end
-X = xAt1(mask, :);
+X = xAt1;
 totalSignal = sum(mean(X, 2).^2);
 totalNoise = sum(var(X, [], 2));
 if totalSignal > 0
@@ -286,14 +279,6 @@ for iC = 1:numel(allCells)
 	ctt = ctt - ctt(:, :, idx0);
 	cellUIDs = keepUID;
 end
-
-function CellMap = iCellMap(DS)
-CellMap = DS.Cells(:, {'CellUID', 'Mouse', 'ZLayer'});
-CellMap.CellUID = uint64(CellMap.CellUID);
-CellMap.Mouse = string(CellMap.Mouse);
-CellMap.ZLayer = string(CellMap.ZLayer);
-end
-
 function T = iEmptyOutputTable()
 T = table(string.empty(0, 1), string.empty(0, 1), nan(0, 1), nan(0, 1), NaT(0, 1), string.empty(0, 1), ...
 	'VariableNames', {'Mouse','Group','HitRate','Divergence','DateTime','Source'});
