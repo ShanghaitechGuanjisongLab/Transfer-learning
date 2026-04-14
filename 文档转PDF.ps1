@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.0.1
 
 .GUID e3a7c5f8-9b21-4d6e-a0f3-8c1b2d4e5f67
 
@@ -15,8 +15,7 @@
 .LICENSEURI https://opensource.org/licenses/MIT
 
 .RELEASENOTES
-    1.0.0 - 初始版本。支持 MathML 数学公式、Mermaid 流程图预渲染、CJK 字体、
-            依赖自动安装（Pandoc / Node.js / mermaid-cli）。
+    1.0.1 - 修复标题、表格、插图、~符号、序号列表、代码块换行滚动条等渲染细节问题
 
 #>
 
@@ -163,11 +162,11 @@ $网页头部 = @'
   th, td { border: 1px solid #999; padding: 4px 8px; text-align: left; }
   th { background: #f0f0f0; }
   code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; background: #f5f5f5; padding: 1px 4px; border-radius: 3px; }
-  pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 9.5pt; }
+  pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; font-size: 9.5pt; }
   pre code { background: none; padding: 0; }
   blockquote { border-left: 3px solid #ccc; margin-left: 0; padding-left: 1em; color: #555; }
   img { max-width: 100%; }
-  math { font-size: 1.05em; }
+  math { font-size: 1em; font-family: inherit; }
 </style>
 </head>
 <body>
@@ -189,14 +188,29 @@ foreach ($文件 in $文件列表) {
     $PDF路径 = Join-Path $目标目录 "$文件名.pdf"
 
     try {
+        # 预处理：在 pipe table 起始行前插入空行（Pandoc pipe_tables 要求表格前有空行）
+        $临时Md = Join-Path $env:TEMP "文档转PDF_预处理_$PID`_$文件名.md"
+        $原始行 = [System.IO.File]::ReadAllLines($文件.FullName, [System.Text.Encoding]::UTF8)
+        $处理后行 = [System.Collections.Generic.List[string]]::new($原始行.Length + 50)
+        for ($行索引 = 0; $行索引 -lt $原始行.Length; $行索引++) {
+            $当前行 = $原始行[$行索引]
+            if ($行索引 -gt 0 -and $当前行 -match '^\|.+\|' -and $原始行[$行索引 - 1].Trim() -ne '' -and $原始行[$行索引 - 1] -notmatch '^\|') {
+                $处理后行.Add('')
+            }
+            $处理后行.Add($当前行)
+        }
+        [System.IO.File]::WriteAllLines($临时Md, $处理后行.ToArray(), [System.Text.Encoding]::UTF8)
+
         # Pandoc: Markdown → HTML 片段
         Write-Host "[1/2] 转换 $($文件.Name) → HTML ..." -ForegroundColor Cyan
         $临时片段 = Join-Path $env:TEMP "文档转PDF_片段_$PID`_$文件名.html"
-        & pandoc $文件.FullName `
-            --from markdown+tex_math_dollars+pipe_tables+fenced_code_blocks `
+        & pandoc $临时Md `
+            --from markdown+tex_math_dollars+pipe_tables+fenced_code_blocks-blank_before_header-blank_before_blockquote-subscript-superscript-fancy_lists `
             --to html5 `
             --mathml `
             --syntax-highlighting=none `
+            --resource-path=$源目录 `
+            --embed-resources `
             -o $临时片段
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Pandoc 转换失败: $($文件.Name)"
@@ -262,6 +276,7 @@ foreach ($文件 in $文件列表) {
         }
     }
     finally {
+        Remove-Item $临时Md -ErrorAction SilentlyContinue
         Remove-Item $临时片段 -ErrorAction SilentlyContinue
         Remove-Item $临时网页 -ErrorAction SilentlyContinue
     }
