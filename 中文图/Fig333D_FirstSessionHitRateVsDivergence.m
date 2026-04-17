@@ -26,7 +26,7 @@ naive = [naiveA; naiveB];
 transfer = iCollectTransferFirstSessionData(ALB, idx0, idx1s);
 
 Data = [naive; transfer];
-Data.Group = categorical(string(Data.Group), ["Naive", "Transfer"]);
+Data.Group = categorical(string(Data.Group), ["Naive", "Continual"]);
 
 palette3 = TransferLearning.FigurePalette(3);
 colorNaive = palette3(1, :);
@@ -81,7 +81,7 @@ xFit = [min(xAll), max(xAll)];
 yFit = polyval(fitP, xFit);
 hFit = plot(ax, xFit, yFit, '-', 'Color', colorFit, 'LineWidth', 2);
 
-lgd = legend(ax, [hN, hT], {'Naive', 'Transfer'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
+lgd = legend(ax, [hN, hT], {'Naive', 'Continual'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
 lgd.FontSize = 12;
 lgd.Box = 'off';
 

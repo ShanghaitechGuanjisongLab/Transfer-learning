@@ -1,4 +1,4 @@
-﻿% English Fig2H: LightWater Naive vs Transfer Divergence by layer
+% English Fig2H: LightWater Naive vs Transfer Divergence by layer
 %
 % 上面板：L2/3  Naive LW vs Transfer LW（非配对 ranksum）
 % 下面板：L5    Naive LW vs Transfer LW（非配对 ranksum）
@@ -88,6 +88,7 @@ delete(findobj(ax1, 'Type', 'Scatter'));
 for eb = EB1.Object(:)'
 	eb.LineWidth = 1;
 end
+iStylePValue(ax1);
 iStyleAxes(ax1, 'L2/3');
 iStyleBars(Bars1, RED, BLUE);
 
@@ -98,12 +99,13 @@ delete(findobj(ax2, 'Type', 'Scatter'));
 for eb = EB2.Object(:)'
 	eb.LineWidth = 1;
 end
+iStylePValue(ax2);
 iStyleAxes(ax2, 'L5');
 xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
 iStyleBars(Bars2, RED, BLUE);
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = fullfile(outDirUNC, 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg');
+svgPath = fullfile(outDirUNC, '中文图Fig333C_LightWater_NaiveVsTransfer_DivByLayer.svg');
 TransferLearning.PrintFigure(f, svgPath);
 
 assignin('base', 'English_Fig2H_Table', T);
@@ -324,7 +326,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 1;
 end
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Transfer'};
+ax.XTickLabel = {'Naive', 'Continual'};
 legend(ax, 'off');
 box(ax, 'off');
 grid(ax, 'off');
@@ -360,5 +362,11 @@ else
 		Bars(2).EdgeColor = 'none';
 	end
 	end
+end
+
+function iStylePValue(ax)
+for h = findobj(ax, 'Type', 'Line')'
+	h.LineWidth = 1;
+end
 end
 

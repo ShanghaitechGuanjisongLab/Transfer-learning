@@ -559,11 +559,13 @@ classdef(Abstract)TransferLearningFig341Compat
 					vals = reshape(vals, size(st.NTATS, 1), size(st.NTATS, 3));
 				end
 				peakBeforeCeilingMask = TransferLearningFig341Compat.iNaivePeakBeforeLastCeiling(vals, st.SessionTable.Performance);
-				if ~any(peakBeforeCeilingMask)
+				extremeMask = max(vals, [], 2) > 1 & min(vals, [], 2) < -1;
+				candidateMask = peakBeforeCeilingMask & extremeMask;
+				if ~any(candidateMask)
 					continue;
 				end
 				rangeVal = max(vals, [], 2) - min(vals, [], 2);
-				rangeVal(~peakBeforeCeilingMask) = -inf;
+				rangeVal(~candidateMask) = -inf;
 				[cScore, cIdx] = max(rangeVal);
 				if isfinite(cScore) && cScore > bestNaiveScore
 					bestNaiveScore = cScore;

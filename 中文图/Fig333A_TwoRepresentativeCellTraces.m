@@ -59,7 +59,7 @@ ax2.YAxis.Visible = false;
 
 ax3 = nexttile(tlo, 3);
 iPlotTrialSet(ax3, xsPlot, transferRep.TransferSignals(:, plotMask), colorTransfer);
-title(ax3, sprintf('Transfer\nCell %u', transferRep.CellUID), 'FontSize', 6, 'FontWeight', 'normal');
+title(ax3, sprintf('Continual\nCell %u', transferRep.CellUID), 'FontSize', 6, 'FontWeight', 'normal');
 ax3.YAxis.Visible = false;
 
 allAxes = [ax1, ax2, ax3];

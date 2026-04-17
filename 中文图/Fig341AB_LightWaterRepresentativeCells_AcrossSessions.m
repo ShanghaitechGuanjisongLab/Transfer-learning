@@ -95,8 +95,7 @@ hold(ax, 'on');
 	ax.LineWidth = 1;
 	ax.TickDir = 'out';
 	ax.FontName = 'Segoe UI Emoji';
-	ax.XTick = [0 1 2];
-	ax.XTickLabel = {'0', '💧', '2'};
+	iReplaceTickLabels(ax, 0, '💡', 1, '💧');
 	box(ax, 'off');
 	grid(ax, 'off');
 	if strlength(headerText) > 0
@@ -108,4 +107,17 @@ hold(ax, 'on');
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';
 	end
+end
+
+function iReplaceTickLabels(ax, t1, emoji1, t2, emoji2)
+ticks = ax.XTick;
+labels = string(ax.XTickLabel);
+for i = 1:numel(ticks)
+	if abs(ticks(i) - t1) < 1e-10
+		labels(i) = emoji1;
+	elseif abs(ticks(i) - t2) < 1e-10
+		labels(i) = emoji2;
+	end
+end
+ax.XTickLabel = labels;
 end
