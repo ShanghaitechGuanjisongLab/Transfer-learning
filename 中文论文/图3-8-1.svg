@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="响应异质性与快速学习机制.svg"
+   sodipodi:docname="图3-8-1.svg"
    inkscape:export-filename="响应异质性与快速学习机制.png"
    inkscape:export-xdpi="500"
    inkscape:export-ydpi="500"
@@ -280,26 +280,26 @@
        inkscape:connection-start="#use32" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:Arial;-inkscape-font-specification:Arial;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.176389;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="17.389406"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;writing-mode:lr-tb;direction:ltr;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.176389;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       x="43.078995"
        y="10.488847"
        id="text30"><tspan
          sodipodi:role="line"
          id="tspan30"
          style="stroke-width:0.176389"
-         x="17.389406"
-         y="10.488847">Fast learning: ➕➕ ➖➖</tspan></text>
+         x="43.078995"
+         y="10.488847">Fast directed learning: ➕➕ ➖➖</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:Arial;-inkscape-font-specification:Arial;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="4.4840636"
-       y="17.774923"
+       x="5.1281157"
+       y="17.682917"
        id="text31"><tspan
          sodipodi:role="line"
          id="tspan31"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352778"
-         x="4.4840636"
-         y="17.774923">MOp Heterogeneity</tspan></text>
+         x="5.1281157"
+         y="17.682917">MO heterogeneity</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.352778;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Triangle)"
        d="M 36.842664,27.83833 33.618262,18.429712"
@@ -337,5 +337,16 @@
        inkscape:connector-curvature="0"
        inkscape:connection-start="#g21"
        inkscape:connection-end="#use32" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.11667px;font-family:Arial;-inkscape-font-specification:Arial;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777;paint-order:fill markers stroke"
+       x="20.887989"
+       y="1.236588"
+       id="text2"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352778"
+         x="20.887989"
+         y="1.236588">Upstream input</tspan></text>
   </g>
 </svg>
