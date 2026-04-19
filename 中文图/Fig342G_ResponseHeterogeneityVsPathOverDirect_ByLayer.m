@@ -12,7 +12,7 @@ end
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgName = "中文图Fig342G_ResponseHeterogeneityVsPathOverDirect_AllCells_v2.svg";
 
-StateData = TransferLearning.Fig341.BuildStateSpaceSummary(true, UniExp.Flags.No_special_operation);
+StateData = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.No_special_operation);
 States = StateData.MouseStates;
 Metrics = table(strings(0,1), strings(0,1), strings(0,1), nan(0,1), ...
 	'VariableNames', {'Mouse', 'Group', 'Source', 'PathOverDirect'});
@@ -149,7 +149,7 @@ text(ax, 0.95, 0.95, iPLabel(p), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
 text(ax, 0.95, 0.87, 'Naive', 'Units', 'normalized', 'Color', colorNaive, ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
-text(ax, 0.95, 0.79, 'Transfer', 'Units', 'normalized', 'Color', colorTransfer, ...
+text(ax, 0.95, 0.79, 'Continual', 'Units', 'normalized', 'Color', colorTransfer, ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
 title(ax, 'All cells', 'FontSize', 6, 'FontWeight', 'normal');
 hold(ax, 'off');

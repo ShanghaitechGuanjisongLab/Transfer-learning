@@ -64,6 +64,7 @@ for iL = 1:numel(layers)
     ax = nexttile(tl, iL);
     hold(ax, 'on');
     ax.FontSize = 12;
+    ax.LineWidth = 2;
     box(ax, 'off');
 
     maskN = use & (groupAll == "Naive");
@@ -94,7 +95,7 @@ end
 
 MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
 
-lgd = legend(hLegend, {'Naive', 'Transfer'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Naive', 'Continual'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end

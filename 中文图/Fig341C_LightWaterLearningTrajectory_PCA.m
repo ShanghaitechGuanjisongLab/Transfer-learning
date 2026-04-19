@@ -9,7 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-Data = TransferLearning.Fig341.BuildStateSpaceSummary(true, UniExp.Flags.No_special_operation);
+Data = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.No_special_operation);
 Naive = Data.Representative.NaiveCell;
 Transfer = Data.Representative.TransferCell;
 
@@ -28,7 +28,7 @@ ax1 = nexttile(tlo, 1);
 iPlotMouseTrajectory(ax1, Naive.Points, Naive.Explained, palette2(1, :), 'Naive');
 
 ax2 = nexttile(tlo, 2);
-iPlotMouseTrajectory(ax2, Transfer.Points, Transfer.Explained, palette2(2, :), 'Transfer');
+iPlotMouseTrajectory(ax2, Transfer.Points, Transfer.Explained, palette2(2, :), 'Continual');
 
 MATLAB.Graphics.UnifyAxesLims([ax1, ax2], @xlim);
 MATLAB.Graphics.UnifyAxesLims([ax1, ax2], @ylim);

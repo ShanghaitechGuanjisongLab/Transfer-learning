@@ -12,7 +12,7 @@ end
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
 linePhases = ["NaiveLight", "TransferLightHit", "TransferLightMiss"];
-lineLegends = ["Naive", "Transfer Hit", "Transfer Miss"];
+lineLegends = ["Naive", "Continual Hit", "Continual Miss"];
 
 Data = Fig362_GlobalInformationCache(queryXlsx, linePhases, string.empty(1, 0));
 xData = Data.XData;

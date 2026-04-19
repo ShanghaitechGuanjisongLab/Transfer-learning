@@ -9,7 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-Data = TransferLearning.Fig341.BuildStateSpaceSummary(true, UniExp.Flags.ZScore);
+Data = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.ZScore);
 Naive = Data.Representative.NaiveCell;
 Transfer = Data.Representative.TransferCell;
 xsSec = Data.XsSec;
@@ -56,7 +56,7 @@ for iSess = 1:nCol
 	ax = nexttile(tlo, nCol + iSess);
 	if iSess <= size(Transfer.Signals, 1)
 		if iSess == 1
-			headerText = sprintf('Transfer\nCell %u', Transfer.CellUID);
+			headerText = sprintf('Continual\nCell %u', Transfer.CellUID);
 		else
 			headerText = '';
 		end
@@ -69,8 +69,6 @@ for iSess = 1:nCol
 		ylabel(ax, 'z-score', 'FontSize', 6);
 	end
 end
-
-xlabel(tlo, 'Time (s)', 'FontSize', 6);
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)

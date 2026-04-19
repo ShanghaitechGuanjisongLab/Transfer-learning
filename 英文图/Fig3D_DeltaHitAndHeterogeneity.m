@@ -94,7 +94,7 @@ for iL = 1:numel(layers)
 	if iL == 1
 		ax.XTickLabel = {};
 	else
-		ax.XTickLabel = {'Naive💡', 'Transfer💡', 'Learned🔊'};
+		ax.XTickLabel = {'Naive💡', 'Continual💡', 'Learned🔊'};
 	end
 	ylabel(ax, layerLabel, 'FontSize', 6);
 	legend(ax, 'off');
@@ -124,6 +124,9 @@ for iL = 1:numel(layers)
 	end
 	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
 		for pt = Opt.MultiCompare.PText(:)', pt.FontSize = 6; end
+	end
+	if isfield(Opt, 'MultiCompare') && ismember('PLine', Opt.MultiCompare.Properties.VariableNames)
+		for pl = Opt.MultiCompare.PLine(:)', pl.LineWidth = 1; end
 	end
 end
 

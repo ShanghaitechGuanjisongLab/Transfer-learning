@@ -9,7 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-Data = TransferLearning.Fig341.BuildStateSpaceSummary(true, UniExp.Flags.No_special_operation);
+Data = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.No_special_operation);
 Naive = Data.Representative.NaiveCell;
 Transfer = Data.Representative.TransferCell;
 

@@ -20,6 +20,7 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 % --- Time axis
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
+xMask = (xsSec >= 0) & (xsSec <= 2);
 
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
@@ -103,7 +104,6 @@ fprintf('Selected Naive:    Mouse=%s, DateTime=%s, Response heterogeneity=%.3f\n
 fprintf('Global SD constraint: Naive=%.3f > Transfer=%.3f\n', globalSdN(idxN), globalSdT(idxT));
 
 %% ===== 4) Fetch full trial-level NTS for 2 selected sessions =====
-xMask = (xsSec >= 0) & (xsSec <= 2);
 
 sessInfo = struct('label', {"Transfer","Naive"}, ...
 	'dt', {SessT.DateTime(idxT), allNaiveSess.DateTime(idxN)}, ...
@@ -231,7 +231,7 @@ end
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
 pairColors = {[0 0.4470 0.7410]; [0.8500 0.3250 0.0980]};  % Transfer=blue, Naive=orange
-histTitles = ["Transfer", "Naive"];
+histTitles = ["Continual", "Naive"];
 
 histFigs = gobjects(1, 2);
 histAxes = gobjects(1, 2);

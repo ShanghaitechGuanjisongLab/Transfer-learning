@@ -55,8 +55,7 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-ylabel(layout, 'Baseline temporal std', 'FontSize', 6);
-xlabel(layout, '💡💧', 'FontName', 'Segoe UI Emoji', 'FontSize', 6);
+ylabel(layout, '💡💧 Baseline temporal std', 'FontSize', 6);
 
 for iL = 1:numel(layers)
 	layerName = layers(iL);
@@ -221,7 +220,7 @@ function iStyleTile(ax, bars, errorBars, optional, colorNaive, colorTransfer, sh
 	end
 	ax.XTick = [1 2];
 	if showXTick
-		ax.XTickLabel = {'Naive', 'Transfer'};
+		ax.XTickLabel = {'Naive', 'Continual'};
 	else
 		ax.XTickLabel = {'', ''};
 	end
