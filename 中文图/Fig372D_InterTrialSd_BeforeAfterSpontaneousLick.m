@@ -10,8 +10,7 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
-Data = Fig372_ConvergenceInheritanceCache(queryXlsx);
+Data = Fig372_ConvergenceInheritanceCache();
 
 f = figure('Color', 'w', 'Name', '中文图372D Inter-trial SD before after spontaneous lick');
 f.Units = 'centimeters';
@@ -66,7 +65,7 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig372D_InterTrialSd_BeforeAfterSpontaneousLick.svg');
+svgPath = fullfile(outDirUNC, '中文图Fig374_InterTrialSd_BeforeAfterSpontaneousLick.svg');
 TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'Fig372D_Data', Data);
