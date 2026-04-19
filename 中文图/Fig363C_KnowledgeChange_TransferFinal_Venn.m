@@ -1,4 +1,4 @@
-% 中文图363C：知识增减（Transfer→Final）
+% 中文图363C：知识增减（Continual→Final）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -13,7 +13,7 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
 Data = Fig363_GlobalKnowledgeChangeCache(queryXlsx);
 
-iPlotKnowledgeVenn(Data.PairStats(3, :), '中文图363C Knowledge change Transfer to Final', [6, 8], fullfile(outDirUNC, '中文图Fig363C_KnowledgeChange_TransferFinal_Venn.svg'));
+iPlotKnowledgeVenn(Data.PairStats(3, :), '中文图363C Knowledge change Continual to Final', [6, 8], fullfile(outDirUNC, '中文图Fig363C_KnowledgeChange_TransferFinal_Venn.svg'));
 
 function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 	f = figure('Color', 'w', 'Name', figureName);

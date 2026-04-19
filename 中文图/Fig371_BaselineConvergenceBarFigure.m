@@ -1,6 +1,6 @@
 function Fig371_BaselineConvergenceBarFigure(values, compareGroup, yLabel, svgFileName, xTickLabels)
 if nargin < 5 || isempty(xTickLabels)
-    xTickLabels = {"Learned", "Naive", "T-hit", "T-miss"};
+    xTickLabels = {"Learned", "Naive", "C-hit", "C-miss"};
 end
 
 if ~isstruct(values)

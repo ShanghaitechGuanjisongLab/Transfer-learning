@@ -1,14 +1,16 @@
-function Data = Fig372_ConvergenceInheritanceCache(queryXlsx)
-queryXlsx = string(queryXlsx);
+function Data = Fig372_ConvergenceInheritanceCache(varargin)
+if nargin > 1
+	error('Fig372:BadInput', 'Expected at most one input.');
+end
 
 persistent Cache
-if ~isempty(Cache) && isfield(Cache, 'QueryXlsx') && Cache.QueryXlsx == queryXlsx
+if ~isempty(Cache)
 	Data = Cache;
 	return;
 end
 
 MB = TransferLearning.MOpBaseline();
-InfoEntro = MB.QueryNTS(UniExp.ReadQueryTable(queryXlsx, '信息熵'), ExtraColumns="TrialRI");
+InfoEntro = MB.QueryNTS(iBuildInternalInfoQuery(), ExtraColumns="TrialRI");
 
 phaseNames = ["LearnedAudio", "TransferLightHit"];
 CellStdMedian = struct();
@@ -88,7 +90,7 @@ end
 xs = double(xs(:));
 
 Data = struct();
-Data.QueryXlsx = queryXlsx;
+Data.QuerySource = "internal";
 Data.Overlap = Overlap;
 Data.LearnedMatrix = LearnedMatrix;
 Data.TransferMatrix = TransferMatrix;
@@ -103,6 +105,16 @@ Data.StdSem = StdSem;
 Data.BehaviorMean = BehaviorMean;
 Data.BehaviorSem = BehaviorSem;
 Data.X = xs;
-Data.CacheInfo = struct('NOverlapCells', height(Overlap), 'NBlocks', height(BlockTagSignals));
+Data.CacheInfo = struct('QuerySource', "internal", 'NOverlapCells', height(Overlap), 'NBlocks', height(BlockTagSignals));
 Cache = Data;
+end
+
+function infoQuery = iBuildInternalInfoQuery()
+groupName = ["TransferLightHit"; "LearnedAudio"];
+stimulus = ["LightWater"; "AudioWater"];
+phase = ["Transfer"; "Learned"];
+paradigm = ["声光无穿插"; "声光无穿插"];
+behavior = {1; []};
+infoQuery = table(groupName, stimulus, phase, paradigm, behavior, ...
+	'VariableNames', {'GroupName', 'Stimulus', 'Phase', 'Paradigm', 'Behavior'});
 end

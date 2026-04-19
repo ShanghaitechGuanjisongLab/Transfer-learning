@@ -65,7 +65,7 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig374_InterTrialSd_BeforeAfterSpontaneousLick.svg');
+svgPath = fullfile(outDirUNC, '中文图Fig372D_InterTrialSd_BeforeAfterSpontaneousLick.svg');
 TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'Fig372D_Data', Data);

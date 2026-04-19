@@ -10,11 +10,10 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
 linePhases = ["NaiveLight", "TransferLightHit", "TransferLightMiss"];
 lineLegends = ["Naive", "Continual Hit", "Continual Miss"];
 
-Data = Fig362_GlobalInformationCache(queryXlsx, linePhases, string.empty(1, 0));
+Data = Fig362_GlobalInformationCache(linePhases, string.empty(1, 0));
 xData = Data.XData;
 meanCell = cellfun(@(phaseName) Data.Phase.(phaseName).Mean, cellstr(linePhases), 'UniformOutput', false);
 semCell = cellfun(@(phaseName) Data.Phase.(phaseName).Sem, cellstr(linePhases), 'UniformOutput', false);

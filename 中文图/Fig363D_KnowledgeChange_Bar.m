@@ -16,7 +16,7 @@ Data = Fig363_GlobalKnowledgeChangeCache(queryXlsx);
 usageKeys = {'Unused old', 'Newly learned'};
 usageLabels = {'Unused old', 'Newly learned'};
 transitionKeys = {'NaiveToLearned', 'LearnedToTransfer', 'TransferToFinal', 'LearnedToFinal'};
-transitionLabels = {'Naive→Learned', 'Learned→Transfer', 'Transfer→Final', 'Learned→Final'};
+transitionLabels = {'Naive→Learned', 'Learned→Continual', 'Continual→Final', 'Learned→Final'};
 transitionColors = [1, 0, 0; 0, 0.6809, 0; 0, 0, 1; 0, 0, 0];
 compareGroup = table(table(["NaiveToLearned", "LearnedToTransfer"; "NaiveToLearned", "LearnedToTransfer"], ["Unused old", "Unused old"; "Newly learned", "Newly learned"], 'VariableNames', {'Pair', 'Usage'}), 'VariableNames', {'GroupPair'});
 

@@ -1,13 +1,11 @@
-function Data = Fig362_GlobalInformationCache(queryXlsx, linePhases, barPhases)
-queryXlsx = string(queryXlsx);
-linePhases = reshape(string(linePhases), 1, []);
-barPhases = reshape(string(barPhases), 1, []);
+function Data = Fig362_GlobalInformationCache(varargin)
+[linePhases, barPhases] = iParseInputs(varargin{:});
 requestedPhases = unique([linePhases, barPhases], 'stable');
 
 persistent Cache
 
-if isempty(Cache) || ~isfield(Cache, 'QueryXlsx') || Cache.QueryXlsx ~= queryXlsx
-	Cache = iBuildEmptyCache(queryXlsx);
+if isempty(Cache)
+	Cache = iBuildEmptyCache();
 end
 
 for iPhase = 1:numel(requestedPhases)
@@ -21,7 +19,7 @@ for iPhase = 1:numel(requestedPhases)
 end
 
 Data = struct();
-Data.QueryXlsx = Cache.QueryXlsx;
+Data.QuerySource = Cache.QuerySource;
 Data.XData = Cache.XData;
 Data.LinePhases = linePhases;
 Data.BarPhases = barPhases;
@@ -29,16 +27,31 @@ Data.Phase = Cache.Phase;
 Data.GroupNts = Cache.GroupNts;
 Data.BlockCache = Cache.BlockCache;
 Data.CacheInfo = struct( ...
+	'QuerySource', Cache.QuerySource, ...
 	'NumCachedBlock', height(Cache.BlockCache), ...
 	'NumCachedPhase', numel(string(fieldnames(Cache.Phase))), ...
 	'CachedPhases', string(fieldnames(Cache.Phase)).');
 end
 
-function Cache = iBuildEmptyCache(queryXlsx)
+function [linePhases, barPhases] = iParseInputs(varargin)
+	if nargin == 2
+		linePhases = varargin{1};
+		barPhases = varargin{2};
+	elseif nargin == 3
+		linePhases = varargin{2};
+		barPhases = varargin{3};
+	else
+		error('Fig362:BadInput', 'Expected 2 or 3 inputs.');
+	end
+	linePhases = reshape(string(linePhases), 1, []);
+	barPhases = reshape(string(barPhases), 1, []);
+end
+
+function Cache = iBuildEmptyCache()
 	MB = TransferLearning.MOpBaseline();
-	infoQuery = UniExp.ReadQueryTable(queryXlsx, '信息熵');
+	infoQuery = iBuildInternalInfoQuery();
 	Cache = struct();
-	Cache.QueryXlsx = queryXlsx;
+	Cache.QuerySource = "internal";
 	Cache.MB = MB;
 	Cache.GroupNts = MB.QueryNTS(infoQuery, ExtraColumns=["Mouse", "BlockUID", "TrialRI"]);
 	Cache.BlockCache = table('Size', [0, 3], ...
@@ -46,6 +59,20 @@ function Cache = iBuildEmptyCache(queryXlsx)
 		'VariableNames', {'BlockUID', 'Cells', 'BlockEntropy'});
 	Cache.Phase = struct();
 	Cache.XData = linspace(0, 3, 25).';
+end
+
+function infoQuery = iBuildInternalInfoQuery()
+	groupName = ["NaiveLight"; "LearnedLight"; "TransferLight"; "TransferLightHit"; "TransferLightMiss"; "FinalLight"; ...
+		"NaiveAudio"; "LearnedAudio"; "TransferAudio"; "TransferAudioHit"; "TransferAudioMiss"; "FinalAudio"];
+	stimulus = ["LightWater"; "LightWater"; "LightWater"; "LightWater"; "LightWater"; "LightWater"; ...
+		"AudioWater"; "AudioWater"; "AudioWater"; "AudioWater"; "AudioWater"; "AudioWater"];
+	phase = ["Naive"; "Learned"; "Transfer"; "Transfer"; "Transfer"; "Final"; ...
+		"Naive"; "Learned"; "Transfer"; "Transfer"; "Transfer"; "Final"];
+	paradigm = ["光声无穿插"; "光声无穿插"; "声光无穿插"; "声光无穿插"; "声光无穿插"; "声光无穿插"; ...
+		"声光无穿插"; "声光无穿插"; "光声无穿插"; "光声无穿插"; "光声无穿插"; "光声无穿插"];
+	behavior = {[]; []; []; 1; 0; []; []; []; []; 1; 0; []};
+	infoQuery = table(groupName, stimulus, phase, paradigm, behavior, ...
+		'VariableNames', {'GroupName', 'Stimulus', 'Phase', 'Paradigm', 'Behavior'});
 end
 
 function Cache = iEnsurePhase(Cache, phaseName)

@@ -10,12 +10,11 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
 barPhases = ["NaiveAudio", "LearnedAudio", "NaiveLight", "LearnedLight", "TransferLight"];
-barLabels = {"Naive 🔊💧", "Learned 🔊💧", "Naive 💡💧", "Learned 💡💧", "Transfer 💡💧"};
+barLabels = {"Naive 🔊💧", "Learned 🔊💧", "Naive 💡💧", "Learned 💡💧", "Continual 💡💧"};
 compareGroup = table(["NaiveAudio", "LearnedAudio"; "NaiveLight", "LearnedLight"; "NaiveLight", "TransferLight"], 'VariableNames', "GroupPair");
 
-Data = Fig362_GlobalInformationCache(queryXlsx, string.empty(1, 0), barPhases);
+Data = Fig362_GlobalInformationCache(string.empty(1, 0), barPhases);
 entropyCell = cellfun(@(phaseName) double(Data.Phase.(phaseName).BlockEntropy(:)), cellstr(barPhases), 'UniformOutput', false);
 
 f = figure('Color', 'w', 'Name', '中文图362B Learning increases information Whole-block');

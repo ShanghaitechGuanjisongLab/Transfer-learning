@@ -1,28 +1,27 @@
-function Data = Fig371_BaselineConvergenceCache(queryXlsx)
-if nargin < 1 || strlength(string(queryXlsx)) == 0
-	queryXlsx = "\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx";
+function Data = Fig371_BaselineConvergenceCache(varargin)
+if nargin > 1
+	error('Fig371:BadInput', 'Expected at most one input.');
 end
-queryXlsx = string(queryXlsx);
 
 persistent Cache
 
-if isempty(Cache) || ~isfield(Cache, "QueryXlsx") || Cache.QueryXlsx ~= queryXlsx
-	Cache = iBuildCache(queryXlsx);
+if isempty(Cache)
+	Cache = iBuildCache();
 end
 
 Data = Cache;
 end
 
-function Cache = iBuildCache(queryXlsx)
+function Cache = iBuildCache()
 	iEnsureProjectLoaded();
 
 	MB = TransferLearning.MOpBaseline();
-	infoQuery = UniExp.ReadQueryTable(queryXlsx, "信息熵");
+	infoQuery = iBuildInternalInfoQuery();
 	groupNts = MB.QueryNTS(infoQuery, ExtraColumns="TrialRI");
 	xSec = iXsSeconds(25);
 	phaseNames = ["LearnedAudio", "NaiveLight", "TransferLightHit", "TransferLightMiss"];
-	legendLabels = ["Learned", "Naive", "Transfer hit", "Transfer miss"];
-	barLabels = ["Learned", "Naive", "T-hit", "T-miss"];
+	legendLabels = ["Learned", "Naive", "Continual hit", "Continual miss"];
+	barLabels = ["Learned", "Naive", "C-hit", "C-miss"];
 	phaseColors = [1, 0, 0; 0, 0, 1; 0, 0, 0; 0, 0.6809, 0];
 	compareGroup = table(["NaiveLight", "TransferLightHit"; "NaiveLight", "LearnedAudio"; "TransferLightHit", "TransferLightMiss"], 'VariableNames', {'GroupPair'});
 
@@ -72,7 +71,7 @@ function Cache = iBuildCache(queryXlsx)
 	trialPc1 = reshape(pagemtimes(reshape(sampleSignal, [], size(sampleSignal, 3)), coeff(:, 1)), size(sampleSignal, 1), size(sampleSignal, 2));
 
 	Cache = struct();
-	Cache.QueryXlsx = queryXlsx;
+	Cache.QuerySource = "internal";
 	Cache.Phases = phaseNames;
 	Cache.LegendLabels = legendLabels;
 	Cache.BarLabels = barLabels;
@@ -90,6 +89,20 @@ function Cache = iBuildCache(queryXlsx)
 	Cache.LearnedAudioExplained = double(explained(:).');
 	Cache.TrialOrder = (1:size(trialPc1, 2)).';
 	Cache.TrialColormap = iTrialColormap(size(trialPc1, 2));
+end
+
+function infoQuery = iBuildInternalInfoQuery()
+	groupName = ["NaiveLight"; "LearnedLight"; "TransferLight"; "TransferLightHit"; "TransferLightMiss"; "FinalLight"; ...
+		"NaiveAudio"; "LearnedAudio"; "TransferAudio"; "TransferAudioHit"; "TransferAudioMiss"; "FinalAudio"];
+	stimulus = ["LightWater"; "LightWater"; "LightWater"; "LightWater"; "LightWater"; "LightWater"; ...
+		"AudioWater"; "AudioWater"; "AudioWater"; "AudioWater"; "AudioWater"; "AudioWater"];
+	phase = ["Naive"; "Learned"; "Transfer"; "Transfer"; "Transfer"; "Final"; ...
+		"Naive"; "Learned"; "Transfer"; "Transfer"; "Transfer"; "Final"];
+	paradigm = ["光声无穿插"; "光声无穿插"; "声光无穿插"; "声光无穿插"; "声光无穿插"; "声光无穿插"; ...
+		"声光无穿插"; "声光无穿插"; "光声无穿插"; "光声无穿插"; "光声无穿插"; "光声无穿插"];
+	behavior = {[]; []; []; 1; 0; []; []; []; []; 1; 0; []};
+	infoQuery = table(groupName, stimulus, phase, paradigm, behavior, ...
+		'VariableNames', {'GroupName', 'Stimulus', 'Phase', 'Paradigm', 'Behavior'});
 end
 
 function iEnsureProjectLoaded()

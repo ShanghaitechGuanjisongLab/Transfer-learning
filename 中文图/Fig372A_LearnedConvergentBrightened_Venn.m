@@ -10,8 +10,7 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
-Data = Fig372_ConvergenceInheritanceCache(queryXlsx);
+Data = Fig372_ConvergenceInheritanceCache();
 
 Fig372_PlotConvergenceVenn(Data.LearnedMatrix, Data.LearnedTags, ["Convergent", "Brightened"], "Learned 🔊💧", "", ...
 	'中文图372A Learned convergent brightened venn', [6, 8], fullfile(outDirUNC, '中文图Fig372A_LearnedConvergentBrightened_Venn.svg'));

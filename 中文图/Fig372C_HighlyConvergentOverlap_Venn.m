@@ -14,4 +14,4 @@ Data = Fig372_ConvergenceInheritanceCache();
 chanceText = "(Chance overlap " + MATLAB.SignificantFixedpoint(Data.ChanceOverlap * 100, 2) + "%)";
 
 Fig372_PlotConvergenceVenn(Data.LTMatrix, Data.LTTags, ["Learned 🔊💧", "Continual Hit 💡💧"], ["Overlap of highly"; "convergent cells"], chanceText, ...
-	'中文图372C highly convergent overlap venn', [6, 8], fullfile(outDirUNC, '中文图Fig373_HighlyConvergentOverlap_Venn.svg'));
+	'中文图372C highly convergent overlap venn', [6, 8], fullfile(outDirUNC, '中文图Fig372C_HighlyConvergentOverlap_Venn.svg'));
