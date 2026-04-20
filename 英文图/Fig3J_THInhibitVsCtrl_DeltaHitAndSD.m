@@ -2,7 +2,7 @@
 %
 % Two bar tiles comparing Ctrl and TH groups:
 %   Top:    ΔHit per session pair (one point = one adjacent pair)
-%   Bottom: Response heterogeneity per mouse (avg-first, one point = one mouse)
+%   Bottom: Response heterogeneity per mouse using MOp5 cells only
 %
 % Ctrl: AudioLightBaseline (Transfer->Final)
 % TH:   THInhibit          (Transfer->Final)
@@ -29,9 +29,10 @@ fprintf('TH:   %d pairs (ΔHit), %d mice (Response heterogeneity)\n', numel(dhT)
 pDH = iRanksumSafe(dhC, dhT);
 pSD = iRanksumSafe(sdC, sdT);
 fprintf('ΔHit ranksum p=%.4g\n', pDH);
-fprintf('Response heterogeneity ranksum p=%.4g\n', pSD);
+fprintf('Response heterogeneity (MOp5) ranksum p=%.4g\n', pSD);
 
 svgName = "English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD.svg";
+%% 
 f = figure('Color', 'w', 'Name', 'Fig3J TH ΔHit and Response heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
@@ -91,7 +92,7 @@ if isprop(ax2.XAxis, 'LineWidth')
 end
 ax2.XTick = [1 2];
 ax2.XTickLabel = {'Ctrl', 'TH'};
-ylabel(ax2, 'Response heterogeneity', 'FontSize', 6);
+ ylabel(ax2, 'Respo. heter. L5', 'FontSize', 6);
 legend(ax2, 'off');
 box(ax2, 'off');
 if isscalar(Bars2)
@@ -116,7 +117,6 @@ if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = fullfile(outDirUNC, svgName);
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
-close(f);
 
 function [dhVec, sdVec] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
 Sess = iLightWaterSessions(DS);
@@ -166,6 +166,9 @@ if isempty(ntsCell) || isempty(ntsCell{1}), sdVec = []; return; end
 rawTbl = ntsCell{1};
 rawTbl.CellUID = uint64(rawTbl.CellUID);
 rawTbl.DateTime = iNormDT(datetime(rawTbl.DateTime));
+rawTbl = iAttachLayer(rawTbl, DS.Cells);
+rawTbl = rawTbl(string(rawTbl.ZLayer) == "MOp5", :);
+if isempty(rawTbl), sdVec = []; return; end
 sig = double(rawTbl.TrialSignal);
 z1s = sig(:, idx1s);
 
@@ -288,4 +291,13 @@ end
 
 function dt = iNormDT(dt)
 try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch; end
+end
+
+function T = iAttachLayer(T, cellMap)
+cellMap = cellMap(:, {'CellUID','ZLayer'});
+cellMap.CellUID = uint64(cellMap.CellUID);
+[~, loc] = ismember(T.CellUID, cellMap.CellUID);
+T.ZLayer = strings(height(T), 1);
+has = loc > 0;
+T.ZLayer(has) = string(cellMap.ZLayer(loc(has)));
 end
