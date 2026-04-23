@@ -1,4 +1,4 @@
-% 中文图341C：初始/迁移 💡💧 学习过程状态空间轨迹
+﻿% 中文图341C：初始/迁移 💡💧 学习过程状态空间轨迹
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -43,8 +43,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig341C_LightWaterLearningTrajectory_PCA.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig341C_LightWaterLearningTrajectory_PCA.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig341C_NaiveTrajectory', Naive);
@@ -87,3 +87,4 @@ end
 mix = linspace(0.35, 1.00, n)';
 cmap = baseColor .* mix + 0.15 .* (1 - mix);
 end
+

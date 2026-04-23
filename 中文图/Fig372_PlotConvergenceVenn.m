@@ -1,4 +1,4 @@
-function Fig372_PlotConvergenceVenn(Matrix, Tags, legendLabels, titleText, chanceText, figureName, figSizeCm, svgPath)
+﻿function Fig372_PlotConvergenceVenn(Matrix, Tags, legendLabels, titleText, chanceText, figureName, figSizeCm, svgPath)
 f = figure('Color', 'w', 'Name', figureName);
 f.Units = 'centimeters';
 f.Position(3:4) = figSizeCm;
@@ -48,6 +48,6 @@ end
 if ~isfolder(fileparts(svgPath))
 	mkdir(fileparts(svgPath));
 end
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 end

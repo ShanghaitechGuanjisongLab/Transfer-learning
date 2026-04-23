@@ -1,4 +1,4 @@
-% 中文图337A：声转光鼠中，声水 Naive、首个100%、24h、36h 的四列热图
+﻿% 中文图337A：声转光鼠中，声水 Naive、首个100%、24h、36h 的四列热图
 
 Data = Fig337_BuildAudioLearnedRepeatSummary();
 laneData = Data.LaneData(:, Data.XMask, :);
@@ -67,8 +67,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig337A_AudioWater_PostLearningRepeats_Heatmap.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig337A_AudioWater_PostLearningRepeats_Heatmap.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig337A_Data', Data);
@@ -91,3 +91,4 @@ else
 end
 y = f2 * 10^e;
 end
+

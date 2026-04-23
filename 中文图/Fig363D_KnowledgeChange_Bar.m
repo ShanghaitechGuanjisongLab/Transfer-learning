@@ -1,4 +1,4 @@
-% 中文图363D：知识增减（Unused old / Newly learned）
+﻿% 中文图363D：知识增减（Unused old / Newly learned）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -84,6 +84,7 @@ end
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
-	svgPath = fullfile(outDirUNC, '中文图Fig363D_KnowledgeChange_Bar.svg');
-	TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+	svgPath = '中文图Fig363D_KnowledgeChange_Bar.svg';
+	svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
+

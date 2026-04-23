@@ -1,4 +1,4 @@
-% 英文图3K：Reactivation vs ΔHit（2/5层细胞合并，所有会话对）
+﻿% 英文图3K：Reactivation vs ΔHit（2/5层细胞合并，所有会话对）
 %
 % Data scope:
 % - All pure-LightWater sessions in AudioLightBaseline (Transfer → Final).
@@ -109,8 +109,8 @@ end
 
 % --- Export SVG
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'EnglishFig3K_Data', K);
@@ -327,3 +327,4 @@ for iPerm = 1:nPerm
 end
 p = mean(abs(nullDist) >= abs(rho));
 end
+

@@ -41,7 +41,7 @@ fprintf('Learned AudioWater mice with layer values: %d\n', numel(unique(learnedM
 fprintf('Transfer mice with layer values: %d\n', numel(unique(transferMice)));
 %% 
 
-% --- Figure: 2×1 tiledlayout
+% --- Figure: manually positioned 2×1 axes
 f = figure('Color', 'w', 'Name', 'Fig3D Response heterogeneity by layer');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
@@ -50,8 +50,18 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-title(Layout, 'Response heterogeneity', 'FontSize', 6, 'FontWeight', 'normal');
+annotation(f, 'textbox', [0.06, 0.915, 0.88, 0.04], ...
+	'String', 'Response heterogeneity', ...
+	'EdgeColor', 'none', ...
+	'HorizontalAlignment', 'center', ...
+	'VerticalAlignment', 'middle', ...
+	'FontSize', 6, ...
+	'FontWeight', 'normal', ...
+	'Interpreter', 'none');
+axPositions = [
+	0.22, 0.575, 0.72, 0.25
+	0.22, 0.185, 0.72, 0.25
+];
 
 palette3 = [1, 0, 0; 0, 0, 1; 0, 0, 0];
 colorNaive    = palette3(1,:);
@@ -75,13 +85,13 @@ for iL = 1:numel(layers)
 	fprintf('Naive vs Transfer ranksum p = %.6g\n', pValNT);
 	fprintf('Learned AW vs Transfer ranksum p = %.6g\n', pValLT);
 
-	nexttile(Layout, iL);
+	ax = axes(f, 'Units', 'normalized', 'Position', axPositions(iL, :));
+	axes(ax);
 	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 0.05);
 	delete(findobj(gca, 'Type', 'Scatter'));
 	for eb = EB.Object(:)'
 		eb.LineWidth = 1;
 	end
-	ax = gca;
 	ax.FontSize = 6;
 	ax.FontName = 'Segoe UI Emoji';
 	ax.TickLabelInterpreter = 'none';
@@ -132,8 +142,7 @@ end
 
 % --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, 'English_Fig3D_DeltaHitAndHeterogeneity.svg');
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig3D_DeltaHitAndHeterogeneity.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 %% ===== Local functions =====

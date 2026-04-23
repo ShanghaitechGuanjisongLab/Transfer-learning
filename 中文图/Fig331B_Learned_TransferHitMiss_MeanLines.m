@@ -1,4 +1,4 @@
-% 中文图331B：声水学会、光水迁移命中/错失三条均值线
+﻿% 中文图331B：声水学会、光水迁移命中/错失三条均值线
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -102,8 +102,8 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig331B_Learned_TransferHitMiss_MeanLines.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig331B_Learned_TransferHitMiss_MeanLines.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig331B_MeanLines_Y', Y);
@@ -143,3 +143,4 @@ end
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
 end
+

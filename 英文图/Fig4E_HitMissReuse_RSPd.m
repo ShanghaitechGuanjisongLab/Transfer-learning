@@ -1,4 +1,4 @@
-% English Fig4E: RSPd Hit vs Miss forward reuse rate (paired, layers merged)
+﻿% English Fig4E: RSPd Hit vs Miss forward reuse rate (paired, layers merged)
 %
 % Mimic Fig1J style: 3×4cm, paired dots+lines, signrank asterisks, FontSize 6.
 %
@@ -126,6 +126,7 @@ text(ax, 0.02, 0.98, sprintf('n=%d', numel(hit)), 'Units','normalized', ...
 
 % --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+

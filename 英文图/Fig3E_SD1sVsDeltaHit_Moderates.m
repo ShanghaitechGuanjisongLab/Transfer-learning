@@ -1,4 +1,4 @@
-% 英文图3E：代表性单会话 3D 热图 + 细胞间 1s z-score 分布
+﻿% 英文图3E：代表性单会话 3D 热图 + 细胞间 1s z-score 分布
 %
 % Transfer: 选择响应异质性（SD@1s，[-1,1]细胞）最大的会话
 % Naive:    选择响应异质性最小的会话
@@ -278,7 +278,7 @@ MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
 
 for iS = 1:2
 	svgN = sprintf('English_Fig3E_Hist_%s.svg', sessTags(iS));
-	TransferLearning.PrintFigure(histFigs(iS), fullfile(outDirUNC, svgN));
+	TransferLearning.ExportStandardFigure(histFigs(iS), 1, svgN);
 	fprintf('Wrote: %s\n', svgN);
 	close(histFigs(iS));
 end
@@ -591,3 +591,4 @@ end
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
 end
+

@@ -54,7 +54,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 ylabel(layout, '💡💧 Baseline temporal std', 'FontSize', 6);
 
 for iL = 1:numel(layers)
@@ -87,8 +87,7 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig342F_MouseLayerStd', T);

@@ -95,8 +95,7 @@ lg.FontSize = 12;
 lg.Box = 'off';
 
 %% 导出
-svgPath = fullfile(outDirUNC, 'Fig312C_LickRaster.svg');
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'Fig312C_LickRaster.svg');
 fprintf('Saved SVG: %s\n', svgPath);
 fprintf('Saved PNG: %s\n', pngPath);
 

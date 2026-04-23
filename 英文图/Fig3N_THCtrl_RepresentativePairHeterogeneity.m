@@ -1,4 +1,4 @@
-% English Fig3H: Representative Ctrl/TH single-session heatmaps and histograms
+﻿% English Fig3H: Representative Ctrl/TH single-session heatmaps and histograms
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -149,7 +149,7 @@ for iS = 1:2
 end
 for iS = 1:2
     svgName = sprintf('English_Fig3H_Hist_%s.svg', sessInfo(iS).label);
-    TransferLearning.PrintFigure(histFigs(iS), fullfile(outDirUNC, svgName));
+    TransferLearning.ExportStandardFigure(histFigs(iS), 1, svgName);
     fprintf('Wrote: %s\n', svgName);
     close(histFigs(iS));
 end
@@ -387,3 +387,4 @@ end
 function dt = iNormDT(dt)
 try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch; end
 end
+

@@ -1,4 +1,4 @@
-% 中文图337B：将图337A的四个声水会话合并为超级大鼠后的 1s z-score PCA
+﻿% 中文图337B：将图337A的四个声水会话合并为超级大鼠后的 1s z-score PCA
 
 Data = Fig337_BuildAudioLearnedRepeatSummary();
 points = Data.Points;
@@ -52,8 +52,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig337B_AudioWater_PostLearningRepeats_PCA.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig337B_AudioWater_PostLearningRepeats_PCA.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig337B_Data', Data);
@@ -91,3 +91,4 @@ switch string(label)
 		hAlign = 'left';
 end
 end
+

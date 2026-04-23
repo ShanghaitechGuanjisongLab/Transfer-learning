@@ -1,4 +1,4 @@
-% 英文图3EF：信号保留散点 + 分组条形图组合
+﻿% 英文图3EF：信号保留散点 + 分组条形图组合
 %
 % 布局：
 %   中部: E 全细胞散点 (AW vs LW z-score@1s, 弱响应细胞)
@@ -265,8 +265,8 @@ box(axR, 'off');
 
 % ===== Export =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 function s = iAsterisk(p)
@@ -276,3 +276,4 @@ function s = iAsterisk(p)
 	else, s = 'n.s.';
 	end
 end
+

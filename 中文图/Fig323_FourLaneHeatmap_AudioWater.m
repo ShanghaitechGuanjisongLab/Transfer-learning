@@ -1,4 +1,4 @@
-% 中文图322：四泳道热图（AudioOnly、WaterOnly、NaiveAudioWater、LearnedAudioWater）
+﻿% 中文图322：四泳道热图（AudioOnly、WaterOnly、NaiveAudioWater、LearnedAudioWater）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -132,8 +132,8 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig323_FourLaneHeatmap_AudioWater.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig323_FourLaneHeatmap_AudioWater.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig322_ActiveMask', activeMask);
@@ -197,3 +197,4 @@ else
 end
 y = f2 * 10^e;
 end
+

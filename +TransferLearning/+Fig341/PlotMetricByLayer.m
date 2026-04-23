@@ -1,4 +1,4 @@
-function [f, summaryTbl] = PlotMetricByLayer(Data, metricField, figName, yLabelText, svgName)
+﻿function [f, summaryTbl] = PlotMetricByLayer(Data, metricField, figName, yLabelText, svgName)
 arguments
 	Data struct
 	metricField (1,1) string
@@ -87,8 +87,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, char(svgName));
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = char(svgName);
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 end
 
@@ -158,3 +158,4 @@ if ismember('PText', mc.Properties.VariableNames)
 	end
 end
 end
+

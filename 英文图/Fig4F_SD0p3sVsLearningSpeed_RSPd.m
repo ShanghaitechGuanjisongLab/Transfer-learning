@@ -1,4 +1,4 @@
-function Fig4F_SD0p3sVsLearningSpeed_RSPd()
+﻿function Fig4F_SD0p3sVsLearningSpeed_RSPd()
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 RSP = TransferLearning.RSPd();
@@ -108,8 +108,8 @@ end
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig4F_RSPd_LearnedActive_Curves.svg";
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'English_Fig4F_nCells', size(X,1));
@@ -142,3 +142,4 @@ function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
 end
+

@@ -1,4 +1,4 @@
-% 中文图372D：自发舔水前后回合间 SD 与舔水概率
+﻿% 中文图372D：自发舔水前后回合间 SD 与舔水概率
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -65,8 +65,9 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig372D_InterTrialSd_BeforeAfterSpontaneousLick.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig372D_InterTrialSd_BeforeAfterSpontaneousLick.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'Fig372D_Data', Data);
 assignin('base', 'Fig372D_BehaviorLines', BehaviorLines);
+

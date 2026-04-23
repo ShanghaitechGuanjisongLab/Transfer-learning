@@ -1,4 +1,4 @@
-% 中文图363C：知识增减（Continual→Final）
+﻿% 中文图363C：知识增减（Continual→Final）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -50,6 +50,6 @@ function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 	if ~isfolder(fileparts(svgPath))
 		mkdir(fileparts(svgPath));
 	end
-	TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+	svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 end

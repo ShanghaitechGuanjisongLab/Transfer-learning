@@ -1,4 +1,4 @@
-% 英文图3B：代表性单会话的 3D 热图 + 细胞间 1s z-score 分布
+﻿% 英文图3B：代表性单会话的 3D 热图 + 细胞间 1s z-score 分布
 %
 % 先按原规则找出 Pair A / Pair B，共 4 个候选会话
 % 再在这 4 个会话中挑选 response heterogeneity 最大的 1 个作为代表
@@ -280,7 +280,7 @@ xlabel(ax, 'z-score', 'FontSize', 6);
 ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
 
 svgN = 'English_Fig3B_Hist_Representative.svg';
-TransferLearning.PrintFigure(fh, fullfile(outDirUNC, svgN));
+TransferLearning.ExportStandardFigure(fh, 1, svgN);
 fprintf('Wrote: %s\n', svgN);
 close(fh);
 
@@ -514,3 +514,4 @@ for ic = 1:nCells
 	end
 end
 end
+

@@ -69,8 +69,8 @@ for iL = 1:numel(layers)
 
     maskN = use & (groupAll == "Naive");
     maskT = use & (groupAll == "Transfer");
-    hN = scatter(ax, sdAll(maskN), slopeAll(maskN), 5, colorN, 'o', 'filled', 'LineWidth', 0.2);
-    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 5, colorT, 's', 'filled', 'LineWidth', 0.2);
+    hN = scatter(ax, sdAll(maskN), slopeAll(maskN), 10, colorN, 'o', 'filled', 'LineWidth', 0.2);
+    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 's', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hN; hT];
         ylabel(ax, 'Learning slope', 'FontSize', 12);
@@ -99,8 +99,8 @@ lgd = legend(hLegend, {'Naive', 'Continual'}, 'FontSize', 12, 'Box', 'off', 'Ori
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, 'English_Fig3C_SlopeVsHeterogeneity.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = 'English_Fig3C_SlopeVsHeterogeneity.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 function [slopeVec, sdVec, miceKept] = iNaiveCohortDataByLayer(DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName)
@@ -464,3 +464,4 @@ end
 function dt = iNormDT(dt)
 try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch; end
 end
+

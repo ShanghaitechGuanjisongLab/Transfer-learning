@@ -103,8 +103,8 @@ xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
 iStyleBars(Bars2, RED, BLUE);
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = fullfile(outDirUNC, 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 
 assignin('base', 'English_Fig2H_Table', T);
 assignin('base', 'English_Fig2H_Summary', S);
@@ -361,4 +361,5 @@ else
 	end
 	end
 end
+
 

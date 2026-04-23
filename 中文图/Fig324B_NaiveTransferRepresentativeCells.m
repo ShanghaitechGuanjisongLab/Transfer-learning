@@ -122,8 +122,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig324B_NaiveLearnedRepresentativeCells.svg');
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig324B_NaiveLearnedRepresentativeCells.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 picked = table;

@@ -1,4 +1,4 @@
-rspPath     = "\\Data-Server-2\个人数据\张天夫\202505\RSP-Gi 化学遗传学抑制 声转光.v2.mat";
+﻿rspPath     = "\\Data-Server-2\个人数据\张天夫\202505\RSP-Gi 化学遗传学抑制 声转光.v2.mat";
 mopCtrlPath = "\\Data-Server-2\个人数据\张天夫\202409\Mop-Gi运动皮层化学遗传学抑制声光（无功能对照）.mat";
 rspMoPath   = "\\data-server-2\个人数据\张天夫\202507\MOP+RSP化学遗传学抑制.v1.mat";
 
@@ -72,8 +72,8 @@ end
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = 'English_Fig4H_LearningCurve_RSPd_RSPdPlusM1_mCherry.svg';
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 Tn = table(Summary.Properties.RowNames, nEach(:), 'VariableNames', {'Group','N'});
@@ -156,9 +156,9 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
 
-svgPath2 = fullfile(outDirUNC, 'English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg');
+svgPath2 = 'English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg';
 MATLAB.Graphics.PLineRetune(Optional2.MultiCompare.PLine,Optional2.MultiCompare.PText);
-TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
+svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2);
 fprintf('Wrote: %s\n', svgPath2);
 
 function perf = iFirstSessionPerformance(T)
@@ -171,3 +171,4 @@ for i = 1:numel(mice)
 	perf(i) = mean(double(rows.Performance(rows.DateTime == firstDT)), 'omitnan');
 end
 end
+

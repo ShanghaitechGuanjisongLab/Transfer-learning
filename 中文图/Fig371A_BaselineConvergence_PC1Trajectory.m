@@ -1,4 +1,4 @@
-if ~exist('UniExp.DataSet', 'class')
+﻿if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
 	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
@@ -76,8 +76,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig371A_BaselineConvergence_PC1Trajectory.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig371A_BaselineConvergence_PC1Trajectory.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Selected block: Mouse=%s | BlockUID=%d | DateTime=%s | NCell=%d | TrialCount=%d | MeanStd(-3s)=%.4f | MeanStd(0s)=%.4f | MeanLog2Ratio=%.4f\n', ...
 	char(repBlock.Mouse), repBlock.BlockUID, char(string(repBlock.DateTime)), repBlock.NCell, repBlock.TrialCount, repBlock.MeanStdNeg3, repBlock.MeanStd0, repBlock.MeanLog2Ratio);
 fprintf('Wrote: %s\n', svgPath);
@@ -194,3 +194,4 @@ function cmap = iTrialColormap(nTrial)
 	mix = linspace(0, 1, nTrial).';
 	cmap = (1 - mix) .* startColor + mix .* endColor;
 end
+

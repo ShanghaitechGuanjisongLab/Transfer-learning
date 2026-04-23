@@ -1,4 +1,4 @@
-% 英文图3A：ΔHit 示意图
+﻿% 英文图3A：ΔHit 示意图
 %
 % 取 Transfer cohort (AudioLightBaseline) 中一只代表性鼠的 LightWater 学习曲线，
 % 在图上标注两个相邻会话之间的行为增量 ΔHit。
@@ -144,8 +144,8 @@ xlim(ax, [0.5, max(xSess) + 2.5]);
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 %% ---- local helpers (no try-catch)
@@ -224,3 +224,4 @@ SessOut(remove, :) = [];
 perf = double(SessOut.Performance);
 SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end
+

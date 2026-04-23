@@ -1,4 +1,4 @@
-% 中文图341AB：初始/迁移 💡💧 代表性细胞跨会话 NTATS
+﻿% 中文图341AB：初始/迁移 💡💧 代表性细胞跨会话 NTATS
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -74,8 +74,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig341AB_LightWaterRepresentativeCells_AcrossSessions.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig341AB_LightWaterRepresentativeCells_AcrossSessions.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig341AB_NaiveRepresentativeCell', Naive);
@@ -119,3 +119,4 @@ for i = 1:numel(ticks)
 end
 ax.XTickLabel = labels;
 end
+

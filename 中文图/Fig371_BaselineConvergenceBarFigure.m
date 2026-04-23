@@ -1,4 +1,4 @@
-function Fig371_BaselineConvergenceBarFigure(values, compareGroup, yLabel, svgFileName, xTickLabels)
+﻿function Fig371_BaselineConvergenceBarFigure(values, compareGroup, yLabel, svgFileName, xTickLabels)
 if nargin < 5 || isempty(xTickLabels)
     xTickLabels = {"Learned", "Naive", "C-hit", "C-miss"};
 end
@@ -51,9 +51,9 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
     mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, char(svgFileName));
+svgPath = char(svgFileName);
     MATLAB.Graphics.PLineRetune(Optional.MultiCompare.PLine, Optional.MultiCompare.PText);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 end
 
@@ -147,3 +147,4 @@ end
 
 ax.FontSize = 6;
 end
+

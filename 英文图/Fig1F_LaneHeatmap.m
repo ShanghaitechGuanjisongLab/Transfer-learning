@@ -200,8 +200,7 @@ catch
 end
 
 svgName = "English_Fig1F_LaneHeatmap.svg";
-svgPath = fullfile(outDirUNC, svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig1F_SortIdx', sortIdx);

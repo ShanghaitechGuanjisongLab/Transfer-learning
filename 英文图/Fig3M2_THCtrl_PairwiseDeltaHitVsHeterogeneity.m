@@ -1,4 +1,4 @@
-% English Fig3M2: TH/Ctrl pairwise ΔHit vs Response heterogeneity
+﻿% English Fig3M2: TH/Ctrl pairwise ΔHit vs Response heterogeneity
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -80,8 +80,8 @@ lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 12, 'Box', 'off', 'Orientation
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, 'English_Fig3M2_THCtrl_PairwiseDeltaHitVsHeterogeneity.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = 'English_Fig3M2_THCtrl_PairwiseDeltaHitVsHeterogeneity.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 function [dhVec, sdVec] = iSingleDatasetPairDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)
@@ -256,3 +256,4 @@ end
 function dt = iNormDT(dt)
 try if isdatetime(dt) && ~isempty(dt.TimeZone), dt.TimeZone = ''; end; catch; end
 end
+

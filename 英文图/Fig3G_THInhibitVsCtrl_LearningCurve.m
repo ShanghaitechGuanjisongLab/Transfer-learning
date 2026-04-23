@@ -149,8 +149,7 @@ try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
 catch
 end
-svgPath = fullfile(outDirUNC, svgNameLC);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgNameLC);
 fprintf('Wrote: %s\n', svgPath);
 close(f);
 
@@ -181,7 +180,6 @@ f2.Position(3:4) = [4, 4];
 f2.PaperPositionMode = 'auto';
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 4];
-try, f2.InvertHardcopy = 'off'; catch, end
 
 [~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
@@ -233,11 +231,10 @@ try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 catch
 end
-svgPathFS = fullfile(outDirUNC, svgNameFS);
 if isfield(Opt2, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt2.MultiCompare.Properties.VariableNames))
 	MATLAB.Graphics.PLineRetune(Opt2.MultiCompare.PLine, Opt2.MultiCompare.PText);
 end
-print(f2, svgPathFS, '-dsvg');
+svgPathFS = TransferLearning.ExportStandardFigure(f2, 2, svgNameFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
 close(f2);
 

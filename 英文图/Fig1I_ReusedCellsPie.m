@@ -125,9 +125,9 @@ catch
 end
 
 svgName = "English_Fig1I_ReusedCellsPie.svg";
-svgPath = fullfile(outDirUNC, svgName);
+svgPath = svgName;
 try
-	TransferLearning.PrintFigure(f, svgPath);
+	svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -175,3 +175,4 @@ end
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
 end
+

@@ -1,4 +1,4 @@
-% 中文图333D：模仿英文图2G算法、英文图3I样式，比较首会话命中率与散度的相关性
+﻿% 中文图333D：模仿英文图2G算法、英文图3I样式，比较首会话命中率与散度的相关性
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -98,8 +98,8 @@ fprintf('Naive mice: %d\n', nnz(maskNaive));
 fprintf('Transfer mice: %d\n', nnz(maskTran));
 fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
 
-svgPath = fullfile(outDirUNC, '中文图Fig333D_FirstSessionHitRateVsDivergence.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig333D_FirstSessionHitRateVsDivergence.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig333D_FirstSessionData', Data);
@@ -318,3 +318,4 @@ else
 	txt = sprintf('p = %.2f', p);
 end
 end
+

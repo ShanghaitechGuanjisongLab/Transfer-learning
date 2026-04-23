@@ -1,4 +1,4 @@
-% 中文图331D：声水学会阶段活跃细胞的光水迁移命中/错失回合1s z-score比较
+﻿% 中文图331D：声水学会阶段活跃细胞的光水迁移命中/错失回合1s z-score比较
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -139,8 +139,8 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig331D_LearnedActive_TransferHitMiss_1s_BarScatter.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig331D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig331D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair));
@@ -223,3 +223,4 @@ end
 		out = 'ns';
 	end
 	end
+

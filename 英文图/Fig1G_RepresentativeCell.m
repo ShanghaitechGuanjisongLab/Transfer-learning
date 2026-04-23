@@ -424,9 +424,9 @@ catch
 end
 
 svgName = "English_Fig1G_RepresentativeCell.svg";
-svgPath = fullfile(outDirUNC, svgName);
+svgPath = svgName;
 try
-	TransferLearning.PrintFigure(f, svgPath);
+	svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -466,3 +466,4 @@ sd = std(S(:, baseMask), 0, 2, 'omitnan');
 sd(sd < eps) = 1;
 Z = (S - mu) ./ sd;
 end
+

@@ -1,4 +1,4 @@
-% THInhibitoryHeterogeneitySimulation
+﻿% THInhibitoryHeterogeneitySimulation
 %
 % Minimal rate-model simulation for three qualitative findings:
 % 1) transfer starts from a higher first-session performance than naive,
@@ -145,8 +145,8 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'THInhibitoryHeterogeneityModel', Summary);
@@ -682,3 +682,4 @@ for obj = findobj(ax, 'Type', 'Line')'
 	obj.LineWidth = 2;
 end
 end
+

@@ -241,8 +241,8 @@ for t = findobj(ax2, 'Type', 'Text')', t.FontSize = 6; end
 
 % --- Export ---
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = fullfile(outDirUNC, "English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg");
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = "English_Fig2F_NaiveVsLearnedAW_DivByLayer.svg";
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 
 % --- Summary to base workspace ---
 assignin('base', 'Fig2F_NaiveAW_L23', divNaiveL23);
@@ -306,3 +306,4 @@ idx0 = 3 * sampleRate;
 CTT = CTT - CTT(:, :, idx0);
 cellUIDs = keepU;
 end
+

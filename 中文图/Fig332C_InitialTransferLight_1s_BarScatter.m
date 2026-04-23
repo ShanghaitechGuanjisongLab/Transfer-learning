@@ -1,4 +1,4 @@
-% 中文图332C：比较初始光水与迁移光水的1s NTATS（全细胞，不做筛选）
+﻿% 中文图332C：比较初始光水与迁移光水的1s NTATS（全细胞，不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -174,8 +174,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig332C_InitialTransferLight_1s_BarScatter.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig332C_InitialTransferLight_1s_BarScatter.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig332C_NTATS1s', struct('Initial', vInitial, 'Transfer', vTransfer, 'Idx1', idx1s, 'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveTransfer', activeTransfer, 'PActive', pActive));
@@ -321,3 +321,4 @@ else
 	out = 'ns';
 end
 end
+

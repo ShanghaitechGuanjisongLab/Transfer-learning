@@ -1,4 +1,4 @@
-% 中文图362A：学习增加信息量（In-trial）
+﻿% 中文图362A：学习增加信息量（In-trial）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -87,11 +87,12 @@ lgd.FontName = 'Arial';
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig362A_LearningIncreaseInformation_InTrial.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig362A_LearningIncreaseInformation_InTrial.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig362A_LinePhases', linePhases);
 assignin('base', 'Fig362A_MeanMat', meanMat);
 assignin('base', 'Fig362A_SemMat', semMat);
 assignin('base', 'Fig362A_CacheInfo', Data.CacheInfo);
+

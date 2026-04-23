@@ -236,8 +236,8 @@ for pl = PL2(:)', pl.LineWidth = 1; end
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg";
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 %% ===== 6) Save to workspace =====
@@ -314,3 +314,4 @@ else
 	s = "n.s.";
 end
 end
+

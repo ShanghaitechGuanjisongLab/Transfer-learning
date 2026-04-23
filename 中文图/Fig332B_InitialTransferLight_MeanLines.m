@@ -1,4 +1,4 @@
-% 中文图332B：初始光水与迁移光水两条均值线（全细胞，不做筛选）
+﻿% 中文图332B：初始光水与迁移光水两条均值线（全细胞，不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -81,8 +81,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig332B_InitialTransferLight_MeanLines.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig332B_InitialTransferLight_MeanLines.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig332B_InitialTransfer_Mean', Y);
@@ -163,3 +163,4 @@ if isnumeric(nt) && ismatrix(nt)
 end
 	error('中文图332B:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
+

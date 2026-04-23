@@ -1,4 +1,4 @@
-Data = Fig371_BaselineConvergenceCache();
+﻿Data = Fig371_BaselineConvergenceCache();
 
 f = figure('Color', 'w', 'Name', '中文图371B Baseline convergence deviation');
 f.Units = 'centimeters';
@@ -59,6 +59,7 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig371B_BaselineConvergence_Deviation.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig371B_BaselineConvergence_Deviation.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+

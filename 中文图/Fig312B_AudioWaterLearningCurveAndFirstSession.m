@@ -1,4 +1,4 @@
-% Fig312B：声水初始/迁移学习曲线 + 首会话条形图
+﻿% Fig312B：声水初始/迁移学习曲线 + 首会话条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -106,7 +106,7 @@ if ~isfolder(outDir)
 	mkdir(outDir);
 end
 svgPath = fullfile(outDir, '中文图Fig312B_AudioWater_LearningCurve.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -176,7 +176,7 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
 svgPath2 = fullfile(outDir, '中文图Fig312B_AudioWater_FirstSessionPerformance.svg');
-TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
+svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2);
 fprintf('Wrote: %s\n', svgPath2);
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));

@@ -131,9 +131,8 @@ catch
 end
 
 svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
-svgPath = fullfile(outDirUNC, svgName);
 try
-	print(f, svgPath, '-dsvg');
+	svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);

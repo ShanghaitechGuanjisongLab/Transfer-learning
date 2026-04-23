@@ -1,4 +1,4 @@
-% 中文图342G：响应异质性 vs 路程/直线距离（全细胞，Naive/Transfer 分色）
+﻿% 中文图342G：响应异质性 vs 路程/直线距离（全细胞，Naive/Transfer 分色）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -166,8 +166,8 @@ Stats.NTransfer(1) = nnz(maskTran);
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig342G_MatchedData', R);
@@ -245,3 +245,4 @@ else
 	ratioVal = NaN;
 end
 end
+

@@ -87,8 +87,8 @@ catch
 end
 
 svgName = "English_Fig2C_InterTrialDivergence_PCA.svg";
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig2C_Info_Learned', info_learn);
@@ -358,3 +358,4 @@ end
 	darkFloor = 0.10;
 	cmap = baseColor .* mix + darkFloor .* (1 - mix);
 	end
+

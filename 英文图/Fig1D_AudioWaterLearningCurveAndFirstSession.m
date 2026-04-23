@@ -1,4 +1,4 @@
-% 英文图1D：声水初始/迁移学习曲线 + 首会话条形图
+﻿% 英文图1D：声水初始/迁移学习曲线 + 首会话条形图
 %
 % AudioWater learning curve: Naive vs Transfer
 % - Naive 组：AudioLightBaseline(成像行为) + ALPureBehavior(纯行为)
@@ -112,8 +112,8 @@ end
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
-svgPath = fullfile(outDirUNC, 'English_Fig1D_AudioWater_LearningCurve.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = 'English_Fig1D_AudioWater_LearningCurve.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -214,8 +214,8 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
 
-svgPath2 = fullfile(outDirUNC, 'English_Fig1D_AudioWater_FirstSessionPerformance.svg');
-TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
+svgPath2 = 'English_Fig1D_AudioWater_FirstSessionPerformance.svg';
+svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2);
 fprintf('Wrote: %s\n', svgPath2);
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
@@ -536,3 +536,4 @@ function stars = iPToStars(p)
 		stars = 'n.s.';
 	end
 end
+

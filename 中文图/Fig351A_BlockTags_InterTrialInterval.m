@@ -1,4 +1,4 @@
-% 中文图351A：代表性初始/迁移光水会话的回合间隙 BlockTags
+﻿% 中文图351A：代表性初始/迁移光水会话的回合间隙 BlockTags
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -42,8 +42,8 @@ annotation(f, 'textbox', [0.33 0.90 0.08 0.05], 'String', 'CD2', 'EdgeColor', 'n
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig351A_NaiveRepresentative', NaiveRow);
@@ -110,3 +110,4 @@ function iPlotOneInterval(ax, Row, panelTitle)
 	end
 	title(ax, panelTitle, 'FontSize', 6, 'FontWeight', 'normal');
 end
+

@@ -305,8 +305,8 @@ end
 
 % --- Export ---
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = fullfile(outDirUNC, "English_Fig2D_DivergenceBarCompare_Dual.svg");
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = "English_Fig2D_DivergenceBarCompare_Dual.svg";
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 
 % --- Summary to base workspace ---
 assignin('base', 'Fig2D_Paired_NaiveAO', divAO);
@@ -395,3 +395,4 @@ else
 	s = "";
 end
 end
+

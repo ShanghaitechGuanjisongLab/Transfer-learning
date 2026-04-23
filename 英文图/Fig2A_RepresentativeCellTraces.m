@@ -335,8 +335,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 svgName = "English_Fig2A_RepresentativeCellTraces.svg";
-svgPath = fullfile(outDirUNC, svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'English_Fig2A_CellUIDs', selectedCellUIDs);

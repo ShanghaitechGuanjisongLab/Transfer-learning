@@ -156,8 +156,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 svgName = "English_Fig2B_LanearHeatmap.svg";
-svgPath = fullfile(outDirUNC, svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Cells plotted: %d\n', size(laneData, 1));
 

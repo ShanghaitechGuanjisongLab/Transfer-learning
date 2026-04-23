@@ -1,4 +1,4 @@
-% English Fig3L: Reactivation and Divergence vs DeltaHit
+﻿% English Fig3L: Reactivation and Divergence vs DeltaHit
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -112,8 +112,8 @@ MATLAB.Graphics.UnifyAxesLims([ax1; ax2], @ylim);
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 close(f);
 
@@ -515,3 +515,4 @@ for iPerm = 1:nPerm
 	end
 	p = mean(abs(nullDist) >= abs(rho));
 end
+

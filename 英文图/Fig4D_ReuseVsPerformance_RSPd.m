@@ -1,4 +1,4 @@
-% English Fig4D: RSPd reuse rate vs transfer performance (per mouse × layer)
+﻿% English Fig4D: RSPd reuse rate vs transfer performance (per mouse × layer)
 %
 % Scatter plot with Spearman correlation, following Fig1K style (3×4 cm).
 %
@@ -100,6 +100,7 @@ ylabel(ax, 'Transfer hit rate', 'FontSize', 6);
 
 % --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+

@@ -253,11 +253,10 @@ end
 
 % --- Export ---
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = fullfile(outDirUNC, "English_Fig2G_DivVsHitRate_L5.svg");
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, "English_Fig2G_DivVsHitRate_L5.svg");
 
 % Summary to workspace
 assignin('base', 'Fig2G_Transfer', table(T_Mouse, T_DivL23, T_DivL5, T_HR, ...

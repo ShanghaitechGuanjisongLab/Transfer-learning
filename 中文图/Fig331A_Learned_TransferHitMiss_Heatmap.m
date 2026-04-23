@@ -1,4 +1,4 @@
-% 中文图331A：声水学会、光水迁移命中/错失三列热图
+﻿% 中文图331A：声水学会、光水迁移命中/错失三列热图
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -135,8 +135,8 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig331A_Learned_TransferHitMiss_Heatmap.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig331A_Learned_TransferHitMiss_Heatmap.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig331A_ActiveMask', activeMask);
@@ -201,3 +201,4 @@ else
 end
 y = f2 * 10^e;
 end
+

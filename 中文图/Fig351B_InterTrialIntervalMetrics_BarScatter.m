@@ -1,4 +1,4 @@
-% 中文图351B：初始/迁移光水首会话的会话时长与舔水时间占比
+﻿% 中文图351B：初始/迁移光水首会话的会话时长与舔水时间占比
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -43,8 +43,8 @@ iStyleOneAxis(ax2, bars2, eb2, optional2, colorNaive, colorTransfer, 'Licking fr
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 Stats = table([mean(naiveDurMin,'omitnan'); mean(naiveFrac,'omitnan')], [mean(tranDurMin,'omitnan'); mean(tranFrac,'omitnan')], ...
@@ -155,3 +155,4 @@ function color = iColorForBarX(x, spec, fallback)
 		color = spec.Color(idx, :);
 	end
 end
+

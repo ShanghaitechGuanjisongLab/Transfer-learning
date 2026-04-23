@@ -1,4 +1,4 @@
-% 中文图333A：模仿英文图2A，只画2个代表性细胞
+﻿% 中文图333A：模仿英文图2A，只画2个代表性细胞
 % - 一个取自声光迁移组：Learned AudioWater + Transfer LightWater，各3个活跃回合
 % - 一个取自Naive LightWater：同一会话3个回合，至少1个活跃且至少1个1s z-score为负
 
@@ -91,8 +91,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig333A_TwoRepresentativeCellTraces.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig333A_TwoRepresentativeCellTraces.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig333A_NaiveRepresentative', naiveRep);
@@ -406,3 +406,4 @@ function [idx, ok] = iFindTimeIndex(xsSec, targetSec, tolSec)
 	[d, idx] = min(abs(xsSec(:) - targetSec));
 	ok = isfinite(d) && d <= tolSec;
 end
+

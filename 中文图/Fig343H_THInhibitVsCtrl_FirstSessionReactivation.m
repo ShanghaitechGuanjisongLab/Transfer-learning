@@ -76,8 +76,7 @@ iApplyPText(options5, p5);
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig343H_ReactivationTable', R);

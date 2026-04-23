@@ -186,14 +186,14 @@ grid(ax, 'off');
 
 % Export learning curve
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgLC = fullfile(outDirUNC, 'English_Fig2K_cFos_LearningCurve.svg');
+svgLC = 'English_Fig2K_cFos_LearningCurve.svg';
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
 end
 try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
-	TransferLearning.PrintFigure(f, svgLC, ForceLegendOrColorbar=true);
+	svgLC = TransferLearning.ExportStandardFigure(f, 2, svgLC);
 	fprintf('Wrote: %s\n', svgLC);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -288,10 +288,10 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 
-svgFS = fullfile(outDirUNC, 'English_Fig2K_cFos_FirstSessionHitRate.svg');
+svgFS = 'English_Fig2K_cFos_FirstSessionHitRate.svg';
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
-	TransferLearning.PrintFigure(f2, svgFS, ForceLegendOrColorbar=true);
+	svgFS = TransferLearning.ExportStandardFigure(f2, 2, svgFS);
 	fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -300,3 +300,4 @@ end
 assignin('base', 'English_Fig2K_Sessions', Sess);
 assignin('base', 'English_Fig2K_LearningSummarizeP', PValueLS);
 assignin('base', 'English_Fig2K_FirstSessionP', pFS);
+

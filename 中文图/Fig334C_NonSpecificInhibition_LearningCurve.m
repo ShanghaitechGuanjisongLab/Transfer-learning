@@ -1,4 +1,4 @@
-% 中文图334C：Non-specific inhibition 学习曲线
+﻿% 中文图334C：Non-specific inhibition 学习曲线
 % 数据源与算法：模仿 Fig35B 第一个 tile（hM4D(Gi) vs mCherry 的 LightWater learning curve）
 % 样式：模仿英文图2K（颜色、线宽、ylabel、整体布局）
 
@@ -90,8 +90,8 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Learning curve overall p = %.4g\n', pCurve);
 fprintf('LearningSummarize p = %.4g\n', pSumm);
@@ -99,3 +99,4 @@ fprintf('LearningSummarize p = %.4g\n', pSumm);
 assignin('base', 'Fig334C_Sessions', Sess);
 assignin('base', 'Fig334C_LearningSummarizeP', pSumm);
 assignin('base', 'Fig334C_LMECurveP', pCurve);
+

@@ -1,4 +1,4 @@
-% 中文图362B：学习增加信息量（whole-block）
+﻿% 中文图362B：学习增加信息量（whole-block）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -98,8 +98,8 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig362B_LearningIncreaseInformation_WholeBlock.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig362B_LearningIncreaseInformation_WholeBlock.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig362B_BarPhases', barPhases);
@@ -132,3 +132,4 @@ function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth)
 		line(ax, [xPos(iPoint) - capWidth, xPos(iPoint) + capWidth], [yTop, yTop], 'Color', 'k', 'LineWidth', lineWidth);
 	end
 end
+

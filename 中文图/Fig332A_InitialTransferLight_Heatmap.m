@@ -1,4 +1,4 @@
-% 中文图332A：初始光水与迁移光水双泳道热图（全细胞，不做对齐、不做筛选）
+﻿% 中文图332A：初始光水与迁移光水双泳道热图（全细胞，不做对齐、不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -104,8 +104,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig332A_InitialTransferLight_Heatmap.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig332A_InitialTransferLight_Heatmap.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig332A_Initial1s', vInit1s);
@@ -210,4 +210,5 @@ else
 end
 y = f2 * 10^e;
 end
+
 

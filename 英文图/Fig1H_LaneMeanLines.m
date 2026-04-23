@@ -123,8 +123,7 @@ if ~isfolder(outDirUNC)
 end
 title(ax,'🔊💡 reactive cells', 'FontSize', 12, 'FontWeight', 'normal');
 svgName = "English_Fig1H_LaneMeanLines.svg";
-svgPath = fullfile(outDirUNC, svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig1H_MeanLines_Y', Y);

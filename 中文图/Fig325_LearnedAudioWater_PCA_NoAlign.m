@@ -1,4 +1,4 @@
-% 中文图36：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
+﻿% 中文图36：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -57,8 +57,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, '中文图Fig325_LearnedAudioWater_PCA_NoAlign.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = '中文图Fig325_LearnedAudioWater_PCA_NoAlign.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig36_GroupNtats', GPlot);
@@ -256,3 +256,4 @@ end
 alphaVals = linspace(0.25, 1.0, nLines)';
 colors = [repmat(baseColor, nLines, 1), alphaVals];
 end
+

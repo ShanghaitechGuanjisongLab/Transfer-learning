@@ -1,4 +1,4 @@
-function Fig4C_OnsetCompare_RSPd_vs_MOp()
+﻿function Fig4C_OnsetCompare_RSPd_vs_MOp()
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 RSP = TransferLearning.RSPd();
@@ -94,8 +94,8 @@ for iText = 1:numel(allText)
 end
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = svgName;
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 end
 
@@ -121,3 +121,4 @@ else
 end
 X = squeeze(X);
 end
+

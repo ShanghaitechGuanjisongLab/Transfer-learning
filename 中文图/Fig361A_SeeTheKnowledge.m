@@ -1,4 +1,4 @@
-if ~exist('UniExp.DataSet', 'class')
+﻿if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
 	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
@@ -43,6 +43,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, '中文图Fig361A_SeeTheKnowledge.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig361A_SeeTheKnowledge.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+

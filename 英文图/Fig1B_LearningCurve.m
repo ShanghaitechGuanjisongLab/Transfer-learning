@@ -1,4 +1,4 @@
-%[text] `图3.1b：学习曲线（以会话序号为横轴，均值±SEM；两 cohort 非配对）。`
+﻿%[text] `图3.1b：学习曲线（以会话序号为横轴，均值±SEM；两 cohort 非配对）。`
 %
 % LightWater learning curve: Naive vs Transfer
 % - Naive 组：LightAudioBaseline(成像行为) + LAPureBehavior(纯行为)
@@ -134,11 +134,11 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = fullfile(outDirUNC, 'English_Fig1B_LearningCurve.svg');
+svgPath = 'English_Fig1B_LearningCurve.svg';
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off'; %[output:5c266b7f]
 end
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true); %[output:5c266b7f]
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath); %[output:5c266b7f]
 fprintf('Wrote: %s\n', svgPath);
 %%
 
@@ -245,14 +245,14 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	box(ax2, 'off'); %[output:4cd90a67]
 
 	% Export SVG (transparent)
-	svgPath2 = fullfile(outDirUNC, 'English_Fig1B_FirstSessionPerformance.svg');
+	svgPath2 = 'English_Fig1B_FirstSessionPerformance.svg';
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 		ax2.Toolbar.Visible = 'off'; %[output:4cd90a67]
 	end
-	TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true); %[output:4cd90a67] %[output:68fbb553]
+	svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2); %[output:4cd90a67] %[output:68fbb553]
 	fprintf('Wrote: %s\n', svgPath2); %[output:5cb3c136]
 end %[output:group:9039a271]
 
@@ -768,3 +768,4 @@ end
 %[output:5cb3c136]
 %   data: {"dataType":"text","outputData":{"text":"Wrote: \\\\Data-Server-2\\个人数据\\张天夫\\202602\\English_Fig1B_FirstSessionPerformance.svg\n","truncated":false}}
 %---
+

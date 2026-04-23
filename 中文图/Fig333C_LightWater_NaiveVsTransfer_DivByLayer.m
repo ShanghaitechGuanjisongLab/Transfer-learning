@@ -1,4 +1,4 @@
-% English Fig2H: LightWater Naive vs Transfer Divergence by layer
+﻿% English Fig2H: LightWater Naive vs Transfer Divergence by layer
 %
 % 上面板：L2/3  Naive LW vs Transfer LW（非配对 ranksum）
 % 下面板：L5    Naive LW vs Transfer LW（非配对 ranksum）
@@ -105,8 +105,8 @@ xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
 iStyleBars(Bars2, RED, BLUE);
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = fullfile(outDirUNC, '中文图Fig333C_LightWater_NaiveVsTransfer_DivByLayer.svg');
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = '中文图Fig333C_LightWater_NaiveVsTransfer_DivByLayer.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 
 assignin('base', 'English_Fig2H_Table', T);
 assignin('base', 'English_Fig2H_Summary', S);
@@ -369,4 +369,5 @@ for h = findobj(ax, 'Type', 'Line')'
 	h.LineWidth = 1;
 end
 end
+
 

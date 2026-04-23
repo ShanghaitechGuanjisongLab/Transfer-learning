@@ -192,9 +192,9 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 	end
 catch
 end
-svgPath1 = fullfile(outDirUNC, '中文图Fig313_GrowthSlope.svg');
+svgPath1 = '中文图Fig313_GrowthSlope.svg';
 try
-	TransferLearning.PrintFigure(f1, svgPath1, ForceLegendOrColorbar=true);
+	svgPath1 = TransferLearning.ExportStandardFigure(f1, 2, svgPath1);
 	fprintf('Wrote: %s\n', svgPath1);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -298,9 +298,9 @@ xlabel(ax2, 'Block', 'FontSize', 12);
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 legend(ax2, 'Location','northeastoutside', 'FontSize', 12);
 
-svgPath2 = fullfile(outDirUNC, '中文图Fig313_ExtremeSlopeMiceLearningCurves.svg');
+svgPath2 = '中文图Fig313_ExtremeSlopeMiceLearningCurves.svg';
 try
-	TransferLearning.PrintFigure(f2, svgPath2, ForceLegendOrColorbar=true);
+	svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2);
 	fprintf('Wrote: %s\n', svgPath2);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -746,3 +746,4 @@ end
 [~, idx] = min(abs(barSpec.X - x));
 color = barSpec.Color(idx, :);
 end
+

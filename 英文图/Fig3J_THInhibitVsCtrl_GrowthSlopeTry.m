@@ -1,4 +1,4 @@
-% English Fig3J trial: use Fig3J top-panel sessions, but test group difference
+﻿% English Fig3J trial: use Fig3J top-panel sessions, but test group difference
 % with the Fig1C growth-slope algorithm (per-mouse slope + ANCOVA).
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
@@ -95,8 +95,8 @@ box off
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = fullfile(outDirUNC, 'English_Fig3J_THInhibitVsCtrl_GrowthSlopeTry.svg');
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = 'English_Fig3J_THInhibitVsCtrl_GrowthSlopeTry.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig3J_GrowthSlopeTry_PerMouse', perMouse);
@@ -309,3 +309,4 @@ try
 catch
 end
 end
+

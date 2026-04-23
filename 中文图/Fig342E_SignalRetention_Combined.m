@@ -1,4 +1,4 @@
-% 中文图342E：信号保留散点 + 分组条形图组合
+﻿% 中文图342E：信号保留散点 + 分组条形图组合
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -159,12 +159,9 @@ if isprop(axE.XAxis, 'LineWidth')
 end
 axE.XTick = [-1 0 1]; axE.YTick = [-1 0 1];
 xlh = xlabel(axE, '🔊💧 z-score');
-ylh = ylabel(axE, '💡💧 z-score');
 box(axE, 'off');
 xlh.Units = 'normalized';
 xlh.Position(1) = (sW/2 + G/2 + bwR/2) / sW;
-ylh.Units = 'normalized';
-ylh.Position(2) = (sH/2 + G/2 + bhT/2) / sH;
 if ~isfinite(pCorr)
 	pStr = 'p = NaN';
 elseif pCorr < 0.001
@@ -197,9 +194,9 @@ end
 ebT = errorbar(axT, [1 2], [mN1 mP1], lowErrT, highErrT, 'k', 'LineStyle', 'none', 'LineWidth', 1);
 if isprop(ebT, 'CapSize'), ebT.CapSize = 6; end
 yBrk = max(abs(mN1)+seN1, abs(mP1)+seP1) + 0.015;
-plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+pLineT(1) = plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+pLineT(2) = plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+pLineT(3) = plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
 text(axT, 1.5, yBrk+0.005, iAsterisk(pPN1), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
 hold(axT, 'off');
 axT.FontSize = fs;
@@ -211,6 +208,9 @@ end
 axT.XTick = [1 2]; axT.XTickLabel = {'−', '+'};
 axT.XAxisLocation = 'bottom';
 axT.YAxisLocation = 'left';
+ylh = ylabel(axT, '💡💧 z-score');
+ylh.Units = 'normalized';
+ylh.Position(2) = 0.5 - (sH/2 + G/2) / bhT;
 box(axT, 'off');
 
 axR = axes(f, 'Position', [sX+sW+G sY bwR sH]);
@@ -234,9 +234,9 @@ end
 ebR = errorbar(axR, [mN2 mP2], [1 2], negErr, posErr, 'horizontal', 'k', 'LineStyle', 'none', 'LineWidth', 1);
 if isprop(ebR, 'CapSize'), ebR.CapSize = 6; end
 xBrk = max(abs(mN2)+seN2, abs(mP2)+seP2) + 0.015;
-plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+pLineR(1) = plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+pLineR(2) = plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+pLineR(3) = plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
 text(axR, xBrk+0.01, 1.5, iAsterisk(pPN2), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270);
 hold(axR, 'off');
 axR.FontSize = fs;
@@ -250,8 +250,11 @@ axR.YAxisLocation = 'left';
 box(axR, 'off');
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+TransferLearning.Style.ApplyStandardFigureStyle(f, 1, PreserveScatterStyle=true);
+set([pLineT(:); pLineR(:)], 'LineWidth', 0.5);
+drawnow;
+svgPath = fullfile(outDirUNC, char(svgName));
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 function s = iAsterisk(p)
@@ -265,3 +268,4 @@ function s = iAsterisk(p)
 		s = 'n.s.';
 	end
 end
+

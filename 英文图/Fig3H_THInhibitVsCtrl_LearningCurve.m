@@ -1,4 +1,4 @@
-% 英文图3H：TH 抑制组 vs 对照组 LightWater 学习曲线 + 首会话命中率
+﻿% 英文图3H：TH 抑制组 vs 对照组 LightWater 学习曲线 + 首会话命中率
 %
 % 数据源（模仿 Fig3.5C）：
 % - 对照组：TransferLearning.AudioLightBaseline
@@ -148,8 +148,8 @@ try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
 catch
 end
-svgPath = fullfile(outDirUNC, svgNameLC);
-TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
+svgPath = svgNameLC;
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 %% --- 7) First transfer session hit-rate bar compare (style: English Fig2J)
@@ -227,11 +227,12 @@ try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 catch
 end
-svgPathFS = fullfile(outDirUNC, svgNameFS);
-TransferLearning.PrintFigure(f2, svgPathFS, ForceLegendOrColorbar=true);
+svgPathFS = svgNameFS;
+svgPathFS = TransferLearning.ExportStandardFigure(f2, 2, svgPathFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
 
 assignin('base', 'English_Fig3G_Sessions', Sess);
 assignin('base', 'English_Fig3G_BarSessions', barSess);
 assignin('base', 'English_Fig3G_LearningSummarizeP', PValueLS);
 assignin('base', 'English_Fig3G_FirstSessionP', pFS);
+
