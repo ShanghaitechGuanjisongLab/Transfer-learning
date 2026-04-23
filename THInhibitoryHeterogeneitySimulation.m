@@ -32,19 +32,17 @@ for iCond = 1:height(Cond)
 	fprintf('%s: mean slope = %.3f, mean DeltaHit = %.3f\n', name, mean(slope, 'omitnan'), mean(dh, 'omitnan'));
 end
 [rhoL23, pL23] = corr(Summary.CorrMouse.MeanH23, Summary.CorrMouse.Slope, 'Type', 'Spearman', 'Rows', 'complete');
-[rhoL5, pL5] = corr(Summary.CorrMouse.MeanH5, Summary.CorrMouse.Slope, 'Type', 'Spearman', 'Rows', 'complete');
 fprintf('Slope vs L2/3 heterogeneity: rho = %.3f, p = %.4g\n', rhoL23, pL23);
-fprintf('Slope vs L5 heterogeneity:   rho = %.3f, p = %.4g\n', rhoL5, pL5);
 
 f = figure('Color', 'w', 'Name', 'TH inhibitory heterogeneity model');
 f.Units = 'centimeters';
-f.Position(3:4) = [24, 16];
+f.Position(3:4) = [18, 16];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 24, 16];
-f.PaperSize = [24, 16];
+f.PaperPosition = [0, 0, 18, 16];
+f.PaperSize = [18, 16];
 
-tl = tiledlayout(f, 2, 3, 'TileSpacing', 'loose', 'Padding', 'compact');
+tl = tiledlayout(f, 2, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
 
 colors = Cond.Color;
 xSess = (1:Params.NumSessions)';
@@ -64,67 +62,43 @@ ylim(ax1, [0, 1]);
 
 ax2 = nexttile(tl, 2);
 hold(ax2, 'on');
-[h23Mean, h23Sem] = iCurveStats(Summary.HeterogeneityL23, Cond.Name);
-h23Cells = iMatrixColumnsToCell(h23Mean);
-h23SemCells = iMatrixColumnsToCell(h23Sem);
-h23XCells = repmat({xSess}, 1, width(h23Mean));
-MATLAB.Graphics.MultiShadowedLines(h23Cells, h23SemCells, X=h23XCells, EdgeColors=colors);
-iStyleLinePanel(ax2);
-xlabel(ax2, 'Session', 'FontSize', 12);
-ylabel(ax2, 'L2/3 heterogeneity', 'FontSize', 12);
-title(ax2, 'Running L2/3 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
-
-ax3 = nexttile(tl, 3);
-hold(ax3, 'on');
 for iCond = 1:height(Cond)
 	mask = Summary.CorrMouse.Condition == Cond.Name(iCond);
-	scatter(ax3, Summary.CorrMouse.MeanH23(mask), Summary.CorrMouse.Slope(mask), 20, colors(iCond, :), 'filled', ...
+	scatter(ax2, Summary.CorrMouse.MeanH23(mask), Summary.CorrMouse.Slope(mask), 20, colors(iCond, :), 'filled', ...
 		'MarkerFaceAlpha', 0.55, 'MarkerEdgeColor', colors(iCond, :), 'LineWidth', 0.2);
 end
 allUse = isfinite(Summary.CorrMouse.MeanH23) & isfinite(Summary.CorrMouse.Slope);
 fitP23 = polyfit(Summary.CorrMouse.MeanH23(allUse), Summary.CorrMouse.Slope(allUse), 1);
 xFit23 = linspace(min(Summary.CorrMouse.MeanH23(allUse)), max(Summary.CorrMouse.MeanH23(allUse)), 50);
-plot(ax3, xFit23, polyval(fitP23, xFit23), '-', 'Color', [0, 0.6809, 0], 'LineWidth', 2, 'HandleVisibility', 'off');
-iStyleScatterPanel(ax3);
-xlabel(ax3, 'Learning-process L2/3 heterogeneity', 'FontSize', 12);
-ylabel(ax3, 'Subsequent learning slope', 'FontSize', 12);
-title(ax3, 'Slope vs L2/3 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
-text(ax3, 0.97, 0.97, iPLabel(pL23, rhoL23), 'Units', 'normalized', 'HorizontalAlignment', 'right', ...
+plot(ax2, xFit23, polyval(fitP23, xFit23), '-', 'Color', [0, 0.6809, 0], 'LineWidth', 2, 'HandleVisibility', 'off');
+iStyleScatterPanel(ax2);
+xlabel(ax2, 'Learning-process L2/3 heterogeneity', 'FontSize', 12);
+ylabel(ax2, 'Subsequent learning slope', 'FontSize', 12);
+title(ax2, 'Slope vs L2/3 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
+text(ax2, 0.97, 0.97, iPLabel(pL23, rhoL23), 'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 	'VerticalAlignment', 'top', 'FontSize', 12);
+
+ax3 = nexttile(tl, 3);
+hold(ax3, 'on');
+iStripMeanSem(ax3, Summary.PerMouse, Cond, 'MeanH5');
+iAnnotateMetricStats(ax3, Summary.PerMouse, Cond, 'MeanH5');
+iStyleScatterPanel(ax3);
+xlabel(ax3, '', 'FontSize', 12);
+ylabel(ax3, 'Mean L5 heterogeneity', 'FontSize', 12);
+title(ax3, 'L5 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
+ax3.XTickLabel = {};
+ax3.XTickLabelRotation = 0;
 
 ax4 = nexttile(tl, 4);
 hold(ax4, 'on');
-iStripMeanSem(ax4, Summary.PerMouse, Cond, 'MeanH5');
-iAnnotateMetricStats(ax4, Summary.PerMouse, Cond, 'MeanH5');
+iStripMeanSem(ax4, Summary.PerMouse, Cond, 'Slope');
+iAnnotateMetricStats(ax4, Summary.PerMouse, Cond, 'Slope');
 iStyleScatterPanel(ax4);
 xlabel(ax4, '', 'FontSize', 12);
-ylabel(ax4, 'Mean L5 heterogeneity', 'FontSize', 12);
-title(ax4, 'L5 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
+ylabel(ax4, 'Learning slope', 'FontSize', 12);
+title(ax4, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
 ax4.XTickLabel = {};
 ax4.XTickLabelRotation = 0;
-
-ax5 = nexttile(tl, 5);
-hold(ax5, 'on');
-iStripMeanSem(ax5, Summary.PerMouse, Cond, 'Slope');
-iAnnotateMetricStats(ax5, Summary.PerMouse, Cond, 'Slope');
-iStyleScatterPanel(ax5);
-xlabel(ax5, '', 'FontSize', 12);
-ylabel(ax5, 'Learning slope', 'FontSize', 12);
-title(ax5, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
-ax5.XTickLabel = {};
-ax5.XTickLabelRotation = 0;
-
-ax6 = nexttile(tl, 6);
-hold(ax6, 'on');
-edges = linspace(-1.5, 1.5, 25);
-[xCtrl, yCtrl] = iDensityFromHist(Summary.Representative.Transfer.ProcessMeanL5, edges);
-[xTH, yTH] = iDensityFromHist(Summary.Representative.THOff.ProcessMeanL5, edges);
-plot(ax6, xCtrl, yCtrl, '-', 'Color', Cond.Color(Cond.Name == "Transfer", :), 'LineWidth', 2);
-plot(ax6, xTH, yTH, '-', 'Color', Cond.Color(Cond.Name == "THOff", :), 'LineWidth', 2);
-iStyleScatterPanel(ax6);
-xlabel(ax6, 'Process-mean L5 response', 'FontSize', 12);
-ylabel(ax6, 'Density', 'FontSize', 12);
-title(ax6, 'Process-mean L5 density', 'FontSize', 12, 'FontWeight', 'normal');
 
 lgd = legend(ax1, perfLines(1:height(Cond)), cellstr(Cond.Label), 'Location', 'north', 'Box', 'off', 'FontSize', 12, 'Orientation', 'horizontal', 'NumColumns', 3);
 lgd.Layout.Tile = 'north';
@@ -145,59 +119,73 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = svgName;
-svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
+svgPath = fullfile(outDirUNC, svgName);
+TransferLearning.PrintFigure(f, svgPath, ForceLegendOrColorbar=true);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'THInhibitoryHeterogeneityModel', Summary);
 
 function Params = iDefaultParams()
+% Three-population architecture:
+%   Cue   (sensory cue population, size NCue, with plastic inhibitory pool)
+%   Rew   (reward-coding population, size NRew, with plastic inhibitory pool)
+%   Read  (behavioural readout population, size NRead; no plastic I-pool)
+% Six directed plastic E-E pathways (all pairs of populations, both directions).
+% Decision phase uses cue input only; readout receives direct (cue->read)
+% + indirect (cue->rew->read) activity, summed, then thresholded to a hit.
+% Learning phase clamps each population to its fixed input pattern and
+% applies outer-product Hebbian updates on all six W matrices plus the
+% per-cell inhibitory gain in Cue/Rew areas.
 Params.NumMice = 20;
 Params.NumSessions = 8;
 Params.NumTrials = 72;
-Params.NE23 = 96;
-Params.NE5 = 64;
-Params.NI = 24;
+Params.NCue = 96;
+Params.NRew = 64;
+Params.NRead = 64;
+Params.NICue = 24;
+Params.NIRew = 16;
 Params.ResponseScale = 1.45;
-Params.Noise23 = 0.22;
-Params.Noise5 = 0.12;
+Params.NoiseCue = 0.22;
+Params.NoiseRew = 0.15;
+Params.NoiseRead = 0.12;
 Params.NoiseI = 0.12;
-Params.Comp23 = 0.95;
-Params.Comp5 = 1.35;
-Params.BaseLearnRate = 0.30;
-Params.LearnNoise = 0.010;
-Params.MaxLearnState = 4.00;
-Params.ReadoutGain = 14.0;
-Params.HitThreshold = 0.48;
-Params.InitialLearnState = 0.00;
-Params.Ceiling = 1.00;
-Params.PretrainCueGain = 6.00;
-Params.CueTo23 = 0.22;
-Params.BaseTo23 = 0.08;
-Params.LearnTo23 = 0.88;
-Params.SchemaTo23 = 1.00;
-Params.Coupling23To5 = 0.24;
-Params.CueTo5 = 0.06;
-Params.BaseTo5 = 0.06;
-Params.LearnTo5 = 0.54;
-Params.SchemaTo5 = 0.85;
-Params.THPatternTo5 = 0.60;
+Params.Comp_Cue = 0.95;
+Params.Comp_Rew = 1.00;
+% Input gains
+Params.CueInputGain = 1.00;          % sensory cue drive (decision + learning)
+Params.CueInputGainPretrain = 1.50;  % pretraining cue gain
+Params.RewInputGain = 0.85;          % reward pattern clamp amplitude (learning phase only)
+Params.ReadInputGain = 0.85;         % readout pattern clamp amplitude (learning phase only)
+Params.BaseInputGain = 0.15;         % baseline trial drive on Cue area
+% Decision readout: network noise creates trial-to-trial variability,
+% and a hit is emitted when the readout crosses HitThreshold.
+Params.HitThreshold = 0.35;
 Params.BaselinePenalty = 1.00;
-Params.LearnFromCoactivity23 = 2.80;
-Params.CoactivityThreshold23 = 0.20;
-Params.SchemaReuseFraction = 0.10;
-Params.SchemaLearnBoost = 8.0;
-Params.OvernightRetention = 0.85;
-Params.OvernightNoise = 0.03;
-Params.OvernightPatternDrift = 0.00;
-Params.SchemaDriftDamping = 1.50;
-Params.SchemaRetentionBoost = 0.10;
-Params.DriftAttenuationRate = 0.30;
-Params.DriftLearnDecay = 0.00;
-Params.EligibilityDecay = 0.58;
-Params.MaxEligibilityTrace = 1.15;
-Params.LearnPatternAdaptRate = 0.05;
-Params.BaselineTHFraction = 0.55;
+Params.Ceiling = 1.00;
+% Slope fit: drop sessions from the first 100%-hit session onward
+% (that session and every subsequent one) so the plateau at 1.0 does
+% not compress the slope of fast learners.
+Params.SlopeHitPerfect = 1.00;
+% Plastic E-E weights (all pathways): zero-mean init, symmetric cap.
+Params.InitWStd = 0.03;
+Params.WCap = 1.20;
+% Per-trial Hebbian rate. With NumTrials=72 per session, total within-
+% session increase ≈ 72 * HebbRate * eta_factors.
+Params.HebbRate = 0.0025;
+% Inhibitory plasticity (per-E-cell gain, Vogels-Sprekeler style, per-trial).
+Params.InhPlasticityRate = 0.002;
+Params.InhTargetAct = 0.00;
+Params.InhGainMin = 0.20;
+Params.InhGainMax = 3.00;
+% Cross-modality overlap between pretraining cue (e.g. sound) and new cue
+% (e.g. light). Real cortical populations are never fully orthogonal; each
+% Cue-area cell has a shared component plus a modality-unique component.
+% Correlation between CuePattern and PreCuePattern = CueModalityCorr.
+Params.CueModalityCorr = 0.50;
+% Overnight consolidation
+Params.OvernightRetention = 0.96;
+Params.OvernightNoise = 0.002;
+% Pretraining
 Params.MaxPretrainSessions = 150;
 Params.PostCeilingSessions = 2;
 end
@@ -232,12 +220,20 @@ for iCond = 1:height(Cond)
 	repProcessL5 = cell(Params.NumMice, 1);
 	for iMouse = 1:Params.NumMice
 		Mouse = iDrawMouse(Params);
-		if Cond.Name(iCond) == "Naive"
-			schemaState0 = 0;
-		else
-			schemaState0 = iPretrainMouse(Mouse, Params);
+		if Cond.Name(iCond) ~= "Naive"
+			% Pretraining shapes all six E-E matrices + inhibitory gains.
+			% No artificial pruning on task switch: the same M2 population
+			% carries both modalities, so synapses are fully inherited.
+			% The "transfer advantage" emerges naturally because
+			% (i) CuePattern and PreCuePattern share a subpopulation
+			%     (cross-modal correlation = Params.CueModalityCorr), and
+			% (ii) Rew<->Read pathways encode a task schema that is
+			%     common to both cues.
+			% OvernightRetention already models the small natural drift
+			% between pretraining and the new task.
+			Mouse = iPretrainMouse(Mouse, Params);
 		end
-		MouseResult = iSimulateMouse(Mouse, Params, Cond(iCond, :), schemaState0);
+		MouseResult = iSimulateMouse(Mouse, Params, Cond(iCond, :));
 		perf(iMouse, :) = MouseResult.Performance;
 		h23(iMouse, :) = MouseResult.H23;
 		h5(iMouse, :) = MouseResult.H5;
@@ -266,132 +262,88 @@ Summary.CorrMouse = Summary.AllMouse;
 end
 
 function Mouse = iDrawMouse(Params)
+% Per-mouse Hebbian learning-rate scaling (individual variability).
 Mouse.HeteroGain = max(0.30, 1 + 0.72 * randn());
-Mouse.Cue23 = iStandardize(randn(Params.NE23, 1) + 0.55 * sign(randn(Params.NE23, 1)));
-Mouse.Learn23 = Mouse.HeteroGain * iStandardize(0.80 * Mouse.Cue23 + 0.30 * randn(Params.NE23, 1));
-Mouse.PreCue23 = iStandardize(1.00 * Mouse.Learn23 + 0.08 * randn(Params.NE23, 1));
-Mouse.Base23 = iStandardize(0.35 * randn(Params.NE23, 1));
-Mouse.WIE = abs(0.72 + 0.20 * randn(Params.NI, Params.NE23));
-Mouse.WEI23 = abs(0.88 + 0.26 * randn(Params.NE23, Params.NI));
-Mouse.WEI5 = abs(0.95 + 0.24 * randn(Params.NE5, Params.NI));
-Mouse.W523 = 0.28 * randn(Params.NE5, Params.NE23);
-Mouse.Cue5 = iStandardize(0.35 * (Mouse.W523 * Mouse.Cue23) + 0.80 * randn(Params.NE5, 1));
-Mouse.Learn5 = Mouse.HeteroGain * iStandardize(0.25 * Mouse.Cue5 + 0.30 * (Mouse.W523 * Mouse.Learn23) + 0.75 * randn(Params.NE5, 1));
-Mouse.PreCue5 = iStandardize(1.00 * Mouse.Learn5 + 0.08 * randn(Params.NE5, 1));
-Mouse.Base5 = iStandardize(0.30 * randn(Params.NE5, 1));
-Mouse.THToI = abs(0.72 + 0.18 * randn(Params.NI, 1));
-Mouse.THL5Pattern = iStandardize(0.55 * (Mouse.WEI5 * iStandardize(Mouse.THToI)) + 0.45 * Mouse.Cue5);
-Mouse.PreReadout = iStandardize(1.00 * Mouse.Learn5 + 0.04 * randn(Params.NE5, 1));
-Mouse.Readout = iStandardize(0.60 * Mouse.Cue5 + 0.80 * Mouse.Learn5 + 0.18 * randn(Params.NE5, 1));
-% Cell-specific drift vulnerability (Hainmueller & Bartos 2018; Grosmark & Buzsaki 2016)
-Mouse.DriftVulnerability23 = exp(0.60 * randn(Params.NE23, 1));
-Mouse.DriftVulnerability5 = exp(0.60 * randn(Params.NE5, 1));
+
+% Fixed input / target patterns (zero-mean, unit-std).
+% PreCue and Cue share a common component (cross-modal correlation a) so
+% that a fraction of Cue-area cells respond to both modalities, matching
+% the fact that sensory cortical populations are never fully orthogonal.
+a = Params.CueModalityCorr;
+sharedCue = iStandardize(randn(Params.NCue, 1));
+preCueU   = iStandardize(randn(Params.NCue, 1));
+cueU      = iStandardize(randn(Params.NCue, 1));
+Mouse.PreCuePattern = iStandardize(a * sharedCue + sqrt(1 - a^2) * preCueU);
+Mouse.CuePattern    = iStandardize(a * sharedCue + sqrt(1 - a^2) * cueU);
+Mouse.BasePattern   = iStandardize(0.35 * randn(Params.NCue, 1));
+Mouse.RewardPattern = iStandardize(randn(Params.NRew,  1) + 0.55 * sign(randn(Params.NRew,  1)));
+Mouse.ReadoutPattern= iStandardize(randn(Params.NRead, 1) + 0.55 * sign(randn(Params.NRead, 1)));
+
+% Six plastic E-E matrices, W(post, pre). Output = W * pre.
+sd = Params.InitWStd;
+Mouse.W_CueToRew  = sd * randn(Params.NRew,  Params.NCue);
+Mouse.W_RewToCue  = sd * randn(Params.NCue,  Params.NRew);
+Mouse.W_CueToRead = sd * randn(Params.NRead, Params.NCue);
+Mouse.W_ReadToCue = sd * randn(Params.NCue,  Params.NRead);
+Mouse.W_RewToRead = sd * randn(Params.NRead, Params.NRew);
+Mouse.W_ReadToRew = sd * randn(Params.NRew,  Params.NRead);
+
+% Inhibitory pools in Cue / Rew areas (plastic via per-E-cell gain).
+Mouse.WIE_Cue = abs(0.72 + 0.20 * randn(Params.NICue, Params.NCue));
+Mouse.WEI_Cue = abs(0.88 + 0.26 * randn(Params.NCue,  Params.NICue));
+Mouse.WIE_Rew = abs(0.72 + 0.20 * randn(Params.NIRew, Params.NRew));
+Mouse.WEI_Rew = abs(0.88 + 0.26 * randn(Params.NRew,  Params.NIRew));
+Mouse.InhGainCue = ones(Params.NCue, 1);
+Mouse.InhGainRew = ones(Params.NRew, 1);
+
+% TH drive onto each area's inhibitory pool.
+Mouse.THToICue = abs(0.72 + 0.18 * randn(Params.NICue, 1));
+Mouse.THToIRew = abs(0.72 + 0.18 * randn(Params.NIRew, 1));
 end
 
-function schemaState0 = iPretrainMouse(Mouse, Params)
+function Mouse = iPretrainMouse(Mouse, Params)
+% Pretraining with full TH. Uses PreCuePattern.
 pretrainTH.THNetworkLevel = 1.00;
 pretrainTH.THPlasticityLevel = 1.00;
-schemaState0 = 0;
-eligibilityTrace = 0;
 lastPerfExpected = NaN;
 postCeilingCount = 0;
 
 for iSess = 1:Params.MaxPretrainSessions
-	[perfObserved, cellMean23, ~, perfExpected] = iSimulateSession(Mouse, Params.InitialLearnState, schemaState0, Params, pretrainTH, true);
+	[perfObserved, ~, perfExpected, Mouse] = iSimulateSession(Mouse, Params, pretrainTH, true);
 	lastPerfExpected = perfExpected;
-	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
-	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
-	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
-	rewardSignal = max(perfExpected, 0);
-	% Dual-channel: schema-mediated + coactivity-mediated (pretrainTH has full TH)
-	pretrainSchemaCarry = Params.SchemaReuseFraction * schemaState0;
-	schemaLearn = Params.SchemaLearnBoost * pretrainSchemaCarry * rewardSignal;
-	coactLearn = Params.BaseLearnRate * eligibilityTrace * rewardSignal;
-	schemaState0 = min(Params.MaxLearnState, schemaState0 + schemaLearn + coactLearn + Params.LearnNoise * randn());
-	schemaState0 = max(0, schemaState0);
+
 	if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
 		postCeilingCount = postCeilingCount + 1;
 		if postCeilingCount >= Params.PostCeilingSessions
 			return;
 		end
 	end
-	% Overnight consolidation: synaptic homeostasis + representational drift
-	schemaState0 = Params.OvernightRetention * schemaState0 + Params.OvernightNoise * randn();
-	schemaState0 = max(0, schemaState0);
+	Mouse = iOvernightConsolidate(Mouse, Params);
 end
 
-error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final expected hit = %.3f, final schema state = %.3f.', Params.MaxPretrainSessions, lastPerfExpected, schemaState0);
+error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final expected hit = %.3f.', Params.MaxPretrainSessions, lastPerfExpected);
 end
 
-function Result = iSimulateMouse(Mouse, Params, Cond, schemaState0)
-learnState = Params.InitialLearnState;
-% Schema carry modulated by THNetworkLevel (TH inhibition reduces schema expression)
-schemaCarry = Params.SchemaReuseFraction * schemaState0 * Cond.THNetworkLevel;
-% Schema-mediated learning gated by THPlasticityLevel^2 (combinatorial TH effect)
-schemaGate = Cond.THPlasticityLevel^2;
-eligibilityTrace = 0;
+function Result = iSimulateMouse(Mouse, Params, Cond)
 perf = nan(1, Params.NumSessions);
 h23 = nan(1, Params.NumSessions);
 h5 = nan(1, Params.NumSessions);
-sessionMean23 = nan(Params.NE23, Params.NumSessions);
-sessionMean5 = nan(Params.NE5, Params.NumSessions);
-
-% Cell-level representational drift accumulators (Driscoll et al. 2017)
-% Schema provides attractor-based damping (Tse et al. 2007)
-driftAccum23 = zeros(Params.NE23, 1);
-driftAccum5 = zeros(Params.NE5, 1);
-schemaDamping = min(1, Params.SchemaDriftDamping * schemaCarry);
+sessionMeanCue  = nan(Params.NCue,  Params.NumSessions);
+sessionMeanRead = nan(Params.NRead, Params.NumSessions);
 
 for iSess = 1:Params.NumSessions
-	% Apply accumulated drift to learned patterns for this session
-	if Params.OvernightPatternDrift > 0
-		SessionMouse = Mouse;
-		SessionMouse.Learn23 = Mouse.Learn23 + driftAccum23;
-		SessionMouse.Learn5 = Mouse.Learn5 + driftAccum5;
-	else
-		SessionMouse = Mouse;
-	end
-	[perf(iSess), cellMean23, cellMean5] = iSimulateSession(SessionMouse, learnState, schemaCarry, Params, Cond, false);
-	sessionMean23(:, iSess) = cellMean23;
-	sessionMean5(:, iSess) = cellMean5;
-	sessionCoactivity23 = iPositiveCoactivity(cellMean23, Mouse.Learn23);
-	h23(iSess) = iRestrictedStd(mean(sessionMean23(:, 1:iSess), 2, 'omitnan'));
-	h5(iSess) = iRestrictedStd(mean(sessionMean5(:, 1:iSess), 2, 'omitnan'));
-	learnEligibility = Params.LearnFromCoactivity23 * max(sessionCoactivity23 - Params.CoactivityThreshold23, 0);
-	eligibilityTrace = min(Params.MaxEligibilityTrace, Params.EligibilityDecay * eligibilityTrace + learnEligibility);
-	learnGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
-	rewardSignal = max(perf(iSess), 0);
-	% Dual-channel learning: schema-mediated + coactivity-mediated
-	schemaLearn = Params.SchemaLearnBoost * schemaGate * schemaCarry * rewardSignal;
-	coactLearn = Params.BaseLearnRate * learnGate * eligibilityTrace * rewardSignal;
-	learnState = min(Params.MaxLearnState, learnState + schemaLearn + coactLearn + Params.LearnNoise * randn());
-	learnState = max(0, learnState);
-	% Experience-dependent adaptation of plasticity landscape (slow Hebbian restructuring)
-	Mouse.Learn23 = iStandardize((1 - Params.LearnPatternAdaptRate) * Mouse.Learn23 + Params.LearnPatternAdaptRate * cellMean23);
-	% Overnight consolidation: schema-congruent retention + synaptic homeostasis (Tse et al. 2007)
+	[perf(iSess), Signals, ~, Mouse] = iSimulateSession(Mouse, Params, Cond, false);
+	sessionMeanCue(:, iSess)  = Signals.ProcessMeanCue;
+	sessionMeanRead(:, iSess) = Signals.ProcessMeanRead;
+	h23(iSess) = iRestrictedStd(mean(sessionMeanCue(:,  1:iSess), 2, 'omitnan'));
+	h5(iSess)  = iRestrictedStd(mean(sessionMeanRead(:, 1:iSess), 2, 'omitnan'));
+
 	if iSess < Params.NumSessions
-		schemaRetBonus = Params.SchemaRetentionBoost * min(1, schemaCarry);
-		effectiveRetention = min(0.98, Params.OvernightRetention + schemaRetBonus);
-		learnState = effectiveRetention * learnState + Params.OvernightNoise * randn();
-		learnState = max(0, learnState);
-		% Cell-level representational drift (random walk with schema-dependent damping)
-		% Experience-dependent attenuation: drift decreases with training (Deitch et al. 2021; Kentros et al. 2004)
-		% Cell-specific vulnerability: stable vs drifting neurons (Hainmueller & Bartos 2018)
-		if Params.OvernightPatternDrift > 0
-			driftGain = 1 / (1 + Params.DriftAttenuationRate * iSess);
-			driftStep23 = Params.OvernightPatternDrift * driftGain * Mouse.DriftVulnerability23 .* randn(Params.NE23, 1);
-			driftStep5 = Params.OvernightPatternDrift * driftGain * Mouse.DriftVulnerability5 .* randn(Params.NE5, 1);
-			driftAccum23 = (1 - schemaDamping) * (driftAccum23 + driftStep23);
-			driftAccum5 = (1 - schemaDamping) * (driftAccum5 + driftStep5);
-			% Drift-induced association decay: pattern misalignment degrades
-			% stimulus-response mapping fidelity (RMS drift as proxy)
-			driftRMS = sqrt(mean(driftAccum23.^2)) + sqrt(mean(driftAccum5.^2));
-			learnState = learnState * exp(-Params.DriftLearnDecay * driftRMS);
-		end
+		Mouse = iOvernightConsolidate(Mouse, Params);
 	end
 end
 
-first100 = find(perf >= Params.Ceiling, 1, 'first');
+first100 = find(perf >= Params.SlopeHitPerfect, 1, 'first');
 if isempty(first100)
 	useIdx = 1:Params.NumSessions;
 elseif first100 == 1
@@ -403,22 +355,25 @@ end
 if numel(useIdx) >= 2
 	fitX = (1:numel(useIdx))';
 	fitY = perf(useIdx)';
+	% Linear fit. Logit was tried but the logit(0.03)~-3.5 expansion at
+	% the low end inflates Naive's apparent slope more than it boosts
+	% Transfer's, which erases rather than reveals the N/T gap.
 	fitP = polyfit(fitX, fitY, 1);
 	dh = diff(fitY);
-	finalMean23 = mean(sessionMean23(:, useIdx), 2, 'omitnan');
-	finalMean5 = mean(sessionMean5(:, useIdx), 2, 'omitnan');
+	finalMeanCue  = mean(sessionMeanCue(:,  useIdx), 2, 'omitnan');
+	finalMeanRead = mean(sessionMeanRead(:, useIdx), 2, 'omitnan');
 	resultSlope = fitP(1);
 	resultDeltaHit = mean(dh, 'omitnan');
-	resultMeanH23 = iRestrictedStd(finalMean23);
-	resultMeanH5 = iRestrictedStd(finalMean5);
+	resultMeanH23 = iRestrictedStd(finalMeanCue);
+	resultMeanH5  = iRestrictedStd(finalMeanRead);
 elseif ~isempty(useIdx)
-	finalMean5 = mean(sessionMean5(:, useIdx), 2, 'omitnan');
+	finalMeanRead = mean(sessionMeanRead(:, useIdx), 2, 'omitnan');
 	resultSlope = NaN;
 	resultDeltaHit = NaN;
 	resultMeanH23 = NaN;
 	resultMeanH5 = NaN;
 else
-	finalMean5 = nan(Params.NE5, 1);
+	finalMeanRead = nan(Params.NRead, 1);
 	resultSlope = NaN;
 	resultDeltaHit = NaN;
 	resultMeanH23 = NaN;
@@ -432,55 +387,162 @@ Result.Slope = resultSlope;
 Result.MeanDeltaHit = resultDeltaHit;
 Result.MeanH23 = resultMeanH23;
 Result.MeanH5 = resultMeanH5;
-Result.ProcessMeanL5 = finalMean5;
+Result.ProcessMeanL5 = finalMeanRead;
 end
 
-function [perf, cueMean23, cueMean5, perfExpected] = iSimulateSession(Mouse, LearnState, SchemaState, Params, Cond, usePreCue)
+function [perf, Signals, perfExpected, Mouse] = iSimulateSession(Mouse, Params, Cond, usePreCue)
+% Per-trial loop. Each trial has a decision phase (cue only, dual-pathway
+% readout) followed by a learning phase (Cue/Rew/Read clamped to their
+% fixed patterns). Hebbian and inhibitory plasticity are applied AFTER
+% EACH TRIAL so that within-session learning accumulates.
+NT = Params.NumTrials;
 if usePreCue
-	cue23Pattern = Mouse.PreCue23;
-	cue5Pattern = Mouse.PreCue5;
-	readoutVector = Mouse.PreReadout;
-	cue23Gain = Params.PretrainCueGain * Params.CueTo23;
-	cue5Gain = Params.PretrainCueGain * Params.CueTo5;
+	cuePat = Mouse.PreCuePattern;
+	cueGain = Params.CueInputGainPretrain;
 else
-	cue23Pattern = Mouse.Cue23;
-	cue5Pattern = Mouse.Cue5;
-	readoutVector = Mouse.Readout;
-	cue23Gain = Params.CueTo23;
-	cue5Gain = Params.CueTo5;
+	cuePat = Mouse.CuePattern;
+	cueGain = Params.CueInputGain;
+end
+hebbGate = 0.20 + 0.80 * Cond.THPlasticityLevel;
+eta = Params.HebbRate * Mouse.HeteroGain * hebbGate;
+
+% Storage for session-level diagnostics.
+rCue_cue_all  = zeros(Params.NCue,  NT);
+rCue_base_all = zeros(Params.NCue,  NT);
+rRead_cue_all = zeros(Params.NRead, NT);
+rRead_base_all= zeros(Params.NRead, NT);
+rCue_L_all    = zeros(Params.NCue,  NT);
+rRew_L_all    = zeros(Params.NRew,  NT);
+rRead_L_all   = zeros(Params.NRead, NT);
+isHit = false(1, NT);
+
+% Activity accumulators for inhibitory plasticity (per-E-cell).
+actCueSum = zeros(Params.NCue, 1);
+actRewSum = zeros(Params.NRew, 1);
+actNorm = 0;
+
+for t = 1:NT
+	% ===== Decision phase (cue only) =====
+	preCue_cue  = cueGain              * cuePat             + Params.NoiseCue * randn(Params.NCue, 1);
+	preCue_base = Params.BaseInputGain * Mouse.BasePattern  + Params.NoiseCue * randn(Params.NCue, 1);
+	rCue_cue  = iRunArea(preCue_cue,  'cue', Mouse, Params, Cond);
+	rCue_base = iRunArea(preCue_base, 'cue', Mouse, Params, Cond);
+	% Indirect route: cue -> Rew area.
+	preRew_indCue  = (Mouse.W_CueToRew * rCue_cue)  / Params.NCue + Params.NoiseRew * randn(Params.NRew, 1);
+	preRew_indBase = (Mouse.W_CueToRew * rCue_base) / Params.NCue + Params.NoiseRew * randn(Params.NRew, 1);
+	rRew_indCue  = iRunArea(preRew_indCue,  'rew', Mouse, Params, Cond);
+	rRew_indBase = iRunArea(preRew_indBase, 'rew', Mouse, Params, Cond);
+	% Readout = direct + indirect.
+	preRead_cue  = (Mouse.W_CueToRead * rCue_cue)  / Params.NCue + (Mouse.W_RewToRead * rRew_indCue)  / Params.NRew + Params.NoiseRead * randn(Params.NRead, 1);
+	preRead_base = (Mouse.W_CueToRead * rCue_base) / Params.NCue + (Mouse.W_RewToRead * rRew_indBase) / Params.NRew + Params.NoiseRead * randn(Params.NRead, 1);
+	rRead_cue  = iRunArea(preRead_cue,  'read', Mouse, Params, Cond);
+	rRead_base = iRunArea(preRead_base, 'read', Mouse, Params, Cond);
+
+	decCue  = mean(Mouse.ReadoutPattern .* rRead_cue);
+	decBase = mean(Mouse.ReadoutPattern .* rRead_base);
+	decision = decCue - Params.BaselinePenalty * decBase;
+	isHit(t) = decision >= Params.HitThreshold;
+
+	% ===== Learning phase (all three populations clamped) =====
+	preCue_L  = cueGain              * cuePat              + Params.NoiseCue  * randn(Params.NCue,  1);
+	preRew_L  = Params.RewInputGain  * Mouse.RewardPattern + Params.NoiseRew  * randn(Params.NRew,  1);
+	preRead_L = Params.ReadInputGain * Mouse.ReadoutPattern+ Params.NoiseRead * randn(Params.NRead, 1);
+	rCue_L  = iRunArea(preCue_L,  'cue',  Mouse, Params, Cond);
+	rRew_L  = iRunArea(preRew_L,  'rew',  Mouse, Params, Cond);
+	rRead_L = iRunArea(preRead_L, 'read', Mouse, Params, Cond);
+
+	% Per-trial Hebbian updates on all six E-E pathways.
+	Mouse.W_CueToRew  = iHebb(Mouse.W_CueToRew,  rRew_L,  rCue_L,  eta, Params.WCap);
+	Mouse.W_RewToCue  = iHebb(Mouse.W_RewToCue,  rCue_L,  rRew_L,  eta, Params.WCap);
+	Mouse.W_CueToRead = iHebb(Mouse.W_CueToRead, rRead_L, rCue_L,  eta, Params.WCap);
+	Mouse.W_ReadToCue = iHebb(Mouse.W_ReadToCue, rCue_L,  rRead_L, eta, Params.WCap);
+	Mouse.W_RewToRead = iHebb(Mouse.W_RewToRead, rRead_L, rRew_L,  eta, Params.WCap);
+	Mouse.W_ReadToRew = iHebb(Mouse.W_ReadToRew, rRew_L,  rRead_L, eta, Params.WCap);
+
+	% Per-trial inhibitory plasticity (per-E-cell gain homeostasis).
+	actCueTrial = (rCue_cue + rCue_base + rCue_L) / 3;
+	actRewTrial = (rRew_indCue + rRew_indBase + rRew_L) / 3;
+	Mouse.InhGainCue = iClamp(Mouse.InhGainCue + Params.InhPlasticityRate * (actCueTrial - Params.InhTargetAct), Params.InhGainMin, Params.InhGainMax);
+	Mouse.InhGainRew = iClamp(Mouse.InhGainRew + Params.InhPlasticityRate * (actRewTrial - Params.InhTargetAct), Params.InhGainMin, Params.InhGainMax);
+
+	actCueSum = actCueSum + actCueTrial;
+	actRewSum = actRewSum + actRewTrial;
+	actNorm = actNorm + 1;
+
+	rCue_cue_all(:, t)   = rCue_cue;
+	rCue_base_all(:, t)  = rCue_base;
+	rRead_cue_all(:, t)  = rRead_cue;
+	rRead_base_all(:, t) = rRead_base;
+	rCue_L_all(:, t)  = rCue_L;
+	rRew_L_all(:, t)  = rRew_L;
+	rRead_L_all(:, t) = rRead_L;
 end
 
-cue23Drive = cue23Gain * cue23Pattern + Params.LearnTo23 * LearnState * Mouse.Learn23 + Params.SchemaTo23 * SchemaState * Mouse.Learn23;
-base23Drive = Params.BaseTo23 * Mouse.Base23;
-pre23Cue = cue23Drive + Params.Noise23 * randn(Params.NE23, Params.NumTrials);
-pre23Base = base23Drive + Params.Noise23 * randn(Params.NE23, Params.NumTrials);
+perf = mean(isHit);
+% Kept for interface compatibility with pretraining logic. With hard-
+% threshold decisions and no extra Bernoulli sampling, expected and
+% observed session hit rates are identical under the realized noise.
+perfExpected = perf;
 
-exc23Cue = max(pre23Cue, 0);
-exc23Base = max(pre23Base, 0);
-inhCue = max(0, Mouse.WIE * exc23Cue / Params.NE23 + Cond.THNetworkLevel * Mouse.THToI + Params.NoiseI * randn(Params.NI, Params.NumTrials));
-inhBase = max(0, Mouse.WIE * exc23Base / Params.NE23 + Params.BaselineTHFraction * Cond.THNetworkLevel * Mouse.THToI + Params.NoiseI * randn(Params.NI, Params.NumTrials));
-inhCue = inhCue - mean(inhCue, 1);
-inhBase = inhBase - mean(inhBase, 1);
+Signals.mCue  = mean(rCue_L_all,  2);
+Signals.mRew  = mean(rRew_L_all,  2);
+Signals.mRead = mean(rRead_L_all, 2);
+Signals.ProcessMeanCue  = mean(rCue_cue_all  - rCue_base_all,  2, 'omitnan');
+Signals.ProcessMeanRead = mean(rRead_cue_all - rRead_base_all, 2, 'omitnan');
+end
 
-r23Cue = Params.ResponseScale * tanh(pre23Cue - Params.Comp23 * (Mouse.WEI23 * inhCue) / Params.NI);
-r23Base = Params.ResponseScale * tanh(pre23Base - Params.Comp23 * (Mouse.WEI23 * inhBase) / Params.NI);
+function rE = iRunArea(pre, areaSpec, Mouse, Params, Cond)
+switch areaSpec
+case 'cue'
+	WIE = Mouse.WIE_Cue; WEI = Mouse.WEI_Cue; InhGain = Mouse.InhGainCue;
+	THToI = Mouse.THToICue; NI = Params.NICue; NE = Params.NCue; Comp = Params.Comp_Cue;
+case 'rew'
+	WIE = Mouse.WIE_Rew; WEI = Mouse.WEI_Rew; InhGain = Mouse.InhGainRew;
+	THToI = Mouse.THToIRew; NI = Params.NIRew; NE = Params.NRew; Comp = Params.Comp_Rew;
+case 'read'
+	% Readout area: no plastic I-pool in this simplified model.
+	rE = Params.ResponseScale * tanh(pre);
+	return;
+end
+exc = max(pre, 0);
+inhI = max(0, WIE * exc / NE + Cond.THNetworkLevel * THToI + Params.NoiseI * randn(NI, size(pre, 2)));
+inhI = inhI - mean(inhI, 1);
+rE = Params.ResponseScale * tanh(pre - Comp * InhGain .* (WEI * inhI) / NI);
+end
 
-thPatternCue = Params.THPatternTo5 * Cond.THNetworkLevel * Mouse.THL5Pattern * ones(1, Params.NumTrials);
-thPatternBase = 0.12 * Params.THPatternTo5 * Cond.THNetworkLevel * Mouse.THL5Pattern * ones(1, Params.NumTrials);
-pre5Cue = cue5Gain * cue5Pattern + Params.Coupling23To5 * (Mouse.W523 * r23Cue) / sqrt(Params.NE23) + Params.LearnTo5 * LearnState * Mouse.Learn5 + Params.SchemaTo5 * SchemaState * Mouse.Learn5 + thPatternCue + Params.Noise5 * randn(Params.NE5, Params.NumTrials);
-pre5Base = Params.BaseTo5 * Mouse.Base5 + 0.65 * Params.Coupling23To5 * (Mouse.W523 * r23Base) / sqrt(Params.NE23) + thPatternBase + Params.Noise5 * randn(Params.NE5, Params.NumTrials);
-r5Cue = Params.ResponseScale * tanh(pre5Cue - Params.Comp5 * (Mouse.WEI5 * inhCue) / Params.NI);
-r5Base = Params.ResponseScale * tanh(pre5Base - Params.Comp5 * (Mouse.WEI5 * inhBase) / Params.NI);
+function Mouse = iApplyHebbianUpdates(Mouse, Params, Signals, hebbGate)
+eta = Params.HebbRate * Mouse.HeteroGain * hebbGate;
+Mouse.W_CueToRew  = iHebb(Mouse.W_CueToRew,  Signals.mRew,  Signals.mCue,  eta, Params.WCap);
+Mouse.W_RewToCue  = iHebb(Mouse.W_RewToCue,  Signals.mCue,  Signals.mRew,  eta, Params.WCap);
+Mouse.W_CueToRead = iHebb(Mouse.W_CueToRead, Signals.mRead, Signals.mCue,  eta, Params.WCap);
+Mouse.W_ReadToCue = iHebb(Mouse.W_ReadToCue, Signals.mCue,  Signals.mRead, eta, Params.WCap);
+Mouse.W_RewToRead = iHebb(Mouse.W_RewToRead, Signals.mRead, Signals.mRew,  eta, Params.WCap);
+Mouse.W_ReadToRew = iHebb(Mouse.W_ReadToRew, Signals.mRew,  Signals.mRead, eta, Params.WCap);
+end
 
-readoutCue = mean(readoutVector .* r5Cue, 1);
-readoutBase = mean(readoutVector .* r5Base, 1);
-decision = readoutCue - Params.BaselinePenalty * readoutBase;
-pHit = 1 ./ (1 + exp(-Params.ReadoutGain * (decision - Params.HitThreshold)));
-perf = mean(rand(1, Params.NumTrials) < pHit);
-perfExpected = mean(pHit, 'omitnan');
+function W = iHebb(W, post, pre, eta, cap)
+W = W + eta * (post * pre');
+W = max(min(W, cap), -cap);
+end
 
-cueMean23 = mean(r23Cue - r23Base, 2, 'omitnan');
-cueMean5 = mean(r5Cue - r5Base, 2, 'omitnan');
+function Mouse = iApplyInhibitoryPlasticity(Mouse, Params, SessionStats)
+Mouse.InhGainCue = iClamp(Mouse.InhGainCue + Params.InhPlasticityRate * (SessionStats.ActLevelCue - Params.InhTargetAct), Params.InhGainMin, Params.InhGainMax);
+Mouse.InhGainRew = iClamp(Mouse.InhGainRew + Params.InhPlasticityRate * (SessionStats.ActLevelRew - Params.InhTargetAct), Params.InhGainMin, Params.InhGainMax);
+end
+
+function Mouse = iOvernightConsolidate(Mouse, Params)
+ret = Params.OvernightRetention;
+sd = Params.OvernightNoise;
+Mouse.W_CueToRew  = ret * Mouse.W_CueToRew  + sd * randn(size(Mouse.W_CueToRew));
+Mouse.W_RewToCue  = ret * Mouse.W_RewToCue  + sd * randn(size(Mouse.W_RewToCue));
+Mouse.W_CueToRead = ret * Mouse.W_CueToRead + sd * randn(size(Mouse.W_CueToRead));
+Mouse.W_ReadToCue = ret * Mouse.W_ReadToCue + sd * randn(size(Mouse.W_ReadToCue));
+Mouse.W_RewToRead = ret * Mouse.W_RewToRead + sd * randn(size(Mouse.W_RewToRead));
+Mouse.W_ReadToRew = ret * Mouse.W_ReadToRew + sd * randn(size(Mouse.W_ReadToRew));
+end
+
+function y = iClamp(x, lo, hi)
+y = max(min(x, hi), lo);
 end
 
 function s = iRestrictedStd(x)
@@ -682,4 +744,3 @@ for obj = findobj(ax, 'Type', 'Line')'
 	obj.LineWidth = 2;
 end
 end
-
