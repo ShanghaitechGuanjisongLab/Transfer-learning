@@ -17,15 +17,12 @@ RSPdMoTable.Group(:) = "RSPd+MOp";
 
 Summary = UniExp.LearningSummarize(MATLAB.DataTypes.MergeTables(RSPdTable, ControlTable, RSPdMoTable));
 Summary.Properties.RowNames = replace(Summary.Properties.RowNames, 'MOp', 'M1');
-palette3 = TransferLearning.FigurePalette(3);
-RED = palette3(1,:);
-BLUE = palette3(2,:);
-GREEN = palette3(3,:);
-rn = string(Summary.Properties.RowNames);
-Colors = zeros(height(Summary), 3);
-Colors(rn == "mCherry", :) = RED;
-Colors(rn == "RSPd",    :) = BLUE;
-Colors(~(rn == "mCherry" | rn == "RSPd"), :) = GREEN;
+groupOrder = ["RSPd", "RSPd+M1", "mCherry"];
+try
+	Summary = Summary(groupOrder, :);
+catch
+end
+Colors = [0, 0, 1; 1, 0, 0; 0, 0.6809, 0];
 
 f = figure('Color','w', 'Name','English Fig4H Learning Curve');
 f.Units = 'centimeters';
@@ -86,7 +83,7 @@ rn = string(Summary.Properties.RowNames);
 rspColorIdx = find(rn == "RSPd", 1);
 mcherryColorIdx = find(rn == "mCherry", 1);
 if isempty(rspColorIdx), rspColorIdx = 1; end
-if isempty(mcherryColorIdx), mcherryColorIdx = 2; end
+if isempty(mcherryColorIdx), mcherryColorIdx = min(3, height(Summary)); end
 
 f2 = figure('Color','none', 'Name','English Fig4H First-session performance');
 f2.Units = 'centimeters';
@@ -157,8 +154,11 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 end
 
 svgPath2 = 'English_Fig4H_FirstSessionPerformance_RSPd_vs_mCherry.svg';
+TransferLearning.Style.ApplyStandardFigureStyle(f2, 2);
+iApplyBarColors(Bars2, ErrorBars2, Colors(barColorIdx, :));
 MATLAB.Graphics.PLineRetune(Optional2.MultiCompare.PLine,Optional2.MultiCompare.PText);
-svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2);
+svgPath2 = fullfile(outDirUNC, svgPath2);
+print(f2, svgPath2, '-dsvg');
 fprintf('Wrote: %s\n', svgPath2);
 
 function perf = iFirstSessionPerformance(T)
@@ -169,6 +169,25 @@ for i = 1:numel(mice)
 	rows = T(T.Mouse == mice(i), :);
 	firstDT = rows.DateTime(1);
 	perf(i) = mean(double(rows.Performance(rows.DateTime == firstDT)), 'omitnan');
+end
+end
+
+function iApplyBarColors(Bars, ErrorBars, colors)
+if numel(Bars) == 1
+	Bars.FaceColor = 'flat';
+	Bars.CData = colors;
+	Bars.BarWidth = 0.5;
+	Bars.EdgeColor = 'none';
+	Bars.FaceAlpha = 1/3;
+else
+	for iB = 1:min(numel(Bars), size(colors, 1))
+		Bars(iB).FaceColor = colors(iB, :);
+		Bars(iB).EdgeColor = 'none';
+		Bars(iB).FaceAlpha = 1/3;
+	end
+end
+for iE = 1:min(numel(ErrorBars.Object), size(colors, 1))
+	ErrorBars.Object(iE).Color = colors(iE, :);
 end
 end
 

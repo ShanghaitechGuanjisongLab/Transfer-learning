@@ -141,17 +141,11 @@ box(ax, 'off');
 grid(ax, 'off');
 
 %% --- 6) Export
-try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-catch
-end
-try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
-catch
-end
+
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgNameLC);
 fprintf('Wrote: %s\n', svgPath);
-close(f);
 
 %% --- 7) First transfer session hit-rate bar compare (style: English Fig2J)
 barSess = sessionForSummary;
@@ -173,6 +167,7 @@ fprintf('  ranksum p = %.4g\n', pFS);
 
 DataCell = {double(xCtrl(:)), double(xTH(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+%% 
 
 f2 = figure('Color', 'none', 'Name', 'English Fig3G TH First transfer session');
 f2.Units = 'centimeters';
@@ -181,7 +176,7 @@ f2.PaperPositionMode = 'auto';
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 4];
 
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.FontSize = 12;
 	ax2.LineWidth = 2;
@@ -234,9 +229,9 @@ end
 if isfield(Opt2, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt2.MultiCompare.Properties.VariableNames))
 	MATLAB.Graphics.PLineRetune(Opt2.MultiCompare.PLine, Opt2.MultiCompare.PText);
 end
+f2.InvertHardcopy = 'off';
 svgPathFS = TransferLearning.ExportStandardFigure(f2, 2, svgNameFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
-close(f2);
 
 assignin('base', 'English_Fig3G_Sessions', Sess);
 assignin('base', 'English_Fig3G_BarSessions', barSess);

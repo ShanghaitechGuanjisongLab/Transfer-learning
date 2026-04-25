@@ -44,17 +44,17 @@ for iState = 1:numel(States)
 		'VariableNames', FirstSess.Properties.VariableNames)]; %#ok<AGROW>
 end
 
-dsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-dsMap('LAB') = TransferLearning.LightAudioBaseline();
-dsMap('LAI') = TransferLearning.LAInterspersed();
-dsMap('ALB') = TransferLearning.AudioLightBaseline();
-dsMap('ALI') = TransferLearning.ALInterspersed();
+dsBySrc = struct();
+dsBySrc.LAB = TransferLearning.LightAudioBaseline();
+dsBySrc.LAI = TransferLearning.LAInterspersed();
+dsBySrc.ALB = TransferLearning.AudioLightBaseline();
+dsBySrc.ALI = TransferLearning.ALInterspersed();
 
 Rows = repmat(iEmptyHetRow(), 0, 1);
-srcList = string(keys(dsMap));
+srcList = ["LAB", "LAI", "ALB", "ALI"];
 for iSrc = 1:numel(srcList)
 	src = srcList(iSrc);
-	DS = dsMap(char(src));
+	DS = dsBySrc.(src);
 	CellMap = iCellMap(DS);
 	Rsrc = FirstSess(FirstSess.Source == src, :);
 	for iRow = 1:height(Rsrc)

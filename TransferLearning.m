@@ -49,22 +49,10 @@ classdef(Abstract)TransferLearning
 				Scale (1,1) double {mustBePositive}
 				FileName {mustBeTextScalar}
 			end
-			FileName=string(FileName);
-			[Folder,Name,Ext]=fileparts(char(FileName));
-			if ~isempty(Folder)
-				error('TransferLearning:ExportStandardFigure:FileNameOnly', ...
-					'ExportStandardFigure expects a file name, not a full path.');
-			end
-			if strlength(Ext)==0
-				FileName=string(Name)+".svg";
-			else
-				FileName=string(Name)+string(Ext);
-			end
-			drawnow;
 			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
 			ScatterAxPadding(Fig);
 			SvgPath=iBuildStandardSvgPath(FileName);
-			iPrintSvg(Fig,SvgPath);
+			print(Fig, SvgPath, '-dsvg');
 		end
 		function DrawCueWaterLines(Ax)
 			if nargin
@@ -151,9 +139,6 @@ if ~isfolder(OutDir)
 	mkdir(OutDir);
 end
 SvgPath=fullfile(OutDir,char(FileName));
-end
-function iPrintSvg(Fig,SvgPath)
-print(Fig, SvgPath, '-dsvg');
 end
 function MB=iMOpBaseline
 MB=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\MOp全钙.v4.mat");

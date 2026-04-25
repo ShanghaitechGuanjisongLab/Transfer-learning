@@ -48,7 +48,7 @@ colorB = palette2(2,:);
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 nexttile(Layout, 1);
-[~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({dhC, dhT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({dhC, dhT}, CompareGroup, 'AsteriskThreshold', 0.05);
 for eb = EB1.Object(:)', eb.LineWidth = 1; end
 ax1 = gca;
 ax1.FontSize = 6;
@@ -81,7 +81,7 @@ for ln = findobj(ax1, 'Type', 'Line')'
 end
 
 nexttile(Layout, 2);
-[~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdC, sdT}, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdC, sdT}, CompareGroup, 'AsteriskThreshold', 0.05);
 for eb = EB2.Object(:)', eb.LineWidth = 1; end
 ax2 = gca;
 ax2.FontSize = 6;

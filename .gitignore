@@ -39,3 +39,4 @@ data
 Temp
 *.tmp
 .vscode/mcp.json
+tools

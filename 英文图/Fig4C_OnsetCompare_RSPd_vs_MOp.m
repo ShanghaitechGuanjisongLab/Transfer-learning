@@ -1,6 +1,3 @@
-﻿function Fig4C_OnsetCompare_RSPd_vs_MOp()
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-
 RSP = TransferLearning.RSPd();
 MOp = TransferLearning.AudioLightBaseline();
 xsSec = seconds(TransferLearning.Xs);
@@ -93,11 +90,9 @@ for iText = 1:numel(allText)
 	allText(iText).FontSize = 12;
 end
 
-if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = svgName;
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-end
 
 function X = iKeepActiveCellsAt1s(X, baseMask, idx1, kSigma)
 if isempty(X), return; end

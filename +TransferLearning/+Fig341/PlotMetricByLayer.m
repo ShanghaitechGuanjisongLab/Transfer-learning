@@ -42,7 +42,7 @@ for iLayer = 1:2
 
 	ax = nexttile(Layout, iLayer);
 	axList(iLayer) = ax;
-	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, tranVals}, false, table([1 2], 'VariableNames', {'GroupPair'}));
+	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, tranVals}, false, table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars);
 	delete(findobj(ax, 'Type', 'Scatter'));
 	for eb = ErrorBars.Object(:)'
 		eb.LineWidth = 1;

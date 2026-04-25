@@ -127,6 +127,7 @@ palette3 = TransferLearning.FigurePalette(3);
 colorPos = palette3(1,:);
 colorNeg = palette3(2,:);
 colorFit = palette3(3,:);
+barColors = TransferLearning.FigurePalette(2);
 fs = 6;
 
 f = figure('Color', 'w', 'Name', '中文图342E Signal retention');
@@ -179,7 +180,7 @@ mN1 = mean(valsN1); seN1 = std(valsN1)/sqrt(numel(valsN1));
 mP1 = mean(valsP1); seP1 = std(valsP1)/sqrt(numel(valsP1));
 hold(axT, 'on');
 bb = bar(axT, [1 2], [mN1 mP1], 0.5);
-bb.FaceColor = 'flat'; bb.CData = [colorNeg; colorPos];
+bb.FaceColor = 'flat'; bb.CData = barColors;
 bb.FaceAlpha = 1/3; bb.LineWidth = 1; bb.BaseLine.LineWidth = 1; bb.EdgeColor = 'none';
 lowErrT = [NaN NaN];
 highErrT = [seN1 seP1];
@@ -191,8 +192,13 @@ if mP1 < 0
 	lowErrT(2) = seP1;
 	highErrT(2) = NaN;
 end
-ebT = errorbar(axT, [1 2], [mN1 mP1], lowErrT, highErrT, 'k', 'LineStyle', 'none', 'LineWidth', 1);
-if isprop(ebT, 'CapSize'), ebT.CapSize = 6; end
+meanTop = [mN1 mP1];
+ebT = gobjects(2, 1);
+for ib = 1:2
+	ebT(ib) = errorbar(axT, ib, meanTop(ib), lowErrT(ib), highErrT(ib), ...
+		'LineStyle', 'none', 'LineWidth', 1, 'Color', barColors(ib, :));
+	if isprop(ebT(ib), 'CapSize'), ebT(ib).CapSize = 6; end
+end
 yBrk = max(abs(mN1)+seN1, abs(mP1)+seP1) + 0.015;
 pLineT(1) = plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 1, 'Clipping', 'off');
 pLineT(2) = plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
@@ -219,7 +225,7 @@ mN2 = mean(valsN2); seN2 = std(valsN2)/sqrt(numel(valsN2));
 mP2 = mean(valsP2); seP2 = std(valsP2)/sqrt(numel(valsP2));
 hold(axR, 'on');
 bh = barh(axR, [1 2], [mN2 mP2], 0.5);
-bh.FaceColor = 'flat'; bh.CData = [colorNeg; colorPos];
+bh.FaceColor = 'flat'; bh.CData = barColors;
 bh.FaceAlpha = 1/3; bh.LineWidth = 1; bh.BaseLine.LineWidth = 1; bh.EdgeColor = 'none';
 negErr = [NaN NaN];
 posErr = [seN2 seP2];
@@ -231,8 +237,13 @@ if mP2 < 0
 	negErr(2) = seP2;
 	posErr(2) = NaN;
 end
-ebR = errorbar(axR, [mN2 mP2], [1 2], negErr, posErr, 'horizontal', 'k', 'LineStyle', 'none', 'LineWidth', 1);
-if isprop(ebR, 'CapSize'), ebR.CapSize = 6; end
+meanRight = [mN2 mP2];
+ebR = gobjects(2, 1);
+for ib = 1:2
+	ebR(ib) = errorbar(axR, meanRight(ib), ib, negErr(ib), posErr(ib), 'horizontal', ...
+		'LineStyle', 'none', 'LineWidth', 1, 'Color', barColors(ib, :));
+	if isprop(ebR(ib), 'CapSize'), ebR(ib).CapSize = 6; end
+end
 xBrk = max(abs(mN2)+seN2, abs(mP2)+seP2) + 0.015;
 pLineR(1) = plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
 pLineR(2) = plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 1, 'Clipping', 'off');
@@ -251,6 +262,16 @@ box(axR, 'off');
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 TransferLearning.Style.ApplyStandardFigureStyle(f, 1, PreserveScatterStyle=true);
+bb.FaceColor = 'flat';
+bb.CData = barColors;
+bb.EdgeColor = 'none';
+bh.FaceColor = 'flat';
+bh.CData = barColors;
+bh.EdgeColor = 'none';
+for ib = 1:2
+	ebT(ib).Color = barColors(ib, :);
+	ebR(ib).Color = barColors(ib, :);
+end
 set([pLineT(:); pLineR(:)], 'LineWidth', 0.5);
 drawnow;
 svgPath = fullfile(outDirUNC, char(svgName));
