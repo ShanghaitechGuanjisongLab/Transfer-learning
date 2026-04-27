@@ -144,7 +144,8 @@ function Params = iDefaultParams()
 % all-to-all except for the diagonal self-projections.
 % Decision phase uses sensory cue input only; L2/3 receives this input,
 % then all L2/3/L5 populations settle through the recurrent internal
-% projection. During learning, Reward input also drives L5RewardRecv through
+% projection. During learning, reward and readout feedback are added to the
+% settled cue-decision network state; Reward input drives L5RewardRecv through
 % a plastic afferent map, and readout drive remains a one-way input to L5Read.
 % Learning phase applies outer-product Hebbian updates on cue-to-L2/3,
 % reward-to-L5RewardRecv, and recurrent internal matrices plus the per-cell
@@ -162,10 +163,9 @@ Params.NL23L5 = Params.NL23 + Params.NL5;
 Params.NIL23 = 24;
 Params.NIL5RewardRecv = 16;
 Params.ResponseScale = 1.45;
-Params.NoiseCue = 0.22;
+Params.NoiseCue = 0.70;             % input + L2/3 pre-noise together roughly match cue signal scale
 Params.NoiseRew = 0.15;
 Params.NoiseRead = 0.12;
-Params.NoiseI = 0.12;
 Params.Comp_Cue = 0.95;
 Params.Comp_Rew = 1.00;
 % Input gains
@@ -173,11 +173,9 @@ Params.CueInputGain = 1.00;          % sensory cue drive (decision + learning)
 Params.CueInputGainPretrain = 1.40;  % pretraining cue gain
 Params.RewInputGain = 1.45;          % reward pattern clamp amplitude (learning phase only)
 Params.ReadInputGain = 1.45;         % readout pattern clamp amplitude (learning phase only)
-Params.BaseInputGain = 0.15;         % baseline trial drive on cue input
-% Decision readout: network noise creates trial-to-trial variability,
+% Decision readout: initial input noise creates trial-to-trial variability,
 % and a hit is emitted when the readout crosses HitThreshold.
 Params.HitThreshold = 0.35;
-Params.BaselinePenalty = 1.00;
 Params.Ceiling = 1.00;
 % Slope fit: drop sessions from the first 100%-hit session onward
 % (that session and every subsequent one) so the plateau at 1.0 does
@@ -302,7 +300,6 @@ preCueU   = iStandardize(randn(Params.NCueInput, 1));
 cueU      = iStandardize(randn(Params.NCueInput, 1));
 Mouse.PreCueInputPattern = iStandardize(a * sharedCue + sqrt(1 - a^2) * preCueU);
 Mouse.CueInputPattern    = iStandardize(a * sharedCue + sqrt(1 - a^2) * cueU);
-Mouse.BaseInputPattern   = iStandardize(0.35 * randn(Params.NCueInput, 1));
 Mouse.RewardPattern      = iStandardize(randn(Params.NReward, 1) + 0.55 * sign(randn(Params.NReward, 1)));
 Mouse.L5ReadoutPattern   = iStandardize(randn(Params.NL5Read, 1)   + 0.55 * sign(randn(Params.NL5Read, 1)));
 
@@ -358,7 +355,6 @@ ProbeParams = Params;
 ProbeParams.NoiseCue = 0;
 ProbeParams.NoiseRew = 0;
 ProbeParams.NoiseRead = 0;
-ProbeParams.NoiseI = 0;
 
 preL23 = zeros(ProbeParams.NL23, 1);
 preReward = Cond.RewardInputLevel * ProbeParams.RewInputGain * Mouse.RewardPattern;
@@ -437,9 +433,10 @@ end
 
 function [perf, Signals, perfExpected, Mouse] = iSimulateSession(Mouse, Params, Cond, usePreCue)
 % Per-trial loop. Each trial has a decision phase (cue input -> L2/3 -> L5)
-% followed by a learning phase in which Reward input also drives the L5
-% reward-receiving group. Hebbian and inhibitory plasticity are applied
-% AFTER EACH TRIAL so that within-session learning accumulates.
+% followed by a learning phase that continues from the settled cue-decision
+% state while adding Reward input to the L5 reward-receiving group. Hebbian
+% and inhibitory plasticity are applied AFTER EACH TRIAL so that within-session
+% learning accumulates.
 NT = Params.NumTrials;
 
 if usePreCue
@@ -454,11 +451,8 @@ eta = Params.HebbRate;
 
 % Storage for session-level diagnostics.
 rL23_cue_all = zeros(Params.NL23, NT);
-rL23_base_all = zeros(Params.NL23, NT);
 rL5RewardRecv_cue_all = zeros(Params.NL5RewardRecv, NT);
-rL5RewardRecv_base_all = zeros(Params.NL5RewardRecv, NT);
 rL5Read_cue_all = zeros(Params.NL5Read, NT);
-rL5Read_base_all = zeros(Params.NL5Read, NT);
 rL23_L_all = zeros(Params.NL23, NT);
 rReward_L_all = zeros(Params.NReward, NT);
 rL5RewardRecv_L_all = zeros(Params.NL5RewardRecv, NT);
@@ -468,24 +462,18 @@ isHit = false(1, NT);
 for t = 1:NT
 	% ===== Decision phase (cue input -> recurrent L2/3-L5 network) =====
 	cueInput_cue  = cueGain              * cueInputPat            + Params.NoiseCue * randn(Params.NCueInput, 1);
-	cueInput_base = Params.BaseInputGain * Mouse.BaseInputPattern + Params.NoiseCue * randn(Params.NCueInput, 1);
 	preL23_cue  = Mouse.W_CueInputToL23 * cueInput_cue  + Params.NoiseCue * randn(Params.NL23, 1);
-	preL23_base = Mouse.W_CueInputToL23 * cueInput_base + Params.NoiseCue * randn(Params.NL23, 1);
 	preL5RewardRecv_cue = Params.NoiseRew * randn(Params.NL5RewardRecv, 1);
-	preL5RewardRecv_base = Params.NoiseRew * randn(Params.NL5RewardRecv, 1);
 	preL5Read_cue = Params.NoiseRead * randn(Params.NL5Read, 1);
-	preL5Read_base = Params.NoiseRead * randn(Params.NL5Read, 1);
-	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue] = iRunInternalNetwork(preL23_cue, preL5RewardRecv_cue, preL5Read_cue, Mouse, Params);
-	[rL23_base, rL5RewardRecv_base, rL5Read_base] = iRunInternalNetwork(preL23_base, preL5RewardRecv_base, preL5Read_base, Mouse, Params);
+	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue, decisionActivityCue] = iRunInternalNetwork(preL23_cue, preL5RewardRecv_cue, preL5Read_cue, Mouse, Params);
 
 	decCue  = mean(Mouse.L5ReadoutPattern .* rL5Read_cue);
-	decBase = mean(Mouse.L5ReadoutPattern .* rL5Read_base);
-	decision = decCue - Params.BaselinePenalty * decBase;
+	decision = decCue;
 	isHit(t) = decision >= Params.HitThreshold;
 
-	% ===== Learning phase (cue, reward, and readout drives stay one-way) =====
-	cueInput_L = cueGain * cueInputPat + Params.NoiseCue * randn(Params.NCueInput, 1);
-	preL23_L = Mouse.W_CueInputToL23 * cueInput_L + Params.NoiseCue * randn(Params.NL23, 1);
+	% ===== Learning phase (reward/readout feedback continues from cue-decision state) =====
+	cueInput_L = cueInput_cue;
+	preL23_L = preL23_cue;
 	if rewardInputLevel > 0
 		preReward_L = rewardInputLevel * Params.RewInputGain * Mouse.RewardPattern + Params.NoiseRew * randn(Params.NReward, 1);
 		rReward_L = iRunArea(preReward_L, 'reward', Mouse, Params);
@@ -494,7 +482,7 @@ for t = 1:NT
 	end
 	preL5RewardRecv_L = (Mouse.W_RewardToL5RewardRecv * rReward_L) / Params.RewardAfferentNorm + Params.NoiseRew * randn(Params.NL5RewardRecv, 1);
 	preL5Read_L = Params.ReadInputGain * Mouse.L5ReadoutPattern + Params.NoiseRead * randn(Params.NL5Read, 1);
-	[rL23_L, rL5RewardRecv_L, rL5Read_L] = iRunInternalNetwork(preL23_L, preL5RewardRecv_L, preL5Read_L, Mouse, Params);
+	[rL23_L, rL5RewardRecv_L, rL5Read_L] = iContinueInternalNetwork(preL23_L, preL5RewardRecv_L, preL5Read_L, decisionActivityCue, Mouse, Params);
 
 	% Per-trial Hebbian updates on learned afferent maps and the recurrent L2/3-L5 matrix.
 	Mouse.W_CueInputToL23 = iHebbAfferent(Mouse.W_CueInputToL23, rL23_L, cueInput_L, eta, Params.AfferentWCap);
@@ -503,12 +491,12 @@ for t = 1:NT
 	Mouse.W_L23L5ToL23L5 = iHebbNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_L, eta, Params.WCap);
 
 	% Per-trial inhibitory plasticity (per-E-cell gain homeostasis).
-	actL23Trial = (rL23_cue + rL23_base + rL23_L) / 3;
-	actL5RewardRecvTrial = (rL5RewardRecv_cue + rL5RewardRecv_base + rL5RewardRecv_L) / 3;
+	actL23Trial = (rL23_cue + rL23_L) / 2;
+	actL5RewardRecvTrial = (rL5RewardRecv_cue + rL5RewardRecv_L) / 2;
 	Mouse.InhGainL23 = iClamp(Mouse.InhGainL23 + Params.InhPlasticityRate * (actL23Trial - Params.InhTargetAct), Params.InhGainMin, Params.InhGainMax);
 	Mouse.InhGainL5RewardRecv = iClamp(Mouse.InhGainL5RewardRecv + Params.InhPlasticityRate * (actL5RewardRecvTrial - Params.InhTargetAct), Params.InhGainMin, Params.InhGainMax);
 
-	% ===== Closed-loop baseline Hebbian learning =====
+	% ===== Closed-loop noise Hebbian learning =====
 	% Test a fresh random-noise cue. If it falsely activates the behavioural
 	% readout, silence L5Read cells and train on that noise cue; then test a
 	% new random-noise cue. Continue until one random cue fails to activate.
@@ -519,15 +507,8 @@ for t = 1:NT
 		preL5Read_BLTest = Params.NoiseRead * randn(Params.NL5Read, 1);
 		[~, ~, rL5Read_BLTest] = iRunInternalNetwork(preL23_BLTest, preL5RewardRecv_BLTest, preL5Read_BLTest, Mouse, Params);
 
-		cueInput_BLBase = Params.BaseInputGain * Mouse.BaseInputPattern + Params.NoiseCue * randn(Params.NCueInput, 1);
-		preL23_BLBase = Mouse.W_CueInputToL23 * cueInput_BLBase + Params.NoiseCue * randn(Params.NL23, 1);
-		preL5RewardRecv_BLBase = Params.NoiseRew * randn(Params.NL5RewardRecv, 1);
-		preL5Read_BLBase = Params.NoiseRead * randn(Params.NL5Read, 1);
-		[~, ~, rL5Read_BLBase] = iRunInternalNetwork(preL23_BLBase, preL5RewardRecv_BLBase, preL5Read_BLBase, Mouse, Params);
-
 		decCue_BL = mean(Mouse.L5ReadoutPattern .* rL5Read_BLTest);
-		decBase_BL = mean(Mouse.L5ReadoutPattern .* rL5Read_BLBase);
-		if decCue_BL - Params.BaselinePenalty * decBase_BL < Params.HitThreshold
+		if decCue_BL < Params.HitThreshold
 			break;
 		end
 
@@ -552,11 +533,8 @@ for t = 1:NT
 	end
 
 	rL23_cue_all(:, t) = rL23_cue;
-	rL23_base_all(:, t) = rL23_base;
 	rL5RewardRecv_cue_all(:, t) = rL5RewardRecv_cue;
-	rL5RewardRecv_base_all(:, t) = rL5RewardRecv_base;
 	rL5Read_cue_all(:, t) = rL5Read_cue;
-	rL5Read_base_all(:, t) = rL5Read_base;
 	rL23_L_all(:, t) = rL23_L;
 	rReward_L_all(:, t) = rReward_L;
 	rL5RewardRecv_L_all(:, t) = rL5RewardRecv_L;
@@ -573,9 +551,9 @@ Signals.mL23 = mean(rL23_L_all, 2);
 Signals.mReward = mean(rReward_L_all, 2);
 Signals.mL5RewardRecv = mean(rL5RewardRecv_L_all, 2);
 Signals.mL5Read = mean(rL5Read_L_all, 2);
-Signals.ProcessMeanL23 = mean(rL23_cue_all - rL23_base_all, 2, 'omitnan');
-processMeanL5RewardRecv = mean(rL5RewardRecv_cue_all - rL5RewardRecv_base_all, 2, 'omitnan');
-processMeanL5Read = mean(rL5Read_cue_all - rL5Read_base_all, 2, 'omitnan');
+Signals.ProcessMeanL23 = mean(rL23_cue_all, 2, 'omitnan');
+processMeanL5RewardRecv = mean(rL5RewardRecv_cue_all, 2, 'omitnan');
+processMeanL5Read = mean(rL5Read_cue_all, 2, 'omitnan');
 Signals.ProcessMeanL5 = [processMeanL5RewardRecv; processMeanL5Read];
 end
 
@@ -597,14 +575,24 @@ case 'l5read'
 	return;
 end
 exc = max(pre, 0);
-inhI = max(0, WIE * exc / NE + Params.NoiseI * randn(NI, size(pre, 2)));
+inhI = max(0, WIE * exc / NE);
 inhI = inhI - mean(inhI, 1);
 rE = Params.ResponseScale * tanh(pre - Comp * InhGain .* (WEI * inhI) / NI);
 end
 
-function [rL23, rL5RewardRecv, rL5Read] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, Params)
+function [rL23, rL5RewardRecv, rL5Read, internalActivity] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, Params)
 externalPre = [preL23; preL5RewardRecv; preL5Read];
 internalActivity = iRunInternalAreas(externalPre, Mouse, Params);
+for iPass = 1:Params.InternalRecurrentPasses
+	recurrentPre = externalPre + (Mouse.W_L23L5ToL23L5 * internalActivity) / Params.NL23L5;
+	internalActivity = iRunInternalAreas(recurrentPre, Mouse, Params);
+end
+[rL23, rL5RewardRecv, rL5Read] = iSplitInternalActivity(internalActivity, Params);
+end
+
+function [rL23, rL5RewardRecv, rL5Read] = iContinueInternalNetwork(preL23, preL5RewardRecv, preL5Read, initialActivity, Mouse, Params)
+externalPre = [preL23; preL5RewardRecv; preL5Read];
+internalActivity = initialActivity;
 for iPass = 1:Params.InternalRecurrentPasses
 	recurrentPre = externalPre + (Mouse.W_L23L5ToL23L5 * internalActivity) / Params.NL23L5;
 	internalActivity = iRunInternalAreas(recurrentPre, Mouse, Params);
