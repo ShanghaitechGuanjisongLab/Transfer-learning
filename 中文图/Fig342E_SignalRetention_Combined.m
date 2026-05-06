@@ -9,7 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 svgName = "中文图Fig342E_SignalRetention_Combined.svg";
 
 DS = TransferLearning.AudioLightBaseline();
@@ -127,7 +127,6 @@ palette3 = TransferLearning.FigurePalette(3);
 colorPos = palette3(1,:);
 colorNeg = palette3(2,:);
 colorFit = palette3(3,:);
-barColors = TransferLearning.FigurePalette(2);
 fs = 6;
 
 f = figure('Color', 'w', 'Name', '中文图342E Signal retention');
@@ -153,24 +152,20 @@ plot(axE, [-1 1], polyval(pf, [-1 1]), '-', 'Color', colorFit, 'LineWidth', 1);
 hold(axE, 'off');
 xlim(axE, [-1.3 1.3]); ylim(axE, [-1.3 1.3]);
 axE.FontSize = fs;
-axE.LineWidth = 1;
-if isprop(axE.XAxis, 'LineWidth')
-	axE.XAxis.LineWidth = 1;
-	axE.YAxis.LineWidth = 1;
-end
 axE.XTick = [-1 0 1]; axE.YTick = [-1 0 1];
 xlh = xlabel(axE, '🔊💧 z-score');
+ylh = ylabel(axE, '💡💧 z-score');
 box(axE, 'off');
 xlh.Units = 'normalized';
 xlh.Position(1) = (sW/2 + G/2 + bwR/2) / sW;
-if ~isfinite(pCorr)
-	pStr = 'p = NaN';
+ylh.Units = 'normalized';
+ylh.Position(2) = (sH/2 + G/2 + bhT/2) / sH;
+if pCorr == 0 || pCorr < 1e-10
+	pStr = 'p<10^{-10}';
 elseif pCorr < 0.001
-	pStr = 'p < 0.001';
-elseif pCorr < 0.01
-	pStr = sprintf('p = %.3f', pCorr);
+	pStr = sprintf('p=%.1e', pCorr);
 else
-	pStr = sprintf('p = %.2f', pCorr);
+	pStr = sprintf('p=%.2g', pCorr);
 end
 text(axE, 0.03, 0.97, pStr, 'Units', 'normalized', 'FontSize', fs, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 
@@ -180,43 +175,25 @@ mN1 = mean(valsN1); seN1 = std(valsN1)/sqrt(numel(valsN1));
 mP1 = mean(valsP1); seP1 = std(valsP1)/sqrt(numel(valsP1));
 hold(axT, 'on');
 bb = bar(axT, [1 2], [mN1 mP1], 0.5);
-bb.FaceColor = 'flat'; bb.CData = barColors;
-bb.FaceAlpha = 1/3; bb.LineWidth = 1; bb.BaseLine.LineWidth = 1; bb.EdgeColor = 'none';
-lowErrT = [NaN NaN];
-highErrT = [seN1 seP1];
-if mN1 < 0
-	lowErrT(1) = seN1;
-	highErrT(1) = NaN;
-end
-if mP1 < 0
-	lowErrT(2) = seP1;
-	highErrT(2) = NaN;
-end
-meanTop = [mN1 mP1];
-ebT = gobjects(2, 1);
+bb.FaceColor = 'flat'; bb.CData = [colorNeg; colorPos];
+bb.FaceAlpha = 1/3; bb.LineWidth = 0.5;
 for ib = 1:2
-	ebT(ib) = errorbar(axT, ib, meanTop(ib), lowErrT(ib), highErrT(ib), ...
-		'LineStyle', 'none', 'LineWidth', 1, 'Color', barColors(ib, :));
-	if isprop(ebT(ib), 'CapSize'), ebT(ib).CapSize = 6; end
+	vals = [mN1 mP1]; ses = [seN1 seP1]; xPos = [1 2];
+	yEnd = vals(ib) + sign(vals(ib)) * ses(ib);
+	if vals(ib) == 0, yEnd = ses(ib); end
+	plot(axT, [xPos(ib) xPos(ib)], [vals(ib) yEnd], 'k-', 'LineWidth', 0.5);
+	plot(axT, xPos(ib)+[-0.08 0.08], [yEnd yEnd], 'k-', 'LineWidth', 0.5);
 end
 yBrk = max(abs(mN1)+seN1, abs(mP1)+seP1) + 0.015;
-pLineT(1) = plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-pLineT(2) = plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-pLineT(3) = plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
+plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
+plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
 text(axT, 1.5, yBrk+0.005, iAsterisk(pPN1), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
 hold(axT, 'off');
 axT.FontSize = fs;
-axT.LineWidth = 1;
-if isprop(axT.XAxis, 'LineWidth')
-	axT.XAxis.LineWidth = 1;
-	axT.YAxis.LineWidth = 1;
-end
 axT.XTick = [1 2]; axT.XTickLabel = {'−', '+'};
 axT.XAxisLocation = 'bottom';
 axT.YAxisLocation = 'left';
-ylh = ylabel(axT, '💡💧 z-score');
-ylh.Units = 'normalized';
-ylh.Position(2) = 0.5 - (sH/2 + G/2) / bhT;
 box(axT, 'off');
 
 axR = axes(f, 'Position', [sX+sW+G sY bwR sH]);
@@ -225,57 +202,29 @@ mN2 = mean(valsN2); seN2 = std(valsN2)/sqrt(numel(valsN2));
 mP2 = mean(valsP2); seP2 = std(valsP2)/sqrt(numel(valsP2));
 hold(axR, 'on');
 bh = barh(axR, [1 2], [mN2 mP2], 0.5);
-bh.FaceColor = 'flat'; bh.CData = barColors;
-bh.FaceAlpha = 1/3; bh.LineWidth = 1; bh.BaseLine.LineWidth = 1; bh.EdgeColor = 'none';
-negErr = [NaN NaN];
-posErr = [seN2 seP2];
-if mN2 < 0
-	negErr(1) = seN2;
-	posErr(1) = NaN;
-end
-if mP2 < 0
-	negErr(2) = seP2;
-	posErr(2) = NaN;
-end
-meanRight = [mN2 mP2];
-ebR = gobjects(2, 1);
+bh.FaceColor = 'flat'; bh.CData = [colorNeg; colorPos];
+bh.FaceAlpha = 1/3; bh.LineWidth = 0.5;
 for ib = 1:2
-	ebR(ib) = errorbar(axR, meanRight(ib), ib, negErr(ib), posErr(ib), 'horizontal', ...
-		'LineStyle', 'none', 'LineWidth', 1, 'Color', barColors(ib, :));
-	if isprop(ebR(ib), 'CapSize'), ebR(ib).CapSize = 6; end
+	vals = [mN2 mP2]; ses = [seN2 seP2]; yPos = [1 2];
+	xEnd = vals(ib) + sign(vals(ib)) * ses(ib);
+	if vals(ib) == 0, xEnd = ses(ib); end
+	plot(axR, [vals(ib) xEnd], [yPos(ib) yPos(ib)], 'k-', 'LineWidth', 0.5);
+	plot(axR, [xEnd xEnd], yPos(ib)+[-0.08 0.08], 'k-', 'LineWidth', 0.5);
 end
 xBrk = max(abs(mN2)+seN2, abs(mP2)+seP2) + 0.015;
-pLineR(1) = plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-pLineR(2) = plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 1, 'Clipping', 'off');
-pLineR(3) = plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
+plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
+plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', 0.5, 'Clipping', 'off');
 text(axR, xBrk+0.01, 1.5, iAsterisk(pPN2), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270);
 hold(axR, 'off');
 axR.FontSize = fs;
-axR.LineWidth = 1;
-if isprop(axR.XAxis, 'LineWidth')
-	axR.XAxis.LineWidth = 1;
-	axR.YAxis.LineWidth = 1;
-end
 axR.YTick = [1 2]; axR.YTickLabel = {'−', '+'};
 axR.YAxisLocation = 'left';
 box(axR, 'off');
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-TransferLearning.Style.ApplyStandardFigureStyle(f, 1, PreserveScatterStyle=true);
-bb.FaceColor = 'flat';
-bb.CData = barColors;
-bb.EdgeColor = 'none';
-bh.FaceColor = 'flat';
-bh.CData = barColors;
-bh.EdgeColor = 'none';
-for ib = 1:2
-	ebT(ib).Color = barColors(ib, :);
-	ebR(ib).Color = barColors(ib, :);
-end
-set([pLineT(:); pLineR(:)], 'LineWidth', 0.5);
-drawnow;
-svgPath = fullfile(outDirUNC, char(svgName));
-print(f, svgPath, '-dsvg');
+svgPath = fullfile(outDirUNC, svgName);
+TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 function s = iAsterisk(p)
@@ -289,4 +238,3 @@ function s = iAsterisk(p)
 		s = 'n.s.';
 	end
 end
-

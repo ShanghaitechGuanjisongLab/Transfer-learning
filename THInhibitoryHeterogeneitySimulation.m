@@ -12,8 +12,18 @@
 % - a reusable schema state acquired by pre-training on an alternate cue,
 % - a TH-inhibited group implemented as reward-cell silence during the new task.
 
-rng('shuffle');
+CheckpointEnabled = true;
+ResumeFromCheckpoint = false;       % false starts a fresh run and overwrites this tag's checkpoint.
+CheckpointTag = 'unit_response_mid080_slope6_gain40_hebb300_wcap200_thr055_i8'; % change this to keep separate checkpoint lines.
+PrintCuePretrainDebug = true;      % prints cue-specific vs non-cue L2/3 learning trajectories each pretrain session.
 
+rng('shuffle');
+ParallelComputing.ParPool(gpuDeviceCount);
+spmd
+	if spmdIndex<=gpuDeviceCount
+		gpuDevice(spmdIndex);
+	end
+end
 networkOutputRoot = '\\Data-Server-2\个人数据\张天夫';
 localOutputRoot = fullfile(fileparts(mfilename('fullpath')), 'resources');
 if isfolder(networkOutputRoot)
@@ -24,6 +34,10 @@ end
 svgName = 'TH_Inhibitory_Heterogeneity_Model.svg';
 
 Params = iDefaultParams();
+Params.CheckpointEnabled = CheckpointEnabled;
+Params.CheckpointResume = ResumeFromCheckpoint;
+Params.CheckpointTag = CheckpointTag;
+Params.PrintCuePretrainDebug = PrintCuePretrainDebug;
 Cond = iConditionTable();
 
 Summary = iRunCohortModel(Params, Cond);
@@ -167,24 +181,21 @@ Params.NIL23 = Params.NL23 / 4;
 Params.NIL5RewardRecv = Params.NL5 / 4;
 Params.NIInternal = Params.NIL23 + Params.NIL5RewardRecv;
 Params.NInternal = Params.NL23L5 + Params.NIInternal;
-Params.ResponseScale = 1.45;
-Params.RateResponseSlope = 4.00;
-Params.RateResponseMidpoint = 0.55;
-Params.NoiseCue = 0.70;             % direct L2/3 cue-drive noise scale
-Params.NoiseRew = 0.15;
+Params.RateResponseSlope = 6.00;
+Params.RateResponseMidpoint = 0.80;
+Params.NoiseInput = 0.15;           % shared cue/reward input noise scale
 Params.NoiseRead = 0.08;
 Params.IterationNoise = 0.03;
 Params.Comp_Cue = 0.95;
 Params.Comp_Rew = 1.15;
 % Input gains
-Params.CueL23Gain = 1.00;           % direct L2/3 cue drive (decision + learning)
-Params.CueL23GainPretrain = 1.60;   % direct L2/3 pretraining cue gain
+Params.CueL23Gain = 4.00;           % shared direct L2/3 cue drive (pretraining + formal task)
 Params.THRewardInputGain = 1.45;     % post-decision TH reward mode during learning phase
 Params.THNoiseInputGain = 0.85;      % unstructured reward-mode TH input in the TH-inhibited group
 Params.ReadInputGain = 1.45;         % readout pattern clamp amplitude (learning phase only)
 % Decision readout: initial input noise creates trial-to-trial variability,
 % and a hit is emitted when the readout pattern similarity crosses HitThreshold.
-Params.HitThreshold = 0.67;
+Params.HitThreshold = 0.55;
 Params.Ceiling = 1.00;
 Params.FirstCueTrainingNaiveMax = 0.40;
 Params.FirstCueTrainingTransferMax = 0.80;
@@ -195,26 +206,24 @@ Params.SlopeHitPerfect = 1.00;
 % Plastic synaptic accumulators are nonnegative outgoing allocation pools.
 % Each active upstream cell sends a fixed total output scale, distributed to
 % downstream cells in proportion to the downstream accumulator values.
-Params.WCap = 1.20;
-Params.AfferentWCap = 1.20;
+Params.WCap = 2.00;
+Params.AfferentWCap = 2.18;
 Params.WeightMapSlope = 1.00;
 Params.InitAfferentAccumulatorChiSquareDof = 1;
 Params.InitAfferentAccumulatorScale = 1.00;
 Params.InitRecurrentAccumulatorChiSquareDof = 1;
 Params.InitRecurrentAccumulatorScale = 1.00;
-Params.InhOutputWCap = 4 * Params.WCap;
+Params.InhOutputWCap = 8 * Params.WCap;
 Params.RewardAfferentNorm = 1.00;
 % Number of recurrent internal passes after external cue/reward/readout drive.
 Params.InternalRecurrentPasses = 4;
 Params.TeacherReadoutPasses = 5;
 Params.StateCarryover = 0.35;       % fraction of previous internal state retained across recurrent passes
 % Global per-trial Hebbian learning rate used by reward pretraining, cue
-% pretraining, and later task learning.
-Params.HebbRate = 0.5;
-Params.BaselineAntiHebbRate = 0.0300;
-Params.BaselineAfferentAntiHebbRate = 0.0300;
+% pretraining, baseline anti-training, and later task learning.
+Params.HebbRate = 3.00;
 Params.BaselineQuietIterations = 40;
-Params.MaxBaselineIterations = 1500;
+Params.MaxBaselineIterations = 500;
 % Eligibility traces let current reward/readout feedback update recently
 % experienced states; older states contribute less on each trial.
 Params.EligibilityDecay = 0.95;
@@ -224,12 +233,13 @@ Params.InhPlasticityRate = 0.002;
 Params.InhTargetAct = 0.00;
 Params.InhGainMin = 0.20;
 Params.InhGainMax = 3.00;
-% Cross-modality latent correlation between pretraining cue-tagged L2/3 cells
-% and new cue-tagged L2/3 cells. Positive cue cells are still forced to be
-% disjoint; this correlation only shapes which inactive pre-cue L2/3 cells are
-% most likely to become active for the new cue.
-Params.CueModalityCorr = 0.50;
-Params.CueL23ActiveFractionOfPreCue = 0.50;
+% Cue-tagged L2/3 direct-drive probabilities. Formal cue activation is
+% sampled conditionally so that the expected overlap among pre-cue cells is
+% CueL23OverlapFractionOfPreCue and the expected total formal cue fraction is
+% CueL23ActiveFraction.
+Params.PreCueL23ActiveFraction = 1/7;
+Params.CueL23ActiveFraction = 1/8;
+Params.CueL23OverlapFractionOfPreCue = 1/6;
 % Overnight consolidation
 Params.OvernightRetention = 0.96;
 Params.OvernightNoise = 0.002;
@@ -239,6 +249,14 @@ Params.RewardPretrainDecisionPasses = 64;
 Params.MaxRewardPretrainTrials = 128;
 Params.MaxPretrainSessions = 8;
 Params.PostCeilingSessions = 1;
+% Checkpoints save complete stage boundaries so a failed run can restart
+% from the last intact training state while future sessions use current Params.
+Params.CheckpointEnabled = true;
+Params.CheckpointResume = true;
+Params.CheckpointTag = 'default';
+Params.CheckpointDir = fullfile(fileparts(mfilename('fullpath')), 'resources', 'checkpoints');
+Params.CheckpointVersion = 1;
+Params.PrintCuePretrainDebug = false;
 end
 
 function Cond = iConditionTable()
@@ -258,6 +276,112 @@ contextText = '';
 if isfield(Params, 'RunContext')
 	contextText = sprintf(' during %s', Params.RunContext);
 end
+end
+
+function [RunState, didResume] = iLoadRunCheckpoint(Params, Cond)
+RunState = struct();
+didResume = false;
+if ~iCheckpointResumeEnabled(Params)
+	return;
+end
+checkpointPath = iCheckpointPath(Params);
+if isfile(checkpointPath)
+	checkpointData = load(checkpointPath, 'RunState');
+	RunState = checkpointData.RunState;
+	iAssertCheckpointCompatible(RunState, Params, Cond, checkpointPath);
+	didResume = true;
+	fprintf('Loaded checkpoint: %s (stage=%s; cue sessions=%d; formal sessions=%d). Future training uses current Params.\n', ...
+		checkpointPath, char(RunState.Stage), RunState.CompletedCuePretrainSessions, RunState.CompletedFormalSessions);
+end
+end
+
+function RunState = iSaveRunCheckpoint(RunState, Params, Cond)
+if ~iCheckpointEnabled(Params)
+	return;
+end
+checkpointPath = iCheckpointPath(Params);
+checkpointDir = fileparts(checkpointPath);
+if ~isfolder(checkpointDir)
+	mkdir(checkpointDir);
+end
+RunState.CheckpointVersion = Params.CheckpointVersion;
+RunState.Topology = iCheckpointTopology(Params, Cond);
+RunState.ParamsSnapshot = Params;
+RunState.SavedAt = char(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss'));
+save(checkpointPath, 'RunState');
+fprintf('Saved checkpoint: %s (stage=%s; cue sessions=%d; formal sessions=%d).\n', ...
+	checkpointPath, char(RunState.Stage), RunState.CompletedCuePretrainSessions, RunState.CompletedFormalSessions);
+end
+
+function enabled = iCheckpointEnabled(Params)
+enabled = isfield(Params, 'CheckpointEnabled') && Params.CheckpointEnabled;
+end
+
+function enabled = iCheckpointResumeEnabled(Params)
+enabled = iCheckpointEnabled(Params) && isfield(Params, 'CheckpointResume') && Params.CheckpointResume;
+end
+
+function checkpointPath = iCheckpointPath(Params)
+checkpointTag = Params.CheckpointTag;
+if isstring(checkpointTag)
+	checkpointTag = char(checkpointTag);
+end
+checkpointPath = fullfile(Params.CheckpointDir, sprintf('THInhibitoryHeterogeneitySimulation_%s.mat', checkpointTag));
+end
+
+function topology = iCheckpointTopology(Params, Cond)
+topology.NumMice = Params.NumMice;
+topology.NumSessions = Params.NumSessions;
+topology.NumTrials = Params.NumTrials;
+topology.NL23 = Params.NL23;
+topology.NReward = Params.NReward;
+topology.NL5Read = Params.NL5Read;
+topology.NL5RewardRecv = Params.NL5RewardRecv;
+topology.NIL23 = Params.NIL23;
+topology.NIL5RewardRecv = Params.NIL5RewardRecv;
+topology.NInternal = Params.NInternal;
+topology.MaxPretrainSessions = Params.MaxPretrainSessions;
+topology.PostCeilingSessions = Params.PostCeilingSessions;
+topology.ConditionName = cellstr(Cond.Name);
+topology.ConditionTHInputIsNoise = Cond.THInputIsNoise;
+end
+
+function iAssertCheckpointCompatible(RunState, Params, Cond, checkpointPath)
+if ~isfield(RunState, 'CheckpointVersion') || RunState.CheckpointVersion ~= Params.CheckpointVersion
+	error('THModel:CheckpointVersionMismatch', 'Checkpoint %s uses a different checkpoint version. Set Params.CheckpointTag to a new value or disable resume for a fresh run.', checkpointPath);
+end
+if ~isfield(RunState, 'Topology') || ~isequaln(RunState.Topology, iCheckpointTopology(Params, Cond))
+	error('THModel:CheckpointTopologyMismatch', 'Checkpoint %s is incompatible with the current model topology or stage limits. Set Params.CheckpointTag to a new value or disable resume for a fresh run.', checkpointPath);
+end
+end
+
+function RunState = iInitializeRunState(Params, Cond)
+nCond = height(Cond);
+nMouse = Params.NumMice;
+nSess = Params.NumSessions;
+RunState = struct();
+RunState.CheckpointVersion = Params.CheckpointVersion;
+RunState.Topology = iCheckpointTopology(Params, Cond);
+RunState.Stage = "new";
+RunState.CompletedCuePretrainSessions = 0;
+RunState.CuePretrainingComplete = false;
+RunState.RewardProbeComplete = false;
+RunState.CompletedFormalSessions = 0;
+RunState.MousePool = cell(nCond, nMouse);
+RunState.SessionMeanL23 = cell(nCond, nMouse);
+RunState.SessionMeanL5 = cell(nCond, nMouse);
+RunState.PerfAll = nan(nCond, nMouse, nSess);
+RunState.H23All = nan(nCond, nMouse, nSess);
+RunState.H5All = nan(nCond, nMouse, nSess);
+RunState.THDeltaAll = nan(nCond, nMouse, nSess);
+RunState.RewardReadoutPretrainAll = nan(nCond, nMouse);
+RunState.CuePretrainState = iEmptyCuePretrainCheckpointState();
+end
+
+function cuePretrainState = iEmptyCuePretrainCheckpointState()
+cuePretrainState.ActiveList = [];
+cuePretrainState.StateCells = {};
+cuePretrainState.CompletedSessions = 0;
 end
 
 function Summary = iRunCohortModel(Params, Cond)
@@ -288,34 +412,70 @@ taskCondRows = cell(nTask, 1);
 for iTask = 1:nTask
 	taskCondRows{iTask} = Cond(taskCondIndex(iTask), :);
 end
-perfAll = nan(nCond, nMouse, nSess);
-h23All = nan(nCond, nMouse, nSess);
-h5All = nan(nCond, nMouse, nSess);
-thDeltaAll = nan(nCond, nMouse, nSess);
 
-mouseCells = cell(nTask, 1);
-sessionMeanL23Cells = cell(nTask, 1);
-sessionMeanL5Cells = cell(nTask, 1);
-parfor iTask = 1:nTask
-	mouseCells{iTask} = iDrawMouse(Params);
-	sessionMeanL23Cells{iTask} = nan(Params.NL23, Params.NumSessions);
-	sessionMeanL5Cells{iTask} = nan(Params.NL5, Params.NumSessions);
+[RunState, didResume] = iLoadRunCheckpoint(Params, Cond);
+if ~didResume
+	RunState = iInitializeRunState(Params, Cond);
+	mouseCells = cell(nTask, 1);
+	sessionMeanL23Cells = cell(nTask, 1);
+	sessionMeanL5Cells = cell(nTask, 1);
+	parfor iTask = 1:nTask
+		mouseCells{iTask} = iDrawMouse(Params);
+		sessionMeanL23Cells{iTask} = nan(Params.NL23, Params.NumSessions);
+		sessionMeanL5Cells{iTask} = nan(Params.NL5, Params.NumSessions);
+	end
+	RunState.MousePool = reshape(mouseCells, nCond, nMouse);
+	RunState.SessionMeanL23 = reshape(sessionMeanL23Cells, nCond, nMouse);
+	RunState.SessionMeanL5 = reshape(sessionMeanL5Cells, nCond, nMouse);
+	RunState.Stage = "initialized";
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
 end
-MousePool = reshape(mouseCells, nCond, nMouse);
-sessionMeanL23 = reshape(sessionMeanL23Cells, nCond, nMouse);
-sessionMeanL5 = reshape(sessionMeanL5Cells, nCond, nMouse);
 
-MousePool = iRunCuePretrainingUnits(MousePool, Params, Cond);
+MousePool = RunState.MousePool;
+sessionMeanL23 = RunState.SessionMeanL23;
+sessionMeanL5 = RunState.SessionMeanL5;
+perfAll = RunState.PerfAll;
+h23All = RunState.H23All;
+h5All = RunState.H5All;
+thDeltaAll = RunState.THDeltaAll;
 
-mouseCells = MousePool(:);
-fullRewardCond = iFullRewardCondition();
-rewardReadoutPretrainList = nan(nTask, 1);
-parfor iTask = 1:nTask
-	rewardReadoutPretrainList(iTask) = iRewardReadoutProbe(mouseCells{iTask}, Params, fullRewardCond);
+if ~RunState.CuePretrainingComplete
+	fprintf('Starting cue pretraining for %d non-naive tasks.\n', nnz(taskCondName ~= "Naive"));
+	[MousePool, RunState] = iRunCuePretrainingUnits(MousePool, Params, Cond, RunState);
+	if RunState.CuePretrainingComplete
+		fprintf('Cue pretraining complete.\n');
+	end
+else
+	fprintf('Cue pretraining already complete in checkpoint.\n');
 end
-rewardReadoutPretrainAll = reshape(rewardReadoutPretrainList, nCond, nMouse);
 
-for iSess = 1:nSess
+if ~RunState.RewardProbeComplete
+	fprintf('Probing reward-readout similarity.\n');
+	mouseCells = MousePool(:);
+	fullRewardCond = iFullRewardCondition();
+	rewardReadoutPretrainList = nan(nTask, 1);
+	parfor iTask = 1:nTask
+		rewardReadoutPretrainList(iTask) = iRewardReadoutProbe(mouseCells{iTask}, Params, fullRewardCond);
+	end
+	RunState.RewardReadoutPretrainAll = reshape(rewardReadoutPretrainList, nCond, nMouse);
+	RunState.RewardProbeComplete = true;
+	RunState.Stage = "reward-probe-complete";
+	RunState.MousePool = MousePool;
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
+	fprintf('Reward-readout probe complete.\n');
+else
+	fprintf('Reward-readout probe already complete in checkpoint.\n');
+end
+
+rewardReadoutPretrainAll = RunState.RewardReadoutPretrainAll;
+if RunState.CompletedFormalSessions < nSess
+	fprintf('Starting formal training from session %d/%d.\n', RunState.CompletedFormalSessions + 1, nSess);
+else
+	fprintf('Formal training already complete in checkpoint.\n');
+end
+
+for iSess = RunState.CompletedFormalSessions + 1:nSess
+	fprintf('Starting formal session %d/%d.\n', iSess, nSess);
 	mouseCells = MousePool(:);
 	sessionMeanL23Cells = sessionMeanL23(:);
 	sessionMeanL5Cells = sessionMeanL5(:);
@@ -349,10 +509,16 @@ for iSess = 1:nSess
 	MousePool = reshape(mouseCells, nCond, nMouse);
 	sessionMeanL23 = reshape(sessionMeanL23Cells, nCond, nMouse);
 	sessionMeanL5 = reshape(sessionMeanL5Cells, nCond, nMouse);
-	perfAll(:, :, iSess) = reshape(perfSession, nCond, nMouse);
+	currentPerf = reshape(perfSession, nCond, nMouse);
+	perfAll(:, :, iSess) = currentPerf;
 	h23All(:, :, iSess) = reshape(h23Session, nCond, nMouse);
 	h5All(:, :, iSess) = reshape(h5Session, nCond, nMouse);
 	thDeltaAll(:, :, iSess) = reshape(thDeltaSession, nCond, nMouse);
+	fprintf('Completed formal session %d/%d:', iSess, nSess);
+	for iCond = 1:nCond
+		fprintf(' %s hit=%.3f', Cond.Name(iCond), mean(currentPerf(iCond, :), 'omitnan'));
+	end
+	fprintf('\n');
 	if iSess == 1
 		firstCueTrainingSignals = reshape(firstSignalsSession, nCond, nMouse);
 		iCheckFirstCueTrainingUnit(perfAll(:, :, iSess), firstCueTrainingSignals, MousePool, Cond, Params);
@@ -364,7 +530,25 @@ for iSess = 1:nSess
 		end
 		MousePool = reshape(mouseCells, nCond, nMouse);
 	end
+	RunState.MousePool = MousePool;
+	RunState.SessionMeanL23 = sessionMeanL23;
+	RunState.SessionMeanL5 = sessionMeanL5;
+	RunState.PerfAll = perfAll;
+	RunState.H23All = h23All;
+	RunState.H5All = h5All;
+	RunState.THDeltaAll = thDeltaAll;
+	RunState.CompletedFormalSessions = iSess;
+	RunState.Stage = sprintf("formal-session-%02d-complete", iSess);
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
 end
+
+MousePool = RunState.MousePool;
+sessionMeanL23 = RunState.SessionMeanL23;
+sessionMeanL5 = RunState.SessionMeanL5;
+perfAll = RunState.PerfAll;
+h23All = RunState.H23All;
+h5All = RunState.H5All;
+thDeltaAll = RunState.THDeltaAll;
 
 for iCond = 1:nCond
 	perf = nan(Params.NumMice, Params.NumSessions);
@@ -452,7 +636,7 @@ end
 MousePool = reshape(mouseCells, nCond, nMouse);
 end
 
-function MousePool = iRunCuePretrainingUnits(MousePool, Params, Cond)
+function [MousePool, RunState] = iRunCuePretrainingUnits(MousePool, Params, Cond, RunState)
 nCond = height(Cond);
 nMouse = Params.NumMice;
 nTask = nCond * nMouse;
@@ -460,16 +644,31 @@ nTask = nCond * nMouse;
 pretrainParams = Params;
 mouseCells = MousePool(:);
 taskCondName = Cond.Name(taskCondIndex);
-activeList = false(nTask, 1);
-stateCells = cell(nTask, 1);
-for iTask = 1:nTask
-	if taskCondName(iTask) ~= "Naive"
-		activeList(iTask) = true;
-		stateCells{iTask} = iInitCuePretrainState(pretrainParams);
-	end
+if nargin < 4 || isempty(RunState)
+	RunState = iInitializeRunState(Params, Cond);
+	RunState.MousePool = MousePool;
 end
 
-for iSess = 1:pretrainParams.MaxPretrainSessions
+if ~isempty(RunState.CuePretrainState.StateCells)
+	activeList = RunState.CuePretrainState.ActiveList;
+	stateCells = RunState.CuePretrainState.StateCells;
+	startSess = RunState.CompletedCuePretrainSessions + 1;
+	fprintf('Resuming cue pretraining after session %d/%d: active=%d/%d.\n', ...
+		RunState.CompletedCuePretrainSessions, pretrainParams.MaxPretrainSessions, nnz(activeList), nnz(taskCondName ~= "Naive"));
+else
+	activeList = false(nTask, 1);
+	stateCells = cell(nTask, 1);
+	for iTask = 1:nTask
+		if taskCondName(iTask) ~= "Naive"
+			activeList(iTask) = true;
+			stateCells{iTask} = iInitCuePretrainState(pretrainParams);
+		end
+	end
+	startSess = 1;
+end
+
+for iSess = startSess:pretrainParams.MaxPretrainSessions
+	fprintf('Starting cue pretrain session %d/%d: active=%d/%d.\n', iSess, pretrainParams.MaxPretrainSessions, nnz(activeList), nnz(taskCondName ~= "Naive"));
 	nextMouseCells = cell(nTask, 1);
 	nextStateCells = cell(nTask, 1);
 	nextActiveList = false(nTask, 1);
@@ -493,12 +692,93 @@ for iSess = 1:pretrainParams.MaxPretrainSessions
 	mouseCells = nextMouseCells;
 	stateCells = nextStateCells;
 	activeList = nextActiveList;
+	pretrainPerf = nan(nTask, 1);
+	for iTask = 1:nTask
+		if ~isempty(stateCells{iTask})
+			pretrainPerf(iTask) = stateCells{iTask}.LastPerfObserved;
+		end
+	end
+	fprintf('Completed cue pretrain session %d/%d: active=%d/%d', iSess, pretrainParams.MaxPretrainSessions, nnz(activeList), nnz(taskCondName ~= "Naive"));
+	for iCond = 1:nCond
+		if Cond.Name(iCond) ~= "Naive"
+			condMask = taskCondIndex == iCond & isfinite(pretrainPerf);
+			fprintf(' %s hit=%.3f', Cond.Name(iCond), mean(pretrainPerf(condMask), 'omitnan'));
+		end
+	end
+	fprintf('\n');
+	iPrintCuePretrainDebug(stateCells, taskCondIndex, Cond, iSess, Params);
+	RunState.MousePool = reshape(mouseCells, nCond, nMouse);
+	RunState.CuePretrainState.ActiveList = activeList;
+	RunState.CuePretrainState.StateCells = stateCells;
+	RunState.CuePretrainState.CompletedSessions = iSess;
+	RunState.CompletedCuePretrainSessions = iSess;
+	RunState.CuePretrainingComplete = ~any(activeList);
+	if RunState.CuePretrainingComplete
+		RunState.Stage = "cue-pretrain-complete";
+	else
+		RunState.Stage = "cue-pretrain";
+	end
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
 	if ~any(activeList)
 		MousePool = reshape(mouseCells, nCond, nMouse);
 		return;
 	end
 end
 MousePool = reshape(mouseCells, nCond, nMouse);
+end
+
+function iPrintCuePretrainDebug(stateCells, taskCondIndex, Cond, iSess, Params)
+if ~isfield(Params, 'PrintCuePretrainDebug') || ~Params.PrintCuePretrainDebug
+	return;
+end
+for iCond = 1:height(Cond)
+	if Cond.Name(iCond) ~= "Naive"
+		condStateCells = stateCells(taskCondIndex == iCond);
+		fprintf('Cue pretrain debug session %d %s: %s\n', iSess, Cond.Name(iCond), iCuePretrainDebugText(condStateCells, iSess));
+	end
+end
+end
+
+function debugText = iCuePretrainDebugText(stateCells, iSess)
+preCueActivity = iCuePretrainDiagFieldMean(stateCells, 'PreCueL23CueMean', iSess);
+cueNewActivity = iCuePretrainDiagFieldMean(stateCells, 'CueNewL23CueMean', iSess);
+nonPreCueActivity = iCuePretrainDiagFieldMean(stateCells, 'NonPreCueL23CueMean', iSess);
+preCueLearn = iCuePretrainDiagFieldMean(stateCells, 'PreCueL23LearnMean', iSess);
+cueNewLearn = iCuePretrainDiagFieldMean(stateCells, 'CueNewL23LearnMean', iSess);
+nonPreCueLearn = iCuePretrainDiagFieldMean(stateCells, 'NonPreCueL23LearnMean', iSess);
+preCueRecurrent = iCuePretrainDiagFieldMean(stateCells, 'PreCueL23RecurrentPreMean', iSess);
+cueNewRecurrent = iCuePretrainDiagFieldMean(stateCells, 'CueNewL23RecurrentPreMean', iSess);
+nonPreCueRecurrent = iCuePretrainDiagFieldMean(stateCells, 'NonPreCueL23RecurrentPreMean', iSess);
+preCueRecurrentToDirect = iCuePretrainDiagFieldMean(stateCells, 'PreCueL23RecurrentToDirectRatio', iSess);
+preCueTargetW = iCuePretrainDiagFieldMean(stateCells, 'PreCueToTargetReadColumnSumMeanW', iSess);
+cueNewTargetW = iCuePretrainDiagFieldMean(stateCells, 'CueNewToTargetReadColumnSumMeanW', iSess);
+nonPreCueTargetW = iCuePretrainDiagFieldMean(stateCells, 'NonPreCueToTargetReadColumnSumMeanW', iSess);
+preCueTargetEligibility = iCuePretrainDiagFieldMean(stateCells, 'PreCueToTargetReadEligibilityColumnSumMean', iSess);
+cueNewTargetEligibility = iCuePretrainDiagFieldMean(stateCells, 'CueNewToTargetReadEligibilityColumnSumMean', iSess);
+nonPreCueTargetEligibility = iCuePretrainDiagFieldMean(stateCells, 'NonPreCueToTargetReadEligibilityColumnSumMean', iSess);
+debugText = sprintf(['cue L23 preCue/formal-new/non-preCue=%.3f/%.3f/%.3f; ', ...
+	'learn L23=%.3f/%.3f/%.3f; L23 recurrent pre=%.3f/%.3f/%.3f, recurrent/direct(preCue)=%.3f; ', ...
+	'target Read W columns=%.4f/%.4f/%.4f, formal-new/preCue=%.3f; ', ...
+	'target Read eligibility columns=%.4f/%.4f/%.4f, formal-new/preCue=%.3f'], ...
+	preCueActivity, cueNewActivity, nonPreCueActivity, ...
+	preCueLearn, cueNewLearn, nonPreCueLearn, ...
+	preCueRecurrent, cueNewRecurrent, nonPreCueRecurrent, preCueRecurrentToDirect, ...
+	preCueTargetW, cueNewTargetW, nonPreCueTargetW, cueNewTargetW / max(preCueTargetW, eps), ...
+	preCueTargetEligibility, cueNewTargetEligibility, nonPreCueTargetEligibility, cueNewTargetEligibility / max(preCueTargetEligibility, eps));
+end
+
+function fieldMean = iCuePretrainDiagFieldMean(stateCells, fieldName, iSess)
+values = nan(numel(stateCells), 1);
+for iStateCell = 1:numel(stateCells)
+	cueState = stateCells{iStateCell};
+	if ~isempty(cueState) && isfield(cueState, 'Diagnostics') && isfield(cueState.Diagnostics, fieldName)
+		fieldValues = cueState.Diagnostics.(fieldName);
+		if numel(fieldValues) >= iSess
+			values(iStateCell) = fieldValues(iSess);
+		end
+	end
+end
+fieldMean = mean(values, 'omitnan');
 end
 
 function cueState = iInitCuePretrainState(pretrainParams)
@@ -575,6 +855,14 @@ baselineTargetL2NetPreMean = nan(numMouse, 1);
 baselineTargetL5NetPreMean = nan(numMouse, 1);
 baselineTargetNetPreMean = nan(numMouse, 1);
 cueL23PatternCorrelation = nan(numMouse, 1);
+preCueL23ActiveFraction = nan(numMouse, 1);
+cueL23ActiveFraction = nan(numMouse, 1);
+cueL23OverlapFractionOfPreCue = nan(numMouse, 1);
+preCueTargetReadOutputMean = nan(numMouse, 1);
+cueNewTargetReadOutputMean = nan(numMouse, 1);
+cueOverlapTargetReadOutputMean = nan(numMouse, 1);
+preOnlyTargetReadOutputMean = nan(numMouse, 1);
+cueNewVsPreCueTargetReadOutputRatio = nan(numMouse, 1);
 baselineToDecisionSimilarityRatio = nan(numMouse, 1);
 cueIL23Mean = nan(numMouse, 1);
 cueIL23Max = nan(numMouse, 1);
@@ -612,6 +900,24 @@ for iMouse = 1:numMouse
 	baselineTargetL5NetPreMean(iMouse) = Signals.BaselineTargetL5NetPreMean;
 	baselineTargetNetPreMean(iMouse) = Signals.BaselineTargetNetPreMean;
 	cueL23PatternCorrelation(iMouse) = iGatherScalar(corr(Mouse.PreCueL23Pattern, Mouse.CueL23Pattern));
+	preCueMask = iGatherValue(Mouse.PreCueL23Pattern > 0);
+	cueMask = iGatherValue(Mouse.CueL23Pattern > 0);
+	preCueL23ActiveFraction(iMouse) = mean(preCueMask);
+	cueL23ActiveFraction(iMouse) = mean(cueMask);
+	cueL23OverlapFractionOfPreCue(iMouse) = nnz(preCueMask & cueMask) / nnz(preCueMask);
+	readPattern = iGatherValue(Mouse.L5ReadoutPattern(:));
+	readTargetMask = readPattern > 0;
+	readoutRows = Params.NL23 + Params.NL5RewardRecv + (1:Params.NL5Read);
+	targetReadRows = readoutRows(readTargetMask);
+	l23ToTargetReadOutput = iGatherValue(sum(Mouse.W_InternalToInternal(targetReadRows, 1:Params.NL23), 1));
+	cueNewMask = cueMask & ~preCueMask;
+	cueOverlapMask = cueMask & preCueMask;
+	preOnlyMask = preCueMask & ~cueMask;
+	preCueTargetReadOutputMean(iMouse) = iMeanFlat(l23ToTargetReadOutput(preCueMask));
+	cueNewTargetReadOutputMean(iMouse) = iMeanFlat(l23ToTargetReadOutput(cueNewMask));
+	cueOverlapTargetReadOutputMean(iMouse) = iMeanFlat(l23ToTargetReadOutput(cueOverlapMask));
+	preOnlyTargetReadOutputMean(iMouse) = iMeanFlat(l23ToTargetReadOutput(preOnlyMask));
+	cueNewVsPreCueTargetReadOutputRatio(iMouse) = cueNewTargetReadOutputMean(iMouse) / max(preCueTargetReadOutputMean(iMouse), eps);
 	baselineToDecisionSimilarityRatio(iMouse) = baselineFinalDriveMean(iMouse) / max(decisionDriveMean(iMouse), eps);
 	cueIL23Mean(iMouse) = iMeanFlat(Signals.ProcessMeanIL23);
 	cueIL23Max(iMouse) = iMaxFlat(Signals.ProcessMeanIL23);
@@ -627,7 +933,8 @@ for iMouse = 1:numMouse
 end
 inputAccumulatorText = iRewardAfferentAccumulatorDistributionText(MousePool);
 diagMessage = sprintf(['First cue-training diagnostics: per-mouse perf=%s; decision similarity mean=%s, max=%s; ', ...
-	'baseline corrections mean=%s, max=%s; baseline max-similarity mean=%s, max=%s; baseline final-similarity mean=%s, max=%s; cue L23 pattern corr=%s; baseline-final/decision similarity ratio=%s; ', ...
+	'baseline corrections mean=%s, max=%s; baseline max-similarity mean=%s, max=%s; baseline final-similarity mean=%s, max=%s; cue L23 pattern corr=%s; ', ...
+	'cue L23 active fractions: pre=%s, formal=%s, overlap/pre=%s; target Read output by L23 group: pre=%s, cue-new=%s, overlap=%s, pre-only=%s, cue-new/pre=%s; baseline-final/decision similarity ratio=%s; ', ...
 	'baseline trigger target Read pre mean: L23=%s, RewardRecv=%s, Read recurrent=%s, IL23=%s, IL5RewardRecvI=%s, L2 net=%s, L5 net=%s, total=%s; ', ...
 	'cue IL23 mean=%s, max=%s; cue IL5RewardRecvI mean=%s, max=%s; ', ...
 	'IL5RewardRecvI drive TH pre mean=%s, max=%s; IL23 recurrent pre mean=%s, min=%s, |pre| mean=%s, max=%s; ', ...
@@ -635,7 +942,8 @@ diagMessage = sprintf(['First cue-training diagnostics: per-mouse perf=%s; decis
 	iFormatNumberSeries(firstUnitPerf), iFormatNumberSeries(decisionDriveMean), iFormatNumberSeries(decisionDriveMax), ...
 	iFormatNumberSeries(baselineCorrectionMean), iFormatNumberSeries(baselineCorrectionMax), iFormatNumberSeries(baselineMaxDriveMean), iFormatNumberSeries(baselineMaxDriveMax), ...
 	iFormatNumberSeries(baselineFinalDriveMean), iFormatNumberSeries(baselineFinalDriveMax), ...
-	iFormatNumberSeries(cueL23PatternCorrelation), iFormatNumberSeries(baselineToDecisionSimilarityRatio), ...
+	iFormatNumberSeries(cueL23PatternCorrelation), iFormatNumberSeries(preCueL23ActiveFraction), iFormatNumberSeries(cueL23ActiveFraction), iFormatNumberSeries(cueL23OverlapFractionOfPreCue), ...
+	iFormatNumberSeries4(preCueTargetReadOutputMean), iFormatNumberSeries4(cueNewTargetReadOutputMean), iFormatNumberSeries4(cueOverlapTargetReadOutputMean), iFormatNumberSeries4(preOnlyTargetReadOutputMean), iFormatNumberSeries(cueNewVsPreCueTargetReadOutputRatio), iFormatNumberSeries(baselineToDecisionSimilarityRatio), ...
 	iFormatNumberSeries(baselineTargetL23PreMean), iFormatNumberSeries(baselineTargetRewardRecvPreMean), iFormatNumberSeries(baselineTargetReadRecurrentPreMean), ...
 	iFormatNumberSeries(baselineTargetIL23PreMean), iFormatNumberSeries(baselineTargetIL5RewardRecvIPreMean), iFormatNumberSeries(baselineTargetL2NetPreMean), iFormatNumberSeries(baselineTargetL5NetPreMean), iFormatNumberSeries(baselineTargetNetPreMean), ...
 	iFormatNumberSeries(cueIL23Mean), iFormatNumberSeries(cueIL23Max), iFormatNumberSeries(cueIL5RewardRecvIMean), iFormatNumberSeries(cueIL5RewardRecvIMax), ...
@@ -722,21 +1030,17 @@ end
 function Mouse = iDrawMouse(Params)
 % Fixed input / target patterns.
 % Cue patterns are binary direct-drive masks on L2/3 cells: full response or 0.
-% PreCue and Cue share a common latent component, while their positive L2/3
-% cue-tagged cells are forced to be disjoint.
-a = Params.CueModalityCorr;
-sharedCue = iRandn(Params.NL23, Params);
-preCueU   = iRandn(Params.NL23, Params);
-cueU      = iRandn(Params.NL23, Params);
-preCueLatent = a * sharedCue + sqrt(1 - a^2) * preCueU;
-cueLatent = a * sharedCue + sqrt(1 - a^2) * cueU;
-Mouse.PreCueL23Pattern = iVertexPattern(preCueLatent, Params.ResponseScale);
-preCuePositiveMask = Mouse.PreCueL23Pattern > 0;
-nCueL23Active = round(Params.CueL23ActiveFractionOfPreCue * nnz(preCuePositiveMask));
-cueLatent(preCuePositiveMask) = -inf;
-Mouse.CueL23Pattern = iFixedActiveVertexPattern(cueLatent, Params.ResponseScale, nCueL23Active);
+% Cue and PreCue are sampled from explicit Bernoulli masks. Formal cue cells
+% include an expected overlap fraction among pre-cue cells plus newly active
+% cells drawn from the remaining L2/3 population.
+preCuePositiveMask = iRand(Params.NL23, Params) < Params.PreCueL23ActiveFraction;
+cueOverlapMask = preCuePositiveMask & (iRand(Params.NL23, Params) < Params.CueL23OverlapFractionOfPreCue);
+cueNewActiveFraction = (Params.CueL23ActiveFraction - Params.PreCueL23ActiveFraction * Params.CueL23OverlapFractionOfPreCue) / (1 - Params.PreCueL23ActiveFraction);
+cueNewMask = ~preCuePositiveMask & (iRand(Params.NL23, Params) < cueNewActiveFraction);
+Mouse.PreCueL23Pattern = iMaskToVertexPattern(preCuePositiveMask, Params);
+Mouse.CueL23Pattern = iMaskToVertexPattern(cueOverlapMask | cueNewMask, Params);
 Mouse.THRewardPattern    = iStandardize(iRandn(Params.NReward, Params) + 0.55 * sign(iRandn(Params.NReward, Params)));
-Mouse.L5ReadoutPattern   = iVertexPattern(iRandn(Params.NL5Read, Params) + 0.55 * sign(iRandn(Params.NL5Read, Params)), Params.ResponseScale);
+Mouse.L5ReadoutPattern   = iVertexPattern(iRandn(Params.NL5Read, Params) + 0.55 * sign(iRandn(Params.NL5Read, Params)));
 % Initial reward afferent map into L5 reward-receiving cells.
 Mouse.Z_RewardToL5RewardRecv = iInitChiSquareAccumulator([Params.NL5RewardRecv, Params.NReward], Params.InitAfferentAccumulatorScale, Params.InitAfferentAccumulatorChiSquareDof, Params);
 Mouse.Z_RewardToIL5RewardRecv = iInitChiSquareAccumulator([Params.NIL5RewardRecv, Params.NReward], Params.InitAfferentAccumulatorScale, Params.InitAfferentAccumulatorChiSquareDof, Params);
@@ -900,6 +1204,16 @@ cuePretrainDiag.BaselineTargetL5NetPreMean = nan(nSess, 1);
 cuePretrainDiag.BaselineTargetNetPreMean = nan(nSess, 1);
 cuePretrainDiag.CueL23Mean = nan(nSess, 1);
 cuePretrainDiag.CueL23Max = nan(nSess, 1);
+cuePretrainDiag.PreCueL23CueMean = nan(nSess, 1);
+cuePretrainDiag.CueNewL23CueMean = nan(nSess, 1);
+cuePretrainDiag.NonPreCueL23CueMean = nan(nSess, 1);
+cuePretrainDiag.PreCueL23DirectDriveMean = nan(nSess, 1);
+cuePretrainDiag.CueNewL23DirectDriveMean = nan(nSess, 1);
+cuePretrainDiag.NonPreCueL23DirectDriveMean = nan(nSess, 1);
+cuePretrainDiag.PreCueL23RecurrentPreMean = nan(nSess, 1);
+cuePretrainDiag.CueNewL23RecurrentPreMean = nan(nSess, 1);
+cuePretrainDiag.NonPreCueL23RecurrentPreMean = nan(nSess, 1);
+cuePretrainDiag.PreCueL23RecurrentToDirectRatio = nan(nSess, 1);
 cuePretrainDiag.CueRewardRecvMean = nan(nSess, 1);
 cuePretrainDiag.CueRewardRecvMax = nan(nSess, 1);
 cuePretrainDiag.CueReadMean = nan(nSess, 1);
@@ -915,6 +1229,9 @@ cuePretrainDiag.CueIL5RewardRecvIMax = nan(nSess, 1);
 cuePretrainDiag.LearnL23Mean = nan(nSess, 1);
 cuePretrainDiag.LearnL23Max = nan(nSess, 1);
 cuePretrainDiag.LearnL23Sum = nan(nSess, 1);
+cuePretrainDiag.PreCueL23LearnMean = nan(nSess, 1);
+cuePretrainDiag.CueNewL23LearnMean = nan(nSess, 1);
+cuePretrainDiag.NonPreCueL23LearnMean = nan(nSess, 1);
 cuePretrainDiag.LearnRewardRecvMean = nan(nSess, 1);
 cuePretrainDiag.LearnRewardRecvMax = nan(nSess, 1);
 cuePretrainDiag.LearnRewardRecvSum = nan(nSess, 1);
@@ -946,6 +1263,12 @@ cuePretrainDiag.L23ToNonTargetReadMeanW = nan(nSess, 1);
 cuePretrainDiag.L23ToNonTargetReadMaxW = nan(nSess, 1);
 cuePretrainDiag.L23ToTargetReadEligibilityMean = nan(nSess, 1);
 cuePretrainDiag.L23ToNonTargetReadEligibilityMean = nan(nSess, 1);
+cuePretrainDiag.PreCueToTargetReadEligibilityColumnSumMean = nan(nSess, 1);
+cuePretrainDiag.CueNewToTargetReadEligibilityColumnSumMean = nan(nSess, 1);
+cuePretrainDiag.NonPreCueToTargetReadEligibilityColumnSumMean = nan(nSess, 1);
+cuePretrainDiag.PreCueToTargetReadColumnSumMeanW = nan(nSess, 1);
+cuePretrainDiag.CueNewToTargetReadColumnSumMeanW = nan(nSess, 1);
+cuePretrainDiag.NonPreCueToTargetReadColumnSumMeanW = nan(nSess, 1);
 cuePretrainDiag.L23OutL23ZShareMean = nan(nSess, 1);
 cuePretrainDiag.L23OutRewardRecvZShareMean = nan(nSess, 1);
 cuePretrainDiag.L23OutTargetReadZShareMean = nan(nSess, 1);
@@ -1026,8 +1349,14 @@ readTargetMask = readPattern > 0;
 readNonTargetMask = ~readTargetMask;
 targetReadRows = readoutRows(readTargetMask);
 nonTargetReadRows = readoutRows(readNonTargetMask);
+preCueMask = iGatherValue(Mouse.PreCueL23Pattern(:) > 0);
+formalCueMask = iGatherValue(Mouse.CueL23Pattern(:) > 0);
+cueNewMask = formalCueMask & ~preCueMask;
+nonPreCueMask = ~preCueMask;
 l23OutputShare = iColumnDistribution(internalAccumulator(:, l23Cols));
 rewardRecvOutputShare = iColumnDistribution(internalAccumulator(:, rewardRecvCols));
+l23DirectCueDrive = Params.CueL23Gain * iGatherValue(Mouse.PreCueL23Pattern(:));
+l23RecurrentPre = internalWeight(l23Cols, :) * cueInternalMean;
 l23ToReadPre = internalWeight(readoutRows, l23Cols) * cueInternalMean(l23Cols);
 rewardRecvToReadPre = internalWeight(readoutRows, rewardRecvCols) * cueInternalMean(rewardRecvCols);
 readToReadPre = internalWeight(readoutRows, readoutRows) * cueInternalMean(readoutRows);
@@ -1047,6 +1376,8 @@ inhToReadW = Mouse.W_InternalToInternal(readoutRows, hiddenICols);
 il23ToReadW = Mouse.W_InternalToInternal(readoutRows, iL23Cols);
 il5RewardRecvIToReadW = Mouse.W_InternalToInternal(readoutRows, iL5RewardRecvICols);
 il23ToIL5RewardRecvIW = Mouse.W_InternalToInternal(iL5RewardRecvIRows, iL23Cols);
+l23ToTargetReadColumnSum = sum(l23ToReadW(readTargetMask, :), 1);
+l23ToTargetReadEligibilityColumnSum = sum(internalEligibility(targetReadRows, l23Cols), 1);
 
 cuePretrainDiag.PerfObserved(iSess) = perfObserved;
 cuePretrainDiag.PerfExpected(iSess) = perfExpected;
@@ -1068,6 +1399,16 @@ cuePretrainDiag.BaselineTargetL5NetPreMean(iSess) = Signals.BaselineTargetL5NetP
 cuePretrainDiag.BaselineTargetNetPreMean(iSess) = Signals.BaselineTargetNetPreMean;
 cuePretrainDiag.CueL23Mean(iSess) = iMeanFlat(Signals.ProcessMeanL23);
 cuePretrainDiag.CueL23Max(iSess) = iMaxFlat(Signals.ProcessMeanL23);
+cuePretrainDiag.PreCueL23CueMean(iSess) = iMeanFlat(Signals.ProcessMeanL23(preCueMask));
+cuePretrainDiag.CueNewL23CueMean(iSess) = iMeanFlat(Signals.ProcessMeanL23(cueNewMask));
+cuePretrainDiag.NonPreCueL23CueMean(iSess) = iMeanFlat(Signals.ProcessMeanL23(nonPreCueMask));
+cuePretrainDiag.PreCueL23DirectDriveMean(iSess) = iMeanFlat(l23DirectCueDrive(preCueMask));
+cuePretrainDiag.CueNewL23DirectDriveMean(iSess) = iMeanFlat(l23DirectCueDrive(cueNewMask));
+cuePretrainDiag.NonPreCueL23DirectDriveMean(iSess) = iMeanFlat(l23DirectCueDrive(nonPreCueMask));
+cuePretrainDiag.PreCueL23RecurrentPreMean(iSess) = iMeanFlat(l23RecurrentPre(preCueMask));
+cuePretrainDiag.CueNewL23RecurrentPreMean(iSess) = iMeanFlat(l23RecurrentPre(cueNewMask));
+cuePretrainDiag.NonPreCueL23RecurrentPreMean(iSess) = iMeanFlat(l23RecurrentPre(nonPreCueMask));
+cuePretrainDiag.PreCueL23RecurrentToDirectRatio(iSess) = cuePretrainDiag.PreCueL23RecurrentPreMean(iSess) / max(cuePretrainDiag.PreCueL23DirectDriveMean(iSess), eps);
 cuePretrainDiag.CueRewardRecvMean(iSess) = iMeanFlat(cueRewardRecv);
 cuePretrainDiag.CueRewardRecvMax(iSess) = iMaxFlat(cueRewardRecv);
 cuePretrainDiag.CueReadMean(iSess) = iMeanFlat(cueRead);
@@ -1083,6 +1424,9 @@ cuePretrainDiag.CueIL5RewardRecvIMax(iSess) = iMaxFlat(Signals.ProcessMeanIL5Rew
 cuePretrainDiag.LearnL23Mean(iSess) = iMeanFlat(Signals.mL23);
 cuePretrainDiag.LearnL23Max(iSess) = iMaxFlat(Signals.mL23);
 cuePretrainDiag.LearnL23Sum(iSess) = sum(iGatherValue(Signals.mL23(:)), 'omitnan');
+cuePretrainDiag.PreCueL23LearnMean(iSess) = iMeanFlat(Signals.mL23(preCueMask));
+cuePretrainDiag.CueNewL23LearnMean(iSess) = iMeanFlat(Signals.mL23(cueNewMask));
+cuePretrainDiag.NonPreCueL23LearnMean(iSess) = iMeanFlat(Signals.mL23(nonPreCueMask));
 cuePretrainDiag.LearnRewardRecvMean(iSess) = iMeanFlat(Signals.mL5RewardRecv);
 cuePretrainDiag.LearnRewardRecvMax(iSess) = iMaxFlat(Signals.mL5RewardRecv);
 cuePretrainDiag.LearnRewardRecvSum(iSess) = sum(iGatherValue(Signals.mL5RewardRecv(:)), 'omitnan');
@@ -1121,6 +1465,12 @@ cuePretrainDiag.L23ToNonTargetReadMeanW(iSess) = iMeanFlat(l23ToReadW(readNonTar
 cuePretrainDiag.L23ToNonTargetReadMaxW(iSess) = iMaxFlat(l23ToReadW(readNonTargetMask, :));
 cuePretrainDiag.L23ToTargetReadEligibilityMean(iSess) = iMeanFlat(internalEligibility(targetReadRows, l23Cols));
 cuePretrainDiag.L23ToNonTargetReadEligibilityMean(iSess) = iMeanFlat(internalEligibility(nonTargetReadRows, l23Cols));
+cuePretrainDiag.PreCueToTargetReadEligibilityColumnSumMean(iSess) = iMeanFlat(l23ToTargetReadEligibilityColumnSum(preCueMask));
+cuePretrainDiag.CueNewToTargetReadEligibilityColumnSumMean(iSess) = iMeanFlat(l23ToTargetReadEligibilityColumnSum(cueNewMask));
+cuePretrainDiag.NonPreCueToTargetReadEligibilityColumnSumMean(iSess) = iMeanFlat(l23ToTargetReadEligibilityColumnSum(nonPreCueMask));
+cuePretrainDiag.PreCueToTargetReadColumnSumMeanW(iSess) = iMeanFlat(l23ToTargetReadColumnSum(preCueMask));
+cuePretrainDiag.CueNewToTargetReadColumnSumMeanW(iSess) = iMeanFlat(l23ToTargetReadColumnSum(cueNewMask));
+cuePretrainDiag.NonPreCueToTargetReadColumnSumMeanW(iSess) = iMeanFlat(l23ToTargetReadColumnSum(nonPreCueMask));
 cuePretrainDiag.L23OutL23ZShareMean(iSess) = iMeanFlat(sum(l23OutputShare(l23Cols, :), 1));
 cuePretrainDiag.L23OutRewardRecvZShareMean(iSess) = iMeanFlat(sum(l23OutputShare(rewardRecvRows, :), 1));
 cuePretrainDiag.L23OutTargetReadZShareMean(iSess) = iMeanFlat(sum(l23OutputShare(targetReadRows, :), 1));
@@ -1187,6 +1537,14 @@ if isempty(lastSess)
 end
 firstSess = find(isfinite(cuePretrainDiag.PerfObserved), 1, 'first');
 useSess = firstSess:lastSess;
+targetReadL23Pre = cuePretrainDiag.ReadTargetL23PreMean(useSess);
+targetReadRewardRecvPre = cuePretrainDiag.ReadTargetRewardRecvPreMean(useSess);
+targetReadRecurrentPre = cuePretrainDiag.ReadTargetReadPreMean(useSess);
+targetReadAmplifierPre = targetReadRewardRecvPre + targetReadRecurrentPre;
+targetReadSourceTotalPre = targetReadL23Pre + targetReadAmplifierPre;
+targetReadAmplifierToL23Ratio = targetReadAmplifierPre ./ max(targetReadL23Pre, eps);
+targetReadL23SourceShare = targetReadL23Pre ./ max(targetReadSourceTotalPre, eps);
+targetReadAmplifierSourceShare = targetReadAmplifierPre ./ max(targetReadSourceTotalPre, eps);
 growthText = sprintf(['growth deltas per session: decision mean d=%s, target Read mean d=%s, target net pre d=%s, L23 target-Read Z-share d=%s; ', ...
 	'early/late mean delta: decision=%.4f/%.4f, target Read=%.4f/%.4f, target net=%.4f/%.4f, L23 target-share=%.4f/%.4f; '], ...
 	iFormatDeltaSeries4(cuePretrainDiag.DecisionDriveMean(useSess)), ...
@@ -1197,6 +1555,23 @@ growthText = sprintf(['growth deltas per session: decision mean d=%s, target Rea
 	iEarlyDeltaMean(cuePretrainDiag.CueReadTargetMean(useSess)), iLateDeltaMean(cuePretrainDiag.CueReadTargetMean(useSess)), ...
 	iEarlyDeltaMean(cuePretrainDiag.ReadTargetNetRecurrentPreMean(useSess)), iLateDeltaMean(cuePretrainDiag.ReadTargetNetRecurrentPreMean(useSess)), ...
 	iEarlyDeltaMean(cuePretrainDiag.L23OutTargetReadZShareMean(useSess)), iLateDeltaMean(cuePretrainDiag.L23OutTargetReadZShareMean(useSess)));
+sourceTimingText = sprintf(['target Read source timing: L23 direct d=%s, RewardRecv d=%s, Read recurrent d=%s, amplifier d=%s, amplifier/L23=%s; ', ...
+	'early/late mean delta L23=%.4f/%.4f, RewardRecv=%.4f/%.4f, Read recurrent=%.4f/%.4f, amplifier=%.4f/%.4f; ', ...
+	'first/last source share L23=%.3f -> %.3f, amplifier=%.3f -> %.3f; '], ...
+	iFormatDeltaSeries4(targetReadL23Pre), iFormatDeltaSeries4(targetReadRewardRecvPre), iFormatDeltaSeries4(targetReadRecurrentPre), iFormatDeltaSeries4(targetReadAmplifierPre), iFormatNumberSeries(targetReadAmplifierToL23Ratio), ...
+	iEarlyDeltaMean(targetReadL23Pre), iLateDeltaMean(targetReadL23Pre), ...
+	iEarlyDeltaMean(targetReadRewardRecvPre), iLateDeltaMean(targetReadRewardRecvPre), ...
+	iEarlyDeltaMean(targetReadRecurrentPre), iLateDeltaMean(targetReadRecurrentPre), ...
+	iEarlyDeltaMean(targetReadAmplifierPre), iLateDeltaMean(targetReadAmplifierPre), ...
+	targetReadL23SourceShare(1), targetReadL23SourceShare(end), targetReadAmplifierSourceShare(1), targetReadAmplifierSourceShare(end));
+l23SpecificityText = sprintf(['L23 specificity trajectories: cue activity preCue/formal-new/non-preCue=%s/%s/%s; ', ...
+	'learning activity preCue/formal-new/non-preCue=%s/%s/%s; recurrent pre preCue/formal-new/non-preCue=%s/%s/%s, recurrent/direct(preCue)=%s; ', ...
+	'target Read W columns preCue/formal-new/non-preCue=%s/%s/%s; target Read eligibility columns preCue/formal-new/non-preCue=%s/%s/%s; '], ...
+	iFormatNumberSeries(cuePretrainDiag.PreCueL23CueMean(useSess)), iFormatNumberSeries(cuePretrainDiag.CueNewL23CueMean(useSess)), iFormatNumberSeries(cuePretrainDiag.NonPreCueL23CueMean(useSess)), ...
+	iFormatNumberSeries(cuePretrainDiag.PreCueL23LearnMean(useSess)), iFormatNumberSeries(cuePretrainDiag.CueNewL23LearnMean(useSess)), iFormatNumberSeries(cuePretrainDiag.NonPreCueL23LearnMean(useSess)), ...
+	iFormatNumberSeries(cuePretrainDiag.PreCueL23RecurrentPreMean(useSess)), iFormatNumberSeries(cuePretrainDiag.CueNewL23RecurrentPreMean(useSess)), iFormatNumberSeries(cuePretrainDiag.NonPreCueL23RecurrentPreMean(useSess)), iFormatNumberSeries(cuePretrainDiag.PreCueL23RecurrentToDirectRatio(useSess)), ...
+	iFormatNumberSeries4(cuePretrainDiag.PreCueToTargetReadColumnSumMeanW(useSess)), iFormatNumberSeries4(cuePretrainDiag.CueNewToTargetReadColumnSumMeanW(useSess)), iFormatNumberSeries4(cuePretrainDiag.NonPreCueToTargetReadColumnSumMeanW(useSess)), ...
+	iFormatNumberSeries4(cuePretrainDiag.PreCueToTargetReadEligibilityColumnSumMean(useSess)), iFormatNumberSeries4(cuePretrainDiag.CueNewToTargetReadEligibilityColumnSumMean(useSess)), iFormatNumberSeries4(cuePretrainDiag.NonPreCueToTargetReadEligibilityColumnSumMean(useSess)));
 trajectoryText = sprintf(['session trajectories: target Read mean=%s, non-target Read mean=%s; ', ...
 	'target Read pre L23=%s, RewardRecv=%s, Read recurrent=%s, E total=%s, I total=%s, net=%s; ', ...
 	'non-target Read pre E total=%s, I total=%s, net=%s; ', ...
@@ -1308,11 +1683,11 @@ inputAccumulatorText = sprintf('reward afferent accumulator Z distributions firs
 	cuePretrainDiag.RewardToRewardRecvZDistribution(firstSess), cuePretrainDiag.RewardToRewardRecvZDistribution(lastSess), ...
 	cuePretrainDiag.RewardToIL5RewardRecvZDistribution(firstSess), cuePretrainDiag.RewardToIL5RewardRecvZDistribution(lastSess));
 diagMessage = sprintf(['Cue pretrain diagnostics: perf=%s; decision similarity mean=%s, max=%s; ', ...
-	'baseline corrections mean=%s, max=%s; baseline max-similarity mean=%s, max=%s; baseline final-similarity mean=%s, max=%s; %s%s%s%s%s%s%s%s%s%s%s%s'], ...
+	'baseline corrections mean=%s, max=%s; baseline max-similarity mean=%s, max=%s; baseline final-similarity mean=%s, max=%s; %s%s%s%s%s%s%s%s%s%s%s%s%s%s'], ...
 	iFormatNumberSeries(cuePretrainDiag.PerfObserved(useSess)), iFormatNumberSeries(cuePretrainDiag.DecisionDriveMean(useSess)), iFormatNumberSeries(cuePretrainDiag.DecisionDriveMax(useSess)), ...
 	iFormatNumberSeries(cuePretrainDiag.BaselineCorrectionMean(useSess)), iFormatNumberSeries(cuePretrainDiag.BaselineCorrectionMax(useSess)), iFormatNumberSeries(cuePretrainDiag.BaselineMaxDriveMean(useSess)), iFormatNumberSeries(cuePretrainDiag.BaselineMaxDriveMax(useSess)), ...
 	iFormatNumberSeries(cuePretrainDiag.BaselineFinalDriveMean(useSess)), iFormatNumberSeries(cuePretrainDiag.BaselineFinalDriveMax(useSess)), ...
-	growthText, trajectoryText, rewardRecvCompetitionText, cueActivityText, learningActivityText, rewardRecvPatternText, inhibitoryDriveText, baselineSourceText, readoutCircuitText, il5InhibitoryCircuitText, weightText, inputAccumulatorText);
+	growthText, sourceTimingText, l23SpecificityText, trajectoryText, rewardRecvCompetitionText, cueActivityText, learningActivityText, rewardRecvPatternText, inhibitoryDriveText, baselineSourceText, readoutCircuitText, il5InhibitoryCircuitText, weightText, inputAccumulatorText);
 end
 
 function rewardPretrainDiag = iInitRewardPretrainDiagnostics(Params)
@@ -1661,8 +2036,7 @@ end
 
 function readoutDrive = iRewardReadoutProbe(Mouse, Params, Cond)
 ProbeParams = Params;
-ProbeParams.NoiseCue = 0;
-ProbeParams.NoiseRew = 0;
+ProbeParams.NoiseInput = 0;
 ProbeParams.NoiseRead = 0;
 
 preL23 = iZeros(ProbeParams.NL23, ProbeParams);
@@ -1756,11 +2130,10 @@ NT = Params.NumTrials;
 
 if usePreCue
 	cueL23Pattern = Mouse.PreCueL23Pattern;
-	cueGain = Params.CueL23GainPretrain;
 else
 	cueL23Pattern = Mouse.CueL23Pattern;
-	cueGain = Params.CueL23Gain;
 end
+cueGain = Params.CueL23Gain;
 eta = Params.HebbRate;
 traceEta = eta * Params.EligibilityTraceScale;
 
@@ -1795,7 +2168,7 @@ eligInternal = iZeroCellEligibility(Params.NInternal, Params.NInternal, Params);
 
 for t = 1:NT
 	% ===== Continuous rest/no-cue baseline gate =====
-	[Mouse, baselineCorrectionCount(t), baselineMaxDriveAll(t), baselineFinalDriveAll(t), baselineReadoutSource] = iRunContinuousBaselineRest(Mouse, Params, Cond, t);
+	[Mouse, baselineCorrectionCount(t), baselineMaxDriveAll(t), baselineFinalDriveAll(t), baselineReadoutSource, baselineInternalActivity] = iRunContinuousBaselineRest(Mouse, Params, Cond, t);
 	baselineTargetL23PreAll(t) = baselineReadoutSource.TargetL23;
 	baselineTargetRewardRecvPreAll(t) = baselineReadoutSource.TargetRewardRecv;
 	baselineTargetReadRecurrentPreAll(t) = baselineReadoutSource.TargetReadRecurrent;
@@ -1806,11 +2179,11 @@ for t = 1:NT
 	baselineTargetNetPreAll(t) = baselineReadoutSource.TargetNet;
 
 	% ===== Decision phase (direct cue drive -> recurrent L2/3-L5 network) =====
-	cueL23Drive = cueGain * cueL23Pattern + Params.NoiseCue * iRandn(Params.NL23, Params);
+	cueL23Drive = cueGain * cueL23Pattern + Params.NoiseInput * iRandn(Params.NL23, Params);
 	nDecisionState = Params.InternalRecurrentPasses + 1;
 	cueL23DriveHistory = iRunCueL23DriveHistory(cueL23Drive, Params, nDecisionState);
 	preL5Read_cue = Params.NoiseRead * iRandn(Params.NL5Read, Params);
-	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue, decisionActivityCue, decisionTraceCue, ~, ~, decisionActivityHistory, preIL5RewardRecvHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read_cue, Mouse, Params, Cond);
+	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue, decisionActivityCue, decisionTraceCue, ~, ~, decisionActivityHistory, preIL5RewardRecvHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read_cue, Mouse, Params, Cond, baselineInternalActivity);
 	[~, ~, ~, rIL23_cue, rIL5RewardRecvI_cue] = iSplitInternalActivity(decisionActivityCue, Params);
 	il23ToIL5RewardRecvIPre = iIL23ToIL5RewardRecvIContribution(Mouse, decisionActivityHistory, Params);
 
@@ -1897,12 +2270,12 @@ end
 end
 
 function r = iRateResponse(pre, Params)
-r = Params.ResponseScale * (0.5 + atan(Params.RateResponseSlope * (pre - Params.RateResponseMidpoint)) / pi);
+r = 0.5 + atan(Params.RateResponseSlope * (pre - Params.RateResponseMidpoint)) / pi;
 end
 
 function [preL23, preIL23] = iNoCueL23Pre(Params)
-preL23 = Params.NoiseCue * iRandn(Params.NL23, Params);
-preIL23 = Params.NoiseCue * iRandn(Params.NIL23, Params);
+preL23 = Params.NoiseInput * iRandn(Params.NL23, Params);
+preIL23 = Params.NoiseInput * iRandn(Params.NIL23, Params);
 end
 
 function cueL23DriveHistory = iRunCueL23DriveHistory(cueL23DriveInitial, Params, nState)
@@ -1917,8 +2290,8 @@ end
 end
 
 function [preL5RewardRecv, preIL5RewardRecv] = iRewardAfferentPre(Mouse, rReward, Params)
-preL5RewardRecv = (Mouse.W_RewardToL5RewardRecv * rReward) / Params.RewardAfferentNorm + Params.NoiseRew * iRandn(Params.NL5RewardRecv, Params);
-preIL5RewardRecv = (Mouse.W_RewardToIL5RewardRecv * rReward) / Params.RewardAfferentNorm + Params.NoiseRew * iRandn(Params.NIL5RewardRecv, Params);
+preL5RewardRecv = (Mouse.W_RewardToL5RewardRecv * rReward) / Params.RewardAfferentNorm + Params.NoiseInput * iRandn(Params.NL5RewardRecv, Params);
+preIL5RewardRecv = (Mouse.W_RewardToIL5RewardRecv * rReward) / Params.RewardAfferentNorm + Params.NoiseInput * iRandn(Params.NIL5RewardRecv, Params);
 end
 
 function rTH = iRunTHInput(Mouse, Params, Cond, thMode)
@@ -1928,19 +2301,20 @@ function rTH = iRunTHInput(Mouse, Params, Cond, thMode)
 		return;
 	case "reward"
 		if Cond.THInputIsNoise
-			preTH = Params.THNoiseInputGain * iStandardize(iRandn(Params.NReward, Params)) + Params.NoiseRew * iRandn(Params.NReward, Params);
+			preTH = Params.THNoiseInputGain * iStandardize(iRandn(Params.NReward, Params)) + Params.NoiseInput * iRandn(Params.NReward, Params);
 		else
-			preTH = Params.THRewardInputGain * Mouse.THRewardPattern + Params.NoiseRew * iRandn(Params.NReward, Params);
+			preTH = Params.THRewardInputGain * Mouse.THRewardPattern + Params.NoiseInput * iRandn(Params.NReward, Params);
 		end
 	end
 rTH = iRunArea(preTH, 'reward', Mouse, Params);
 end
 
-function [Mouse, nBaselineCorrections, maxBaselineDrive, finalBaselineDrive, baselineReadoutSource] = iRunContinuousBaselineRest(Mouse, Params, Cond, iTrial)
+function [Mouse, nBaselineCorrections, maxBaselineDrive, finalBaselineDrive, baselineReadoutSource, baselineInternalActivity] = iRunContinuousBaselineRest(Mouse, Params, Cond, iTrial)
 quietCount = 0;
 nBaselineCorrections = 0;
 maxBaselineDrive = -Inf;
 finalBaselineDrive = NaN;
+baselineInternalActivity = iZeros(Params.NInternal, Params);
 baselineReadoutSourceSum = iZeroBaselineReadoutSource();
 baselineReadoutSource = iAverageBaselineReadoutSource(baselineReadoutSourceSum, nBaselineCorrections);
 baselineSuppressionDiagSum = iZeroBaselineSuppressionDiagnostic();
@@ -1986,6 +2360,7 @@ for iBaselineIteration = 1:Params.MaxBaselineIterations
 		if quietCount >= Params.BaselineQuietIterations
 			finalBaselineDrive = readoutDrive;
 			baselineReadoutSource = iAverageBaselineReadoutSource(baselineReadoutSourceSum, nBaselineCorrections);
+			baselineInternalActivity = internalActivity;
 			return;
 		end
 	end
@@ -2027,8 +2402,8 @@ positiveReadoutMask = readPattern > 0;
 zeroReadoutMask = readPattern <= 0;
 positiveReadoutActivity = readActivityNow(positiveReadoutMask);
 zeroReadoutActivity = readActivityNow(zeroReadoutMask);
-positiveReadoutError = positiveReadoutActivity / Params.ResponseScale - 1;
-zeroReadoutError = zeroReadoutActivity / Params.ResponseScale;
+positiveReadoutError = positiveReadoutActivity - 1;
+zeroReadoutError = zeroReadoutActivity;
 positiveReadoutDistance = sqrt(sum(iGatherValue(positiveReadoutError(:)).^2));
 zeroReadoutDistance = sqrt(sum(iGatherValue(zeroReadoutError(:)).^2));
 totalReadoutDistance = sqrt(positiveReadoutDistance^2 + zeroReadoutDistance^2);
@@ -2224,36 +2599,35 @@ source.TargetL5Net = iMeanFlat(l5Net(targetMask));
 source.TargetNet = iMeanFlat(l2Net(targetMask) + l5Net(targetMask));
 end
 
-function [rL23, rL5RewardRecv, rL5Read, internalActivity, readoutDriveTrace, thActivityHistory, rewardRecvActivityHistory, internalActivityHistory, preIL5RewardRecvHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read, Mouse, Params, Cond)
-readoutDriveTrace = zeros(Params.InternalRecurrentPasses + 1, 1);
-thActivityHistory = iZeros([Params.NReward, Params.InternalRecurrentPasses + 1], Params);
-rewardRecvActivityHistory = iZeros([Params.NL5RewardRecv, Params.InternalRecurrentPasses + 1], Params);
-internalActivityHistory = iZeros([Params.NInternal, Params.InternalRecurrentPasses + 1], Params);
-preIL5RewardRecvHistory = iZeros([Params.NIL5RewardRecv, Params.InternalRecurrentPasses + 1], Params);
-lickTriggered = false;
-internalActivity = [];
+function [rL23, rL5RewardRecv, rL5Read, internalActivity, readoutDriveTrace, thActivityHistory, rewardRecvActivityHistory, internalActivityHistory, preIL5RewardRecvHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read, Mouse, Params, Cond, initialInternalActivity)
+if nargin < 6
+	initialInternalActivity = [];
+end
+nDecisionState = size(cueL23DriveHistory, 2);
+readoutDriveTrace = zeros(nDecisionState, 1);
+thActivityHistory = iZeros([Params.NReward, nDecisionState], Params);
+rewardRecvActivityHistory = iZeros([Params.NL5RewardRecv, nDecisionState], Params);
+internalActivityHistory = iZeros([Params.NInternal, nDecisionState], Params);
+preIL5RewardRecvHistory = iZeros([Params.NIL5RewardRecv, nDecisionState], Params);
+internalActivity = initialInternalActivity;
+lastDecisionState = nDecisionState;
 
-for iState = 1:Params.InternalRecurrentPasses + 1
-	if lickTriggered
-		thMode = "lick";
-	else
-		thMode = "rest";
-	end
-	rTH = iRunTHInput(Mouse, Params, Cond, thMode);
+for iState = 1:nDecisionState
+	rTH = iRunTHInput(Mouse, Params, Cond, "rest");
 	thActivityHistory(:, iState) = rTH;
 	[preL5RewardRecv, preIL5RewardRecv] = iRewardAfferentPre(Mouse, rTH, Params);
 	preIL5RewardRecvHistory(:, iState) = preIL5RewardRecv;
 	preL23Now = cueL23DriveHistory(:, iState);
-	preIL23Now = Params.NoiseCue * iRandn(Params.NIL23, Params);
+	preIL23Now = Params.NoiseInput * iRandn(Params.NIL23, Params);
 	externalPre = iBuildInternalPre(preL23Now, preL5RewardRecv, preL5Read, Params, preIL23Now, preIL5RewardRecv);
-	if iState == 1
+	if isempty(internalActivity)
 		networkPre = externalPre;
 	else
 		networkPre = externalPre + Mouse.W_InternalToInternal * internalActivity;
 	end
 	networkPre = iAddIterationNoise(networkPre, Params);
 	nextActivity = iRunInternalAreas(networkPre, Mouse, Params);
-	if iState == 1
+	if isempty(internalActivity)
 		internalActivity = nextActivity;
 	else
 		internalActivity = iCarryInternalState(internalActivity, nextActivity, Params);
@@ -2262,8 +2636,17 @@ for iState = 1:Params.InternalRecurrentPasses + 1
 	internalActivityHistory(:, iState) = internalActivity;
 	[~, rewardRecvActivityNow] = iSplitInternalActivity(internalActivity, Params);
 	rewardRecvActivityHistory(:, iState) = rewardRecvActivityNow;
-	lickTriggered = lickTriggered || readoutDriveTrace(iState) >= Params.HitThreshold;
+	if readoutDriveTrace(iState) >= Params.HitThreshold
+		lastDecisionState = iState;
+		break;
+	end
 end
+
+readoutDriveTrace = readoutDriveTrace(1:lastDecisionState);
+thActivityHistory = thActivityHistory(:, 1:lastDecisionState);
+rewardRecvActivityHistory = rewardRecvActivityHistory(:, 1:lastDecisionState);
+internalActivityHistory = internalActivityHistory(:, 1:lastDecisionState);
+preIL5RewardRecvHistory = preIL5RewardRecvHistory(:, 1:lastDecisionState);
 
 [rL23, rL5RewardRecv, rL5Read] = iSplitInternalActivity(internalActivity, Params);
 end
@@ -2304,10 +2687,8 @@ function readoutDrive = iReadoutDrive(internalActivity, Mouse, Params)
 readoutDrive = iReadoutPatternSimilarity(rL5Read, Mouse.L5ReadoutPattern, Params);
 end
 
-function similarity = iReadoutPatternSimilarity(readoutActivity, readoutPattern, Params)
-normalizedActivity = readoutActivity(:) ./ Params.ResponseScale;
-normalizedPattern = readoutPattern(:) ./ Params.ResponseScale;
-rootMeanSquaredError = iGatherScalar(sqrt(mean((normalizedActivity - normalizedPattern).^2)));
+function similarity = iReadoutPatternSimilarity(readoutActivity, readoutPattern, ~)
+rootMeanSquaredError = iGatherScalar(sqrt(mean((readoutActivity(:) - readoutPattern(:)).^2)));
 similarity = 1 - rootMeanSquaredError;
 end
 
@@ -2462,14 +2843,13 @@ end
 end
 
 function [Mouse, correctionDiag] = iSuppressFalseReadout(Mouse, internalActivityBefore, internalActivityAfter, falseDrive, Params, thActivityBefore, thActivityAfter, rewardRecvActivityBefore, rewardRecvActivityAfter, iRewardRecvActivityBefore, iRewardRecvActivityAfter)
-excessDrive = max(falseDrive - Params.HitThreshold, 0);
-eta = Params.BaselineAntiHebbRate * (1 + excessDrive);
+eta = Params.HebbRate * Params.EligibilityTraceScale;
 isPunishment = true;
 eligInternal = iZeroCellEligibility(Params.NInternal, Params.NInternal, Params);
 eligInternal = iUpdateRecurrentEligibility(eligInternal, internalActivityBefore, internalActivityAfter, Params.EligibilityDecay, Params);
 eligInternalToInternal = iRecurrentCellEligibilityToSynapseEligibility(eligInternal, Params);
 
-etaAfferent = Params.BaselineAfferentAntiHebbRate * (1 + excessDrive);
+etaAfferent = eta;
 eligRewardAfferent = iZeroCellEligibility(Params.NReward, Params.NL5RewardRecv + Params.NIL5RewardRecv, Params);
 eligRewardAfferent = iUpdateCellEligibility(eligRewardAfferent, thActivityBefore, [rewardRecvActivityAfter; iRewardRecvActivityAfter], Params.EligibilityDecay);
 [afferentEligibility, iAfferentEligibility] = iPairedCellEligibilityToSynapseEligibility(eligRewardAfferent, Params.NL5RewardRecv);
@@ -2650,6 +3030,17 @@ else
 end
 end
 
+function values = iRand(sz, Params)
+if isscalar(sz)
+	sz = [sz, 1];
+end
+if iUseGPU(Params)
+	values = gpuArray.rand(sz(1), sz(2), Params.GPUPrecision);
+else
+	values = rand(sz);
+end
+end
+
 function values = iZeros(sz, Params)
 if isscalar(sz)
 	sz = [sz, 1];
@@ -2714,15 +3105,13 @@ end
 v = v ./ sd;
 end
 
-function pattern = iVertexPattern(patternSeed, highValue)
-pattern = highValue * (patternSeed(:) > 0);
+function pattern = iVertexPattern(patternSeed)
+pattern = 1.0 * (patternSeed(:) > 0);
 end
 
-function pattern = iFixedActiveVertexPattern(patternSeed, highValue, nActive)
-patternSeed = patternSeed(:);
-[~, sortedIndices] = sort(patternSeed, 'descend');
-pattern = zeros(size(patternSeed), 'like', patternSeed);
-pattern(sortedIndices(1:nActive)) = highValue;
+function pattern = iMaskToVertexPattern(mask, Params)
+pattern = iZeros(size(mask), Params);
+pattern(mask(:)) = 1;
 end
 
 function [MeanTbl, SemTbl] = iCurveStats(DataStruct, order)

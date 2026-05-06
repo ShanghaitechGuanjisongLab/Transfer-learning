@@ -42,11 +42,7 @@ for iLayer = 1:2
 
 	ax = nexttile(Layout, iLayer);
 	axList(iLayer) = ax;
-	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, tranVals}, false, table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars);
-	delete(findobj(ax, 'Type', 'Scatter'));
-	for eb = ErrorBars.Object(:)'
-		eb.LineWidth = 1;
-	end
+	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, tranVals}, false, table([1 2], 'VariableNames', {'GroupPair'}));
 	ax.FontSize = 6;
 	ax.LineWidth = 1;
 	ax.FontName = 'Arial';
@@ -57,7 +53,7 @@ for iLayer = 1:2
 		ax.Toolbar.Visible = 'off';
 	end
 	ax.XTick = [1 2];
-	ax.XTickLabel = {'Naive', 'Continual'};
+	ax.XTickLabel = {'Naive', 'Transfer'};
 	if iLayer == 1
 		title(ax, 'MOp2/3', 'FontSize', 6, 'FontWeight', 'normal');
 		ax.XAxis.Visible = 'off';
@@ -71,11 +67,12 @@ for iLayer = 1:2
 	end
 	[pLineAll, pTextAll] = iAppendPLineHandles(optional, pLineAll, pTextAll);
 	iStyleBars(Bars, colorNaive, colorTransfer);
+	iKeepUpperErrorBarOnly(ax, ErrorBars, Bars, colorNaive, colorTransfer);
 
 	row = table(zLayer, mean(naiveVals), mean(tranVals), numel(naiveVals), numel(tranVals), ...
 		'VariableNames', {'ZLayer', 'NaiveMean', 'TransferMean', 'NaiveN', 'TransferN'});
 	summaryTbl = [summaryTbl; row]; %#ok<AGROW>
-end
+	end
 
 ylabel(Layout, yLabelText, 'FontSize', 6);
 MATLAB.Graphics.UnifyAxesLims(axList, @ylim);
@@ -83,12 +80,12 @@ if ~isempty(pLineAll) || ~isempty(pTextAll)
 	MATLAB.Graphics.PLineRetune(pLineAll, pTextAll);
 end
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
+outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = char(svgName);
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
+svgPath = fullfile(outDirUNC, char(svgName));
+TransferLearning.PrintFigure(f, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 end
 
@@ -107,10 +104,6 @@ if isscalar(Bars)
 	Bars.CData = Bars.CData(1:nBar, :);
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
-	Bars.EdgeColor = 'none';
-	if isprop(Bars, 'BaseLine') && isgraphics(Bars.BaseLine)
-		Bars.BaseLine.LineWidth = 1;
-	end
 	try
 		Bars.FaceAlpha = 1/3;
 	catch
@@ -119,19 +112,27 @@ else
 	if numel(Bars) >= 2
 		Bars(1).FaceColor = colorNaive;
 		Bars(2).FaceColor = colorTransfer;
-		for B = Bars(:)'
-			B.LineWidth = 1;
-			B.EdgeColor = 'none';
-			if isprop(B, 'BaseLine') && isgraphics(B.BaseLine)
-				B.BaseLine.LineWidth = 1;
-			end
-		end
+		Bars(1).LineWidth = 1;
+		Bars(2).LineWidth = 1;
 		try
 			Bars(1).FaceAlpha = 1/3;
 			Bars(2).FaceAlpha = 1/3;
 		catch
 		end
 	end
+	end
+end
+
+function iKeepUpperErrorBarOnly(~, errorBars, ~, ~, ~)
+% Directly modify original ErrorBar object: upper-only, set line width
+for eb = errorBars.Object(:)'
+	if ~isgraphics(eb)
+		continue;
+	end
+	eb.YNegativeDelta = zeros(size(eb.YPositiveDelta));
+	eb.LineWidth = 1;
+	eb.Color = 'k';
+	eb.HandleVisibility = 'off';
 end
 end
 
@@ -143,19 +144,15 @@ mc = optional.MultiCompare;
 if ismember('PLine', mc.Properties.VariableNames)
 	pLine = mc.PLine;
 	pLine = pLine(isgraphics(pLine));
-	for pl = pLine(:)'
-		pl.LineWidth = 1;
-	end
 	if ~isempty(pLine)
-		pLineAll(end+1:end+numel(pLine), 1) = pLine(:);
+		pLineAll(end+1:end+numel(pLine), 1) = pLine(:); %#ok<AGROW>
 	end
 end
 if ismember('PText', mc.Properties.VariableNames)
 	pText = mc.PText;
 	pText = pText(isgraphics(pText));
 	if ~isempty(pText)
-		pTextAll(end+1:end+numel(pText), 1) = pText(:);
+		pTextAll(end+1:end+numel(pText), 1) = pText(:); %#ok<AGROW>
 	end
 end
 end
-

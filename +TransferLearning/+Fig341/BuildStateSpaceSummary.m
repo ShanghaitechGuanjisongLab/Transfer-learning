@@ -1,17 +1,14 @@
-function Data = BuildStateSpaceSummary(normFlag)
+function Data = BuildStateSpaceSummary(forceRebuild, normFlag)
 arguments
+	forceRebuild (1,1) logical = false
 	normFlag = UniExp.Flags.No_special_operation
 end
 
-persistent CachedBuilder
-if isempty(CachedBuilder)
-	CachedBuilder = memoize(@iBuildStateSpaceSummaryCore);
+persistent Cache CacheNormFlag
+if ~forceRebuild && ~isempty(Cache) && isequal(CacheNormFlag, normFlag)
+	Data = Cache;
+	return;
 end
-
-Data = CachedBuilder(normFlag);
-end
-
-function Data = iBuildStateSpaceSummaryCore(normFlag)
 
 xs = TransferLearning.Xs;
 if isduration(xs)
@@ -19,13 +16,9 @@ if isduration(xs)
 else
 	xsSec = double(xs);
 end
-[idx0s, ok0s] = iFindTimeIndex(xsSec, 0, 0.25);
-if ~ok0s
-	error('Fig341:Bad0sIndex', 'Cannot find sample close to 0 s.');
-end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('Fig341:Bad1sIndex', 'Cannot find sample close to 1 s.');
+	error('Fig341:Bad1sIndex', 'Cannot find sample close to 1s.');
 end
 
 Specs = [ ...
@@ -58,7 +51,10 @@ for iSpec = 1:numel(Specs)
 			continue;
 		end
 		[R, Sm] = iQueryMouseNtats(Specs(iSpec).DS, Sm, normFlag);
-		if height(Sm) < 2 || isempty(R) || height(R) < 2
+		if height(Sm) < 2
+			continue;
+		end
+		if isempty(R) || height(R) < 2
 			continue;
 		end
 		X = iNtatsTo3D(R.NTATS);
@@ -71,7 +67,6 @@ for iSpec = 1:numel(Specs)
 		if size(pointsAll, 1) ~= height(Sm)
 			continue;
 		end
-
 		st = iEmptyMouseState();
 		st.Mouse = mouseId;
 		st.Group = Specs(iSpec).Group;
@@ -121,17 +116,20 @@ end
 
 Metrics = struct2table(metricRows);
 MouseStates = stateRows;
-Rep = iSelectRepresentatives(MouseStates, idx0s, idx1s, xsSec);
+
+Rep = iSelectRepresentatives(MouseStates, idx1s, xsSec);
 
 Data = struct();
 Data.XsSec = xsSec;
-Data.Index0s = idx0s;
 Data.Index1s = idx1s;
 Data.Sessions = allSessions;
 Data.MouseStates = MouseStates;
 Data.Metrics = Metrics;
 Data.Representative = Rep;
 Data.NormFlag = normFlag;
+
+Cache = Data;
+CacheNormFlag = normFlag;
 end
 
 function Sess = iBuildLearningSessionsForSource(spec)
@@ -153,10 +151,12 @@ phaseVals = string(vertcat(phaseCell{:}));
 nSess = max(G);
 perf = nan(nSess, 1);
 isMixed = false(nSess, 1);
+hasLight = false(nSess, 1);
 
 for gi = 1:nSess
 	R = T(G == gi, :);
-	if ~any(R.Stimulus == "LightWater")
+	hasLight(gi) = any(R.Stimulus == "LightWater");
+	if ~hasLight(gi)
 		continue;
 	end
 	isMixed(gi) = any(R.Stimulus == "AudioWater");
@@ -166,15 +166,16 @@ for gi = 1:nSess
 	else
 		perf(gi) = mean(double(lightRows.Behavior), 'omitnan');
 	end
-end
+	end
 
-Sess = table(mouseKeys, dtKeys, perf, phaseVals, repmat(spec.Group, nSess, 1), repmat(spec.Source, nSess, 1), isMixed, ...
-	'VariableNames', {'Mouse','DateTime','Performance','Phase','Group','Source','IsMixedAudio'});
-Sess = Sess(isfinite(Sess.Performance), :);
+Sess = table(mouseKeys, dtKeys, perf, phaseVals, repmat(spec.Group, nSess, 1), repmat(spec.Source, nSess, 1), isMixed, hasLight, ...
+	'VariableNames', {'Mouse','DateTime','Performance','Phase','Group','Source','IsMixedAudio','HasLight'});
+Sess = Sess(Sess.HasLight & isfinite(Sess.Performance), :);
 Sess = sortrows(Sess, {'Mouse', 'DateTime'});
 Sess = iSelectSessionsBetweenPhases(Sess, spec.StartPhase, spec.EndPhase);
 Sess = Sess(~Sess.IsMixedAudio, :);
 Sess = iTrimAfterCeilingKeepFirst(Sess);
+Sess.HasLight = [];
 end
 
 function Sess = iSelectSessionsBetweenPhases(Sess, startPhase, endPhase)
@@ -196,7 +197,7 @@ for iMouse = 1:numel(mice)
 		ed = numel(ph);
 	end
 	keep(idx(st:ed)) = true;
-end
+	end
 Sess = Sess(keep, :);
 end
 
@@ -216,7 +217,7 @@ for iMouse = 1:numel(mice)
 	else
 		keep(idx(1:k)) = true;
 	end
-end
+	end
 Sess = Sess(keep, :);
 end
 
@@ -224,12 +225,16 @@ function [R, SessKeep] = iQueryMouseNtats(DS, Sess, normFlag)
 Q = Sess(:, {'Mouse', 'DateTime'});
 Q.Stimulus = repmat("LightWater", height(Q), 1);
 Q = Q(:, {'Mouse', 'DateTime', 'Stimulus'});
+R = table();
 SessKeep = Sess;
+raw = [];
 try
 	raw = DS.QueryNTATS(Q, normFlag, 1:24, UniExp.Flags.Median);
 catch ME
 	if ME.identifier ~= "UniExp:Exception:Empty_group"
-		rethrow(ME);
+		warning('Fig341:MouseQueryNTATSFailed', 'Skipping mouse %s from %s: %s', char(string(Sess.Mouse(1))), class(DS), ME.message);
+		SessKeep = Sess([],:);
+		return;
 	end
 	[keepMask, parts] = iQueryNtatsIgnoringEmptyGroups(DS, Q, normFlag);
 	SessKeep = Sess(keepMask, :);
@@ -239,17 +244,16 @@ catch ME
 	end
 	raw = parts;
 end
-
-R = iNtatsResultToTable(raw);
+	R = iNtatsResultToTable(raw);
 if isempty(R) || ~ismember('NTATS', string(R.Properties.VariableNames)) || ~ismember('CellUID', string(R.Properties.VariableNames))
 	R = table();
-	SessKeep = SessKeep([], :);
+	SessKeep = SessKeep([],:);
 	return;
 end
 X = iNtatsTo3D(R.NTATS);
 if isempty(X) || size(X, 3) ~= height(SessKeep)
 	R = table();
-	SessKeep = SessKeep([], :);
+	SessKeep = SessKeep([],:);
 end
 end
 
@@ -266,7 +270,7 @@ for iGroup = 1:nGroup
 			rethrow(ME);
 		end
 	end
-end
+	end
 parts = parts(keepMask);
 end
 
@@ -276,7 +280,10 @@ if isempty(raw)
 	return;
 end
 S = UniExp.NtatsCellStrip(raw);
-if isempty(S) || ~istable(S) || ~all(ismember({'CellUID','NTATS'}, string(S.Properties.VariableNames)))
+if isempty(S) || ~istable(S)
+	return;
+end
+if ~all(ismember({'CellUID','NTATS'}, string(S.Properties.VariableNames)))
 	return;
 end
 X = iNtatsTo3D(S.NTATS);
@@ -284,6 +291,101 @@ if isempty(X)
 	return;
 end
 R = table(uint64(S.CellUID), MATLAB.DataTypes.NDTable(X), 'VariableNames', {'CellUID','NTATS'});
+end
+
+function R = iCollapseNtatsResult(res)
+R = table();
+if isempty(res)
+	return;
+end
+if istable(res)
+	R = res;
+	return;
+end
+if iscell(res)
+	parts = res(~cellfun(@isempty, res));
+	if isempty(parts)
+		return;
+	end
+	if all(cellfun(@istable, parts))
+		R = iMergeNtatsTables(parts);
+	end
+	return;
+end
+if isstruct(res) && isfield(res, 'CellUID') && isfield(res, 'NTATS')
+	R = struct2table(res);
+	return;
+end
+end
+
+function R = iMergeNtatsTables(parts)
+R = table();
+valid = cellfun(@(t) istable(t) && all(ismember({'CellUID','NTATS'}, t.Properties.VariableNames)) && height(t) > 0, parts);
+parts = parts(valid);
+if isempty(parts)
+	return;
+end
+commonUID = uint64(parts{1}.CellUID);
+for i = 2:numel(parts)
+	commonUID = intersect(commonUID, uint64(parts{i}.CellUID), 'stable');
+end
+if isempty(commonUID)
+	return;
+end
+	Xparts = cell(numel(parts), 1);
+	for i = 1:numel(parts)
+		tbl = parts{i};
+		[tf, loc] = ismember(commonUID, uint64(tbl.CellUID));
+		if ~all(tf)
+			R = table();
+			return;
+		end
+		nt = tbl.NTATS(loc);
+		Xi = iNtatsCellToMatrix(nt);
+		if isempty(Xi)
+			R = table();
+			return;
+		end
+		Xparts{i} = Xi;
+	end
+	nCell = size(Xparts{1}, 1);
+	nTime = size(Xparts{1}, 2);
+	X = nan(nCell, nTime, numel(Xparts));
+	for i = 1:numel(Xparts)
+		if ~isequal(size(Xparts{i}), [nCell, nTime])
+			R = table();
+			return;
+		end
+		X(:, :, i) = Xparts{i};
+	end
+	R = table(commonUID, MATLAB.DataTypes.NDTable(X), 'VariableNames', {'CellUID','NTATS'});
+end
+
+function X = iNtatsCellToMatrix(nt)
+X = [];
+if isa(nt, 'MATLAB.DataTypes.NDTable')
+	X = nt{:,:};
+	return;
+end
+if isnumeric(nt)
+	X = double(nt);
+	return;
+	end
+if istable(nt) && ismember('NTATS', nt.Properties.VariableNames)
+	X = iNtatsCellToMatrix(nt.NTATS);
+	return;
+end
+if iscell(nt)
+	if isempty(nt)
+		return;
+	end
+	rows = cellfun(@iOneNtatsRow, nt, 'UniformOutput', false);
+	if any(cellfun(@isempty, rows))
+		return;
+	end
+	X = vertcat(rows{:});
+	return;
+end
 end
 
 function X = iNtatsTo3D(nt)
@@ -324,32 +426,7 @@ if iscell(nt)
 		end
 		X(:, :, i) = parts{i};
 	end
-end
-end
-
-function X = iNtatsCellToMatrix(nt)
-X = [];
-if isa(nt, 'MATLAB.DataTypes.NDTable')
-	X = nt{:,:};
 	return;
-end
-if isnumeric(nt)
-	X = double(nt);
-	return;
-end
-if istable(nt) && ismember('NTATS', nt.Properties.VariableNames)
-	X = iNtatsCellToMatrix(nt.NTATS);
-	return;
-end
-if iscell(nt)
-	if isempty(nt)
-		return;
-	end
-	rows = cellfun(@iOneNtatsRow, nt, 'UniformOutput', false);
-	if any(cellfun(@isempty, rows))
-		return;
-	end
-	X = vertcat(rows{:});
 end
 end
 
@@ -361,6 +438,7 @@ if isa(one, 'MATLAB.DataTypes.NDTable')
 end
 if isnumeric(one)
 	row = double(one);
+	return;
 end
 end
 
@@ -382,7 +460,7 @@ if isempty(X)
 	explained = [NaN NaN];
 	return;
 end
-if ismatrix(X)
+if ndims(X) == 2
 	X = reshape(X, size(X, 1), size(X, 2), 1);
 end
 if idx1s > size(X, 2)
@@ -440,7 +518,7 @@ else
 end
 end
 
-function Rep = iSelectRepresentatives(MouseStates, idx0s, idx1s, xsSec)
+function Rep = iSelectRepresentatives(MouseStates, idx1s, xsSec)
 naiveRows = MouseStates(string({MouseStates.Group})' == "Naive");
 transferRows = MouseStates(string({MouseStates.Group})' == "Transfer");
 
@@ -450,7 +528,6 @@ minNaiveN = min(naiveN(naiveHasSetback), [], 'omitnan');
 if ~isfinite(minNaiveN)
 	error('Fig341:NoNaiveMouseSetback', 'No Naive mouse reaches criterion with at least 6 sessions and a behavioral setback.');
 end
-
 bestNaiveScore = -inf;
 bestNaiveMouse = iEmptyMouseState();
 bestNaiveCellUID = uint64(0);
@@ -460,75 +537,69 @@ for i = 1:numel(naiveRows)
 	if ~naiveHasSetback(i) || height(st.SessionTable) ~= minNaiveN
 		continue;
 	end
-	shiftedNtats = iShiftNtatsToZeroAtTime(st.NTATS, idx0s);
-	vals = squeeze(shiftedNtats(:, idx1s, :));
+	vals = squeeze(st.NTATS(:, idx1s, :));
 	if isvector(vals)
-		vals = reshape(vals, size(shiftedNtats, 1), size(shiftedNtats, 3));
+		vals = reshape(vals, size(st.NTATS, 1), size(st.NTATS, 3));
 	end
-	minVals = min(vals, [], 2);
-	peakMask = max(vals, [], 2) > 1;
-	minNotAtFirstMask = ~iMinOccursAtSession(vals, 1);
-	minNotAtSixMask = ~iMinOccursAtSession(vals, 6);
-	candidateMask = peakMask & minNotAtFirstMask & minNotAtSixMask;
-	if ~any(candidateMask)
+	peakBeforeCeilingMask = iNaivePeakBeforeLastCeiling(vals, st.SessionTable.Performance);
+	if ~any(peakBeforeCeilingMask)
 		continue;
 	end
-	minVals(~candidateMask) = inf;
-	[cScore, cIdx] = min(minVals);
-	if isfinite(cScore) && (bestNaiveCellUID == 0 || cScore < bestNaiveScore)
+	rangeVal = max(vals, [], 2) - min(vals, [], 2);
+	rangeVal(~peakBeforeCeilingMask) = -inf;
+	[cScore, cIdx] = max(rangeVal);
+	if isfinite(cScore) && cScore > bestNaiveScore
 		bestNaiveScore = cScore;
 		bestNaiveMouse = st;
 		bestNaiveCellUID = st.CellUID(cIdx);
-		bestNaiveSignals = squeeze(shiftedNtats(cIdx, :, :))';
+		bestNaiveSignals = squeeze(st.NTATS(cIdx, :, :))';
 	end
-end
+	end
 
-transferIsIncreasing = arrayfun(@(s) height(s.SessionTable) >= 3 && iIsStrictlyIncreasing(s.SessionTable.Performance), transferRows);
-transferN = arrayfun(@(s) height(s.SessionTable), transferRows);
-minTransferN = min(transferN(transferIsIncreasing), [], 'omitnan');
-if ~isfinite(minTransferN)
-	error('Fig341:NoTransferMouseIncreasing', 'No Transfer mouse reaches criterion with at least 3 sessions and strictly increasing behavior.');
-end
+	transferIsIncreasing = arrayfun(@(s) height(s.SessionTable) >= 3 && iIsStrictlyIncreasing(s.SessionTable.Performance), transferRows);
+	transferN = arrayfun(@(s) height(s.SessionTable), transferRows);
+	minTransferN = min(transferN(transferIsIncreasing), [], 'omitnan');
+	if ~isfinite(minTransferN)
+		error('Fig341:NoTransferMouseIncreasing', 'No Transfer mouse reaches criterion with at least 3 sessions and strictly increasing behavior.');
+	end
+	bestTransferScore = -inf;
+	bestTransferMouse = iEmptyMouseState();
+	bestTransferCellUID = uint64(0);
+	bestTransferSignals = [];
+	for i = 1:numel(transferRows)
+		st = transferRows(i);
+		if ~transferIsIncreasing(i) || height(st.SessionTable) ~= minTransferN
+			continue;
+		end
+		vals = squeeze(st.NTATS(:, idx1s, :));
+		if isvector(vals)
+			vals = reshape(vals, size(st.NTATS, 1), size(st.NTATS, 3));
+		end
+		monoMask = all(diff(vals, 1, 2) > 0, 2);
+		if ~any(monoMask)
+			continue;
+		end
+		inc = vals(:, end) - vals(:, 1);
+		inc(~monoMask) = -inf;
+		[cScore, cIdx] = max(inc);
+		if isfinite(cScore) && cScore > bestTransferScore
+			bestTransferScore = cScore;
+			bestTransferMouse = st;
+			bestTransferCellUID = st.CellUID(cIdx);
+			bestTransferSignals = squeeze(st.NTATS(cIdx, :, :))';
+		end
+	end
 
-bestTransferScore = -inf;
-bestTransferMouse = iEmptyMouseState();
-bestTransferCellUID = uint64(0);
-bestTransferSignals = [];
-for i = 1:numel(transferRows)
-	st = transferRows(i);
-	if ~transferIsIncreasing(i) || height(st.SessionTable) ~= minTransferN
-		continue;
+	if bestNaiveCellUID == 0 || bestTransferCellUID == 0
+		error('Fig341:NoRepresentative', 'Cannot find representative Naive/Transfer cell pair for panel A.');
 	end
-	shiftedNtats = iShiftNtatsToZeroAtTime(st.NTATS, idx0s);
-	vals = squeeze(shiftedNtats(:, idx1s, :));
-	if isvector(vals)
-		vals = reshape(vals, size(shiftedNtats, 1), size(shiftedNtats, 3));
-	end
-	monoMask = all(diff(vals, 1, 2) > 0, 2);
-	if ~any(monoMask)
-		continue;
-	end
-	inc = vals(:, end) - vals(:, 1);
-	inc(~monoMask) = -inf;
-	[cScore, cIdx] = max(inc);
-	if isfinite(cScore) && cScore > bestTransferScore
-		bestTransferScore = cScore;
-		bestTransferMouse = st;
-		bestTransferCellUID = st.CellUID(cIdx);
-		bestTransferSignals = squeeze(shiftedNtats(cIdx, :, :))';
-	end
-end
 
-if bestNaiveCellUID == 0 || bestTransferCellUID == 0
-	error('Fig341:NoRepresentative', 'Cannot find representative Naive/Transfer cell pair for panel A.');
-end
-
-Rep = struct();
-Rep.NaiveCell = struct('Mouse', bestNaiveMouse.Mouse, 'Source', bestNaiveMouse.Source, 'CellUID', bestNaiveCellUID, ...
-	'SessionTable', bestNaiveMouse.SessionTable, 'Signals', bestNaiveSignals, 'Points', bestNaiveMouse.Points, 'Explained', bestNaiveMouse.Explained);
-Rep.TransferCell = struct('Mouse', bestTransferMouse.Mouse, 'Source', bestTransferMouse.Source, 'CellUID', bestTransferCellUID, ...
-	'SessionTable', bestTransferMouse.SessionTable, 'Signals', bestTransferSignals, 'Points', bestTransferMouse.Points, 'Explained', bestTransferMouse.Explained);
-Rep.XsSec = xsSec;
+	Rep = struct();
+	Rep.NaiveCell = struct('Mouse', bestNaiveMouse.Mouse, 'Source', bestNaiveMouse.Source, 'CellUID', bestNaiveCellUID, ...
+		'SessionTable', bestNaiveMouse.SessionTable, 'Signals', bestNaiveSignals, 'Points', bestNaiveMouse.Points, 'Explained', bestNaiveMouse.Explained);
+	Rep.TransferCell = struct('Mouse', bestTransferMouse.Mouse, 'Source', bestTransferMouse.Source, 'CellUID', bestTransferCellUID, ...
+		'SessionTable', bestTransferMouse.SessionTable, 'Signals', bestTransferSignals, 'Points', bestTransferMouse.Points, 'Explained', bestTransferMouse.Explained);
+	Rep.XsSec = xsSec;
 end
 
 function ph = iPickSessionPhase(phases)
@@ -562,23 +633,25 @@ perf = perf(isfinite(perf));
 tf = numel(perf) >= 2 && any(diff(perf) < 0);
 end
 
-function XShift = iShiftNtatsToZeroAtTime(X, idx0s)
-XShift = X;
-if isempty(X) || idx0s < 1 || idx0s > size(X, 2)
+function mask = iNaivePeakBeforeLastCeiling(vals, performance)
+if isempty(vals)
+	mask = false(0, 1);
 	return;
 end
-baseline = X(:, idx0s, :);
-XShift = X - baseline;
-end
-
-function tf = iMinOccursAtSession(vals, sessionIndex)
-if isempty(vals) || size(vals, 2) < sessionIndex
-	tf = false(size(vals, 1), 1);
+perf = double(performance(:));
+nCell = size(vals, 1);
+nSess = size(vals, 2);
+mask = true(nCell, 1);
+if numel(perf) ~= nSess || nSess < 2
 	return;
 end
-minVals = min(vals, [], 2);
+if ~isfinite(perf(end)) || perf(end) < 1
+	return;
+end
+globalMax = max(vals, [], 2);
+prevMax = max(vals(:, 1:end-1), [], 2);
 tol = 1e-9;
-tf = abs(vals(:, sessionIndex) - minVals) <= tol;
+mask = prevMax >= (globalMax - tol);
 end
 
 function tf = iIsStrictlyIncreasing(values)
@@ -606,20 +679,22 @@ if isempty(T)
 	return;
 end
 U = unique(T(:, {'Mouse', 'Source'}));
-[~, ~, g] = unique(U.Mouse);
+[mice, ~, g] = unique(U.Mouse);
 nSrc = splitapply(@(x) numel(unique(x)), U.Source, g);
-if any(nSrc > 1)
+bad = mice(nSrc > 1);
+if ~isempty(bad)
 	error('Fig341:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
-end
+	end
 end
 
 function iAssertNoMouseAppearsInMultipleGroups(T)
 if isempty(T)
 	return;
 end
-[~, ~, g] = unique(T.Mouse);
+[mice, ~, g] = unique(T.Mouse);
 nGrp = splitapply(@(x) numel(unique(x)), T.Group, g);
-if any(nGrp > 1)
+bad = mice(nGrp > 1);
+if ~isempty(bad)
 	error('Fig341:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
-end
+	end
 end

@@ -40,3 +40,5 @@ Temp
 *.tmp
 .vscode/mcp.json
 tools
+resources/2*
+resources/c*
