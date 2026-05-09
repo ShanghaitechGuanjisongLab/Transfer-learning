@@ -21,11 +21,11 @@ if ~exist('UniExp.DataSet','class')
 	end
 end
 
-LAB  = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat');
-ALB  = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v5.mat');
-LAPB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat');
-ALPB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat');
-LAI  = UniExp.DataSet('\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v5.mat');
+LAB  = TransferLearning.LightAudioBaseline();
+ALB  = TransferLearning.AudioLightBaseline();
+LAPB = TransferLearning.LAPureBehavior();
+ALPB = TransferLearning.ALPureBehavior();
+LAI  = TransferLearning.LAInterspersed();
 
 naiveAnchors = ["Naive","Learned"];
 tranAnchors  = ["Transfer","Final"];
@@ -80,19 +80,18 @@ nMatOut(1:size(nMat, 1), :) = nMat;
 
 f = figure('Color', 'w', 'Name', 'Fig1B Learning curve sigmoid');
 f.Units = 'centimeters';
-f.Position(3:4) = [16, 10.5];
-t = tiledlayout(f, 1, 2, 'TileSpacing', 'loose', 'Padding', 'loose');
+f.Position(3:4) = [12, 8];
+t = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 curveColor = [0 0 0];
 axNaive = nexttile(t, 1);
-iPlotGroupMouseCurves(axNaive, displayedNaive, xFit, naiveFitCurve, curveColor, "Naive", fitNaive, true);
+iPlotGroupMouseCurves(axNaive, displayedNaive, xFit, naiveFitCurve, curveColor, "Naive", fitNaive, false);
 
 axTransfer = nexttile(t, 2);
-iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, curveColor, "Continual", fitTransfer, false);
+iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, curveColor, "Continual", fitTransfer, true);
 
 ylabel(axNaive, 'Hit rate', 'FontSize', 12);
-xlabel(axNaive, 'Block', 'FontSize', 12);
-xlabel(axTransfer, 'Block', 'FontSize', 12);
+xlabel(t, 'Block', 'FontSize', 12);
 ylabel(axTransfer, '');
 axTransfer.YAxis.Visible = 'off';
 
@@ -500,16 +499,13 @@ function iPlotGroupMouseCurves(ax, T, xFit, yFit, lineColor, groupName, fitStruc
 	end
 	fitHandle = plot(ax, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.8);
 	if showLegend && ~isempty(mouseHandles)
-		lg = legend(ax, [mouseHandles(1), fitHandle], {'Per-mouse hit rate', 'Sigmoid fit'}, 'Location', 'southoutside');
+		lg = legend(ax, [mouseHandles(1), fitHandle], {'Per-mouse', 'Sigmoid fit'}, 'Location', 'southeast');
 		lg.FontSize = 9;
 		lg.Box = 'off';
-		lg.NumColumns = 2;
+		lg.NumColumns = 1;
 	else
 		legend(ax, 'off');
 	end
-	xlabel(ax, 'Block', 'FontSize', 12);
-	ylim(ax, [0 1.02]);
-	xlim(ax, [1 max(xFit)]);
 	box(ax, 'off');
 	grid(ax, 'off');
 	title(ax, {char(groupName), sprintf('slope=%.3f', fitStruct.Slope)}, 'FontSize', 10, 'FontWeight', 'normal');
@@ -583,7 +579,7 @@ function permOut = iPermutationTestSigmoidSlope(TNaive, TTransfer, nPermutation,
 	observedDiff = fitTransfer.Slope - fitNaive.Slope;
 	permDiff = nan(nPermutation, 1);
 	nNaive = numel(naiveMice);
-	for iPerm = 1:nPermutation
+	parfor iPerm = 1:nPermutation
 		ord = randperm(numel(allMouseTables));
 		idxNaive = ord(1:nNaive);
 		idxTransfer = ord(nNaive+1:end);

@@ -21,11 +21,11 @@
 
 CheckpointEnabled = true;
 ResumeFromCheckpoint = false;       % false starts a fresh run and overwrites this tag's checkpoint.
-CheckpointTag = 'direct_th_mid100_slope8_cuegain70_prehebb950_formhebb500_state030_wcap500_inh10_th220_thnoise035_thr060_noise012_iter006_elig085_ret094_fixedcue_precue017_cue018_ov008_i8'; % change this to keep separate checkpoint lines.
+CheckpointTag = 'direct_th_mid100_slope8_cuegain50_prehebb600_formhebb270_state030_wcap500_inh10_th220_thnoise035_thr060_noise014_iter006_elig085_ret094_initscale082_fixedcue_precue017_cue018_ov008_i12'; % change this to keep separate checkpoint lines.
 PrintCuePretrainDebug = false;     % prints cue-specific vs non-cue L2/3 learning trajectories each pretrain session.
 
 rng('shuffle');
-ParallelComputing.ParPool(6);
+ParallelComputing.ParPool(7);
 spmd
 	if spmdIndex<=gpuDeviceCount
 		gpuDevice(spmdIndex);
@@ -66,11 +66,11 @@ fprintf('Slope vs L2/3 heterogeneity: rho = %.3f, p = %.4g\n', rhoL23, pL23);
 
 f = figure('Color', 'w', 'Name', 'TH inhibitory heterogeneity model');
 f.Units = 'centimeters';
-f.Position(3:4) = [18, 16];
+f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 18, 16];
-f.PaperSize = [18, 16];
+f.PaperPosition = [0, 0, 12, 8];
+f.PaperSize = [12, 8];
 
 tl = tiledlayout(f, 2, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
 
@@ -171,8 +171,7 @@ function Params = iDefaultParams()
 % internal matrix plus the per-cell
 % inhibitory gain in L23/L5RewardRecv areas.
 Params.UseGPU = gpuDeviceCount > 0;
-Params.GPUPrecision = 'double';
-Params.NumMice = 6;
+Params.NumMice = 7;
 Params.NumSessions = 8;
 Params.NumTrials = 30;
 Params.NL23 = 96;
@@ -186,13 +185,13 @@ Params.NIInternal = Params.NIL23 + Params.NIL5RewardRecv;
 Params.NInternal = Params.NL23L5 + Params.NIInternal;
 Params.RateResponseSlope = 8.00;
 Params.RateResponseMidpoint = 1.00;
-Params.NoiseInput = 0.12;           % shared cue/reward input noise scale
+Params.NoiseInput = 0.14;           % shared cue/reward input noise scale
 Params.NoiseRead = 0.08;
 Params.IterationNoise = 0.06;
 Params.Comp_Cue = 0.95;
 Params.Comp_Rew = 1.15;
 % Input gains
-Params.CueL23Gain = 7.00;           % shared direct L2/3 cue drive (pretraining + formal task)
+Params.CueL23Gain = 5.00;           % shared direct L2/3 cue drive (pretraining + formal task)
 Params.THRewardInputGain = 2.20;     % post-decision TH reward mode during learning phase
 Params.THNoiseInputGain = 0.35;      % unstructured reward-mode TH input in the TH-inhibited group
 Params.ReadInputGain = 1.45;         % readout pattern clamp amplitude (learning phase only)
@@ -211,7 +210,7 @@ Params.SlopeHitPerfect = 1.00;
 Params.WCap = 5.00;
 Params.WeightMapSlope = 1.00;
 Params.InitRecurrentAccumulatorChiSquareDof = 1;
-Params.InitRecurrentAccumulatorScale = 1.00;
+Params.InitRecurrentAccumulatorScale = 0.82;
 Params.InhOutputWCap = 10 * Params.WCap;
 % Number of recurrent internal passes after external cue/reward/readout drive.
 Params.InternalRecurrentPasses = 4;
@@ -221,8 +220,8 @@ Params.StateCarryover = 0.30;       % fraction of previous internal state retain
 % than formal cue learning so the schema forms without making the first formal
 % cue-training unit too high.
 Params.HebbRate = 6.00;
-Params.PretrainHebbRate = 9.50;
-Params.FormalHebbRate = 5.00;
+Params.PretrainHebbRate = 6.00;
+Params.FormalHebbRate = 2.70;
 Params.BaselineQuietIterations = 40;
 Params.MaxBaselineIterations = 500;
 % Eligibility traces let current reward/readout feedback update recently
@@ -2681,7 +2680,7 @@ if isscalar(sz)
 	sz = [sz, 1];
 end
 if iUseGPU(Params)
-	values = gpuArray.randn(sz(1), sz(2), Params.GPUPrecision);
+	values = gpuArray.randn(sz(1), sz(2));
 else
 	values = randn(sz);
 end
@@ -2692,7 +2691,7 @@ if isscalar(sz)
 	sz = [sz, 1];
 end
 if iUseGPU(Params)
-	values = gpuArray.rand(sz(1), sz(2), Params.GPUPrecision);
+	values = gpuArray.rand(sz(1), sz(2));
 else
 	values = rand(sz);
 end
@@ -2703,7 +2702,7 @@ if isscalar(sz)
 	sz = [sz, 1];
 end
 if iUseGPU(Params)
-	values = gpuArray.zeros(sz(1), sz(2), Params.GPUPrecision);
+	values = gpuArray.zeros(sz(1), sz(2));
 else
 	values = zeros(sz);
 end
