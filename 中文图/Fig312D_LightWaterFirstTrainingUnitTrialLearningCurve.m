@@ -1,4 +1,4 @@
-﻿% Fig312A：光水初始/迁移学习曲线 + 首会话条形图
+% Fig312D：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -36,22 +36,27 @@ iAssertNoCrossSourceDuplicateMice(tran,  "Transfer");
 allSessions = [naive; tran];
 iAssertNoMouseAppearsInMultipleGroups(allSessions);
 if isempty(allSessions)
-	error('Fig32A:EmptyData', 'No LightWater blocks found.');
+	error('Fig312D:EmptyData', 'No LightWater sessions found.');
 end
 
 allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
 allSessions = iAddSessionIndex(allSessions);
+firstSessions = allSessions(allSessions.Session == 1, :);
 
-sessionForSummary = allSessions(:, ["Mouse","DateTime","Performance","Group"]);
-sessionForSummary.Group = string(sessionForSummary.Group);
-sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
+trialRows = [
+	iLightWaterTrialsForSessions(LAB,  "LightAudioBaseline", firstSessions);
+	iLightWaterTrialsForSessions(LAPB, "LAPureBehavior",     firstSessions);
+	iLightWaterTrialsForSessions(LAI,  "LAInterspersed",     firstSessions);
+	iLightWaterTrialsForSessions(ALB,  "AudioLightBaseline", firstSessions);
+	iLightWaterTrialsForSessions(ALPB, "ALPureBehavior",     firstSessions)];
+if isempty(trialRows)
+	error('Fig312D:EmptyTrials', 'No first training-unit LightWater trials found.');
+end
+trialRows = sortrows(trialRows, ["Group","Mouse","DateTime","Trial"]);
 
-PValueLS = nan;
-[~, SummaryL] = evalc('UniExp.LearningSummarize(sessionForSummary)');
-[meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["Naive","Transfer"]);
-nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
+[meanMat, semMat, x, nMat] = iSummarizeTrialCurve(trialRows, ["Naive","Transfer"]);
 
-f = figure('Color','w', 'Name', 'Fig312A LightWater learning curve');
+f = figure('Color','w', 'Name', 'Fig312D LightWater first training-unit trial curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
@@ -72,20 +77,20 @@ for p = patches(:)'
 	end
 end
 
-curveP = iLearningCurvePValue(allSessions, PValueLS);
+curveP = iLearningCurvePValue(trialRows);
 
 labels = {'Naive', 'Continual'};
 if numel(patches) >= 2
-	lg = legend(ax, patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(patches(1:2)));
+	lg = legend(ax, patches(1:2), labels, 'Location', 'southeastoutside');
 else
-	lg = legend(ax, labels, 'Location', 'best');
+	lg = legend(ax, labels, 'Location', 'southeastoutside');
 end
 lg.FontSize = 12;
 lg.Box = 'off';
 lg.Title.String = '💡💧';
 lg.Title.FontSize = 12;
 
-xlabel(ax, 'Block', 'FontSize', 12);
+xlabel(ax, 'Trial', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
@@ -94,28 +99,28 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312A_LightWater_LearningCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312D_LightWater_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
-summaryCurve.Block = x(:);
+summaryCurve.Trial = x(:);
 summaryCurve.NaiveMean = meanMat(:,1);
 summaryCurve.TransferMean = meanMat(:,2);
 summaryCurve.NaiveSem = semMat(:,1);
 summaryCurve.TransferSem = semMat(:,2);
 summaryCurve.NaiveN = nMat(:,1);
 summaryCurve.TransferN = nMat(:,2);
-summaryCurve.PLearningSummarize(:) = curveP;
-assignin('base', 'Fig32A_LightWaterLearningCurve_Raw', allSessions);
-assignin('base', 'Fig32A_LightWaterLearningCurve_Summary', summaryCurve);
+summaryCurve.PMixedEffect(:) = curveP;
+assignin('base', 'Fig312D_LightWaterFirstTrainingUnitTrial_Raw', trialRows);
+assignin('base', 'Fig312D_LightWaterFirstTrainingUnitTrial_Summary', summaryCurve);
 
-firstSess = allSessions(allSessions.Session == 1, :);
-naiveFirst = double(firstSess.Performance(string(firstSess.Group) == "Naive"));
-tranFirst  = double(firstSess.Performance(string(firstSess.Group) == "Transfer"));
+firstTrial = trialRows(trialRows.Trial == 1, :);
+naiveFirst = double(firstTrial.Behavior(firstTrial.Group == "Naive"));
+tranFirst  = double(firstTrial.Behavior(firstTrial.Group == "Transfer"));
 naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
 
-f2 = figure('Color','none', 'Name', 'Fig312A LightWater first-session performance');
+f2 = figure('Color','none', 'Name', 'Fig312D LightWater first-trial performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
@@ -150,33 +155,30 @@ if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompar
 		pl.LineWidth = 2;
 	end
 end
-for eb = errorBars2.Object(:)'
-	eb.LineWidth = 2;
-end
 
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
+iKeepUpperErrorBarOnly(ax2, errorBars2, bars2, edgeColors(1,:), edgeColors(2,:));
 ax2.XLim = [0.5, 2.5];
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
-title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
+title(ax2, 'First trial', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312A_LightWater_FirstSessionPerformance.svg');
+svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312D_LightWater_FirstTrialPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
-firstSessionTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
-firstSessionTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
-firstSessionTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
-assignin('base', 'Fig32A_LightWater_FirstSession', firstSessionTable);
+firstTrialTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
+firstTrialTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
+firstTrialTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
+assignin('base', 'Fig312D_LightWater_FirstTrial', firstTrialTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
-T = iQueryLightWaterBehaviorAll(DS);
+T = iQueryLightWaterTrialsAll(DS);
 if isempty(T)
-	out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), strings(0,1), ...
-		'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
+	out = iEmptySessionTable();
 	return;
 end
 T.Mouse = string(T.Mouse);
@@ -190,10 +192,9 @@ end
 
 function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imagingCohort, startPhase, endPhase)
 badMice = iFindMiceWithAudioWaterInPhase(DS, "Naive");
-T = iQueryLightWaterBehaviorAll(DS);
+T = iQueryLightWaterTrialsAll(DS);
 if isempty(T)
-	out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), strings(0,1), ...
-		'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
+	out = iEmptySessionTable();
 	return;
 end
 T.Mouse = string(T.Mouse);
@@ -208,19 +209,39 @@ T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
 out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
 end
 
-function T = iQueryLightWaterBehaviorAll(DS)
-varsTry = ["Mouse","DateTime","Stimulus","Phase","Behavior"];
-varsFallback = ["Mouse","DateTime","Stimulus","Phase","Performance"];
-try
-	T = DS.TableQuery(varsTry, Stimulus="LightWater");
-catch
-	T = DS.TableQuery(varsFallback, Stimulus="LightWater");
-end
+function T = iQueryLightWaterTrialsAll(DS)
+T = DS.TableQuery(["Mouse","DateTime","Stimulus","Phase","Behavior","TrialIndex"], Stimulus="LightWater");
 if isempty(T)
 	return;
 end
 T.Stimulus = string(T.Stimulus);
 T = T(T.Stimulus == "LightWater", :);
+end
+
+function out = iLightWaterTrialsForSessions(DS, sourceName, sessions)
+out = iEmptyTrialTable();
+sessions = sessions(sessions.Source == string(sourceName), :);
+if isempty(sessions)
+	return;
+end
+T = iQueryLightWaterTrialsAll(DS);
+if isempty(T)
+	return;
+end
+T.Mouse = string(T.Mouse);
+T.DateTime = iNormalizeDateTime(T.DateTime);
+T.Source = repmat(string(sourceName), height(T), 1);
+T.Behavior = double(T.Behavior);
+T.TrialIndex = double(T.TrialIndex);
+S = sessions(:, {'Mouse','DateTime','Source','Group'});
+S.Mouse = string(S.Mouse);
+S.Source = string(S.Source);
+S.Group = string(S.Group);
+S.DateTime = iNormalizeDateTime(S.DateTime);
+out = innerjoin(T(:, {'Mouse','DateTime','Behavior','TrialIndex','Source'}), S, 'Keys', {'Mouse','DateTime','Source'});
+out = sortrows(out, {'Group','Mouse','DateTime','TrialIndex'});
+out = out(:, {'Mouse','DateTime','Behavior','TrialIndex','Source','Group'});
+out.Trial = iTrialNumberWithinSession(out);
 end
 
 function dt = iNormalizeDateTime(dt)
@@ -231,27 +252,18 @@ end
 end
 
 function S = iSessionizeByDateTime(T)
-useBehavior = ismember('Behavior', string(T.Properties.VariableNames));
+T = T(:, {'Mouse','DateTime','Behavior','Phase'});
+T.Mouse = string(T.Mouse);
 if ~ismember('Phase', T.Properties.VariableNames)
 	T.Phase = repmat(missing, height(T), 1);
 end
-if useBehavior
-	T = T(:, {'Mouse','DateTime','Behavior','Phase'});
-else
-	T = T(:, {'Mouse','DateTime','Performance','Phase'});
-end
-T.Mouse = string(T.Mouse);
 T = sortrows(T, {'Mouse','DateTime'});
-if useBehavior
-	val = double(T.Behavior);
-else
-	val = double(T.Performance);
-end
-[G, mouseKeys, dtKeys] = findgroups(T.Mouse, T.DateTime);
+val = double(T.Behavior);
+[G, mouseNames, dateTimes] = findgroups(T.Mouse, T.DateTime);
 perf = splitapply(@(x) mean(x, 'omitnan'), val, G);
 nBlocks = splitapply(@(x) sum(isfinite(x)), val, G);
 phaseSession = splitapply(@(x) iPickSessionPhase(x), string(T.Phase), G);
-S = table(mouseKeys, dtKeys, perf, nBlocks, phaseSession, 'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession','Phase'});
+S = table(mouseNames, dateTimes, perf, nBlocks, phaseSession, 'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession','Phase'});
 end
 
 function ph = iPickSessionPhase(phases)
@@ -305,7 +317,7 @@ T.Source = string(T.Source);
 nSrc = splitapply(@(x) numel(unique(string(x))), T.Source, G);
 dup = mice(nSrc > 1);
 if ~isempty(dup)
-	error('Fig32A:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
+	error('Fig312D:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
 end
 end
 
@@ -316,7 +328,7 @@ T.Group = string(T.Group);
 nG = splitapply(@(x) numel(unique(string(x))), T.Group, G);
 dup = mice(nG > 1);
 if ~isempty(dup)
-	error('Fig32A:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
+	error('Fig312D:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
 end
 end
 
@@ -328,82 +340,50 @@ sessCell = splitapply(@(x) {(1:numel(x))'}, T.DateTime, G);
 T.Session = vertcat(sessCell{:});
 end
 
-function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
+function trialNumber = iTrialNumberWithinSession(T)
+[G, ~] = findgroups(T.Group, T.Mouse, T.DateTime);
+trialCell = splitapply(@(x) {(1:numel(x))'}, T.TrialIndex, G);
+trialNumber = vertcat(trialCell{:});
+end
+
+function [meanMat, semMat, x, nMat] = iSummarizeTrialCurve(T, groupOrder)
 groupOrder = string(groupOrder);
-meanCells = SummaryL.MeanCurve(:);
-semCells = SummaryL.SemCurve(:);
-if ~isempty(SummaryL.Properties.RowNames)
-	rn = string(SummaryL.Properties.RowNames);
-else
-	rn = strings(numel(meanCells),1);
-end
-idx = nan(1, numel(groupOrder));
-for k = 1:numel(groupOrder)
-	ix = find(rn == groupOrder(k), 1, 'first');
-	if isempty(ix) && k <= numel(meanCells)
-		ix = k;
-	end
-	idx(k) = ix;
-end
-maxLen = 0;
-for k = 1:numel(groupOrder)
-	if isfinite(idx(k))
-		maxLen = max(maxLen, numel(meanCells{idx(k)}));
-	end
-end
-meanMat = nan(maxLen, numel(groupOrder));
-semMat = nan(maxLen, numel(groupOrder));
-for k = 1:numel(groupOrder)
-	if isfinite(idx(k))
-		mv = double(meanCells{idx(k)}(:));
-		sv = double(semCells{idx(k)}(:));
-		meanMat(1:numel(mv),k) = mv;
-		semMat(1:numel(sv),k) = sv;
-	end
-end
-x = (1:maxLen).';
-end
-
-function nMat = iComputeNBySession(T, x, groups)
-nMat = zeros(numel(x), numel(groups));
-for g = 1:numel(groups)
-	rowsG = string(T.Group) == string(groups(g));
-	for s = 1:numel(x)
-		rowsS = rowsG & (double(T.Session) == s) & isfinite(double(T.Performance));
-		if any(rowsS)
-			nMat(s,g) = numel(unique(string(T.Mouse(rowsS))));
+maxTrial = max(double(T.Trial), [], 'omitnan');
+x = (1:maxTrial).';
+meanMat = nan(maxTrial, numel(groupOrder));
+semMat = nan(maxTrial, numel(groupOrder));
+nMat = zeros(maxTrial, numel(groupOrder));
+for iGroup = 1:numel(groupOrder)
+	for iTrial = 1:maxTrial
+		rows = T.Group == groupOrder(iGroup) & double(T.Trial) == iTrial;
+		vals = double(T.Behavior(rows));
+		vals = vals(isfinite(vals));
+		if isempty(vals)
+			continue;
 		end
+		meanMat(iTrial, iGroup) = mean(vals);
+		semMat(iTrial, iGroup) = std(vals) / sqrt(numel(vals));
+		nMat(iTrial, iGroup) = numel(unique(string(T.Mouse(rows))));
 	end
 end
 end
 
-function stats = iFitMixedEffectPValue(T)
-stats = struct('PGroup', nan, 'PInteraction', nan);
-use = isfinite(double(T.Performance)) & isfinite(double(T.Session));
+function p = iLearningCurvePValue(T)
+p = NaN;
+use = isfinite(double(T.Behavior)) & isfinite(double(T.Trial));
 if nnz(use) < 10
 	return;
 end
-Tbl = table(double(T.Performance(use)), double(T.Session(use)), categorical(string(T.Group(use)), ["Naive","Transfer"]), categorical(string(T.Mouse(use))), 'VariableNames', {'Performance','Session','Group','Mouse'});
-lme = fitlme(Tbl, 'Performance ~ Session*Group + (1|Mouse)');
+Tbl = table(double(T.Behavior(use)), double(T.Trial(use)), categorical(string(T.Group(use)), ["Naive","Transfer"]), categorical(string(T.Mouse(use))), 'VariableNames', {'Behavior','Trial','Group','Mouse'});
+lme = fitlme(Tbl, 'Behavior ~ Trial*Group + (1|Mouse)');
 A = anova(lme);
 rowG = find(string(A.Term) == "Group", 1, 'first');
-rowI = find(string(A.Term) == "Session:Group", 1, 'first');
+rowI = find(string(A.Term) == "Trial:Group", 1, 'first');
 if ~isempty(rowG)
-	stats.PGroup = A.pValue(rowG);
+	p = A.pValue(rowG);
 end
-if ~isempty(rowI)
-	stats.PInteraction = A.pValue(rowI);
-end
-end
-
-function p = iLearningCurvePValue(T, pFromSummary)
-p = pFromSummary;
-if ~isfinite(p)
-	stats = iFitMixedEffectPValue(T);
-	p = stats.PGroup;
-	if ~isfinite(p)
-		p = stats.PInteraction;
-	end
+if ~isfinite(p) && ~isempty(rowI)
+	p = A.pValue(rowI);
 end
 end
 
@@ -452,4 +432,73 @@ else
 	barsObj(1).FaceAlpha = 1/3;
 	barsObj(2).FaceAlpha = 1/3;
 end
+end
+
+function iKeepUpperErrorBarOnly(ax, errorBars, barsObj, colorNaive, colorTransfer)
+spec = iBarSpecs(barsObj, colorNaive, colorTransfer);
+for eb = errorBars.Object(:)'
+	if ~isgraphics(eb)
+		continue;
+	end
+	if ~isprop(eb, 'XData') || ~isprop(eb, 'YData') || ~isprop(eb, 'YPositiveDelta')
+		continue;
+	end
+	x = eb.XData(:);
+	y = eb.YData(:);
+	up = eb.YPositiveDelta(:);
+	delete(eb);
+	capWidth = 0.32;
+	valid = isfinite(x) & isfinite(y) & isfinite(up) & up > 0;
+	for i = find(valid)'
+		color = iColorForBarX(x(i), spec, colorNaive);
+		v = line(ax, [x(i) x(i)], [y(i) y(i) + up(i)], 'Color', color, 'LineWidth', 2, 'HandleVisibility', 'off');
+		h = line(ax, [x(i) - capWidth/2 x(i) + capWidth/2], [y(i) + up(i) y(i) + up(i)], 'Color', color, 'LineWidth', 2, 'HandleVisibility', 'off');
+		setappdata(v, 'TransferLearningPreserveLineWidth', true);
+		setappdata(h, 'TransferLearningPreserveLineWidth', true);
+	end
+end
+end
+
+function spec = iBarSpecs(barsObj, colorNaive, colorTransfer)
+if isscalar(barsObj)
+	if isprop(barsObj, 'XEndPoints')
+		x = barsObj.XEndPoints(:);
+	else
+		x = (1:numel(barsObj.YData))';
+	end
+	nBar = numel(x);
+	colors = repmat([colorNaive; colorTransfer], ceil(nBar / 2), 1);
+	colors = colors(1:nBar, :);
+else
+	x = nan(numel(barsObj), 1);
+	for i = 1:numel(barsObj)
+		if isprop(barsObj(i), 'XEndPoints') && ~isempty(barsObj(i).XEndPoints)
+			x(i) = barsObj(i).XEndPoints(1);
+		else
+			x(i) = i;
+		end
+	end
+	colors = [colorNaive; colorTransfer];
+	colors = colors(1:numel(x), :);
+end
+spec = table(x, colors, 'VariableNames', {'X', 'Color'});
+end
+
+function color = iColorForBarX(x, spec, fallback)
+if isempty(spec)
+	color = fallback;
+	return;
+end
+[~, idx] = min(abs(spec.X - x));
+color = spec.Color(idx, :);
+end
+
+function out = iEmptySessionTable()
+out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), strings(0,1), ...
+	'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
+end
+
+function out = iEmptyTrialTable()
+out = table(string.empty(0,1), NaT(0,1), nan(0,1), nan(0,1), strings(0,1), strings(0,1), nan(0,1), ...
+	'VariableNames', {'Mouse','DateTime','Behavior','TrialIndex','Source','Group','Trial'});
 end

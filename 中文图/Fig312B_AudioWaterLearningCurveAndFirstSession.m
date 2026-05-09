@@ -70,16 +70,6 @@ for p = patches(:)'
 end
 
 curveP = iLearningCurvePValue(allSessions, PValueLS);
-if isfinite(curveP) && numel(x) >= 2
-	y1At2 = meanMat(2, 1);
-	y2At2 = meanMat(2, 2);
-	if isfinite(y1At2) && isfinite(y2At2)
-		yMid = (y1At2 + y2At2) / 2;
-		yHalfLen = abs(y1At2 - y2At2) / 4;
-		plot(ax, [2 2], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 2, 'HandleVisibility', 'off');
-		text(ax, 2.1, yMid, iPToStars(curveP), 'FontSize', 12, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'HandleVisibility', 'off');
-	end
-end
 
 labels = {'Naive', 'Continual'};
 if numel(patches) >= 2
@@ -101,12 +91,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-outDir = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-if ~isfolder(outDir)
-	mkdir(outDir);
-end
-svgPath = fullfile(outDir, '中文图Fig312B_AudioWater_LearningCurve.svg');
-svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312B_AudioWater_LearningCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -175,8 +160,7 @@ grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = fullfile(outDir, '中文图Fig312B_AudioWater_FirstSessionPerformance.svg');
-svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2);
+svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312B_AudioWater_FirstSessionPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
@@ -409,20 +393,6 @@ for j = 1:nLines
 		sCells{j} = s(1:last);
 		xCells{j} = (1:last).';
 	end
-end
-end
-
-function stars = iPToStars(p)
-if ~isfinite(p)
-	stars = 'n.s.';
-elseif p < 0.001
-	stars = '***';
-elseif p < 0.01
-	stars = '**';
-elseif p < 0.05
-	stars = '*';
-else
-	stars = 'n.s.';
 end
 end
 
