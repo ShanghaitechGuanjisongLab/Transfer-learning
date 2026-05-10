@@ -1,9 +1,12 @@
 %{
-调参提示：
+调参逻辑：
+行为由线索输入和recurrent强度两个部分支撑。recurrent强度会在不同线索间共享，而不同线索之间的相似性可调。
+提高响应中点和斜率、可塑性资格残留、线索强度、抑制性突触预算总量，可以提高线索输入占比，降低recurrent。但是会遇到兴奋性预算总量的限制
 提高信噪比比较干净的指标是：响应中点和斜率、可塑性资格残留、线索强度、抑制性突触预算总量。但是这些参数各自都存在效应瓶颈，通常不能指望调其中一个就解决问题。
-直接提高学习速度的指标包括：命中阈值、兴奋性突触预算总量、HebbRate、StateCarryover。调这些指标提高学习速度最有效，但可能降低信噪比，导致基线压不下去或者Transfer首个训练单元成功率过高。此外，HebbRate和StateCarryover还可能遇到兴奋性输出总量不足的瓶颈。
+直接提高学习速度的指标包括：命中阈值、兴奋性突触预算总量、HebbRate、StateCarryover。调这些指标提高学习速度最有效，但可能提高recurrent，降低信噪比，导致基线压不下去或者Transfer首个训练单元成功率过高。此外，HebbRate和StateCarryover还可能遇到兴奋性输出总量不足的瓶颈。
 因此你需要在调参过程中积极诊断，根据当前的核心瓶颈，选择正确的调参方向。
 但是，信噪比过高又可能导致Transfer学不会。除此之外，两种线索差异过大、初始权重分布过于奇异也是一种可能原因。
+需要缩小Naive和Transfer差距（调参遇到两组指标互相冲突），应当考虑的方向是降低噪音和recurrent，以及提高两种线索的差异，而不是再去纠结那些同时影响Naive和Transfer的参数。
 %}
 % THInhibitoryHeterogeneitySimulation
 %
@@ -21,13 +24,13 @@
 
 CheckpointEnabled = true;
 ResumeFromCheckpoint = false;       % false starts a fresh run and overwrites this tag's checkpoint.
-CheckpointTag = 'direct_th_mid100_slope8_cuegain40_prehebb900_formhebb300_state030_wcap500_inh10_th220_thnoise010_thr060_noise014_iter006_elig085_ret094_initscale082_teacher3_fixedcue_precue017_cue018_ov008_i20'; % change this to keep separate checkpoint lines.
+CheckpointTag = 'direct_th_i55_th480_form365_ret084_drift016_dof4_scale060_state030_wcap550_thnoise030'; % change this to keep separate checkpoint lines.
 CheckpointDir = fullfile(fileparts(mfilename('fullpath')), 'resources', 'checkpoints');
 CheckpointVersion = 2;
 PrintCuePretrainDebug = false;     % prints cue-specific vs non-cue L2/3 learning trajectories each pretrain session.
 
 rng('shuffle');
-ParallelComputing.ParPool(8);
+ParallelComputing.ParPool(10);
 spmd
 	if spmdIndex<=gpuDeviceCount
 		gpuDevice(spmdIndex);
@@ -60,26 +63,30 @@ fprintf('\n=== Simulated cohort summary ===\n');
 for iCond = 1:height(Cond)
 	name = Cond.Name(iCond);
 	perf = Summary.Performance.(name);
-	slope = Summary.PerMouse.(name).Slope;
+	groupSlope = Summary.GroupSlope.Slope(Summary.GroupSlope.Condition == name);
 	dh = Summary.PerMouse.(name).MeanDeltaHit;
 	rewardReadoutSimilarity = Summary.PerMouse.(name).RewardReadoutFinal;
 	fprintf('%s: first-session hit = %.3f, last-session hit = %.3f\n', name, mean(perf(:, 1), 'omitnan'), mean(perf(:, end), 'omitnan'));
 	fprintf('%s: mean process L2/3 heterogeneity = %.3f, mean process L5 heterogeneity = %.3f\n', name, mean(Summary.PerMouse.(name).MeanH23, 'omitnan'), mean(Summary.PerMouse.(name).MeanH5, 'omitnan'));
-	fprintf('%s: mean slope = %.3f, mean DeltaHit = %.3f\n', name, mean(slope, 'omitnan'), mean(dh, 'omitnan'));
+	fprintf('%s: group sigmoid slope = %.3f, mean DeltaHit = %.3f\n', name, groupSlope, mean(dh, 'omitnan'));
 	fprintf('%s: mean reward-to-readout similarity = %.3f, below decision threshold = %d/%d\n', name, mean(rewardReadoutSimilarity, 'omitnan'), sum(rewardReadoutSimilarity < Params.HitThreshold | ~isfinite(rewardReadoutSimilarity)), numel(rewardReadoutSimilarity));
 end
-[rhoL23, pL23] = corr(Summary.CorrMouse.MeanH23, Summary.CorrMouse.Slope, 'Type', 'Spearman', 'Rows', 'complete');
-fprintf('Slope vs L2/3 heterogeneity: rho = %.3f, p = %.4g\n', rhoL23, pL23);
+fprintf('\n=== Group-slope permutation tests ===\n');
+for iPerm = 1:height(Summary.SlopePermutation)
+	fprintf('%s - %s: diff = %.3f, %s (%d permutations)\n', ...
+		Summary.SlopePermutation.GroupB(iPerm), Summary.SlopePermutation.GroupA(iPerm), ...
+		Summary.SlopePermutation.ObservedDifference(iPerm), iFormatPValue(Summary.SlopePermutation.PValue(iPerm)), Summary.SlopePermutation.NPermutation(iPerm));
+end
 
 f = figure('Color', 'w', 'Name', 'TH inhibitory heterogeneity model');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 8];
+f.Position(3:4) = [15, 5.5];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 12, 8];
-f.PaperSize = [12, 8];
+f.PaperPosition = [0, 0, 15, 5.5];
+f.PaperSize = [15, 5.5];
 
-tl = tiledlayout(f, 2, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 3, 'TileSpacing', 'loose', 'Padding', 'compact');
 
 colors = Cond.Color;
 xSess = (1:Params.NumSessions)';
@@ -99,43 +106,22 @@ ylim(ax1, [0, 1]);
 
 ax2 = nexttile(tl, 2);
 hold(ax2, 'on');
-for iCond = 1:height(Cond)
-	mask = Summary.CorrMouse.Condition == Cond.Name(iCond);
-	scatter(ax2, Summary.CorrMouse.MeanH23(mask), Summary.CorrMouse.Slope(mask), 20, colors(iCond, :), 'filled', ...
-		'MarkerFaceAlpha', 0.55, 'MarkerEdgeColor', colors(iCond, :), 'LineWidth', 0.2);
-end
-allUse = isfinite(Summary.CorrMouse.MeanH23) & isfinite(Summary.CorrMouse.Slope);
-fitP23 = polyfit(Summary.CorrMouse.MeanH23(allUse), Summary.CorrMouse.Slope(allUse), 1);
-xFit23 = linspace(min(Summary.CorrMouse.MeanH23(allUse)), max(Summary.CorrMouse.MeanH23(allUse)), 50);
-plot(ax2, xFit23, polyval(fitP23, xFit23), '-', 'Color', [0, 0.6809, 0], 'LineWidth', 2, 'HandleVisibility', 'off');
+iStripMeanSem(ax2, Summary.PerMouse, Cond, 'MeanH5');
+iAnnotateMetricStats(ax2, Summary.PerMouse, Cond, 'MeanH5');
 iStyleScatterPanel(ax2);
-xlabel(ax2, 'Learning-process L2/3 heterogeneity', 'FontSize', 12);
-ylabel(ax2, 'Subsequent learning slope', 'FontSize', 12);
-title(ax2, 'Slope vs L2/3 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
-text(ax2, 0.97, 0.97, iPLabel(pL23, rhoL23), 'Units', 'normalized', 'HorizontalAlignment', 'right', ...
-	'VerticalAlignment', 'top', 'FontSize', 12);
+xlabel(ax2, '', 'FontSize', 12);
+ylabel(ax2, 'Mean L5 heterogeneity', 'FontSize', 12);
+title(ax2, 'L5 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
+ax2.XTickLabel = {};
+ax2.XTickLabelRotation = 0;
 
 ax3 = nexttile(tl, 3);
 hold(ax3, 'on');
-iStripMeanSem(ax3, Summary.PerMouse, Cond, 'MeanH5');
-iAnnotateMetricStats(ax3, Summary.PerMouse, Cond, 'MeanH5');
+iSlopeBar(ax3, Summary.GroupSlope, Summary.SlopePermutation, Cond);
 iStyleScatterPanel(ax3);
 xlabel(ax3, '', 'FontSize', 12);
-ylabel(ax3, 'Mean L5 heterogeneity', 'FontSize', 12);
-title(ax3, 'L5 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
-ax3.XTickLabel = {};
-ax3.XTickLabelRotation = 0;
-
-ax4 = nexttile(tl, 4);
-hold(ax4, 'on');
-iStripMeanSem(ax4, Summary.PerMouse, Cond, 'Slope');
-iAnnotateMetricStats(ax4, Summary.PerMouse, Cond, 'Slope');
-iStyleScatterPanel(ax4);
-xlabel(ax4, '', 'FontSize', 12);
-ylabel(ax4, 'Learning slope', 'FontSize', 12);
-title(ax4, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
-ax4.XTickLabel = {};
-ax4.XTickLabelRotation = 0;
+ylabel(ax3, 'Learning slope', 'FontSize', 12);
+title(ax3, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
 
 lgd = legend(ax1, perfLines(1:height(Cond)), cellstr(Cond.Label), 'Location', 'north', 'Box', 'off', 'FontSize', 12, 'Orientation', 'horizontal', 'NumColumns', 3);
 lgd.Layout.Tile = 'north';
@@ -179,12 +165,14 @@ function Params = iDefaultParams()
 % inhibitory gain in L23/L5RewardRecv areas.
 
 % ===== 硬性实验设计和算法结构：调参时不改 =====
-Params.NumMice = 8;
+Params.NumMice = 10;
 Params.NumSessions = 8;
 Params.NumTrials = 30;
 Params.InternalRecurrentPasses = 5; % 硬性标准，不作为调参旋钮。
 
 % ===== 可调模型规模参数 =====
+%这些参数普遍降低鼠间差异，降低学习速度，降低信噪比，提高recurrent
+
 Params.NL23 = 96;
 Params.NL5Read = 64;
 Params.NL5RewardRecv = 2 * Params.NL5Read;
@@ -198,64 +186,92 @@ Params.NInternal = Params.NL23L5 + Params.NIInternal;
 % ===== 硬性验收、停止和汇总门槛：调参时不放宽 =====
 Params.Ceiling = 1.00;
 Params.FirstCueTrainingNaiveMax = 0.40;
-Params.FirstCueTrainingTransferMax = 0.80;
+Params.FirstCueTrainingNonNaiveMin = 0.30;
+Params.FirstCueTrainingNonNaiveMax = 0.80;
 % SlopeHitPerfect marks the first perfect-hit session used to close the
-% learning-process summary window; reported Slope is the sigmoid rate fitted
-% with the Chinese Fig313A method.
+% learning-process summary window; reported group Slope is fitted once from
+% all mice/sessions with the Chinese Fig313A method.
 Params.SlopeHitPerfect = 1.00;
+Params.SlopePermutationCount = 10000;
+Params.SlopePermutationSeed = 1;
 Params.BaselineQuietIterations = 40;
 Params.MaxBaselineIterations = 500;
 Params.MaxPretrainSessions = 8;
 Params.PostCeilingSessions = 1;
 
 % ===== 可调模型动力学参数 =====
-Params.RateResponseSlope = 8.00;
-Params.RateResponseMidpoint = 1.00;
-Params.NoiseInput = 0.14;           % shared cue/reward input noise scale
-Params.NoiseRead = 0.08;
-Params.IterationNoise = 0.06;
-Params.Comp_Cue = 0.95;
-Params.Comp_Rew = 1.15;
+%信噪比与recurrent是反向指标。recurrent越高，Transfer首单元命中率越高。大部分参数单一调整时都边际收益递减。
+
+%提高信噪比，降低recurrent
+Params.RateResponseSlope = 11.00;
+Params.RateResponseMidpoint = 1.02;
+
+%提高recurrent，降低信噪比
+Params.NoiseInput = 0.045;          % shared cue/reward input noise scale
+Params.NoiseRead = 0.035;
+Params.IterationNoise = 0.018;
+
 % Decision readout: initial input noise creates trial-to-trial variability,
 % and a hit is emitted when the readout pattern similarity crosses HitThreshold.
+%降低学习速度，提高recurrent，降低信噪比。提高baseline压制力。
 Params.HitThreshold = 0.60;
+
 % Input gains
-Params.CueL23Gain = 4.00;           % shared direct L2/3 cue drive (pretraining + formal task)
-Params.THRewardInputGain = 2.20;     % post-decision TH reward mode during learning phase
-Params.THNoiseInputGain = 0.10;      % unstructured reward-mode TH input in the TH-inhibited group
-Params.ReadInputGain = 1.45;         % readout pattern clamp amplitude (learning phase only)
+%提高信噪比，降低recurrent，提高学习速度
+Params.CueL23Gain = 10.00;          % shared direct L2/3 cue drive (pretraining + formal task)
+
+%提高学习速度，提高recurrent，降低信噪比。提高Transfer-THOff差异。
+Params.THRewardInputGain = 4.80;     % post-decision TH reward mode during learning phase
+Params.THNoiseInputGain = 0.030;     % unstructured reward-mode TH input in the TH-inhibited group
+
 % Plastic synaptic accumulators are nonnegative outgoing allocation pools.
 % Each active upstream cell sends a fixed total output scale, distributed to
 % downstream cells in proportion to the downstream accumulator values.
-Params.WCap = 5.00;
-Params.WeightMapSlope = 1.00;
-Params.InitRecurrentAccumulatorChiSquareDof = 1;
-Params.InitRecurrentAccumulatorScale = 0.82;
-Params.InhOutputWCap = 10 * Params.WCap;
+
+%提高学习速度，太高或太低都降低信噪比、提高recurrent
+Params.WCap = 5.50;
+
+%降低鼠间差异，提高初始权重
+Params.InitRecurrentAccumulatorChiSquareDof = 4;
+
+%提高鼠间差异，提高初始权重
+Params.InitRecurrentAccumulatorScale = 0.60;
+
+%减慢学习速度，提高信噪比，降低recurrent。
+Params.InhOutputWCap = 12 * Params.WCap;
+
+%提高recurrent，降低信噪比，提高学习速度
 Params.StateCarryover = 0.30;       % fraction of previous internal state retained across recurrent passes
+
 Params.TeacherReadoutPasses = 3;
+
 % Stage-specific per-trial Hebbian learning rates. Pretraining remains faster
 % than formal cue learning so the schema forms without making the first formal
 % cue-training unit too high.
-Params.PretrainHebbRate = 9.00;
-Params.FormalHebbRate = 3.00;
+%提高预训速度，边际收益不递减
+Params.PretrainHebbRate = 7.00;
+
+%提高正式训练速度，必须低于预训速度，边际收益不递减
+Params.FormalHebbRate = 3.65;
+
 % Eligibility traces let current reward/readout feedback update recently
 % experienced states; older states contribute less on each trial.
-Params.EligibilityDecay = 0.85;
-Params.EligibilityTraceScale = 1.00;
-% Inhibitory plasticity (per-E-cell gain, Vogels-Sprekeler style, per-trial).
-Params.InhPlasticityRate = 0.002;
-Params.InhTargetAct = 0.00;
-Params.InhGainMin = 0.20;
-Params.InhGainMax = 3.00;
+%提高信噪比，提高学习速度，降低recurrent
+Params.EligibilityDecay = 0.98;
+
 % Cue-tagged L2/3 direct-drive fractions. Masks use fixed-count sampling so
 % small cohorts do not receive extreme Bernoulli active-fraction draws.
+%提高信噪比，提高预训速度，降低recurrent
 Params.PreCueL23ActiveFraction = 0.17;
-Params.CueL23ActiveFraction = 0.18;
-Params.CueL23OverlapFractionOfPreCue = 0.08;
+%正式线索细胞不能比预训多。提高正式训练速度
+Params.CueL23ActiveFraction = 0.16;
+
+%提高Transfer首单元命中率
+Params.CueL23OverlapFractionOfPreCue = 0.06;
+
 % Overnight consolidation
-Params.OvernightRetention = 0.94;
-Params.OvernightNoise = 0.002;
+Params.OvernightRetention = 0.84;
+Params.OvernightNoise = 0.016;
 end
 
 function Cond = iConditionTable()
@@ -450,7 +466,6 @@ Summary.PerMouse = struct();
 Summary.Representative = struct();
 Summary.CuePretrainDiagnostics = struct();
 
-AllSlope = [];
 AllH23 = [];
 AllH5 = [];
 AllRewardReadoutPretrain = [];
@@ -577,6 +592,9 @@ for iSess = RunState.CompletedFormalSessions + 1:nSess
 		firstCueTrainingSignals = reshape(firstSignalsSession, nCond, nMouse);
 		iCheckFirstCueTrainingUnit(perfAll(:, :, iSess), firstCueTrainingSignals, MousePool, Cond, Params);
 	end
+	if iSess == 2
+		iCheckSecondCueTrainingUnitNotAllCeiling(perfAll(:, :, iSess), Cond, Params);
+	end
 	if iSess < nSess
 		mouseCells = MousePool(:);
 		parfor iTask = 1:nTask
@@ -608,7 +626,6 @@ for iCond = 1:nCond
 	perf = nan(Params.NumMice, Params.NumSessions);
 	h23 = nan(Params.NumMice, Params.NumSessions);
 	h5 = nan(Params.NumMice, Params.NumSessions);
-	mouseSlope = nan(Params.NumMice, 1);
 	mouseDeltaHit = nan(Params.NumMice, 1);
 	mouseMeanH23 = nan(Params.NumMice, 1);
 	mouseMeanH5 = nan(Params.NumMice, 1);
@@ -626,7 +643,6 @@ for iCond = 1:nCond
 		perf(iMouse, :) = MouseResult.Performance;
 		h23(iMouse, :) = MouseResult.H23;
 		h5(iMouse, :) = MouseResult.H5;
-		mouseSlope(iMouse) = MouseResult.Slope;
 		mouseDeltaHit(iMouse) = MouseResult.MeanDeltaHit;
 		mouseMeanH23(iMouse) = MouseResult.MeanH23;
 		mouseMeanH5(iMouse) = MouseResult.MeanH5;
@@ -637,8 +653,8 @@ for iCond = 1:nCond
 		end
 		repProcessL5{iMouse} = MouseResult.ProcessMeanL5;
 	end
-	perMouse = table(mouseSlope, mouseDeltaHit, mouseMeanH23, mouseMeanH5, rewardReadoutPretrain, rewardReadoutFinal, ...
-		'VariableNames', {'Slope','MeanDeltaHit','MeanH23','MeanH5','RewardReadoutPretrain','RewardReadoutFinal'});
+	perMouse = table(mouseDeltaHit, mouseMeanH23, mouseMeanH5, rewardReadoutPretrain, rewardReadoutFinal, ...
+		'VariableNames', {'MeanDeltaHit','MeanH23','MeanH5','RewardReadoutPretrain','RewardReadoutFinal'});
 	Summary.Performance.(Cond.Name(iCond)) = perf;
 	Summary.HeterogeneityL23.(Cond.Name(iCond)) = h23;
 	Summary.HeterogeneityL5.(Cond.Name(iCond)) = h5;
@@ -648,7 +664,6 @@ for iCond = 1:nCond
 		repIdx = iRepresentativeIndex(perMouse.MeanH5);
 		Summary.Representative.(Cond.Name(iCond)).ProcessMeanL5 = repProcessL5{repIdx};
 	end
-	AllSlope = [AllSlope; perMouse.Slope]; %#ok<AGROW>
 	AllH23 = [AllH23; perMouse.MeanH23]; %#ok<AGROW>
 	AllH5 = [AllH5; perMouse.MeanH5]; %#ok<AGROW>
 	AllRewardReadoutPretrain = [AllRewardReadoutPretrain; perMouse.RewardReadoutPretrain]; %#ok<AGROW>
@@ -656,9 +671,9 @@ for iCond = 1:nCond
 	AllCond = [AllCond; repmat(Cond.Name(iCond), Params.NumMice, 1)]; %#ok<AGROW>
 end
 
-Summary.AllMouse = table(AllCond, AllSlope, AllH23, AllH5, AllRewardReadoutPretrain, AllRewardReadoutFinal, ...
-	'VariableNames', {'Condition','Slope','MeanH23','MeanH5','RewardReadoutPretrain','RewardReadoutFinal'});
-Summary.CorrMouse = Summary.AllMouse;
+Summary.AllMouse = table(AllCond, AllH23, AllH5, AllRewardReadoutPretrain, AllRewardReadoutFinal, ...
+	'VariableNames', {'Condition','MeanH23','MeanH5','RewardReadoutPretrain','RewardReadoutFinal'});
+[Summary.GroupSlope, Summary.SlopePermutation] = iGroupSlopeStats(Summary.Performance, Cond, Params);
 end
 
 function [taskCondIndex, taskMouseIndex] = iMouseTaskIndex(nCond, nMouse)
@@ -854,20 +869,36 @@ for iCond = 1:height(Cond)
 	condName = Cond.Name(iCond);
 	groupPerf = mean(firstUnitPerf(iCond, :), 'omitnan');
 	if condName == "Naive"
-		limit = Params.FirstCueTrainingNaiveMax;
-	else
-		limit = Params.FirstCueTrainingTransferMax;
+		limitMax = Params.FirstCueTrainingNaiveMax;
+		if groupPerf > limitMax
+			diagMessage = iFirstCueTrainingDiagnosticMessage(firstUnitPerf(iCond, :), firstCueTrainingSignals(iCond, :), MousePool(iCond, :), Params);
+			error('THModel:FirstCueTrainingUnitTooHigh', ...
+				'%s first cue-training unit hit rate %.3f exceeded the allowed %.3f. Stopping before later training units. %s', ...
+				condName, groupPerf, limitMax, diagMessage);
+		end
+		continue;
 	end
-	if groupPerf > limit
+	limitMin = Params.FirstCueTrainingNonNaiveMin;
+	limitMax = Params.FirstCueTrainingNonNaiveMax;
+	if groupPerf < limitMin
+		diagMessage = iFirstCueTrainingDiagnosticMessage(firstUnitPerf(iCond, :), firstCueTrainingSignals(iCond, :), MousePool(iCond, :), Params);
+		error('THModel:FirstCueTrainingUnitTooLow', ...
+			'%s first cue-training unit hit rate %.3f was below the required %.3f. Stopping before later training units. %s', ...
+			condName, groupPerf, limitMin, diagMessage);
+	end
+	if groupPerf > limitMax
 		diagMessage = iFirstCueTrainingDiagnosticMessage(firstUnitPerf(iCond, :), firstCueTrainingSignals(iCond, :), MousePool(iCond, :), Params);
 		error('THModel:FirstCueTrainingUnitTooHigh', ...
 			'%s first cue-training unit hit rate %.3f exceeded the allowed %.3f. Stopping before later training units. %s', ...
-			condName, groupPerf, limit, diagMessage);
+			condName, groupPerf, limitMax, diagMessage);
 	end
 end
 end
 
 function iCheckFormalTrainingSuccess(perfAll, Cond, Params)
+if Params.NumSessions >= 2
+	iCheckSecondCueTrainingUnitNotAllCeiling(perfAll(:, :, 2), Cond, Params);
+end
 targetCondMask = Cond.Name == "Transfer";
 targetCondNames = Cond.Name(targetCondMask);
 targetPerf = perfAll(targetCondMask, :, :);
@@ -880,6 +911,24 @@ if any(failedMask(:))
 		100 * Params.Ceiling, Params.NumSessions, diagMessage);
 end
 iCheckFormalTrainingNonzeroFloor(perfAll, Cond, Params);
+end
+
+function iCheckSecondCueTrainingUnitNotAllCeiling(secondUnitPerf, Cond, Params)
+targetCondMask = Cond.Name == "THOff";
+targetCondNames = Cond.Name(targetCondMask);
+targetPerf = secondUnitPerf(targetCondMask, :);
+allCeilingMask = all(targetPerf >= Params.Ceiling, 2);
+if any(allCeilingMask(:))
+	failedNames = targetCondNames(allCeilingMask);
+	diagText = strings(numel(failedNames), 1);
+	for iFailed = 1:numel(failedNames)
+		condRow = find(Cond.Name == failedNames(iFailed), 1, 'first');
+		diagText(iFailed) = sprintf('%s second-unit hits=%s', failedNames(iFailed), iFormatNumberSeries(secondUnitPerf(condRow, :)));
+	end
+	error('THModel:SecondCueTrainingUnitAllCeiling', ...
+		'THOff must not have every mouse at %.0f%% hit in formal training unit 2. %s', ...
+		100 * Params.Ceiling, strjoin(diagText, '; '));
+end
 end
 
 function iCheckFormalTrainingNonzeroFloor(perfAll, Cond, Params)
@@ -1062,7 +1111,6 @@ il23ToIL5RewardRecvIMaxAbsW = iMaxFlat(abs(il23ToIL5RewardRecvIW));
 end
 
 function Result = iSummarizeMouseTraining(perf, h23, h5, sessionMeanL23, sessionMeanL5, Params)
-resultSlope = iSigmoidSlopeFromPerformance(perf);
 first100 = find(perf >= Params.SlopeHitPerfect, 1, 'first');
 if isempty(first100)
 	useIdx = 1:Params.NumSessions;
@@ -1095,24 +1143,156 @@ end
 Result.Performance = perf;
 Result.H23 = h23;
 Result.H5 = h5;
-Result.Slope = resultSlope;
 Result.MeanDeltaHit = resultDeltaHit;
 Result.MeanH23 = resultMeanH23;
 Result.MeanH5 = resultMeanH5;
 Result.ProcessMeanL5 = finalMeanL5;
 end
 
-function slope = iSigmoidSlopeFromPerformance(perf)
-xObs = (1:numel(perf))';
-yObs = double(perf(:));
+function [groupSlope, slopePermutation] = iGroupSlopeStats(Performance, Cond, Params)
+nCond = height(Cond);
+Condition = Cond.Name;
+Label = Cond.Label;
+Slope = nan(nCond, 1);
+Lower = nan(nCond, 1);
+Upper = nan(nCond, 1);
+Midpoint = nan(nCond, 1);
+SSE = nan(nCond, 1);
+RSquared = nan(nCond, 1);
+NObservations = nan(nCond, 1);
+NMouse = nan(nCond, 1);
+groupTables = cell(nCond, 1);
+
+for iCond = 1:nCond
+	groupTables{iCond} = iLearningCurveTableFromMatrix(Performance.(Cond.Name(iCond)), Cond.Name(iCond));
+	fitOut = iFitSigmoidCurve(groupTables{iCond}, Cond.Name(iCond));
+	Slope(iCond) = fitOut.Slope;
+	Lower(iCond) = fitOut.Lower;
+	Upper(iCond) = fitOut.Upper;
+	Midpoint(iCond) = fitOut.Midpoint;
+	SSE(iCond) = fitOut.SSE;
+	RSquared(iCond) = fitOut.RSquared;
+	NObservations(iCond) = numel(fitOut.YObserved);
+	NMouse(iCond) = numel(unique(groupTables{iCond}.Mouse));
+end
+
+groupSlope = table(Condition, Label, Slope, Lower, Upper, Midpoint, SSE, RSquared, NObservations, NMouse);
+slopePermutation = iPairwiseSlopePermutation(groupTables, Cond, Params.SlopePermutationCount, Params.SlopePermutationSeed);
+end
+
+function T = iLearningCurveTableFromMatrix(perf, groupName)
+[nMouse, nSess] = size(perf);
+Mouse = repelem((1:nMouse)', nSess);
+Session = repmat((1:nSess)', nMouse, 1);
+Performance = reshape(perf.', [], 1);
+Group = repmat(string(groupName), numel(Performance), 1);
+T = table(Mouse, Session, Performance, Group);
+end
+
+function fitOut = iFitSigmoidCurve(T, groupName)
+T = sortrows(T, {'Mouse','Session'});
+xObs = double(T.Session(:));
+yObs = double(T.Performance(:));
 use = isfinite(xObs) & isfinite(yObs);
 xObs = xObs(use);
 yObs = yObs(use);
+if isempty(xObs)
+	error('THModel:NoSigmoidFitData', 'No valid session data for group %s.', char(groupName));
+end
+
 p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); log(max(median(xObs), 1))];
 obj = @(p) sum((yObs - iSigmoidFromParams(p, xObs)).^2, 'omitnan');
 opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
 p = fminsearch(obj, p0, opt);
-[~, ~, slope, ~] = iDecodeSigmoidParams(p);
+yHat = iSigmoidFromParams(p, xObs);
+SSE = sum((yObs - yHat).^2, 'omitnan');
+SST = sum((yObs - mean(yObs, 'omitnan')).^2, 'omitnan');
+if SST == 0
+	rSquared = NaN;
+else
+	rSquared = 1 - SSE / SST;
+end
+[lower, upper, slope, midpoint] = iDecodeSigmoidParams(p);
+fitOut = struct;
+fitOut.Group = string(groupName);
+fitOut.ParamRaw = p;
+fitOut.Lower = lower;
+fitOut.Upper = upper;
+fitOut.Slope = slope;
+fitOut.Midpoint = midpoint;
+fitOut.SSE = SSE;
+fitOut.RSquared = rSquared;
+fitOut.XObserved = xObs;
+fitOut.YObserved = yObs;
+end
+
+function slopePermutation = iPairwiseSlopePermutation(groupTables, Cond, nPermutation, rngSeed)
+pairIdx = nchoosek(1:height(Cond), 2);
+nPair = size(pairIdx, 1);
+GroupA = strings(nPair, 1);
+GroupB = strings(nPair, 1);
+SlopeA = nan(nPair, 1);
+SlopeB = nan(nPair, 1);
+ObservedDifference = nan(nPair, 1);
+PValue = nan(nPair, 1);
+NPermutation = repmat(nPermutation, nPair, 1);
+
+for iPair = 1:nPair
+	iA = pairIdx(iPair, 1);
+	iB = pairIdx(iPair, 2);
+	permOut = iPermutationTestSigmoidSlope(groupTables{iA}, groupTables{iB}, Cond.Name(iA), Cond.Name(iB), nPermutation, rngSeed + iPair - 1);
+	GroupA(iPair) = Cond.Name(iA);
+	GroupB(iPair) = Cond.Name(iB);
+	SlopeA(iPair) = permOut.ObservedSlopeA;
+	SlopeB(iPair) = permOut.ObservedSlopeB;
+	ObservedDifference(iPair) = permOut.ObservedDifference;
+	PValue(iPair) = permOut.PValue;
+end
+
+slopePermutation = table(GroupA, GroupB, SlopeA, SlopeB, ObservedDifference, PValue, NPermutation);
+end
+
+function permOut = iPermutationTestSigmoidSlope(TA, TB, groupA, groupB, nPermutation, rngSeed)
+if nargin >= 6 && ~isempty(rngSeed)
+	rng(rngSeed);
+end
+
+mouseTablesA = iMouseLearningCurveTables(TA);
+mouseTablesB = iMouseLearningCurveTables(TB);
+allMouseTables = [mouseTablesA; mouseTablesB];
+nMouseA = numel(mouseTablesA);
+
+fitA = iFitSigmoidCurve(TA, groupA);
+fitB = iFitSigmoidCurve(TB, groupB);
+observedDifference = fitB.Slope - fitA.Slope;
+permDifference = nan(nPermutation, 1);
+
+parfor iPerm = 1:nPermutation
+	ord = randperm(numel(allMouseTables));
+	idxA = ord(1:nMouseA);
+	idxB = ord(nMouseA+1:end);
+	permA = vertcat(allMouseTables{idxA});
+	permB = vertcat(allMouseTables{idxB});
+	fitPermA = iFitSigmoidCurve(permA, groupA);
+	fitPermB = iFitSigmoidCurve(permB, groupB);
+	permDifference(iPerm) = fitPermB.Slope - fitPermA.Slope;
+end
+
+permOut = struct;
+permOut.ObservedSlopeA = fitA.Slope;
+permOut.ObservedSlopeB = fitB.Slope;
+permOut.ObservedDifference = observedDifference;
+permOut.PermutedDifference = permDifference;
+permOut.PValue = mean(abs(permDifference) >= abs(observedDifference));
+permOut.NPermutation = nPermutation;
+end
+
+function mouseTables = iMouseLearningCurveTables(T)
+mouseIds = unique(T.Mouse, 'stable');
+mouseTables = cell(numel(mouseIds), 1);
+for iMouse = 1:numel(mouseIds)
+	mouseTables{iMouse} = T(T.Mouse == mouseIds(iMouse), :);
+end
 end
 
 function y = iSigmoidFromParams(p, x)
@@ -1843,7 +2023,6 @@ for iSess = 1:Params.NumSessions
 	end
 end
 
-resultSlope = iSigmoidSlopeFromPerformance(perf);
 first100 = find(perf >= Params.SlopeHitPerfect, 1, 'first');
 if isempty(first100)
 	useIdx = 1:Params.NumSessions;
@@ -1876,11 +2055,363 @@ end
 Result.Performance = perf;
 Result.H23 = h23;
 Result.H5 = h5;
-Result.Slope = resultSlope;
 Result.MeanDeltaHit = resultDeltaHit;
 Result.MeanH23 = resultMeanH23;
 Result.MeanH5 = resultMeanH5;
 Result.ProcessMeanL5 = finalMeanL5;
+end
+
+function Report = iRunStructureDiagnostic(Request, DefaultParams, Cond)
+Params = DefaultParams;
+if isfield(Request, 'CheckpointName') && ~isempty(Request.CheckpointName)
+	checkpointPath = fullfile(fileparts(mfilename('fullpath')), 'resources', 'checkpoints', Request.CheckpointName);
+	checkpointData = load(checkpointPath, 'RunState');
+	Params = checkpointData.RunState.ParamsSnapshot;
+elseif isfield(Request, 'CheckpointPath') && ~isempty(Request.CheckpointPath)
+	checkpointData = load(Request.CheckpointPath, 'RunState');
+	Params = checkpointData.RunState.ParamsSnapshot;
+end
+
+nMouse = iRequestField(Request, 'NumMice', 40);
+nShuffle = iRequestField(Request, 'LabelShuffleCount', 2000);
+seed = iRequestField(Request, 'Seed', 20260510);
+useParallel = iRequestField(Request, 'UseParallel', true);
+nWorkers = iRequestField(Request, 'NumWorkers', 10);
+Params.ActiveHebbRate = Params.FormalHebbRate;
+naiveCond = Cond(Cond.Name == "Naive", :);
+
+if isfield(Request, 'Mode') && string(Request.Mode) == "resample-structure"
+	Report = iRunStructureResampleDiagnostic(Request, Params, naiveCond);
+	return;
+end
+
+rowCells = cell(nMouse, 1);
+fprintf('Running Naive structure diagnostic: n=%d, label shuffles=%d, seed=%d.\n', nMouse, nShuffle, seed);
+if useParallel
+	ParallelComputing.ParPool(nWorkers);
+	parfor iMouse = 1:nMouse
+		rowCells{iMouse} = iRunOneStructureDiagnosticMouse(Params, naiveCond, iMouse, seed, nShuffle);
+	end
+else
+	for iMouse = 1:nMouse
+		rowCells{iMouse} = iRunOneStructureDiagnosticMouse(Params, naiveCond, iMouse, seed, nShuffle);
+	end
+end
+
+rowStruct = [rowCells{:}]';
+mouseTable = struct2table(rowStruct);
+metricNames = ["AllWMean", "AllWStd", "L23ReadMean", "L23ReadStd", "RewardReadMean", "RewardReadStd", "L23RewardMean", "L23RewardStd", ...
+	"CueToReadScore", "CueToReadPct", "ReadSourceScore", "ReadSourcePct", "THToReadScore", "THToReadPct", "CueToTHScore", "CueToTHPct"];
+groupCompare = iStructureDiagnosticGroupCompare(mouseTable, metricNames, seed + 900000);
+
+Report = struct;
+Report.Params = Params;
+Report.MouseTable = mouseTable;
+Report.GroupCompare = groupCompare;
+Report.FailedCount = nnz(mouseTable.AllZero);
+Report.NumMice = nMouse;
+Report.LabelShuffleCount = nShuffle;
+fprintf('Structure diagnostic complete: all-zero Naive mice = %d/%d.\n', Report.FailedCount, nMouse);
+if Report.FailedCount > 0 && Report.FailedCount < nMouse
+	disp(groupCompare);
+else
+	fprintf('Group comparison skipped because one outcome class is empty.\n');
+end
+end
+
+function value = iRequestField(Request, fieldName, defaultValue)
+if isfield(Request, fieldName) && ~isempty(Request.(fieldName))
+	value = Request.(fieldName);
+else
+	value = defaultValue;
+end
+end
+
+function row = iRunOneStructureDiagnosticMouse(Params, Cond, iMouse, seed, nShuffle)
+rng(seed + iMouse, 'twister');
+Mouse = iDrawMouse(Params);
+metrics = iStructureDiagnosticMetrics(Mouse, Params, nShuffle, seed + 10000 * iMouse);
+[Result, ~] = iSimulateMouse(Mouse, Params, Cond);
+perf = Result.Performance;
+row = metrics;
+row.Mouse = iMouse;
+row.AllZero = all(perf == 0);
+row.FinalHit = perf(end);
+row.FirstNonzeroSession = iFirstNonzeroSession(perf);
+row.Performance = perf;
+end
+
+function firstSession = iFirstNonzeroSession(perf)
+firstSession = find(perf > 0, 1, 'first');
+if isempty(firstSession)
+	firstSession = NaN;
+end
+end
+
+function metrics = iStructureDiagnosticMetrics(Mouse, Params, nShuffle, seed)
+W = iGatherValue(Mouse.W_InternalToInternal);
+cueMask = iGatherValue(Mouse.CueL23Pattern(:) > 0);
+readMask = iGatherValue(Mouse.L5ReadoutPattern(:) > 0);
+thMask = iGatherValue(Mouse.THRewardPattern(:) > 0);
+
+l23Cols = 1:Params.NL23;
+rewardCols = Params.NL23 + (1:Params.NL5RewardRecv);
+readRows = Params.NL23 + Params.NL5RewardRecv + (1:Params.NL5Read);
+cueCols = l23Cols(cueMask);
+thCols = rewardCols(thMask);
+targetReadRows = readRows(readMask);
+nonTargetReadRows = readRows(~readMask);
+thRewardRows = rewardCols(thMask);
+nonTHRewardRows = rewardCols(~thMask);
+
+metrics = struct;
+metrics.CueCount = numel(cueCols);
+metrics.ReadTargetCount = numel(targetReadRows);
+metrics.THActiveCount = numel(thCols);
+metrics.AllWMean = iFiniteMean(W(:));
+metrics.AllWStd = iFiniteStd(W(:));
+metrics.L23ReadMean = iFiniteMean(iBlockValues(W, readRows, l23Cols));
+metrics.L23ReadStd = iFiniteStd(iBlockValues(W, readRows, l23Cols));
+metrics.RewardReadMean = iFiniteMean(iBlockValues(W, readRows, rewardCols));
+metrics.RewardReadStd = iFiniteStd(iBlockValues(W, readRows, rewardCols));
+metrics.L23RewardMean = iFiniteMean(iBlockValues(W, rewardCols, l23Cols));
+metrics.L23RewardStd = iFiniteStd(iBlockValues(W, rewardCols, l23Cols));
+metrics.ReadRecMean = iFiniteMean(iBlockValues(W, readRows, readRows));
+metrics.ReadRecStd = iFiniteStd(iBlockValues(W, readRows, readRows));
+
+metrics.CueToReadScore = iRowSelectivityFromCols(W, targetReadRows, nonTargetReadRows, cueCols);
+metrics.THToReadScore = iRowSelectivityFromCols(W, targetReadRows, nonTargetReadRows, thCols);
+metrics.ReadSourceScore = iRowSelectivityFromCols(W, targetReadRows, nonTargetReadRows, [cueCols, thCols]);
+metrics.CueToTHScore = iRowSelectivityFromCols(W, thRewardRows, nonTHRewardRows, cueCols);
+
+rng(seed, 'twister');
+cueNull = nan(nShuffle, 1);
+readSourceNull = nan(nShuffle, 1);
+thNull = nan(nShuffle, 1);
+cueToTHNull = nan(nShuffle, 1);
+for iShuffle = 1:nShuffle
+	shuffleCueCols = l23Cols(randperm(Params.NL23, metrics.CueCount));
+	shuffleReadMask = false(Params.NL5Read, 1);
+	shuffleReadMask(randperm(Params.NL5Read, metrics.ReadTargetCount)) = true;
+	shuffleTargetReadRows = readRows(shuffleReadMask);
+	shuffleNonTargetReadRows = readRows(~shuffleReadMask);
+	shuffleTHMask = false(Params.NL5RewardRecv, 1);
+	shuffleTHMask(randperm(Params.NL5RewardRecv, metrics.THActiveCount)) = true;
+	shuffleTHCols = rewardCols(shuffleTHMask);
+	shuffleTHRows = rewardCols(shuffleTHMask);
+	shuffleNonTHRows = rewardCols(~shuffleTHMask);
+
+	cueNull(iShuffle) = iRowSelectivityFromCols(W, targetReadRows, nonTargetReadRows, shuffleCueCols);
+	readSourceNull(iShuffle) = iRowSelectivityFromCols(W, shuffleTargetReadRows, shuffleNonTargetReadRows, [cueCols, thCols]);
+	thNull(iShuffle) = iRowSelectivityFromCols(W, targetReadRows, nonTargetReadRows, shuffleTHCols);
+	cueToTHNull(iShuffle) = iRowSelectivityFromCols(W, shuffleTHRows, shuffleNonTHRows, cueCols);
+end
+metrics.CueToReadNullMean = iFiniteMean(cueNull);
+metrics.CueToReadNullStd = iFiniteStd(cueNull);
+metrics.CueToReadPct = 100 * mean(cueNull <= metrics.CueToReadScore, 'omitnan');
+metrics.ReadSourceNullMean = iFiniteMean(readSourceNull);
+metrics.ReadSourceNullStd = iFiniteStd(readSourceNull);
+metrics.ReadSourcePct = 100 * mean(readSourceNull <= metrics.ReadSourceScore, 'omitnan');
+metrics.THToReadNullMean = iFiniteMean(thNull);
+metrics.THToReadNullStd = iFiniteStd(thNull);
+metrics.THToReadPct = 100 * mean(thNull <= metrics.THToReadScore, 'omitnan');
+metrics.CueToTHNullMean = iFiniteMean(cueToTHNull);
+metrics.CueToTHNullStd = iFiniteStd(cueToTHNull);
+metrics.CueToTHPct = 100 * mean(cueToTHNull <= metrics.CueToTHScore, 'omitnan');
+end
+
+function values = iBlockValues(W, rowIdx, colIdx)
+values = W(rowIdx, colIdx);
+values = values(:);
+end
+
+function score = iRowSelectivityFromCols(W, targetRows, nonTargetRows, colIdx)
+targetInput = sum(W(targetRows, colIdx), 2);
+nonTargetInput = sum(W(nonTargetRows, colIdx), 2);
+score = iFiniteMean(targetInput) - iFiniteMean(nonTargetInput);
+end
+
+function value = iFiniteMean(values)
+values = values(:);
+values = values(isfinite(values));
+if isempty(values)
+	value = NaN;
+else
+	value = mean(values);
+end
+end
+
+function value = iFiniteStd(values)
+values = values(:);
+values = values(isfinite(values));
+if numel(values) < 2
+	value = NaN;
+else
+	value = std(values, 0);
+end
+end
+
+function groupCompare = iStructureDiagnosticGroupCompare(mouseTable, metricNames, seed)
+failedMask = mouseTable.AllZero;
+if ~any(failedMask) || ~any(~failedMask)
+	groupCompare = table;
+	return;
+end
+nMetric = numel(metricNames);
+failedMean = nan(nMetric, 1);
+passedMean = nan(nMetric, 1);
+meanDiff = nan(nMetric, 1);
+passedStd = nan(nMetric, 1);
+standardDiff = nan(nMetric, 1);
+pValue = nan(nMetric, 1);
+for iMetric = 1:nMetric
+	metricName = metricNames(iMetric);
+	failedValues = mouseTable.(metricName)(failedMask);
+	passedValues = mouseTable.(metricName)(~failedMask);
+	failedMean(iMetric) = mean(failedValues, 'omitnan');
+	passedMean(iMetric) = mean(passedValues, 'omitnan');
+	meanDiff(iMetric) = failedMean(iMetric) - passedMean(iMetric);
+	passedStd(iMetric) = std(passedValues, 0, 'omitnan');
+	standardDiff(iMetric) = meanDiff(iMetric) / max(passedStd(iMetric), eps);
+	pValue(iMetric) = iTwoGroupPermutationP(failedValues, passedValues, seed + iMetric, 5000);
+end
+groupCompare = table(metricNames(:), failedMean, passedMean, meanDiff, standardDiff, pValue, ...
+	'VariableNames', {'Metric','FailedMean','PassedMean','MeanDiff','DiffInPassedSD','PermutationP'});
+groupCompare = sortrows(groupCompare, 'PermutationP', 'ascend');
+end
+
+function pValue = iTwoGroupPermutationP(failedValues, passedValues, seed, nPermutation)
+failedValues = failedValues(isfinite(failedValues));
+passedValues = passedValues(isfinite(passedValues));
+if isempty(failedValues) || isempty(passedValues)
+	pValue = NaN;
+	return;
+end
+observedDiff = mean(failedValues) - mean(passedValues);
+combinedValues = [failedValues(:); passedValues(:)];
+nFailed = numel(failedValues);
+rng(seed, 'twister');
+nExtreme = 0;
+for iPermutation = 1:nPermutation
+	permIdx = randperm(numel(combinedValues));
+	permFailed = combinedValues(permIdx(1:nFailed));
+	permPassed = combinedValues(permIdx(nFailed+1:end));
+	permDiff = mean(permFailed) - mean(permPassed);
+	if abs(permDiff) >= abs(observedDiff)
+		nExtreme = nExtreme + 1;
+	end
+end
+pValue = (nExtreme + 1) / (nPermutation + 1);
+end
+
+function Report = iRunStructureResampleDiagnostic(Request, Params, Cond)
+baseSeed = iRequestField(Request, 'BaseSeed', iRequestField(Request, 'Seed', 20260510));
+mouseIndex = iRequestField(Request, 'MouseIndex', 1);
+nReplicate = iRequestField(Request, 'NumReplicates', 30);
+useParallel = iRequestField(Request, 'UseParallel', true);
+nWorkers = iRequestField(Request, 'NumWorkers', 10);
+interventionModes = ["original", "cue-only", "readout-only", "th-only", "all-labels", "weights-only", "fresh-mouse"];
+
+rng(baseSeed + mouseIndex, 'twister');
+baseMouse = iDrawMouse(Params);
+baseMetrics = iStructureDiagnosticMetrics(baseMouse, Params, iRequestField(Request, 'LabelShuffleCount', 1000), baseSeed + 10000 * mouseIndex);
+
+nMode = numel(interventionModes);
+nTask = nMode * nReplicate;
+rowCells = cell(nTask, 1);
+fprintf('Running structure resampling diagnostic: mouse=%d, modes=%d, replicates=%d, baseSeed=%d.\n', mouseIndex, nMode, nReplicate, baseSeed);
+if useParallel
+	ParallelComputing.ParPool(nWorkers);
+	parfor iTask = 1:nTask
+		rowCells{iTask} = iRunOneStructureResampleTask(baseMouse, Params, Cond, interventionModes, iTask, nReplicate, baseSeed, mouseIndex);
+	end
+else
+	for iTask = 1:nTask
+		rowCells{iTask} = iRunOneStructureResampleTask(baseMouse, Params, Cond, interventionModes, iTask, nReplicate, baseSeed, mouseIndex);
+	end
+end
+
+resultTable = struct2table([rowCells{:}]');
+summaryTable = iStructureResampleSummary(resultTable, interventionModes);
+Report = struct;
+Report.Params = Params;
+Report.BaseSeed = baseSeed;
+Report.MouseIndex = mouseIndex;
+Report.BaseMetrics = baseMetrics;
+Report.ResultTable = resultTable;
+Report.Summary = summaryTable;
+fprintf('Structure resampling complete.\n');
+disp(summaryTable);
+end
+
+function row = iRunOneStructureResampleTask(baseMouse, Params, Cond, interventionModes, iTask, nReplicate, baseSeed, mouseIndex)
+modeIndex = ceil(iTask / nReplicate);
+replicateIndex = iTask - (modeIndex - 1) * nReplicate;
+modeName = interventionModes(modeIndex);
+rng(baseSeed + 100000 * modeIndex + 1000 * mouseIndex + replicateIndex, 'twister');
+Mouse = iApplyStructureIntervention(baseMouse, Params, modeName);
+[Result, ~] = iSimulateMouse(Mouse, Params, Cond);
+perf = Result.Performance;
+row = struct;
+row.Mode = modeName;
+row.Replicate = replicateIndex;
+row.AllZero = all(perf == 0);
+row.AUC = sum(perf, 'omitnan');
+row.FinalHit = perf(end);
+row.FirstNonzeroSession = iFirstNonzeroSession(perf);
+row.Performance = perf;
+end
+
+function Mouse = iApplyStructureIntervention(baseMouse, Params, modeName)
+Mouse = baseMouse;
+switch modeName
+case "original"
+	return;
+case "cue-only"
+	[preCueMask, cueMask] = iDrawFixedCountCueMasks(Params);
+	Mouse.PreCueL23Pattern = iMaskToVertexPattern(preCueMask, Params);
+	Mouse.CueL23Pattern = iMaskToVertexPattern(cueMask, Params);
+case "readout-only"
+	Mouse.L5ReadoutPattern = iVertexPattern(iRandn(Params.NL5Read, Params) + 0.55 * sign(iRandn(Params.NL5Read, Params)));
+case "th-only"
+	Mouse.THRewardPattern = iVertexPattern(iRandn(Params.NL5RewardRecv, Params) + 0.55 * sign(iRandn(Params.NL5RewardRecv, Params)));
+case "all-labels"
+	[preCueMask, cueMask] = iDrawFixedCountCueMasks(Params);
+	Mouse.PreCueL23Pattern = iMaskToVertexPattern(preCueMask, Params);
+	Mouse.CueL23Pattern = iMaskToVertexPattern(cueMask, Params);
+	Mouse.L5ReadoutPattern = iVertexPattern(iRandn(Params.NL5Read, Params) + 0.55 * sign(iRandn(Params.NL5Read, Params)));
+	Mouse.THRewardPattern = iVertexPattern(iRandn(Params.NL5RewardRecv, Params) + 0.55 * sign(iRandn(Params.NL5RewardRecv, Params)));
+case "weights-only"
+	freshMouse = iDrawMouse(Params);
+	Mouse.Z_InternalToInternal = freshMouse.Z_InternalToInternal;
+	Mouse.W_InternalToInternal = freshMouse.W_InternalToInternal;
+case "fresh-mouse"
+	Mouse = iDrawMouse(Params);
+otherwise
+	error('THModel:UnknownStructureIntervention', 'Unknown structure intervention mode: %s', modeName);
+end
+end
+
+function summaryTable = iStructureResampleSummary(resultTable, interventionModes)
+nMode = numel(interventionModes);
+modeName = interventionModes(:);
+allZeroRate = nan(nMode, 1);
+meanAUC = nan(nMode, 1);
+medianAUC = nan(nMode, 1);
+meanFinalHit = nan(nMode, 1);
+medianFirstNonzero = nan(nMode, 1);
+for iMode = 1:nMode
+	modeMask = resultTable.Mode == interventionModes(iMode);
+	allZeroRate(iMode) = mean(resultTable.AllZero(modeMask), 'omitnan');
+	meanAUC(iMode) = mean(resultTable.AUC(modeMask), 'omitnan');
+	medianAUC(iMode) = median(resultTable.AUC(modeMask), 'omitnan');
+	meanFinalHit(iMode) = mean(resultTable.FinalHit(modeMask), 'omitnan');
+	firstNonzero = resultTable.FirstNonzeroSession(modeMask);
+	firstNonzero(isnan(firstNonzero)) = 9;
+	medianFirstNonzero(iMode) = median(firstNonzero, 'omitnan');
+end
+summaryTable = table(modeName, allZeroRate, meanAUC, medianAUC, meanFinalHit, medianFirstNonzero, ...
+	'VariableNames', {'Mode','AllZeroRate','MeanAUC','MedianAUC','MeanFinalHit','MedianFirstNonzero'});
 end
 
 function [perf, Signals, perfExpected, Mouse] = iSimulateSession(Mouse, Params, Cond, usePreCue)
@@ -1897,8 +2428,7 @@ else
 	cueL23Pattern = Mouse.CueL23Pattern;
 end
 cueGain = Params.CueL23Gain;
-eta = Params.ActiveHebbRate;
-traceEta = eta * Params.EligibilityTraceScale;
+traceEta = Params.ActiveHebbRate;
 
 % Storage for session-level diagnostics.
 rL23_cue_all = iZeros([Params.NL23, NT], Params);
@@ -1944,7 +2474,7 @@ for t = 1:NT
 	nDecisionState = Params.InternalRecurrentPasses + 1;
 	cueL23DriveHistory = iRunCueL23DriveHistory(cueL23Drive, Params, nDecisionState);
 	preL5Read_cue = Params.NoiseRead * iRandn(Params.NL5Read, Params);
-	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue, decisionActivityCue, decisionTraceCue, ~, ~, decisionActivityHistory, preIL5RewardRecvHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read_cue, Mouse, Params, Cond, baselineInternalActivity);
+	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue, decisionActivityCue, decisionTraceCue, ~, ~, decisionActivityHistory, preIL5RewardRecvHistory, decisionLearningActivity, decisionTrainingHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read_cue, Mouse, Params, Cond, baselineInternalActivity);
 	[~, ~, ~, rIL23_cue, rIL5RewardRecvI_cue] = iSplitInternalActivity(decisionActivityCue, Params);
 	il23ToIL5RewardRecvIPre = iIL23ToIL5RewardRecvIContribution(Mouse, decisionActivityHistory, Params);
 
@@ -1953,18 +2483,11 @@ for t = 1:NT
 
 	% ===== Learning phase (teacher readout + sustained direct reward-mode TH input) =====
 	[preL5RewardRecv_L, preIL5RewardRecv_L] = iRunTHInput(Mouse, Params, Cond, "reward");
-	learningActivityHistory = iRunTeacherReadoutIterations(decisionActivityCue, preL5RewardRecv_L, preIL5RewardRecv_L, Mouse, Params);
+	learningActivityHistory = iRunTeacherReadoutIterations(decisionLearningActivity, preL5RewardRecv_L, preIL5RewardRecv_L, Mouse, Params);
 	[rL23_L_history, rL5RewardRecv_L_history, rL5Read_L_history] = iSplitInternalActivity(learningActivityHistory, Params);
 	rL23_L = mean(rL23_L_history, 2);
 	rL5RewardRecv_L = mean(rL5RewardRecv_L_history, 2);
 	rL5Read_L = mean(rL5Read_L_history, 2);
-	decisionTrainingHistory = decisionActivityHistory;
-
-	% Per-trial updates on decaying before/after iteration eligibility traces of the recurrent L2/3-L5 matrix.
-	eligInternal = iUpdateTaskLearningHistoryEligibility(eligInternal, decisionTrainingHistory, learningActivityHistory, Params);
-	eligInternalToInternal = iRecurrentCellEligibilityToSynapseEligibility(eligInternal, Params);
-	isPunishment = false;
-	[Mouse.Z_InternalToInternal, Mouse.W_InternalToInternal] = iApplyLatentInternalTrace(Mouse.Z_InternalToInternal, eligInternalToInternal, traceEta, Params, isPunishment);
 
 	rL23_cue_all(:, t) = rL23_cue;
 	rL5RewardRecv_cue_all(:, t) = rL5RewardRecv_cue;
@@ -1976,6 +2499,12 @@ for t = 1:NT
 	rL23_L_all(:, t) = rL23_L;
 	rL5RewardRecv_L_all(:, t) = rL5RewardRecv_L;
 	rL5Read_L_all(:, t) = rL5Read_L;
+
+	% Per-trial updates on decaying before/after iteration eligibility traces of the recurrent L2/3-L5 matrix.
+	eligInternal = iUpdateTaskLearningHistoryEligibility(eligInternal, decisionTrainingHistory, learningActivityHistory, Params);
+	eligInternalToInternal = iRecurrentCellEligibilityToSynapseEligibility(eligInternal, Params);
+	isPunishment = false;
+	[Mouse.Z_InternalToInternal, Mouse.W_InternalToInternal] = iApplyLatentInternalTrace(Mouse.Z_InternalToInternal, eligInternalToInternal, traceEta, Params, isPunishment);
 end
 
 perf = mean(isHit);
@@ -2332,7 +2861,7 @@ source.TargetL5Net = iMeanFlat(l5Net(targetMask));
 source.TargetNet = iMeanFlat(l2Net(targetMask) + l5Net(targetMask));
 end
 
-function [rL23, rL5RewardRecv, rL5Read, internalActivity, readoutDriveTrace, thActivityHistory, rewardRecvActivityHistory, internalActivityHistory, preIL5RewardRecvHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read, Mouse, Params, Cond, initialInternalActivity)
+function [rL23, rL5RewardRecv, rL5Read, internalActivity, readoutDriveTrace, thActivityHistory, rewardRecvActivityHistory, internalActivityHistory, preIL5RewardRecvHistory, decisionLearningActivity, decisionTrainingHistory] = iRunDecisionNetwork(cueL23DriveHistory, preL5Read, Mouse, Params, Cond, initialInternalActivity)
 if nargin < 6
 	initialInternalActivity = [];
 end
@@ -2343,7 +2872,8 @@ rewardRecvActivityHistory = iZeros([Params.NL5RewardRecv, nDecisionState], Param
 internalActivityHistory = iZeros([Params.NInternal, nDecisionState], Params);
 preIL5RewardRecvHistory = iZeros([Params.NIL5RewardRecv, nDecisionState], Params);
 internalActivity = initialInternalActivity;
-lastDecisionState = nDecisionState;
+firstHitState = NaN;
+decisionLearningActivity = [];
 
 for iState = 1:nDecisionState
 	[preL5RewardRecv, preIL5RewardRecv] = iRunTHInput(Mouse, Params, Cond, "rest");
@@ -2368,17 +2898,18 @@ for iState = 1:nDecisionState
 	internalActivityHistory(:, iState) = internalActivity;
 	[~, rewardRecvActivityNow] = iSplitInternalActivity(internalActivity, Params);
 	rewardRecvActivityHistory(:, iState) = rewardRecvActivityNow;
-	if readoutDriveTrace(iState) >= Params.HitThreshold
-		lastDecisionState = iState;
-		break;
+	if ~isfinite(firstHitState) && readoutDriveTrace(iState) >= Params.HitThreshold
+		firstHitState = iState;
+		decisionLearningActivity = internalActivity;
 	end
 end
 
-readoutDriveTrace = readoutDriveTrace(1:lastDecisionState);
-thActivityHistory = thActivityHistory(:, 1:lastDecisionState);
-rewardRecvActivityHistory = rewardRecvActivityHistory(:, 1:lastDecisionState);
-internalActivityHistory = internalActivityHistory(:, 1:lastDecisionState);
-preIL5RewardRecvHistory = preIL5RewardRecvHistory(:, 1:lastDecisionState);
+if isempty(decisionLearningActivity)
+	decisionLearningActivity = internalActivity;
+	decisionTrainingHistory = internalActivityHistory;
+else
+	decisionTrainingHistory = internalActivityHistory(:, 1:firstHitState);
+end
 
 [rL23, rL5RewardRecv, rL5Read] = iSplitInternalActivity(internalActivity, Params);
 end
@@ -2540,7 +3071,7 @@ end
 end
 
 function [Mouse, correctionDiag] = iSuppressFalseReadout(Mouse, internalActivityBefore, internalActivityAfter, falseDrive, Params, thActivityBefore, thActivityAfter, rewardRecvActivityBefore, rewardRecvActivityAfter, iRewardRecvActivityBefore, iRewardRecvActivityAfter)
-eta = Params.ActiveHebbRate * Params.EligibilityTraceScale;
+eta = Params.ActiveHebbRate;
 isPunishment = true;
 eligInternal = iZeroCellEligibility(Params.NInternal, Params.NInternal, Params);
 eligInternal = iUpdateRecurrentEligibility(eligInternal, internalActivityBefore, internalActivityAfter, Params.EligibilityDecay, Params);
@@ -2625,16 +3156,16 @@ function effectiveWeights = iAccumulatorToInternalWeight(accumulator, Params)
 effectiveWeights = zeros(size(accumulator), 'like', accumulator);
 excCols = 1:Params.NL23L5;
 inhCols = Params.NL23L5 + (1:Params.NIInternal);
-effectiveWeights(:, excCols) = iAccumulatorToExcitatoryWeight(accumulator(:, excCols), Params.WCap, Params.WeightMapSlope);
-effectiveWeights(:, inhCols) = iAccumulatorToInhibitoryOutputWeight(accumulator(:, inhCols), Params.InhOutputWCap, Params.WeightMapSlope);
+effectiveWeights(:, excCols) = iAccumulatorToExcitatoryWeight(accumulator(:, excCols), Params.WCap);
+effectiveWeights(:, inhCols) = iAccumulatorToInhibitoryOutputWeight(accumulator(:, inhCols), Params.InhOutputWCap);
 effectiveWeights = iZeroSelfProjection(effectiveWeights);
 end
 
-function effectiveWeights = iAccumulatorToExcitatoryWeight(accumulator, cap, ~)
+function effectiveWeights = iAccumulatorToExcitatoryWeight(accumulator, cap)
 effectiveWeights = cap * iColumnDistribution(accumulator);
 end
 
-function effectiveWeights = iAccumulatorToInhibitoryOutputWeight(accumulator, cap, ~)
+function effectiveWeights = iAccumulatorToInhibitoryOutputWeight(accumulator, cap)
 effectiveWeights = -cap * iColumnDistribution(accumulator);
 end
 
@@ -2797,6 +3328,50 @@ for i = 1:width(T)
 end
 end
 
+function iSlopeBar(ax, GroupSlope, SlopePermutation, Cond)
+slopeValues = nan(height(Cond), 1);
+for iCond = 1:height(Cond)
+	rowMask = GroupSlope.Condition == Cond.Name(iCond);
+	if any(rowMask)
+		slopeValues(iCond) = GroupSlope.Slope(find(rowMask, 1, 'first'));
+	end
+end
+
+barObj = bar(ax, 1:height(Cond), slopeValues, 0.62, 'FaceColor', 'flat', 'EdgeColor', 'none');
+barObj.CData = Cond.Color;
+ax.XLim = [0.5, height(Cond) + 0.5];
+ax.XTick = 1:height(Cond);
+ax.XTickLabel = cellstr(Cond.Label);
+ax.XTickLabelRotation = 20;
+
+yMax = max(slopeValues, [], 'omitnan');
+if ~isfinite(yMax)
+	text(ax, mean(ax.XLim), 0, 'No slope fit', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontSize', 12);
+	return;
+end
+yRange = max(yMax, 0.02);
+ylim(ax, [0, yMax + 0.62 * yRange]);
+
+for iCond = 1:height(Cond)
+	if isfinite(slopeValues(iCond))
+		text(ax, iCond, slopeValues(iCond) + 0.025 * yRange, sprintf('%.2f', slopeValues(iCond)), ...
+			'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontSize', 11, 'Color', Cond.Color(iCond, :));
+	end
+end
+
+for iPair = 1:height(SlopePermutation)
+	x1 = find(Cond.Name == SlopePermutation.GroupA(iPair), 1, 'first');
+	x2 = find(Cond.Name == SlopePermutation.GroupB(iPair), 1, 'first');
+	if isempty(x1) || isempty(x2)
+		continue;
+	end
+	yLine = yMax + (0.14 + 0.13 * (iPair - 1)) * yRange;
+	iStatLine(ax, x1, x2, yLine, iPStars(SlopePermutation.PValue(iPair)));
+end
+text(ax, 0.98, 0.98, 'permutation', 'Units', 'normalized', 'HorizontalAlignment', 'right', ...
+	'VerticalAlignment', 'top', 'FontSize', 11, 'Color', 'k');
+end
+
 function iStripMeanSem(ax, PerMouse, Cond, fieldName)
 for iCond = 1:height(Cond)
 	x = PerMouse.(Cond.Name(iCond)).(fieldName);
@@ -2915,21 +3490,6 @@ counts = histcounts(x, edges, 'Normalization', 'pdf');
 centers = edges(1:end-1) + diff(edges) / 2;
 xLine = centers(:);
 yLine = counts(:);
-end
-
-function txt = iPLabel(p, rho)
-if ~isfinite(p)
-	txt = sprintf('rho = %.2f\np = NaN', rho);
-	return;
-end
-if p < 0.001
-	pTxt = 'p < 0.001';
-elseif p < 0.01
-	pTxt = sprintf('p = %.3f', p);
-else
-	pTxt = sprintf('p = %.2f', p);
-end
-txt = sprintf('rho = %.2f\n%s', rho, pTxt);
 end
 
 function iStyleLinePanel(ax)

@@ -14,17 +14,20 @@ if ~isduration(xs)
 	xs = seconds(xs);
 end
 xsSec = seconds(xs);
-xMask = (xsSec >= -1) & (xsSec <= 2);
+[idx0s, ok0s] = iFindTimeIndex(xsSec, 0, 0.25);
+if ~ok0s
+	error('Cannot find sample close to 0s.');
+end
+xMask = (xsSec >= 0) & (xsSec <= 2);
 xsPlot = xsSec(xMask);
-cueBaseMask = (xsSec >= -1) & (xsSec < 0);
 
 GInitial = iQueryInitialLightAll();
 GTransfer = iQueryTransferLightAll();
 XInitial = iGetNtats2D(GInitial);
 XTransfer = iGetNtats2D(GTransfer);
 
-XInitial = XInitial - mean(XInitial(:, cueBaseMask), 2, 'omitnan');
-XTransfer = XTransfer - mean(XTransfer(:, cueBaseMask), 2, 'omitnan');
+XInitial = iZeroAnchorZScore(XInitial, idx0s);
+XTransfer = iZeroAnchorZScore(XTransfer, idx0s);
 
 XInitial = XInitial(:, xMask);
 XTransfer = XTransfer(:, xMask);
@@ -147,6 +150,10 @@ else
 end
 end
 
+function X = iZeroAnchorZScore(X, idx0s)
+X = X - X(:, idx0s);
+end
+
 function X = iGetNtats2D(G)
 if istable(G)
 	nt = G.NTATS;
@@ -161,6 +168,11 @@ if isnumeric(nt) && ismatrix(nt)
 	X = double(nt);
 	return;
 end
-	error('中文图332B:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+	error(['Unsupported NTATS container type: ', class(nt)]);
+end
+
+function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
+[d, idx] = min(abs(xsSec(:) - tSec));
+ok = isfinite(d) && (d <= tolSec);
 end
 

@@ -46,7 +46,7 @@ xl = xlabel(tl, 'Divergence');
 xl.FontSize = 12;
 
 Stats = table("All", nan, nan, nan, nan, ...
-	'VariableNames', {'Panel', 'Rho', 'PValue', 'NNaive', 'NTransfer'});
+	'VariableNames', {'Panel', 'Rho', 'PValue', 'NNaive', 'NContinual'});
 
 use = isfinite(Data.Divergence) & isfinite(Data.HitRate);
 if nnz(use) < 3
@@ -61,7 +61,7 @@ end
 [rho, p] = corr(xAll, yAll, 'Type', 'Spearman');
 
 maskNaive = use & (string(Data.Group) == "Naive");
-maskTran = use & (string(Data.Group) == "Transfer");
+maskTran = use & (string(Data.Group) == "Continual");
 
 ax = nexttile(tl, 1);
 hold(ax, 'on');
@@ -91,11 +91,11 @@ text(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
 Stats.Rho(1) = rho;
 Stats.PValue(1) = p;
 Stats.NNaive(1) = nnz(maskNaive);
-Stats.NTransfer(1) = nnz(maskTran);
+Stats.NContinual(1) = nnz(maskTran);
 
 fprintf('\n=== Fig333D All cells ===\n');
 fprintf('Naive mice: %d\n', nnz(maskNaive));
-fprintf('Transfer mice: %d\n', nnz(maskTran));
+fprintf('Continual mice: %d\n', nnz(maskTran));
 fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
 
 svgPath = '中文图Fig333D_FirstSessionHitRateVsDivergence.svg';
@@ -128,7 +128,7 @@ for i = 1:numel(mice)
 	end
 	dt = min(Tm.DateTime);
 	Ts = sortrows(Tm(Tm.DateTime == dt, :), 'TrialIndex');
-	Rows{i} = iSessionRows(DS, m, dt, Ts, "Transfer", idx0, idx1s);
+	Rows{i} = iSessionRows(DS, m, dt, Ts, "Continual", idx0, idx1s);
 	end
 out = vertcat(Rows{:});
 end

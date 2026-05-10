@@ -1,7 +1,7 @@
 ﻿% English Fig2K: cFos activity-dependent inhibition vs Control
 %
 % v6 Panel K: cFos-MOp 精准抑制（学习曲线 + 首会话命中率）
-% Data source: Fig3.5A (TransferLearning.Fig35.A_cFos_MOpVsControl)
+% Shared behavior-session helpers: TransferLearning.BehaviorSessions
 % Outputs (SVG):
 %   - English_Fig2K_cFos_LearningCurve.svg
 %   - English_Fig2K_cFos_FirstSessionHitRate.svg
@@ -72,12 +72,12 @@ if isempty(S)
 end
 
 % --- 3) Query LightWater behavior blocks
-B = TransferLearning.Fig35.iQueryLightWaterBlocks(DS, false);
+B = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS, false);
 if isempty(B)
 	error('English_Fig2K:EmptyBehavior', 'No LightWater behavior rows found.');
 end
 B.Mouse = string(B.Mouse);
-B.DateTime = TransferLearning.Fig35.iNormalizeDateTime(B.DateTime);
+B.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(B.DateTime);
 
 % Join group labels
 J = innerjoin(B, S(:, {'Mouse','Group'}), 'Keys', 'Mouse');
@@ -85,9 +85,9 @@ J.Group = string(J.Group);
 
 % --- 4) Sessionize and add session index
 vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable');
-Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, vars));
+Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
-Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
+Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
 
 % --- 5) Learning curve summary (UniExp.LearningSummarize)
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
@@ -201,8 +201,8 @@ end
 
 %% 
 % --- 7) First transfer session hit-rate bar compare (Control vs Inhibited)
-perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
-perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
+perMouse = TransferLearning.BehaviorSessions.iPerMouseTable(Sess);
+perMouse = TransferLearning.BehaviorSessions.iAddFirstTransferPerf(perMouse, Sess);
 
 xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
 xInh  = perMouse.TransferFirstPerf(perMouse.Group=="MOp");
@@ -226,7 +226,7 @@ end
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xInh  = xInh(isfinite(xInh));
-[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xInh);
+[pFS, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xInh);
 
 DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});

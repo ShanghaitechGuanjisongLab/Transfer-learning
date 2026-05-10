@@ -117,12 +117,12 @@ for Ax=findall(Fig,Type='axes').'
 	YLim=ylim(Ax);
 	XData=[S.XData];
 	[MinX,MaxX]=bounds(XData);
-	Padding=(MaxX-MinX)/numel(XData);
+	Padding=std(XData);
 	MinX=MinX-Padding;
 	MaxX=MaxX+Padding;
 	YData=[S.YData];
 	[MinY,MaxY]=bounds(YData);
-	Padding=(MaxY-MinY)/numel(YData);
+	Padding=std(YData);
 	MinY=MinY-Padding;
 	MaxY=MaxY+Padding;
 	if MinX<XLim(1) || MaxX>XLim(2)|| MinY<YLim(1) || MaxY>YLim(2)

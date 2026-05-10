@@ -1,5 +1,5 @@
 ﻿% 中文图334D：Non-specific inhibition 学习曲线
-% 数据源与算法：模仿 Fig35B 第一个 tile（hM4D(Gi) vs mCherry 的 LightWater learning curve）
+% 数据源与算法：hM4D(Gi) vs mCherry 的 LightWater learning curve
 % 样式：模仿英文图2K（颜色、线宽、ylabel、整体布局）
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
@@ -19,8 +19,8 @@ pathmCh = "\\Data-Server-2\个人数据\张天夫\202601\Mop-Gi运动皮层化�
 DS_Gi = UniExp.DataSet(pathGi);
 DS_mCh = UniExp.DataSet(pathmCh);
 
-BInh = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Gi, false);
-BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_mCh, false);
+BInh = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS_Gi, false);
+BCtrl = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS_mCh, false);
 if isempty(BInh) || isempty(BCtrl)
 	error('Fig334D:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
@@ -29,14 +29,14 @@ BInh.Group = repmat("hM4D(Gi)", height(BInh), 1);
 BCtrl.Group = repmat("mCherry", height(BCtrl), 1);
 BInh.Mouse = string(BInh.Mouse);
 BCtrl.Mouse = string(BCtrl.Mouse);
-BInh.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BInh.DateTime);
-BCtrl.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BCtrl.DateTime);
+BInh.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(BInh.DateTime);
+BCtrl.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(BCtrl.DateTime);
 
 J = [BCtrl; BInh];
 J.Group = string(J.Group);
-Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable')));
+Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable')));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
-Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
+Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
 
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
 sessionForSummary.Group = string(sessionForSummary.Group);

@@ -14,7 +14,7 @@ if isempty(Q)
 	return;
 end
 Q.Mouse = string(Q.Mouse);
-Q.DateTime = TransferLearning.Fig35.iNormalizeDateTime(Q.DateTime);
+Q.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(Q.DateTime);
 Q = unique(Q(:, {'Mouse','DateTime','BlockUID'}), 'rows');
 if ~isempty(ExcludeMice)
 	Q = Q(~ismember(Q.Mouse, ExcludeMice), :);
@@ -27,7 +27,7 @@ Q = Q(keep, :);
 [G, mice, dts] = findgroups(Q.Mouse, Q.DateTime);
 blockCells = splitapply(@(x) {x}, uint64(Q.BlockUID), G);
 DT = DS.DateTimes(:, {'DateTime','SeriesInterval'});
-DT.DateTime = TransferLearning.Fig35.iNormalizeDateTime(DT.DateTime);
+DT.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(DT.DateTime);
 DT = unique(DT, 'rows', 'stable');
 seriesCell = arrayfun(@(dt) DT.SeriesInterval(find(DT.DateTime == dt, 1, 'first')), dts, 'UniformOutput', false);
 seriesInterval = vertcat(seriesCell{:});

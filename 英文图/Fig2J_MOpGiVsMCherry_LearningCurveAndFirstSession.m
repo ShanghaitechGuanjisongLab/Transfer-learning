@@ -1,7 +1,7 @@
 ﻿% English Fig2J: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
 %
 % v6 Panel J: DREADD MOp 全局抑制（学习曲线 + 首会话命中率）
-% Data source: Fig3.5B (TransferLearning.Fig35.B_MOpVsMCherry)
+% Shared behavior-session helpers: TransferLearning.BehaviorSessions
 % Outputs (SVG):
 %   - English_Fig2J_DREADD_LearningCurve.svg
 %   - English_Fig2J_DREADD_FirstSessionHitRate.svg
@@ -35,8 +35,8 @@ DS_Inh  = UniExp.DataSet(inhibPath);
 DS_Ctrl = UniExp.DataSet(ctrlPath);
 
 % --- 2) Query LightWater behavior blocks
-BInh  = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Inh,  true);
-BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(DS_Ctrl, true);
+BInh  = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS_Inh,  true);
+BCtrl = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS_Ctrl, true);
 if isempty(BInh) || isempty(BCtrl)
 	error('English_Fig2J:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
@@ -46,17 +46,17 @@ BCtrl.Group = repmat("Control",   height(BCtrl), 1);
 
 BInh.Mouse = string(BInh.Mouse);
 BCtrl.Mouse = string(BCtrl.Mouse);
-BInh.DateTime  = TransferLearning.Fig35.iNormalizeDateTime(BInh.DateTime);
-BCtrl.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BCtrl.DateTime);
+BInh.DateTime  = TransferLearning.BehaviorSessions.iNormalizeDateTime(BInh.DateTime);
+BCtrl.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(BCtrl.DateTime);
 
 J = [BCtrl; BInh];
 J.Group = string(J.Group);
 
 % --- 3) Sessionize and add session index
 vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable');
-Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, vars));
+Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
-Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
+Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
 
 % --- 4) Learning curve summary
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
@@ -165,15 +165,15 @@ catch ME
 end
 
 % --- 6) First transfer session hit-rate bar compare
-perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
-perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
+perMouse = TransferLearning.BehaviorSessions.iPerMouseTable(Sess);
+perMouse = TransferLearning.BehaviorSessions.iAddFirstTransferPerf(perMouse, Sess);
 
 xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
 xInh  = perMouse.TransferFirstPerf(perMouse.Group=="Inhibited");
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xInh  = xInh(isfinite(xInh));
-[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xInh);
+[pFS, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xInh);
 
 DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});

@@ -1,7 +1,7 @@
 ﻿% English Fig2M: 7-day homecage interval (Vacation7 vs Control)
 %
 % v6 Panel M: Vacation7 时间对照（学习曲线 + 首会话命中率）
-% Data source: Fig3.5D (TransferLearning.Fig35.D_Vacation7VsCtrl)
+% Shared behavior-session helpers: TransferLearning.BehaviorSessions
 % Outputs (SVG):
 %   - English_Fig2M_Vacation7_LearningCurve.svg
 %   - English_Fig2M_Vacation7_FirstSessionHitRate.svg
@@ -32,8 +32,8 @@ CtrlDS = TransferLearning.AudioLightBaseline();
 V7DS   = TransferLearning.Vacation7();
 
 % --- 2) Query LightWater behavior blocks
-BCtrl = TransferLearning.Fig35.iQueryLightWaterBlocks(CtrlDS, false);
-BV7   = TransferLearning.Fig35.iQueryLightWaterBlocks(V7DS,   false);
+BCtrl = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(CtrlDS, false);
+BV7   = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(V7DS,   false);
 if isempty(BCtrl) || isempty(BV7)
 	error('English_Fig2M:EmptyBehavior', 'Empty LightWater behavior in one of the datasets.');
 end
@@ -43,17 +43,17 @@ BV7.Group   = repmat("Vacation7",  height(BV7),   1);
 
 BCtrl.Mouse = string(BCtrl.Mouse);
 BV7.Mouse   = string(BV7.Mouse);
-BCtrl.DateTime = TransferLearning.Fig35.iNormalizeDateTime(BCtrl.DateTime);
-BV7.DateTime   = TransferLearning.Fig35.iNormalizeDateTime(BV7.DateTime);
+BCtrl.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(BCtrl.DateTime);
+BV7.DateTime   = TransferLearning.BehaviorSessions.iNormalizeDateTime(BV7.DateTime);
 
 J = [BCtrl; BV7];
 J.Group = string(J.Group);
 
 % --- 3) Sessionize and add session index
 vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable');
-Sess = TransferLearning.Fig35.iSessionizeByDateTime(J(:, vars));
+Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
-Sess = TransferLearning.Fig35.iAddSessionIndex(Sess);
+Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
 
 % --- 4) Learning curve summary
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
@@ -122,15 +122,15 @@ catch ME
 end
 
 % --- 6) First transfer session hit-rate bar compare
-perMouse = TransferLearning.Fig35.iPerMouseTable(Sess);
-perMouse = TransferLearning.Fig35.iAddFirstTransferPerf(perMouse, Sess);
+perMouse = TransferLearning.BehaviorSessions.iPerMouseTable(Sess);
+perMouse = TransferLearning.BehaviorSessions.iAddFirstTransferPerf(perMouse, Sess);
 
 xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
 xV7   = perMouse.TransferFirstPerf(perMouse.Group=="Vacation7");
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xV7   = xV7(isfinite(xV7));
-[pFS, ~] = TransferLearning.Fig35.iRanksumSafe(xCtrl, xV7);
+[pFS, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xV7);
 
 DataCell = {double(xCtrl(:)), double(xV7(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});

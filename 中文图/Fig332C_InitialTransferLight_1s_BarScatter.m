@@ -1,4 +1,4 @@
-﻿% 中文图332C：比较初始光水与迁移光水的1s NTATS（全细胞，不做筛选）
+﻿% 中文图332C：比较初始光水与迁移光水的1s-0s z-score（全细胞，不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -14,9 +14,13 @@ if ~isduration(xs)
 	xs = seconds(xs);
 end
 xsSec = seconds(xs);
+[idx0s, ok0s] = iFindTimeIndex(xsSec, 0, 0.25);
+if ~ok0s
+	error('Fig332C:No0s', 'Cannot find sample close to 0s.');
+end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('%s', 'Cannot find sample close to 1s.');
+	error('Fig332C:No1s', 'Cannot find sample close to 1s.');
 end
 baseMask = (xsSec >= -3) & (xsSec < 0);
 kSigma = 3;
@@ -25,6 +29,8 @@ GInitial = iQueryInitialLightAll();
 GTransfer = iQueryTransferLightAll();
 XInitial = iGetNtats2D(GInitial);
 XTransfer = iGetNtats2D(GTransfer);
+XInitial = iZeroAnchorZScore(XInitial, idx0s);
+XTransfer = iZeroAnchorZScore(XTransfer, idx0s);
 vInitial = XInitial(:, idx1s);
 vTransfer = XTransfer(:, idx1s);
 vInitial = vInitial(isfinite(vInitial));
@@ -36,11 +42,8 @@ nNaive = size(XInitial, 1);
 nTransfer = size(XTransfer, 1);
 nNaiveActive = sum(activeNaive);
 nTransferActive = sum(activeTransfer);
-pNaive = nNaiveActive / max(nNaive, 1);
-pTransfer = nTransferActive / max(nTransfer, 1);
-seNaive = sqrt(pNaive * (1 - pNaive) / max(nNaive, 1));
-seTransfer = sqrt(pTransfer * (1 - pTransfer) / max(nTransfer, 1));
 [~, pActive] = fishertest([nNaiveActive, nNaive - nNaiveActive; nTransferActive, nTransfer - nTransferActive]);
+compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 f = figure('Color', 'w', 'Name', '中文图332C 初始/迁移光水 1s 比较');
 f.Units = 'centimeters';
@@ -52,7 +55,7 @@ f.PaperSize = [3, 4];
 
 TL = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 axTop = nexttile(TL, 1);
-[~, ~, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}));
+[~, ~, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, false, compareGroup);
 delete(findobj(axTop, 'Type', 'Scatter'));
 ax = axTop;
 ax.FontSize = 6;
@@ -62,7 +65,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.XAxis.LineWidth = 1;
 	ax.YAxis.LineWidth = 1;
 end
-ylabel(ax, 'z-score');
+ylabel(ax, '\Delta z-score');
 ax.XTick = [];
 ax.XTickLabel = {};
 box(ax, 'off');
@@ -132,10 +135,8 @@ for ia = 1:numel(allAxes)
 end
 
 axBottom = nexttile(TL, 2);
-hold(axBottom, 'on');
-bars2 = bar(axBottom, [1 2], [pNaive pTransfer], 0.5, 'FaceColor', 'flat', 'LineWidth', 1);
-bars2.CData = [colorInitial; colorTransfer];
-bars2.FaceAlpha = 1/3;
+[~, optBottom, bars2, ebBottom] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeTransfer(:))}, false, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+delete(findobj(axBottom, 'Type', 'Scatter'));
 axBottom.FontSize = 6;
 axBottom.FontName = 'Segoe UI Emoji';
 axBottom.LineWidth = 1;
@@ -149,19 +150,10 @@ ylabel(axBottom, 'active fraction');
 box(axBottom, 'off');
 grid(axBottom, 'off');
 
-bars2.LineWidth = 1;
-bars2.BaseLine.LineWidth = 1;
-bars2.EdgeColor = 'none';
-errorbar(axBottom, [1 2], [pNaive pTransfer], [], [seNaive seTransfer], 'k', 'LineStyle', 'none', 'LineWidth', 1, 'CapSize', 5.28);
-
-yTop = max([pNaive + seNaive, pTransfer + seTransfer]);
-if ~isfinite(yTop)
-	yTop = 0.1;
-end
-yBracket = yTop + 0.06;
-line(axBottom, [1 2], [yBracket yBracket], 'Color', 'k', 'LineWidth', 1);
-text(axBottom, 1.5, yBracket + 0.015, iPValueToStars(pActive), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontSize', 6, 'FontName', 'Segoe UI Emoji');
-ylim(axBottom, [0, max(0.1, yBracket + 0.08)]);
+iStyleBars(bars2, colorInitial, colorTransfer);
+iStyleIndividualErrorbars(ebBottom, colorInitial, colorTransfer);
+iApplyPText(optBottom, pActive);
+ylim(axBottom, [0, max(0.1, axBottom.YLim(2))]);
 
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -178,7 +170,7 @@ svgPath = '中文图Fig332C_InitialTransferLight_1s_BarScatter.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig332C_NTATS1s', struct('Initial', vInitial, 'Transfer', vTransfer, 'Idx1', idx1s, 'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveTransfer', activeTransfer, 'PActive', pActive));
+assignin('base', 'Fig332C_NTATS1s', struct('Initial', vInitial, 'Transfer', vTransfer, 'Idx0', idx0s, 'Idx1', idx1s, 'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveTransfer', activeTransfer, 'PActive', pActive));
 
 function G = iQueryInitialLightAll()
 LAB = TransferLearning.LightAudioBaseline();
@@ -253,7 +245,11 @@ if isnumeric(nt) && ismatrix(nt)
 	X = double(nt);
 	return;
 end
-	error('Unsupported NTATS container type: %s', class(nt));
+	error('Fig332C:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+end
+
+function X = iZeroAnchorZScore(X, idx0s)
+X = X - X(:, idx0s);
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
@@ -266,6 +262,71 @@ baseMu = mean(X(:, baseMask), 2, 'omitnan');
 baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
 v1 = X(:, idx1s);
 mask = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
+end
+
+function iStyleBars(Bars, colorInitial, colorTransfer)
+if isscalar(Bars)
+	Bars.FaceColor = 'flat';
+	nBars = numel(Bars.YData);
+	barColors = repmat([colorInitial; colorTransfer], ceil(nBars / 2), 1);
+	Bars.CData = barColors(1:nBars, :);
+	Bars.BarWidth = 0.5;
+	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
+	Bars.FaceAlpha = 1/3;
+	return;
+end
+for ib = 1:numel(Bars)
+	if ib == 1
+		Bars(ib).FaceColor = colorInitial;
+	else
+		Bars(ib).FaceColor = colorTransfer;
+	end
+	Bars(ib).LineWidth = 1;
+	Bars(ib).BaseLine.LineWidth = 1;
+	Bars(ib).EdgeColor = 'none';
+	Bars(ib).FaceAlpha = 1/3;
+end
+end
+
+function iStyleIndividualErrorbars(ErrorBars, colorInitial, colorTransfer)
+if istable(ErrorBars) && ismember('Object', ErrorBars.Properties.VariableNames)
+	errorObjects = ErrorBars.Object;
+elseif isstruct(ErrorBars) && isfield(ErrorBars, 'Object')
+	errorObjects = ErrorBars.Object;
+else
+	return;
+end
+barColors = [colorInitial; colorTransfer];
+for iObj = 1:numel(errorObjects)
+	eb = errorObjects(iObj);
+	eb.LineWidth = 1;
+	if isprop(eb, 'Color')
+		eb.Color = barColors(min(iObj, 2), :);
+	end
+	if isprop(eb, 'LineStyle')
+		eb.LineStyle = 'none';
+	end
+	if isprop(eb, 'CapSize')
+		eb.CapSize = 5.28;
+	end
+end
+end
+
+function iApplyPText(options, pValue)
+if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PText', options.MultiCompare.Properties.VariableNames)
+	for pt = options.MultiCompare.PText(:)'
+		pt.FontSize = 6;
+		pt.FontName = 'Segoe UI Emoji';
+		pt.String = iPValueToStars(pValue);
+	end
+end
+if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PLine', options.MultiCompare.Properties.VariableNames)
+	for pl = options.MultiCompare.PLine(:)'
+		pl.LineWidth = 1;
+	end
+end
 end
 
 function out = iPTextToStars(in)
