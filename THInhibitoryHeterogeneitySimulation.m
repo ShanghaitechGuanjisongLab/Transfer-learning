@@ -21,14 +21,18 @@
 
 CheckpointEnabled = true;
 ResumeFromCheckpoint = false;       % false starts a fresh run and overwrites this tag's checkpoint.
-CheckpointTag = 'direct_th_mid100_slope8_cuegain50_prehebb600_formhebb270_state030_wcap500_inh10_th220_thnoise035_thr060_noise014_iter006_elig085_ret094_initscale082_fixedcue_precue017_cue018_ov008_i12'; % change this to keep separate checkpoint lines.
+CheckpointTag = 'direct_th_mid100_slope8_cuegain40_prehebb900_formhebb300_state030_wcap500_inh10_th220_thnoise010_thr060_noise014_iter006_elig085_ret094_initscale082_teacher3_fixedcue_precue017_cue018_ov008_i20'; % change this to keep separate checkpoint lines.
+CheckpointDir = fullfile(fileparts(mfilename('fullpath')), 'resources', 'checkpoints');
+CheckpointVersion = 2;
 PrintCuePretrainDebug = false;     % prints cue-specific vs non-cue L2/3 learning trajectories each pretrain session.
 
 rng('shuffle');
-ParallelComputing.ParPool(7);
+ParallelComputing.ParPool(8);
 spmd
 	if spmdIndex<=gpuDeviceCount
 		gpuDevice(spmdIndex);
+	else
+		gpuDevice([]);
 	end
 end
 networkOutputRoot = '\\Data-Server-2\个人数据\张天夫';
@@ -41,13 +45,16 @@ end
 svgName = 'TH_Inhibitory_Heterogeneity_Model.svg';
 
 Params = iDefaultParams();
-Params.CheckpointEnabled = CheckpointEnabled;
-Params.CheckpointResume = ResumeFromCheckpoint;
-Params.CheckpointTag = CheckpointTag;
-Params.PrintCuePretrainDebug = PrintCuePretrainDebug;
+RunOptions = struct;
+RunOptions.CheckpointEnabled = CheckpointEnabled;
+RunOptions.CheckpointResume = ResumeFromCheckpoint;
+RunOptions.CheckpointTag = CheckpointTag;
+RunOptions.CheckpointDir = CheckpointDir;
+RunOptions.CheckpointVersion = CheckpointVersion;
+RunOptions.PrintCuePretrainDebug = PrintCuePretrainDebug;
 Cond = iConditionTable();
 
-Summary = iRunCohortModel(Params, Cond);
+Summary = iRunCohortModel(Params, Cond, RunOptions);
 
 fprintf('\n=== Simulated cohort summary ===\n');
 for iCond = 1:height(Cond)
@@ -150,7 +157,7 @@ if ~isfolder(outDir)
 	mkdir(outDir);
 end
 svgPath = fullfile(outDir, svgName);
-print(f, svgPath, '-dsvg', '-painters');
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'THInhibitoryHeterogeneityModel', Summary);
@@ -170,10 +177,14 @@ function Params = iDefaultParams()
 % Learning phase applies outer-product Hebbian updates on the recurrent
 % internal matrix plus the per-cell
 % inhibitory gain in L23/L5RewardRecv areas.
-Params.UseGPU = gpuDeviceCount > 0;
-Params.NumMice = 7;
+
+% ===== 硬性实验设计和算法结构：调参时不改 =====
+Params.NumMice = 8;
 Params.NumSessions = 8;
 Params.NumTrials = 30;
+Params.InternalRecurrentPasses = 5; % 硬性标准，不作为调参旋钮。
+
+% ===== 可调模型规模参数 =====
 Params.NL23 = 96;
 Params.NL5Read = 64;
 Params.NL5RewardRecv = 2 * Params.NL5Read;
@@ -183,6 +194,21 @@ Params.NIL23 = Params.NL23 / 4;
 Params.NIL5RewardRecv = Params.NL5 / 4;
 Params.NIInternal = Params.NIL23 + Params.NIL5RewardRecv;
 Params.NInternal = Params.NL23L5 + Params.NIInternal;
+
+% ===== 硬性验收、停止和汇总门槛：调参时不放宽 =====
+Params.Ceiling = 1.00;
+Params.FirstCueTrainingNaiveMax = 0.40;
+Params.FirstCueTrainingTransferMax = 0.80;
+% SlopeHitPerfect marks the first perfect-hit session used to close the
+% learning-process summary window; reported Slope is the sigmoid rate fitted
+% with the Chinese Fig313A method.
+Params.SlopeHitPerfect = 1.00;
+Params.BaselineQuietIterations = 40;
+Params.MaxBaselineIterations = 500;
+Params.MaxPretrainSessions = 8;
+Params.PostCeilingSessions = 1;
+
+% ===== 可调模型动力学参数 =====
 Params.RateResponseSlope = 8.00;
 Params.RateResponseMidpoint = 1.00;
 Params.NoiseInput = 0.14;           % shared cue/reward input noise scale
@@ -190,20 +216,14 @@ Params.NoiseRead = 0.08;
 Params.IterationNoise = 0.06;
 Params.Comp_Cue = 0.95;
 Params.Comp_Rew = 1.15;
-% Input gains
-Params.CueL23Gain = 5.00;           % shared direct L2/3 cue drive (pretraining + formal task)
-Params.THRewardInputGain = 2.20;     % post-decision TH reward mode during learning phase
-Params.THNoiseInputGain = 0.35;      % unstructured reward-mode TH input in the TH-inhibited group
-Params.ReadInputGain = 1.45;         % readout pattern clamp amplitude (learning phase only)
 % Decision readout: initial input noise creates trial-to-trial variability,
 % and a hit is emitted when the readout pattern similarity crosses HitThreshold.
 Params.HitThreshold = 0.60;
-Params.Ceiling = 1.00;
-Params.FirstCueTrainingNaiveMax = 0.40;
-Params.FirstCueTrainingTransferMax = 0.80;
-% Process-window summaries drop sessions from the first 100%-hit session onward;
-% reported Slope is the sigmoid rate fitted with the Chinese Fig313A method.
-Params.SlopeHitPerfect = 1.00;
+% Input gains
+Params.CueL23Gain = 4.00;           % shared direct L2/3 cue drive (pretraining + formal task)
+Params.THRewardInputGain = 2.20;     % post-decision TH reward mode during learning phase
+Params.THNoiseInputGain = 0.10;      % unstructured reward-mode TH input in the TH-inhibited group
+Params.ReadInputGain = 1.45;         % readout pattern clamp amplitude (learning phase only)
 % Plastic synaptic accumulators are nonnegative outgoing allocation pools.
 % Each active upstream cell sends a fixed total output scale, distributed to
 % downstream cells in proportion to the downstream accumulator values.
@@ -212,18 +232,13 @@ Params.WeightMapSlope = 1.00;
 Params.InitRecurrentAccumulatorChiSquareDof = 1;
 Params.InitRecurrentAccumulatorScale = 0.82;
 Params.InhOutputWCap = 10 * Params.WCap;
-% Number of recurrent internal passes after external cue/reward/readout drive.
-Params.InternalRecurrentPasses = 4;
-Params.TeacherReadoutPasses = 5;
 Params.StateCarryover = 0.30;       % fraction of previous internal state retained across recurrent passes
+Params.TeacherReadoutPasses = 3;
 % Stage-specific per-trial Hebbian learning rates. Pretraining remains faster
 % than formal cue learning so the schema forms without making the first formal
 % cue-training unit too high.
-Params.HebbRate = 6.00;
-Params.PretrainHebbRate = 6.00;
-Params.FormalHebbRate = 2.70;
-Params.BaselineQuietIterations = 40;
-Params.MaxBaselineIterations = 500;
+Params.PretrainHebbRate = 9.00;
+Params.FormalHebbRate = 3.00;
 % Eligibility traces let current reward/readout feedback update recently
 % experienced states; older states contribute less on each trial.
 Params.EligibilityDecay = 0.85;
@@ -241,17 +256,6 @@ Params.CueL23OverlapFractionOfPreCue = 0.08;
 % Overnight consolidation
 Params.OvernightRetention = 0.94;
 Params.OvernightNoise = 0.002;
-% Pretraining
-Params.MaxPretrainSessions = 8;
-Params.PostCeilingSessions = 1;
-% Checkpoints save complete stage boundaries so a failed run can restart
-% from the last intact training state while future sessions use current Params.
-Params.CheckpointEnabled = true;
-Params.CheckpointResume = true;
-Params.CheckpointTag = 'default';
-Params.CheckpointDir = fullfile(fileparts(mfilename('fullpath')), 'resources', 'checkpoints');
-Params.CheckpointVersion = 2;
-Params.PrintCuePretrainDebug = false;
 end
 
 function Cond = iConditionTable()
@@ -273,55 +277,56 @@ if isfield(Params, 'RunContext')
 end
 end
 
-function [RunState, didResume] = iLoadRunCheckpoint(Params, Cond)
+function [RunState, didResume] = iLoadRunCheckpoint(Params, Cond, RunOptions)
 RunState = struct();
 didResume = false;
-if ~iCheckpointResumeEnabled(Params)
+if ~iCheckpointResumeEnabled(RunOptions)
 	return;
 end
-checkpointPath = iCheckpointPath(Params);
+checkpointPath = iCheckpointPath(RunOptions);
 if isfile(checkpointPath)
 	checkpointData = load(checkpointPath, 'RunState');
 	RunState = checkpointData.RunState;
-	iAssertCheckpointCompatible(RunState, Params, Cond, checkpointPath);
+	iAssertCheckpointCompatible(RunState, Params, Cond, checkpointPath, RunOptions);
 	didResume = true;
 	fprintf('Loaded checkpoint: %s (stage=%s; cue sessions=%d; formal sessions=%d). Future training uses current Params.\n', ...
 		checkpointPath, char(RunState.Stage), RunState.CompletedCuePretrainSessions, RunState.CompletedFormalSessions);
 end
 end
 
-function RunState = iSaveRunCheckpoint(RunState, Params, Cond)
-if ~iCheckpointEnabled(Params)
+function RunState = iSaveRunCheckpoint(RunState, Params, Cond, RunOptions)
+if ~iCheckpointEnabled(RunOptions)
 	return;
 end
-checkpointPath = iCheckpointPath(Params);
+checkpointPath = iCheckpointPath(RunOptions);
 checkpointDir = fileparts(checkpointPath);
 if ~isfolder(checkpointDir)
 	mkdir(checkpointDir);
 end
-RunState.CheckpointVersion = Params.CheckpointVersion;
+RunState.CheckpointVersion = RunOptions.CheckpointVersion;
 RunState.Topology = iCheckpointTopology(Params, Cond);
 RunState.ParamsSnapshot = Params;
+RunState.RunOptionsSnapshot = RunOptions;
 RunState.SavedAt = char(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss'));
 save(checkpointPath, 'RunState');
 fprintf('Saved checkpoint: %s (stage=%s; cue sessions=%d; formal sessions=%d).\n', ...
 	checkpointPath, char(RunState.Stage), RunState.CompletedCuePretrainSessions, RunState.CompletedFormalSessions);
 end
 
-function enabled = iCheckpointEnabled(Params)
-enabled = isfield(Params, 'CheckpointEnabled') && Params.CheckpointEnabled;
+function enabled = iCheckpointEnabled(RunOptions)
+enabled = RunOptions.CheckpointEnabled;
 end
 
-function enabled = iCheckpointResumeEnabled(Params)
-enabled = iCheckpointEnabled(Params) && isfield(Params, 'CheckpointResume') && Params.CheckpointResume;
+function enabled = iCheckpointResumeEnabled(RunOptions)
+enabled = iCheckpointEnabled(RunOptions) && RunOptions.CheckpointResume;
 end
 
-function checkpointPath = iCheckpointPath(Params)
-checkpointTag = Params.CheckpointTag;
+function checkpointPath = iCheckpointPath(RunOptions)
+checkpointTag = RunOptions.CheckpointTag;
 if isstring(checkpointTag)
 	checkpointTag = char(checkpointTag);
 end
-checkpointPath = fullfile(Params.CheckpointDir, sprintf('THInhibitoryHeterogeneitySimulation_%s.mat', checkpointTag));
+checkpointPath = fullfile(RunOptions.CheckpointDir, sprintf('THInhibitoryHeterogeneitySimulation_%s.mat', checkpointTag));
 end
 
 function topology = iCheckpointTopology(Params, Cond)
@@ -340,21 +345,21 @@ topology.ConditionName = cellstr(Cond.Name);
 topology.ConditionTHInputIsNoise = Cond.THInputIsNoise;
 end
 
-function iAssertCheckpointCompatible(RunState, Params, Cond, checkpointPath)
-if ~isfield(RunState, 'CheckpointVersion') || RunState.CheckpointVersion ~= Params.CheckpointVersion
-	error('THModel:CheckpointVersionMismatch', 'Checkpoint %s uses a different checkpoint version. Set Params.CheckpointTag to a new value or disable resume for a fresh run.', checkpointPath);
+function iAssertCheckpointCompatible(RunState, Params, Cond, checkpointPath, RunOptions)
+if ~isfield(RunState, 'CheckpointVersion') || RunState.CheckpointVersion ~= RunOptions.CheckpointVersion
+	error('THModel:CheckpointVersionMismatch', 'Checkpoint %s uses a different checkpoint version. Set CheckpointTag to a new value or disable resume for a fresh run.', checkpointPath);
 end
 if ~isfield(RunState, 'Topology') || ~isequaln(RunState.Topology, iCheckpointTopology(Params, Cond))
-	error('THModel:CheckpointTopologyMismatch', 'Checkpoint %s is incompatible with the current model topology or stage limits. Set Params.CheckpointTag to a new value or disable resume for a fresh run.', checkpointPath);
+	error('THModel:CheckpointTopologyMismatch', 'Checkpoint %s is incompatible with the current model topology or stage limits. Set CheckpointTag to a new value or disable resume for a fresh run.', checkpointPath);
 end
 end
 
-function RunState = iInitializeRunState(Params, Cond)
+function RunState = iInitializeRunState(Params, Cond, RunOptions)
 nCond = height(Cond);
 nMouse = Params.NumMice;
 nSess = Params.NumSessions;
 RunState = struct();
-RunState.CheckpointVersion = Params.CheckpointVersion;
+RunState.CheckpointVersion = RunOptions.CheckpointVersion;
 RunState.Topology = iCheckpointTopology(Params, Cond);
 RunState.Stage = "new";
 RunState.CompletedCuePretrainSessions = 0;
@@ -437,7 +442,7 @@ cuePretrainState.StateCells = {};
 cuePretrainState.CompletedSessions = 0;
 end
 
-function Summary = iRunCohortModel(Params, Cond)
+function Summary = iRunCohortModel(Params, Cond, RunOptions)
 Summary.Performance = struct();
 Summary.HeterogeneityL23 = struct();
 Summary.HeterogeneityL5 = struct();
@@ -463,9 +468,9 @@ for iTask = 1:nTask
 	taskCondRows{iTask} = Cond(taskCondIndex(iTask), :);
 end
 
-[RunState, didResume] = iLoadRunCheckpoint(Params, Cond);
+[RunState, didResume] = iLoadRunCheckpoint(Params, Cond, RunOptions);
 if ~didResume
-	RunState = iInitializeRunState(Params, Cond);
+	RunState = iInitializeRunState(Params, Cond, RunOptions);
 	mouseCells = cell(nTask, 1);
 	sessionMeanL23Cells = cell(nTask, 1);
 	sessionMeanL5Cells = cell(nTask, 1);
@@ -478,7 +483,7 @@ if ~didResume
 	RunState.SessionMeanL23 = reshape(sessionMeanL23Cells, nCond, nMouse);
 	RunState.SessionMeanL5 = reshape(sessionMeanL5Cells, nCond, nMouse);
 	RunState.Stage = "initialized";
-	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond, RunOptions);
 end
 RunState = iEnsureRunStateDiagnostics(RunState, Params, Cond);
 
@@ -491,7 +496,7 @@ h5All = RunState.H5All;
 
 if ~RunState.CuePretrainingComplete
 	fprintf('Starting cue pretraining for %d non-naive tasks.\n', nnz(taskCondName ~= "Naive"));
-	[MousePool, RunState] = iRunCuePretrainingUnits(MousePool, Params, Cond, RunState);
+	[MousePool, RunState] = iRunCuePretrainingUnits(MousePool, Params, Cond, RunState, RunOptions);
 	if RunState.CuePretrainingComplete
 		fprintf('Cue pretraining complete.\n');
 	end
@@ -511,7 +516,7 @@ if ~RunState.RewardProbeComplete
 	RunState.RewardProbeComplete = true;
 	RunState.Stage = "reward-probe-complete";
 	RunState.MousePool = MousePool;
-	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond, RunOptions);
 	fprintf('Reward-readout probe complete.\n');
 else
 	fprintf('Reward-readout probe already complete in checkpoint.\n');
@@ -538,7 +543,7 @@ for iSess = RunState.CompletedFormalSessions + 1:nSess
 		iMouseTask = taskMouseIndex(iTask);
 		Mouse = mouseCells{iTask};
 		sessionParams = iWithRunContext(Params, sprintf('%s formal training mouse %d session %d', taskCondName(iTask), iMouseTask, iSess));
-		sessionParams.HebbRate = sessionParams.FormalHebbRate;
+		sessionParams.ActiveHebbRate = sessionParams.FormalHebbRate;
 		[perfTask, Signals, ~, Mouse] = iSimulateSession(Mouse, sessionParams, taskCondRows{iTask}, false);
 		formalDiagnosticsSession{iTask} = iFormalTrainingDiagnosticSnapshot(Mouse, Signals, Params);
 		sessionMeanL23Task = sessionMeanL23Cells{iTask};
@@ -587,7 +592,7 @@ for iSess = RunState.CompletedFormalSessions + 1:nSess
 	RunState.H5All = h5All;
 	RunState.CompletedFormalSessions = iSess;
 	RunState.Stage = sprintf("formal-session-%02d-complete", iSess);
-	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond, RunOptions);
 end
 
 iCheckFormalTrainingSuccess(RunState.PerfAll, Cond, Params);
@@ -661,7 +666,7 @@ taskCondIndex = repmat((1:nCond)', nMouse, 1);
 taskMouseIndex = repelem((1:nMouse)', nCond);
 end
 
-function [MousePool, RunState] = iRunCuePretrainingUnits(MousePool, Params, Cond, RunState)
+function [MousePool, RunState] = iRunCuePretrainingUnits(MousePool, Params, Cond, RunState, RunOptions)
 nCond = height(Cond);
 nMouse = Params.NumMice;
 nTask = nCond * nMouse;
@@ -669,8 +674,8 @@ nTask = nCond * nMouse;
 pretrainParams = Params;
 mouseCells = MousePool(:);
 taskCondName = Cond.Name(taskCondIndex);
-if nargin < 4 || isempty(RunState)
-	RunState = iInitializeRunState(Params, Cond);
+if isempty(RunState)
+	RunState = iInitializeRunState(Params, Cond, RunOptions);
 	RunState.MousePool = MousePool;
 end
 
@@ -731,7 +736,7 @@ for iSess = startSess:pretrainParams.MaxPretrainSessions
 		end
 	end
 	fprintf('\n');
-	iPrintCuePretrainDebug(stateCells, taskCondIndex, Cond, iSess, Params);
+	iPrintCuePretrainDebug(stateCells, taskCondIndex, Cond, iSess, RunOptions);
 	RunState.MousePool = reshape(mouseCells, nCond, nMouse);
 	RunState.CuePretrainState.ActiveList = activeList;
 	RunState.CuePretrainState.StateCells = stateCells;
@@ -743,7 +748,7 @@ for iSess = startSess:pretrainParams.MaxPretrainSessions
 	else
 		RunState.Stage = "cue-pretrain";
 	end
-	RunState = iSaveRunCheckpoint(RunState, Params, Cond);
+	RunState = iSaveRunCheckpoint(RunState, Params, Cond, RunOptions);
 	if ~any(activeList)
 		MousePool = reshape(mouseCells, nCond, nMouse);
 		return;
@@ -752,8 +757,8 @@ end
 MousePool = reshape(mouseCells, nCond, nMouse);
 end
 
-function iPrintCuePretrainDebug(stateCells, taskCondIndex, Cond, iSess, Params)
-if ~isfield(Params, 'PrintCuePretrainDebug') || ~Params.PrintCuePretrainDebug
+function iPrintCuePretrainDebug(stateCells, taskCondIndex, Cond, iSess, RunOptions)
+if ~RunOptions.PrintCuePretrainDebug
 	return;
 end
 for iCond = 1:height(Cond)
@@ -817,7 +822,7 @@ end
 function [Mouse, cueState] = iStepCuePretrain(Mouse, cueState, pretrainParams, iSess, condName, iMouse)
 pretrainCond.THInputIsNoise = false;
 pretrainParams = iWithRunContext(pretrainParams, sprintf('%s cue pretrain mouse %d session %d', condName, iMouse, iSess));
-pretrainParams.HebbRate = pretrainParams.PretrainHebbRate;
+pretrainParams.ActiveHebbRate = pretrainParams.PretrainHebbRate;
 [perfObserved, Signals, perfExpected, Mouse] = iSimulateSession(Mouse, pretrainParams, pretrainCond, true);
 cueState.LastPerfObserved = perfObserved;
 cueState.LastPerfExpected = perfExpected;
@@ -1165,10 +1170,10 @@ preCueMask = iLogicalMaskFromIndices(numL23, preCueIdx, Params);
 cueMask = iLogicalMaskFromIndices(numL23, [overlapIdx, newCueIdx], Params);
 end
 
-function mask = iLogicalMaskFromIndices(numCells, selectedIdx, Params)
+function mask = iLogicalMaskFromIndices(numCells, selectedIdx, ~)
 mask = false(numCells, 1);
 mask(selectedIdx) = true;
-if iUseGPU(Params)
+if iUseGPU()
 	mask = gpuArray(mask);
 end
 end
@@ -1177,7 +1182,7 @@ function Mouse = iPretrainMouse(Mouse, Params)
 % Pretraining uses PreCueL23Pattern and keeps structured TH input intact.
 pretrainCond.THInputIsNoise = false;
 pretrainParams = Params;
-pretrainParams.HebbRate = pretrainParams.PretrainHebbRate;
+pretrainParams.ActiveHebbRate = pretrainParams.PretrainHebbRate;
 lastPerfObserved = NaN;
 lastPerfExpected = NaN;
 postCeilingCount = 0;
@@ -1819,7 +1824,7 @@ readoutDrive = iReadoutPatternSimilarity(rL5Read, Mouse.L5ReadoutPattern, ProbeP
 end
 
 function [Result, Mouse] = iSimulateMouse(Mouse, Params, Cond)
-Params.HebbRate = Params.FormalHebbRate;
+Params.ActiveHebbRate = Params.FormalHebbRate;
 perf = nan(1, Params.NumSessions);
 h23 = nan(1, Params.NumSessions);
 h5 = nan(1, Params.NumSessions);
@@ -1892,7 +1897,7 @@ else
 	cueL23Pattern = Mouse.CueL23Pattern;
 end
 cueGain = Params.CueL23Gain;
-eta = Params.HebbRate;
+eta = Params.ActiveHebbRate;
 traceEta = eta * Params.EligibilityTraceScale;
 
 % Storage for session-level diagnostics.
@@ -2535,7 +2540,7 @@ end
 end
 
 function [Mouse, correctionDiag] = iSuppressFalseReadout(Mouse, internalActivityBefore, internalActivityAfter, falseDrive, Params, thActivityBefore, thActivityAfter, rewardRecvActivityBefore, rewardRecvActivityAfter, iRewardRecvActivityBefore, iRewardRecvActivityAfter)
-eta = Params.HebbRate * Params.EligibilityTraceScale;
+eta = Params.ActiveHebbRate * Params.EligibilityTraceScale;
 isPunishment = true;
 eligInternal = iZeroCellEligibility(Params.NInternal, Params.NInternal, Params);
 eligInternal = iUpdateRecurrentEligibility(eligInternal, internalActivityBefore, internalActivityAfter, Params.EligibilityDecay, Params);
@@ -2659,8 +2664,9 @@ Mouse.Z_InternalToInternal = iShiftRecurrentColumnsToNonnegative(ret * Mouse.Z_I
 Mouse.W_InternalToInternal = iAccumulatorToInternalWeight(Mouse.Z_InternalToInternal, Params);
 end
 
-function tf = iUseGPU(Params)
-tf = isfield(Params, 'UseGPU') && Params.UseGPU;
+function tf = iUseGPU()
+deviceManager = parallel.gpu.GPUDeviceManager.instance;
+tf = ~isempty(deviceManager.SelectedDevice);
 end
 
 function accumulator = iInitChiSquareAccumulator(sz, scale, dof, Params)
@@ -2675,33 +2681,33 @@ for iDof = 1:dof
 end
 end
 
-function values = iRandn(sz, Params)
+function values = iRandn(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU(Params)
+if iUseGPU()
 	values = gpuArray.randn(sz(1), sz(2));
 else
 	values = randn(sz);
 end
 end
 
-function values = iRand(sz, Params)
+function values = iRand(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU(Params)
+if iUseGPU()
 	values = gpuArray.rand(sz(1), sz(2));
 else
 	values = rand(sz);
 end
 end
 
-function values = iZeros(sz, Params)
+function values = iZeros(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU(Params)
+if iUseGPU()
 	values = gpuArray.zeros(sz(1), sz(2));
 else
 	values = zeros(sz);

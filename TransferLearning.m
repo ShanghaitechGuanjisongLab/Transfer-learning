@@ -126,6 +126,8 @@ for Ax=findall(Fig,Type='axes').'
 	MinY=MinY-Padding;
 	MaxY=MaxY+Padding;
 	if MinX<XLim(1) || MaxX>XLim(2)|| MinY<YLim(1) || MaxY>YLim(2)
+		% 这里必须让 MATLAB 根据临时边界散点自动重算轴限。
+		% 不要改成手算 xlim/ylim，否则会绕开 MATLAB 对刻度、padding 和布局的整体处理。
 		HoldState=ishold(Ax);
 		HoldState=onCleanup(@()hold(Ax,HoldState));
 		hold(Ax,'on');
