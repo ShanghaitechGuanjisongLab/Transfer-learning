@@ -26,9 +26,9 @@ else
 	outDir = fullfile(localOutputRoot, char(datetime('now', 'Format', 'yyyyMM')));
 end
 outputNameSuffix = iOutputNameSuffix();
-svgName = iTaggedSvgName('TH_Archive_20260427_NegativeWeights_Inhibitory_Heterogeneity_Model.svg', outputNameSuffix);
-preWeightDistributionSvgName = iTaggedSvgName('TH_Archive_20260427_NegativeWeights_PreFormal_Naive_Transfer_Connection_Weight_Distribution.svg', outputNameSuffix);
-weightSvgName = iTaggedSvgName('TH_Archive_20260427_NegativeWeights_Formal_Training_Connection_Polarity_Weight_SD.svg', outputNameSuffix);
+svgName = iTaggedSvgName('TH_Archive_20260427_NegativeWeights_IToI_Inhibitory_Heterogeneity_Model.svg', outputNameSuffix);
+preWeightDistributionSvgName = iTaggedSvgName('TH_Archive_20260427_NegativeWeights_IToI_PreFormal_Naive_Transfer_Connection_Weight_Distribution.svg', outputNameSuffix);
+weightSvgName = iTaggedSvgName('TH_Archive_20260427_NegativeWeights_IToI_Formal_Training_Connection_Type_Weight_SD.svg', outputNameSuffix);
 
 Params = iDefaultParams();
 Params = iApplyBaseParameterOverrides(Params);
@@ -194,9 +194,9 @@ end
 
 function workspaceVarNames = iWorkspaceVariableNames(outputNameSuffix)
 workspaceSuffix = iWorkspaceNameSuffix(outputNameSuffix);
-workspaceVarNames.Summary = char("THInhibitoryHeterogeneityModelArchive20260427NegativeWeights" + workspaceSuffix);
-workspaceVarNames.Params = char("THInhibitoryHeterogeneityParamsArchive20260427NegativeWeights" + workspaceSuffix);
-workspaceVarNames.Cond = char("THInhibitoryHeterogeneityConditionsArchive20260427NegativeWeights" + workspaceSuffix);
+workspaceVarNames.Summary = char("THInhibitoryHeterogeneityModelArchive20260427NegativeWeightsIToI" + workspaceSuffix);
+workspaceVarNames.Params = char("THInhibitoryHeterogeneityParamsArchive20260427NegativeWeightsIToI" + workspaceSuffix);
+workspaceVarNames.Cond = char("THInhibitoryHeterogeneityConditionsArchive20260427NegativeWeightsIToI" + workspaceSuffix);
 end
 
 function workspaceSuffix = iWorkspaceNameSuffix(outputNameSuffix)
@@ -228,8 +228,8 @@ tf = isstruct(Summary) ...
 	&& isfield(Summary, 'FormalTrainingConnectionWeightMouseStd') ...
 	&& isfield(Summary, 'FormalTrainingConnectionWeightStats') ...
 	&& isfield(Summary, 'FormalTrainingConnectionWeightClassification') ...
-	&& isfield(Summary.FormalTrainingConnectionWeightStats, 'Excitatory') ...
-	&& isfield(Summary.FormalTrainingConnectionWeightStats, 'Inhibitory') ...
+	&& isfield(Summary.FormalTrainingConnectionWeightStats, 'EE') ...
+	&& isfield(Summary.FormalTrainingConnectionWeightStats, 'II') ...
 	&& string(Summary.FormalTrainingConnectionWeightClassification) == iFormalTrainingConnectionWeightClassification();
 end
 
@@ -251,7 +251,7 @@ end
 end
 
 function classification = iFormalTrainingConnectionWeightClassification()
-classification = "archive_source-type_raw-weight_nonnegative-readout-inh-matrix_mouse-level-sd-v3";
+classification = "archive_connection-type_EE-EI-IE-II_mouse-level-sd_random-plastic-wii_itoi-v1";
 end
 
 function Params = iDefaultParams()
@@ -292,7 +292,7 @@ Params.Comp_Cue = 0.95;
 Params.Comp_Rew = 1.00;
 Params.Comp_Read = 1.00;
 % Input gains
-Params.CueInputGain = 1.00;          % sensory cue drive (decision + learning)
+Params.CueInputGain = 1.10;          % sensory cue drive (decision + learning)
 Params.CueInputGainPretrain = 1.40;  % pretraining cue gain
 Params.RewInputGain = 1.45;          % reward pattern clamp amplitude (learning phase only)
 Params.THRewardRecvInputGain = 0.50; % reward/TH-gated direct L5RewardRecv teaching drive
@@ -317,8 +317,8 @@ Params.ClampNegativePlasticWeightsToZero = true;
 Params.InternalRecurrentPasses = 2;
 % Per-trial Hebbian rate. With NumTrials=30 per session, total within-
 % session increase ≈ 30 * HebbRate * eta_factors.
-Params.HebbRate = 0.0075;
-Params.RewardAbsentHebbScale = 1.00;
+Params.HebbRate = 0.0110;
+Params.RewardAbsentHebbScale = 0.95;
 Params.RewardAbsentL5RewardRecvHebbScale = 0.00;
 Params.RandomSeed = NaN;
 % Inhibitory plasticity: InhGain is retired; WIE/WEI carry cell-specific plasticity.
@@ -326,6 +326,10 @@ Params.InhPlasticityRate = 0.0035;
 Params.InhTargetAct = 0.00;
 Params.InhWeightMin = 0.00;
 Params.InhWeightMax = 3.00;
+Params.InitWIIBase = 0.35;
+Params.InitWIIStd = 0.08;
+Params.IToIGain = 0.50;
+Params.IToIPasses = 2;
 % Cross-modality overlap between pretraining cue input (e.g. sound) and new
 % cue input (e.g. light). Real sensory drives are never fully orthogonal;
 % each cue-input dimension has a shared component plus a modality-unique
@@ -616,10 +620,13 @@ function drive = iCueDecisionProbeNoLocalInh(Mouse, Params, usePreCue)
 MouseNoInh = Mouse;
 MouseNoInh.WIE_L23 = iZeros(size(Mouse.WIE_L23), Params);
 MouseNoInh.WEI_L23 = iZeros(size(Mouse.WEI_L23), Params);
+MouseNoInh.WII_L23 = iZeros(size(Mouse.WII_L23), Params);
 MouseNoInh.WIE_L5RewardRecv = iZeros(size(Mouse.WIE_L5RewardRecv), Params);
 MouseNoInh.WEI_L5RewardRecv = iZeros(size(Mouse.WEI_L5RewardRecv), Params);
+MouseNoInh.WII_L5RewardRecv = iZeros(size(Mouse.WII_L5RewardRecv), Params);
 MouseNoInh.WIE_L5Read = iZeros(size(Mouse.WIE_L5Read), Params);
 MouseNoInh.WEI_L5Read = iZeros(size(Mouse.WEI_L5Read), Params);
+MouseNoInh.WII_L5Read = iZeros(size(Mouse.WII_L5Read), Params);
 drive = iCueDecisionProbe(MouseNoInh, Params, usePreCue);
 end
 
@@ -682,6 +689,7 @@ AllH5Read = [];
 AllRewardReadoutPretrain = [];
 AllRewardReadoutFinal = [];
 AllCond = strings(0, 1);
+classNames = iConnectionClassNames();
 
 for iCond = 1:height(Cond)
 	perf = nan(Params.NumMice, Params.NumSessions);
@@ -690,10 +698,13 @@ for iCond = 1:height(Cond)
 	perMouse = table('Size', [Params.NumMice, 8], 'VariableTypes', {'double','double','double','double','double','double','double','double'}, ...
 		'VariableNames', {'Slope','MeanDeltaHit','MeanH23','MeanH5','MeanH5RewardRecv','MeanH5Read','RewardReadoutPretrain','RewardReadoutFinal'});
 	repProcessL5 = cell(Params.NumMice, 1);
-	preExcWeightCells = cell(Params.NumMice, 1);
-	preInhWeightCells = cell(Params.NumMice, 1);
-	postExcWeightCells = cell(Params.NumMice, 1);
-	postInhWeightCells = cell(Params.NumMice, 1);
+	preWeightCells = struct();
+	postWeightCells = struct();
+	for iClass = 1:numel(classNames)
+		className = classNames(iClass);
+		preWeightCells.(className) = cell(Params.NumMice, 1);
+		postWeightCells.(className) = cell(Params.NumMice, 1);
+	end
 	condRow = Cond(iCond, :);
 	condName = Cond.Name(iCond);
 	mouseResultCells = cell(Params.NumMice, 1);
@@ -714,23 +725,23 @@ for iCond = 1:height(Cond)
 		perMouse.RewardReadoutPretrain(iMouse) = mouseResult.RewardReadoutPretrain;
 		perMouse.RewardReadoutFinal(iMouse) = mouseResult.RewardReadoutFinal;
 		repProcessL5{iMouse} = mouseResult.ProcessMeanL5;
-		preExcWeightCells{iMouse} = mouseResult.FormalTrainingConnectionWeights.Pre.Excitatory;
-		preInhWeightCells{iMouse} = mouseResult.FormalTrainingConnectionWeights.Pre.Inhibitory;
-		postExcWeightCells{iMouse} = mouseResult.FormalTrainingConnectionWeights.Post.Excitatory;
-		postInhWeightCells{iMouse} = mouseResult.FormalTrainingConnectionWeights.Post.Inhibitory;
+		for iClass = 1:numel(classNames)
+			className = classNames(iClass);
+			preWeightCells.(className){iMouse} = mouseResult.FormalTrainingConnectionWeights.Pre.(className);
+			postWeightCells.(className){iMouse} = mouseResult.FormalTrainingConnectionWeights.Post.(className);
+		end
 	end
 	Summary.Performance.(Cond.Name(iCond)) = perf;
 	Summary.HeterogeneityL23.(Cond.Name(iCond)) = h23;
 	Summary.HeterogeneityL5.(Cond.Name(iCond)) = h5;
 	Summary.PerMouse.(Cond.Name(iCond)) = perMouse;
-	Summary.FormalTrainingConnectionWeights.Pre.Excitatory.(Cond.Name(iCond)) = vertcat(preExcWeightCells{:});
-	Summary.FormalTrainingConnectionWeights.Pre.Inhibitory.(Cond.Name(iCond)) = vertcat(preInhWeightCells{:});
-	Summary.FormalTrainingConnectionWeights.Post.Excitatory.(Cond.Name(iCond)) = vertcat(postExcWeightCells{:});
-	Summary.FormalTrainingConnectionWeights.Post.Inhibitory.(Cond.Name(iCond)) = vertcat(postInhWeightCells{:});
-	Summary.FormalTrainingConnectionWeightMouseStd.Pre.Excitatory.(Cond.Name(iCond)) = iWeightDistributionStdByMouse(preExcWeightCells);
-	Summary.FormalTrainingConnectionWeightMouseStd.Pre.Inhibitory.(Cond.Name(iCond)) = iWeightDistributionStdByMouse(preInhWeightCells);
-	Summary.FormalTrainingConnectionWeightMouseStd.Post.Excitatory.(Cond.Name(iCond)) = iWeightDistributionStdByMouse(postExcWeightCells);
-	Summary.FormalTrainingConnectionWeightMouseStd.Post.Inhibitory.(Cond.Name(iCond)) = iWeightDistributionStdByMouse(postInhWeightCells);
+	for iClass = 1:numel(classNames)
+		className = classNames(iClass);
+		Summary.FormalTrainingConnectionWeights.Pre.(className).(Cond.Name(iCond)) = vertcat(preWeightCells.(className){:});
+		Summary.FormalTrainingConnectionWeights.Post.(className).(Cond.Name(iCond)) = vertcat(postWeightCells.(className){:});
+		Summary.FormalTrainingConnectionWeightMouseStd.Pre.(className).(Cond.Name(iCond)) = iWeightDistributionStdByMouse(preWeightCells.(className));
+		Summary.FormalTrainingConnectionWeightMouseStd.Post.(className).(Cond.Name(iCond)) = iWeightDistributionStdByMouse(postWeightCells.(className));
+	end
 	if Cond.Name(iCond) == "Transfer" || Cond.Name(iCond) == "THOff"
 		repIdx = iRepresentativeIndex(perMouse.MeanH5);
 		Summary.Representative.(Cond.Name(iCond)).ProcessMeanL5 = repProcessL5{repIdx};
@@ -753,10 +764,12 @@ Summary.FormalTrainingConnectionWeightClassification = iFormalTrainingConnection
 end
 
 function weightValues = iInitFormalTrainingConnectionWeightValues()
-weightValues.Pre.Excitatory = struct();
-weightValues.Pre.Inhibitory = struct();
-weightValues.Post.Excitatory = struct();
-weightValues.Post.Inhibitory = struct();
+classNames = iConnectionClassNames();
+for iClass = 1:numel(classNames)
+	className = classNames(iClass);
+	weightValues.Pre.(className) = struct();
+	weightValues.Post.(className) = struct();
+end
 end
 
 function mouseResult = iRunOneMouseTask(Params, Cond, condName, iMouse)
@@ -777,9 +790,9 @@ if condName ~= "Naive"
 	Mouse = iPretrainMouse(Mouse, Params);
 	rewardReadoutPretrain = iRewardReadoutProbe(Mouse, Params, iFullRewardCondition());
 end
-formalTrainingConnectionWeightsPre = iCollectConnectionPolarityWeights(Mouse, Params);
+formalTrainingConnectionWeightsPre = iCollectConnectionTypeWeights(Mouse, Params);
 [MouseResult, Mouse] = iSimulateMouse(Mouse, Params, Cond);
-formalTrainingConnectionWeightsPost = iCollectConnectionPolarityWeights(Mouse, Params);
+formalTrainingConnectionWeightsPost = iCollectConnectionTypeWeights(Mouse, Params);
 mouseResult.Performance = iGatherValue(MouseResult.Performance);
 mouseResult.H23 = iGatherValue(MouseResult.H23);
 mouseResult.H5 = iGatherValue(MouseResult.H5);
@@ -827,11 +840,23 @@ Mouse.W_L23L5ToL23L5 = iZeroSelfProjection(iClampNegativeWeightsToZero(sd * iRan
 % Inhibitory pools in L2/3, L5RewardRecv, and a schema-driven L5Read pathway.
 Mouse.WIE_L23 = abs(0.72 + 0.20 * iRandn([Params.NIL23, Params.NL23], Params));
 Mouse.WEI_L23 = abs(0.88 + 0.26 * iRandn([Params.NL23,  Params.NIL23], Params));
+Mouse.WII_L23 = iInitIToIWeights(Params.NIL23, Params);
 Mouse.WIE_L5RewardRecv = abs(0.72 + 0.20 * iRandn([Params.NIL5RewardRecv, Params.NL5RewardRecv], Params));
 Mouse.WEI_L5RewardRecv = abs(0.88 + 0.26 * iRandn([Params.NL5RewardRecv,  Params.NIL5RewardRecv], Params));
+Mouse.WII_L5RewardRecv = iInitIToIWeights(Params.NIL5RewardRecv, Params);
 Mouse.WIE_L5Read = abs(0.72 + 0.20 * iRandn([Params.NIL5Read, Params.NL23 + Params.NL5RewardRecv], Params));
 Mouse.WEI_L5Read = abs(0.88 + 0.26 * iRandn([Params.NL5Read, Params.NIL5Read], Params));
+Mouse.WII_L5Read = iInitIToIWeights(Params.NIL5Read, Params);
 
+end
+
+function WII = iInitIToIWeights(numInhibitoryCells, Params)
+if Params.InitWIIStd > 0
+	weights = abs(Params.InitWIIBase + Params.InitWIIStd * iRandn([numInhibitoryCells, numInhibitoryCells], Params));
+else
+	weights = Params.InitWIIBase * iOnes([numInhibitoryCells, numInhibitoryCells], Params);
+end
+WII = iZeroSelfProjection(weights);
 end
 
 function Mouse = iPretrainMouse(Mouse, Params)
@@ -949,27 +974,42 @@ Result.ProcessMeanL5RewardRecv = finalMeanL5RewardRecv;
 Result.ProcessMeanL5Read = finalMeanL5Read;
 end
 
-function weightClasses = iCollectConnectionPolarityWeights(Mouse, Params)
-weightClasses.Excitatory = [];
-weightClasses.Inhibitory = [];
+function weightClasses = iCollectConnectionTypeWeights(Mouse, Params)
+weightClasses = iEmptyConnectionClassWeights();
 
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Mouse.W_CueInputToL23, 1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Mouse.W_RewardToL5RewardRecv / Params.RewardAfferentNorm, 1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, iNonSelfInternalWeights(Mouse.W_L23L5ToL23L5) / Params.NL23L5, 1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Mouse.WIE_L23 / Params.NL23, 1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Params.Comp_Cue * Mouse.WEI_L23 / Params.NIL23, -1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Mouse.WIE_L5RewardRecv / Params.NL5RewardRecv, 1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Params.Comp_Rew * Mouse.WEI_L5RewardRecv / Params.NIL5RewardRecv, -1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Mouse.WIE_L5Read / (Params.NL23 + Params.NL5RewardRecv), 1);
-weightClasses = iAppendConnectionPolarityWeights(weightClasses, Params.Comp_Read * Mouse.WEI_L5Read / Params.NIL5Read, -1);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", Mouse.W_CueInputToL23);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", Mouse.W_RewardToL5RewardRecv / Params.RewardAfferentNorm);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", iNonSelfInternalWeights(Mouse.W_L23L5ToL23L5) / Params.NL23L5);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L23 / Params.NL23);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Cue * Mouse.WEI_L23 / Params.NIL23);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L23 / Params.NIL23);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L5RewardRecv / Params.NL5RewardRecv);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Rew * Mouse.WEI_L5RewardRecv / Params.NIL5RewardRecv);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L5RewardRecv / Params.NIL5RewardRecv);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L5Read / (Params.NL23 + Params.NL5RewardRecv));
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Read * Mouse.WEI_L5Read / Params.NIL5Read);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L5Read / Params.NIL5Read);
 end
 
-function weightClasses = iAppendConnectionPolarityWeights(weightClasses, weights, sourcePolarity)
-weights = iGatherValue(weights(:));
+function weightClasses = iEmptyConnectionClassWeights()
+classNames = iConnectionClassNames();
+for iClass = 1:numel(classNames)
+	weightClasses.(classNames(iClass)) = [];
+end
+end
+
+function weightClasses = iAppendConnectionClassWeights(weightClasses, className, weights)
+weights = abs(iGatherValue(weights(:)));
 weights = weights(isfinite(weights) & weights ~= 0);
-connectionPolarity = sourcePolarity * weights;
-weightClasses.Excitatory = [weightClasses.Excitatory; abs(weights(connectionPolarity > 0))];
-weightClasses.Inhibitory = [weightClasses.Inhibitory; abs(weights(connectionPolarity < 0))];
+weightClasses.(className) = [weightClasses.(className); weights];
+end
+
+function classNames = iConnectionClassNames()
+classNames = ["EE", "EI", "IE", "II"];
+end
+
+function classLabels = iConnectionClassLabels()
+classLabels = ["EE", "EI", "IE", "II"];
 end
 
 function weights = iNonSelfInternalWeights(weights)
@@ -1114,20 +1154,33 @@ end
 function rE = iRunArea(pre, areaSpec, Mouse, Params)
 switch areaSpec
 case 'l23'
-	WIE = Mouse.WIE_L23; WEI = Mouse.WEI_L23;
+	WIE = Mouse.WIE_L23; WEI = Mouse.WEI_L23; WII = Mouse.WII_L23;
 	NI = Params.NIL23; NE = Params.NL23; Comp = Params.Comp_Cue;
 case 'reward'
 	% Reward cells are modeled as an independent input population.
 	rE = Params.ResponseScale * tanh(pre);
 	return;
 case 'l5rewardrecv'
-	WIE = Mouse.WIE_L5RewardRecv; WEI = Mouse.WEI_L5RewardRecv;
+	WIE = Mouse.WIE_L5RewardRecv; WEI = Mouse.WEI_L5RewardRecv; WII = Mouse.WII_L5RewardRecv;
 	NI = Params.NIL5RewardRecv; NE = Params.NL5RewardRecv; Comp = Params.Comp_Rew;
 end
 exc = max(pre, 0);
-inhI = max(0, WIE * exc / NE);
-inhI = inhI - mean(inhI, 1);
+inhI = iRunInhibitoryPool(WIE * exc / NE, WII, Params, NI, true);
 rE = Params.ResponseScale * tanh(pre - Comp * (WEI * inhI) / NI);
+end
+
+function inhI = iRunInhibitoryPool(feedforwardInh, WII, Params, numInhibitoryCells, centerInh)
+if nargin < 5
+	centerInh = true;
+end
+inhFeedforward = max(0, feedforwardInh);
+inhI = inhFeedforward;
+for iPass = 1:Params.IToIPasses
+	inhI = max(0, inhFeedforward - Params.IToIGain * (WII * inhI) / numInhibitoryCells);
+end
+if centerInh
+	inhI = inhI - mean(inhI, 1);
+end
 end
 
 function plasticityScale = iRewardGatedPlasticityScale(rewardInputLevel, Params)
@@ -1137,50 +1190,56 @@ end
 function rL5Read = iRunReadoutArea(preL5Read, readoutInhibitorySource, Mouse, Params)
 activeSource = max(readoutInhibitorySource, 0);
 numSourceCells = size(activeSource, 1);
-inhDrive = max(0, Mouse.WIE_L5Read * activeSource / numSourceCells);
+inhDrive = iRunInhibitoryPool(Mouse.WIE_L5Read * activeSource / numSourceCells, Mouse.WII_L5Read, Params, Params.NIL5Read, false);
 rL5Read = Params.ResponseScale * tanh(preL5Read - Params.Comp_Read * (Mouse.WEI_L5Read * inhDrive) / Params.NIL5Read);
 end
 
 function Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, activityL23, activityL5RewardRecv, readoutTargetPattern, plasticityMode)
-[Mouse.WIE_L23, Mouse.WEI_L23] = iInhibitoryAreaPlasticity(Mouse.WIE_L23, Mouse.WEI_L23, activityL23, Params, plasticityMode);
-[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv] = iInhibitoryAreaPlasticity(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, activityL5RewardRecv, Params, plasticityMode);
+[Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23] = iInhibitoryAreaPlasticity(Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23, activityL23, Params, plasticityMode);
+[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv] = iInhibitoryAreaPlasticity(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv, activityL5RewardRecv, Params, plasticityMode);
 readoutInhibitorySource = [activityL23; activityL5RewardRecv];
-[Mouse.WIE_L5Read, Mouse.WEI_L5Read] = iReadoutInhibitoryPlasticity(Mouse.WIE_L5Read, Mouse.WEI_L5Read, readoutInhibitorySource, readoutTargetPattern, Params, plasticityMode);
+[Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read] = iReadoutInhibitoryPlasticity(Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read, readoutInhibitorySource, readoutTargetPattern, Params, plasticityMode);
 end
 
-function [WIE, WEI] = iInhibitoryAreaPlasticity(WIE, WEI, activityE, Params, plasticityMode)
+function [WIE, WEI, WII] = iInhibitoryAreaPlasticity(WIE, WEI, WII, activityE, Params, plasticityMode)
 activeE = max(activityE(:) - Params.InhTargetAct, 0);
 if ~any(iGatherValue(activeE > 0))
 	return;
 end
 numExcCells = numel(activeE);
-inhDrive = max(0, WIE * activeE / numExcCells);
+numInhibitoryCells = size(WII, 1);
+inhDrive = iRunInhibitoryPool(WIE * activeE / numExcCells, WII, Params, numInhibitoryCells, false);
 if ~any(iGatherValue(inhDrive > 0))
 	return;
 end
 deltaWIE = Params.InhPlasticityRate * (inhDrive * activeE');
 deltaWEI = Params.InhPlasticityRate * (activeE * inhDrive');
+deltaWII = Params.InhPlasticityRate * (inhDrive * inhDrive');
 switch plasticityMode
 case "suppress"
 	WIE = WIE + deltaWIE;
 	WEI = WEI + deltaWEI;
+	WII = WII - deltaWII;
 case "protect"
 	WIE = WIE - deltaWIE;
 	WEI = WEI - deltaWEI;
+	WII = WII + deltaWII;
 otherwise
 	error('THModel:UnknownInhibitoryPlasticityMode', 'Unknown inhibitory plasticity mode: %s.', plasticityMode);
 end
 WIE = iClamp(WIE, Params.InhWeightMin, Params.InhWeightMax);
 WEI = iClamp(WEI, Params.InhWeightMin, Params.InhWeightMax);
+WII = iZeroSelfProjection(iClamp(WII, Params.InhWeightMin, Params.InhWeightMax));
 end
 
-function [WIE, WEI] = iReadoutInhibitoryPlasticity(WIE, WEI, sourceActivity, targetPattern, Params, plasticityMode)
+function [WIE, WEI, WII] = iReadoutInhibitoryPlasticity(WIE, WEI, WII, sourceActivity, targetPattern, Params, plasticityMode)
 activeSource = max(sourceActivity(:) - Params.InhTargetAct, 0);
 if ~any(iGatherValue(activeSource > 0))
 	return;
 end
 numSourceCells = numel(activeSource);
-inhDrive = max(0, WIE * activeSource / numSourceCells);
+numInhibitoryCells = size(WII, 1);
+inhDrive = iRunInhibitoryPool(WIE * activeSource / numSourceCells, WII, Params, numInhibitoryCells, false);
 if ~any(iGatherValue(inhDrive > 0))
 	return;
 end
@@ -1194,18 +1253,22 @@ targetScale = targetScale / targetScaleMean;
 targetDirection = -sign(targetPattern) .* targetScale;
 deltaWIE = Params.InhPlasticityRate * (inhDrive * activeSource');
 deltaWEI = Params.InhPlasticityRate * (targetDirection * inhDrive');
+deltaWII = Params.InhPlasticityRate * (inhDrive * inhDrive');
 switch plasticityMode
 case "suppress"
 	WIE = WIE + deltaWIE;
 	WEI = WEI - deltaWEI;
+	WII = WII - deltaWII;
 case "protect"
 	WIE = WIE + deltaWIE;
 	WEI = WEI + deltaWEI;
+	WII = WII + deltaWII;
 otherwise
 	error('THModel:UnknownInhibitoryPlasticityMode', 'Unknown inhibitory plasticity mode: %s.', plasticityMode);
 end
 WIE = iClamp(WIE, Params.InhWeightMin, Params.InhWeightMax);
 WEI = iClamp(WEI, Params.InhWeightMin, Params.InhWeightMax);
+WII = iZeroSelfProjection(iClamp(WII, Params.InhWeightMin, Params.InhWeightMax));
 end
 
 function [rL23, rL5RewardRecv, rL5Read, internalActivity] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, Params)
@@ -1424,7 +1487,7 @@ end
 end
 
 function stats = iFormalTrainingConnectionWeightStats(mouseStdValues, Cond)
-classNames = ["Excitatory", "Inhibitory"];
+classNames = iConnectionClassNames();
 stageNames = ["Pre", "Post"];
 for iClass = 1:numel(classNames)
 	className = classNames(iClass);
@@ -1476,19 +1539,19 @@ end
 end
 
 function fDist = iPlotPreFormalConnectionWeightDistributions(Summary, Cond)
-classNames = ["Excitatory", "Inhibitory"];
-classLabels = ["Excitatory connections", "Inhibitory connections"];
+classNames = iConnectionClassNames();
+classLabels = iConnectionClassLabels();
 plotConditionNames = ["Naive", "Transfer"];
 
 fDist = figure('Color', 'w', 'Name', 'Naive/Transfer pre-formal connection weight distributions');
 fDist.Units = 'centimeters';
-fDist.Position(3:4) = [18, 8];
+fDist.Position(3:4) = [18, 14];
 fDist.PaperUnits = 'centimeters';
 fDist.PaperPositionMode = 'manual';
-fDist.PaperPosition = [0, 0, 18, 8];
-fDist.PaperSize = [18, 8];
+fDist.PaperPosition = [0, 0, 18, 14];
+fDist.PaperSize = [18, 14];
 
-tlDist = tiledlayout(fDist, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tlDist = tiledlayout(fDist, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 legendHandles = gobjects(numel(plotConditionNames), 1);
 
 for iClass = 1:numel(classNames)
@@ -1499,11 +1562,7 @@ for iClass = 1:numel(classNames)
 	allPlotValues = [];
 	for iPlotCond = 1:numel(plotConditionNames)
 		weights = iPreFormalWeightsForCondition(Summary, className, plotConditionNames(iPlotCond));
-		if className == "Excitatory"
-			plotValues = log10(weights(weights > 0));
-		else
-			plotValues = weights;
-		end
+		plotValues = log10(weights(weights > 0));
 		plotValues = plotValues(isfinite(plotValues));
 		plotValuesByCondition{iPlotCond} = plotValues;
 		allPlotValues = [allPlotValues; plotValues]; %#ok<AGROW>
@@ -1512,11 +1571,7 @@ for iClass = 1:numel(classNames)
 	if isempty(allPlotValues)
 		allPlotValues = [0; 1];
 	end
-	if className == "Excitatory"
-		displayRange = quantile(allPlotValues, [0.001, 0.999]);
-	else
-		displayRange = [0, max(allPlotValues, [], 'omitnan')];
-	end
+	displayRange = quantile(allPlotValues, [0.001, 0.999]);
 	if ~all(isfinite(displayRange)) || displayRange(1) >= displayRange(2)
 		displayRange = [min(allPlotValues, [], 'omitnan'), max(allPlotValues, [], 'omitnan')];
 	end
@@ -1533,11 +1588,7 @@ for iClass = 1:numel(classNames)
 		legendHandles(iPlotCond) = plot(ax, xLine, yLine, '-', 'Color', Cond.Color(condIdx, :), 'LineWidth', 2);
 	end
 	iStyleLinePanel(ax);
-	if className == "Excitatory"
-		xlabel(ax, 'log10 absolute raw weight', 'FontSize', 12);
-	else
-		xlabel(ax, 'Absolute raw weight', 'FontSize', 12);
-	end
+	xlabel(ax, 'log10 absolute effective weight', 'FontSize', 12);
 	ylabel(ax, 'Density', 'FontSize', 12);
 	title(ax, classLabels(iClass), 'FontSize', 12, 'FontWeight', 'normal');
 	ax.FontSize = 12;
@@ -1560,19 +1611,19 @@ weights = weights(isfinite(weights));
 end
 
 function fWeight = iPlotFormalTrainingConnectionWeightStats(Summary, Cond)
-classNames = ["Excitatory", "Inhibitory"];
-classLabels = ["Excitatory connections", "Inhibitory connections"];
+classNames = iConnectionClassNames();
+classLabels = iConnectionClassLabels();
 stageLabels = ["Before formal", "After formal"];
 
-fWeight = figure('Color', 'w', 'Name', 'Formal training connection polarity weight SD');
+fWeight = figure('Color', 'w', 'Name', 'Formal training connection type weight SD');
 fWeight.Units = 'centimeters';
-fWeight.Position(3:4) = [18, 8];
+fWeight.Position(3:4) = [18, 14];
 fWeight.PaperUnits = 'centimeters';
 fWeight.PaperPositionMode = 'manual';
-fWeight.PaperPosition = [0, 0, 18, 8];
-fWeight.PaperSize = [18, 8];
+fWeight.PaperPosition = [0, 0, 18, 14];
+fWeight.PaperSize = [18, 14];
 
-tlWeight = tiledlayout(fWeight, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tlWeight = tiledlayout(fWeight, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 legendHandles = gobjects(height(Cond), 1);
 
 for iClass = 1:numel(classNames)

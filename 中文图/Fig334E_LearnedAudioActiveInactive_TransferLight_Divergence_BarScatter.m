@@ -122,6 +122,7 @@ yl.FontSize = 6;
 palette2 = [1, 0, 0; 0, 0, 1];
 Stats = table(layerLabels, nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), ...
 	'VariableNames', {'Layer','MeanActive','MeanInactive','PValue','N'});
+Options = cell(numel(layers), 1);
 
 for iL = 1:numel(layers)
 	vA = DivActive(:, iL);
@@ -139,7 +140,7 @@ for iL = 1:numel(layers)
 	Stats.N(iL) = numel(vA);
 
 	ax = nexttile(Layout, iL);
-	[~, ~, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}));
+	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 	delete(findobj(ax, 'Type', 'Scatter'));
 	for b = Bars(:)'
 		b.EdgeColor = 'none';
@@ -167,6 +168,12 @@ end
 
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
+end
+for iOpt = 1:numel(Options)
+	Opt = Options{iOpt};
+	if isfield(Opt, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt.MultiCompare.Properties.VariableNames))
+		MATLAB.Graphics.PLineRetune(Opt.MultiCompare.PLine, Opt.MultiCompare.PText);
+	end
 end
 svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig334E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
 fprintf('Wrote: %s\n', svgPath);

@@ -1,13 +1,8 @@
 % Fig1B sigmoid fit: Naive vs Transfer LightWater learning curve
 %
-% Output: SVG and sidecar files through the standard figure output path.
+% Output: SVG through the standard figure output path.
 
 svgName = '中文图Fig313A_LearningCurve_Sigmoid.svg';
-scriptCopyName = '中文图Fig313A_LearningCurve_Sigmoid.m';
-fitCsvName = '中文图Fig313A_LearningCurve_SigmoidFit.csv';
-summaryCsvName = '中文图Fig313A_LearningCurve_SigmoidSummary.csv';
-permCsvName = '中文图Fig313A_LearningCurve_SigmoidPermutation.csv';
-statsTxtName = '中文图Fig313A_LearningCurve_SigmoidPermutation.txt';
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -107,9 +102,6 @@ iRetuneSingleMouseCurves(f);
 axTransfer.YAxis.Visible = 'off';
 svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(f, svgPath, '-dsvg');
-outDirUNC = fileparts(svgPath);
-thisFile = mfilename('fullpath');
-copyfile([thisFile, '.m'], fullfile(outDirUNC, scriptCopyName));
 
 fitTable = table;
 fitTable.Group = ["Naive"; "Transfer"];
@@ -119,7 +111,6 @@ fitTable.Slope = [fitNaive.Slope; fitTransfer.Slope];
 fitTable.Midpoint = [fitNaive.Midpoint; fitTransfer.Midpoint];
 fitTable.SSE = [fitNaive.SSE; fitTransfer.SSE];
 fitTable.RSquared = [fitNaive.RSquared; fitTransfer.RSquared];
-writetable(fitTable, fullfile(outDirUNC, fitCsvName));
 
 permTable = table;
 permTable.ObservedNaiveSlope = permResult.ObservedNaiveSlope;
@@ -131,7 +122,6 @@ permTable.NullMeanDifference = mean(permResult.PermutedDifference, 'omitnan');
 permTable.NullStdDifference = std(permResult.PermutedDifference, 'omitnan');
 permTable.NullCI_Low = prctile(permResult.PermutedDifference, 2.5);
 permTable.NullCI_High = prctile(permResult.PermutedDifference, 97.5);
-writetable(permTable, fullfile(outDirUNC, permCsvName));
 
 summaryTable = table;
 summaryTable.Block = xFit(:);
@@ -143,30 +133,8 @@ summaryTable.NaiveN = nMatOut(:,1);
 summaryTable.TransferN = nMatOut(:,2);
 summaryTable.NaiveSigmoid = naiveFitCurve(:);
 summaryTable.TransferSigmoid = transferFitCurve(:);
-writetable(summaryTable, fullfile(outDirUNC, summaryCsvName));
-
-statsPath = fullfile(outDirUNC, statsTxtName);
-fid = fopen(statsPath, 'w');
-if fid < 0
-	error('Fig1B_Sigmoid:OpenStatsTxtFailed', 'Cannot open %s for writing.', statsPath);
-end
-cleanupObj = onCleanup(@() fclose(fid));
-fprintf(fid, 'Fig1B sigmoid slope permutation test\n');
-fprintf(fid, 'Observed Naive slope: %.6f\n', permResult.ObservedNaiveSlope);
-fprintf(fid, 'Observed Transfer slope: %.6f\n', permResult.ObservedTransferSlope);
-fprintf(fid, 'Observed slope difference (Transfer - Naive): %.6f\n', permResult.ObservedDifference);
-fprintf(fid, 'Permutation count: %d\n', permResult.NPermutation);
-fprintf(fid, 'Two-sided permutation p-value: %.6g\n', permResult.PValue);
-fprintf(fid, 'Null difference mean: %.6f\n', mean(permResult.PermutedDifference, 'omitnan'));
-fprintf(fid, 'Null difference std: %.6f\n', std(permResult.PermutedDifference, 'omitnan'));
-fprintf(fid, 'Null difference 95%% interval: [%.6f, %.6f]\n', prctile(permResult.PermutedDifference, 2.5), prctile(permResult.PermutedDifference, 97.5));
 
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Wrote: %s\n', fullfile(outDirUNC, scriptCopyName));
-fprintf('Wrote: %s\n', fullfile(outDirUNC, fitCsvName));
-fprintf('Wrote: %s\n', fullfile(outDirUNC, summaryCsvName));
-fprintf('Wrote: %s\n', fullfile(outDirUNC, permCsvName));
-fprintf('Wrote: %s\n', statsPath);
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
 fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
 fprintf('Permutation slope difference (Transfer - Naive): %.4f\n', permResult.ObservedDifference);
