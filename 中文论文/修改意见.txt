@@ -24,5 +24,5 @@
 1.hit rate分布均匀吗？做10trails/30，的分布图or曲线图？展示上升情况。
 2.learning slope的bar图增加散点，增加示意图。ppt补充计算方式说明的图，公式。
 3.示意图增加顶视图（m1/s1）
-4.cfos行为学增加first block的hit rate和learning slope
-5.增加cfos对照的表达图。
+4.cfos行为学增加first block的hit rate和learning slope ×
+5.增加cfos对照的表达图。×
