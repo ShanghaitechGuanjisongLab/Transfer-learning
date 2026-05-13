@@ -8,7 +8,7 @@ end
 fontSize = 6 * Scale;
 axisLineWidth = 0.5 * Scale;
 otherLineWidth = 1 * Scale;
-scatterSize = 5 * Scale*Scale;
+scatterSize = 4 * Scale*Scale;
 
 iSetAllFontSizes(Fig, fontSize);
 iSetLegendBoxesOff(Fig);

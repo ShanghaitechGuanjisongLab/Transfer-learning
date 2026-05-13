@@ -42,6 +42,11 @@ if evalin('base', 'exist(''THDebugNonnegativeFormalFailure'', ''var'') && THDebu
 	assignin('base', 'THNonnegativeFormalFailureDebug', DebugReport);
 	return;
 end
+if evalin('base', 'exist(''THDebugPretrainTrace'', ''var'') && THDebugPretrainTrace')
+	DebugReport = iRunPretrainTraceDebug(Params);
+	assignin('base', 'THPretrainTraceDebug', DebugReport);
+	return;
+end
 workspaceVarNames = iWorkspaceVariableNames(outputNameSuffix);
 if iHasReusableWorkspaceSummary(workspaceVarNames, Params)
 	Summary = evalin('base', workspaceVarNames.Summary);
@@ -296,10 +301,11 @@ Params.Ceiling = 1.00;
 % not compress the slope of fast learners.
 Params.SlopeHitPerfect = 1.00;
 Params.TransferHighestAlpha = 0.05;
-% Plastic weights: zero-mean init, symmetric caps.
-Params.InitWStd = 0.03;
-Params.WCap = 1.20;
-Params.AfferentWCap = 1.20;
+% Plastic excitatory weights share one initialization distribution.
+Params.InitExcWeightMean = 0.00;
+Params.InitExcWeightStd = 0.03;
+Params.WCap = 2.00;
+Params.AfferentWCap = 2.00;
 Params.RewardAfferentNorm = 1.00;
 Params.ClampNegativePlasticWeightsToZero = true;
 % Number of recurrent internal passes after external cue/reward/readout drive.
@@ -315,9 +321,9 @@ Params.FormalHebbGainMax = 1.55;
 Params.InhPlasticityRate = 0.0035;
 Params.InhTargetAct = 0.00;
 Params.InhWeightMin = 0.00;
-Params.InhWeightMax = 3.00;
-Params.InitWIIBase = 0.35;
-Params.InitWIIStd = 0.08;
+Params.InhWeightMax = 1.00;
+Params.InitInhWeightMean = 0.72;
+Params.InitInhWeightStd = 0.20;
 Params.IToIGain = 0.50;
 Params.IToIPasses = 2;
 % Cross-modality overlap between pretraining cue input (e.g. sound) and new
@@ -425,6 +431,88 @@ end
 DebugReport.MouseTable = struct2table(rows);
 DebugReport.ConditionSummary = iNonnegativeFormalFailureConditionSummary(DebugReport.MouseTable, Cond);
 disp(DebugReport.ConditionSummary);
+end
+
+function DebugReport = iRunPretrainTraceDebug(Params)
+numDebugMice = min(4, Params.NumMice);
+if evalin('base', 'exist(''THDebugPretrainTraceNumMice'', ''var'')')
+	numDebugMice = evalin('base', 'THDebugPretrainTraceNumMice');
+end
+conditionNames = ["Transfer", "THOff"];
+pretrainCond.RewardInputLevel = 1.00;
+rows = struct([]);
+traceCells = cell(numel(conditionNames) * numDebugMice, 1);
+diagnosticCells = cell(numel(conditionNames) * numDebugMice, 1);
+rowIndex = 0;
+for iCond = 1:numel(conditionNames)
+	condName = conditionNames(iCond);
+	for iMouse = 1:numDebugMice
+		iSeedMouseIfRequested(Params, condName, iMouse);
+		Mouse = iDrawMouse(Params);
+		initialDrive = iCueDecisionProbe(Mouse, Params, true);
+		initialDriveNoInh = iCueDecisionProbeNoLocalInh(Mouse, Params, true);
+		initialWeights = iPlasticWeightDebugSummary(Mouse, Params);
+		trace = nan(Params.MaxPretrainSessions, 1);
+		driveTrace = nan(Params.MaxPretrainSessions + 1, 1);
+		driveNoInhTrace = nan(Params.MaxPretrainSessions + 1, 1);
+		cueMeanTrace = nan(Params.MaxPretrainSessions + 1, 1);
+		internalMeanTrace = nan(Params.MaxPretrainSessions + 1, 1);
+		l5ReadWIEMeanTrace = nan(Params.MaxPretrainSessions + 1, 1);
+		l5ReadWEIMeanTrace = nan(Params.MaxPretrainSessions + 1, 1);
+		driveTrace(1) = initialDrive;
+		driveNoInhTrace(1) = initialDriveNoInh;
+		cueMeanTrace(1) = initialWeights.CueMean;
+		internalMeanTrace(1) = initialWeights.InternalMean;
+		l5ReadWIEMeanTrace(1) = initialWeights.L5ReadWIEMean;
+		l5ReadWEIMeanTrace(1) = initialWeights.L5ReadWEIMean;
+		postCeilingCount = 0;
+		stopSession = Params.MaxPretrainSessions;
+		for iSess = 1:Params.MaxPretrainSessions
+			[perfObserved, ~, perfExpected, Mouse] = iSimulateSession(Mouse, Params, pretrainCond, true);
+			trace(iSess) = perfExpected;
+			postWeights = iPlasticWeightDebugSummary(Mouse, Params);
+			driveTrace(iSess + 1) = iCueDecisionProbe(Mouse, Params, true);
+			driveNoInhTrace(iSess + 1) = iCueDecisionProbeNoLocalInh(Mouse, Params, true);
+			cueMeanTrace(iSess + 1) = postWeights.CueMean;
+			internalMeanTrace(iSess + 1) = postWeights.InternalMean;
+			l5ReadWIEMeanTrace(iSess + 1) = postWeights.L5ReadWIEMean;
+			l5ReadWEIMeanTrace(iSess + 1) = postWeights.L5ReadWEIMean;
+			if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
+				postCeilingCount = postCeilingCount + 1;
+				if postCeilingCount >= Params.PostCeilingSessions
+					stopSession = iSess;
+					break;
+				end
+			end
+			Mouse = iOvernightConsolidate(Mouse, Params);
+		end
+		trace = trace(1:stopSession);
+		rowIndex = rowIndex + 1;
+		traceCells{rowIndex} = trace;
+		diagnosticCells{rowIndex} = table((0:stopSession)', [NaN; trace], driveTrace(1:stopSession + 1), driveNoInhTrace(1:stopSession + 1), cueMeanTrace(1:stopSession + 1), internalMeanTrace(1:stopSession + 1), l5ReadWIEMeanTrace(1:stopSession + 1), l5ReadWEIMeanTrace(1:stopSession + 1), ...
+			'VariableNames', {'Session','Hit','Drive','DriveNoInh','CueMean','InternalMean','L5ReadWIEMean','L5ReadWEIMean'});
+		rows(rowIndex).Condition = condName; %#ok<AGROW>
+		rows(rowIndex).Mouse = iMouse;
+		rows(rowIndex).InitialDrive = initialDrive;
+		rows(rowIndex).InitialDriveNoInh = initialDriveNoInh;
+		rows(rowIndex).FirstHit = trace(1);
+		rows(rowIndex).MaxHit = max(trace, [], 'omitnan');
+		rows(rowIndex).LastHit = trace(end);
+		rows(rowIndex).NonzeroSessions = sum(trace > 0, 'omitnan');
+		firstNonzero = find(trace > 0, 1, 'first');
+		if isempty(firstNonzero)
+			firstNonzero = NaN;
+		end
+		rows(rowIndex).FirstNonzeroSession = firstNonzero;
+		rows(rowIndex).StopSession = stopSession;
+		rows(rowIndex).FinalDrive = iCueDecisionProbe(Mouse, Params, true);
+		rows(rowIndex).FinalDriveNoInh = iCueDecisionProbeNoLocalInh(Mouse, Params, true);
+	end
+end
+DebugReport.MouseTable = struct2table(rows);
+DebugReport.Trace = traceCells(1:rowIndex);
+DebugReport.Diagnostics = diagnosticCells(1:rowIndex);
+disp(DebugReport.MouseTable(:, {'Condition','Mouse','FirstHit','MaxHit','LastHit','NonzeroSessions','FirstNonzeroSession','StopSession','InitialDrive','FinalDrive','InitialDriveNoInh','FinalDriveNoInh'}));
 end
 
 function row = iRunNonnegativeFormalFailureMouse(Params, condRow, condName, iMouse, numFormalDiagnosticSessions)
@@ -819,36 +907,38 @@ readHeterogeneityPattern = iStandardize(iRandn([Params.NL5Read, 1], Params) + 0.
 readHeterogeneityPattern = readHeterogeneityPattern - (sum(readHeterogeneityPattern .* Mouse.L5ReadoutPattern) / sum(Mouse.L5ReadoutPattern .^ 2)) * Mouse.L5ReadoutPattern;
 Mouse.L5ReadHeterogeneityPattern = iStandardize(readHeterogeneityPattern);
 
-% Initial sensory afferent map. Cue input is not the L2/3 code itself;
-% L2/3 activity is generated by this mouse-specific plastic projection.
-Mouse.W_CueInputToL23 = iClampNegativeWeightsToZero(iRandn([Params.NL23, Params.NCueInput], Params) / sqrt(Params.NCueInput));
-% Initial reward afferent map into L5 reward-receiving cells.
-Mouse.W_RewardToL5RewardRecv = iClampNegativeWeightsToZero(iRandn([Params.NL5RewardRecv, Params.NReward], Params) / sqrt(Params.NReward));
+Mouse.W_CueInputToL23 = iInitExcitatoryWeights([Params.NL23, Params.NCueInput], Params);
+Mouse.W_RewardToL5RewardRecv = iInitExcitatoryWeights([Params.NL5RewardRecv, Params.NReward], Params);
 
 % Plastic internal E-E matrix, W(post, pre). Every L2/3 or L5 cell projects
 % to every other L2/3/L5 cell; the diagonal is fixed at zero.
-sd = Params.InitWStd;
-Mouse.W_L23L5ToL23L5 = iZeroSelfProjection(iClampNegativeWeightsToZero(sd * iRandn([Params.NL23L5, Params.NL23L5], Params)));
+Mouse.W_L23L5ToL23L5 = iZeroSelfProjection(iInitExcitatoryWeights([Params.NL23L5, Params.NL23L5], Params));
 
-% Inhibitory pools in L2/3, L5RewardRecv, and a schema-driven L5Read pathway.
-Mouse.WIE_L23 = abs(0.72 + 0.20 * iRandn([Params.NIL23, Params.NL23], Params));
-Mouse.WEI_L23 = abs(0.88 + 0.26 * iRandn([Params.NL23,  Params.NIL23], Params));
+% Inhibitory pools in L2/3, L5RewardRecv, and L5Read share one initialization distribution.
+Mouse.WIE_L23 = iInitInhibitoryWeights([Params.NIL23, Params.NL23], Params);
+Mouse.WEI_L23 = iInitInhibitoryWeights([Params.NL23,  Params.NIL23], Params);
 Mouse.WII_L23 = iInitIToIWeights(Params.NIL23, Params);
-Mouse.WIE_L5RewardRecv = abs(0.72 + 0.20 * iRandn([Params.NIL5RewardRecv, Params.NL5RewardRecv], Params));
-Mouse.WEI_L5RewardRecv = abs(0.88 + 0.26 * iRandn([Params.NL5RewardRecv,  Params.NIL5RewardRecv], Params));
+Mouse.WIE_L5RewardRecv = iInitInhibitoryWeights([Params.NIL5RewardRecv, Params.NL5RewardRecv], Params);
+Mouse.WEI_L5RewardRecv = iInitInhibitoryWeights([Params.NL5RewardRecv,  Params.NIL5RewardRecv], Params);
 Mouse.WII_L5RewardRecv = iInitIToIWeights(Params.NIL5RewardRecv, Params);
-Mouse.WIE_L5Read = abs(0.72 + 0.20 * iRandn([Params.NIL5Read, Params.NL23 + Params.NL5RewardRecv], Params));
-Mouse.WEI_L5Read = abs(0.88 + 0.26 * iRandn([Params.NL5Read, Params.NIL5Read], Params));
+Mouse.WIE_L5Read = iInitInhibitoryWeights([Params.NIL5Read, Params.NL23 + Params.NL5RewardRecv], Params);
+Mouse.WEI_L5Read = iInitInhibitoryWeights([Params.NL5Read, Params.NIL5Read], Params);
 Mouse.WII_L5Read = iInitIToIWeights(Params.NIL5Read, Params);
 
 end
 
-function WII = iInitIToIWeights(numInhibitoryCells, Params)
-if Params.InitWIIStd > 0
-	weights = abs(Params.InitWIIBase + Params.InitWIIStd * iRandn([numInhibitoryCells, numInhibitoryCells], Params));
-else
-	weights = Params.InitWIIBase * iOnes([numInhibitoryCells, numInhibitoryCells], Params);
+function weights = iInitExcitatoryWeights(weightSize, Params)
+weights = Params.InitExcWeightMean + Params.InitExcWeightStd * iRandn(weightSize, Params);
+weights = iClampNegativeWeightsToZero(weights);
 end
+
+function weights = iInitInhibitoryWeights(weightSize, Params)
+weights = abs(Params.InitInhWeightMean + Params.InitInhWeightStd * iRandn(weightSize, Params));
+weights = iClamp(weights, Params.InhWeightMin, Params.InhWeightMax);
+end
+
+function WII = iInitIToIWeights(numInhibitoryCells, Params)
+weights = iInitInhibitoryWeights([numInhibitoryCells, numInhibitoryCells], Params);
 WII = iZeroSelfProjection(weights);
 end
 
@@ -1056,6 +1146,15 @@ for t = 1:NT
 	decCue  = mean(Mouse.L5ReadoutPattern .* rL5Read_cue);
 	decision = iGatherScalar(decCue);
 	isHit(t) = decision >= Params.HitThreshold;
+	if isHit(t)
+		rL23_cue_all(:, t) = rL23_cue;
+		rL5RewardRecv_cue_all(:, t) = rL5RewardRecv_cue;
+		rL5Read_cue_all(:, t) = rL5Read_cue;
+		rL23_L_all(:, t) = rL23_cue;
+		rL5RewardRecv_L_all(:, t) = rL5RewardRecv_cue;
+		rL5Read_L_all(:, t) = rL5Read_cue;
+		continue;
+	end
 
 	% ===== Learning phase (reward/readout feedback continues from cue-decision state) =====
 	cueInput_L = cueInput_cue;
@@ -1081,10 +1180,11 @@ for t = 1:NT
 	internalActivity_L = [rL23_L; rL5RewardRecv_L; rL5Read_L];
 	Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_L, eta, Params.WCap);
 
-	% Per-trial inhibitory plasticity protects the rewarded pattern from local over-inhibition.
+	% Per-trial inhibitory plasticity follows local activity only.
 	actL23Trial = (rL23_cue + rL23_L) / 2;
 	actL5RewardRecvTrial = (rL5RewardRecv_cue + rL5RewardRecv_L) / 2;
-	Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, actL23Trial, actL5RewardRecvTrial, Mouse.L5ReadoutPattern, "protect");
+	actL5ReadTrial = (rL5Read_cue + rL5Read_L) / 2;
+	Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, actL23Trial, actL5RewardRecvTrial, actL5ReadTrial);
 
 	% ===== Closed-loop noise Hebbian learning =====
 	% Test a fresh random-noise cue. If it falsely activates the behavioural
@@ -1118,7 +1218,7 @@ for t = 1:NT
 		internalActivity_BL = [rL23_BL; rL5RewardRecv_BL; rL5Read_BL];
 		Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_BL, eta, Params.WCap);
 
-		Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, rL23_BL, rL5RewardRecv_BL, Mouse.L5ReadoutPattern, "suppress");
+		Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, rL23_BL, rL5RewardRecv_BL, rL5Read_BL);
 	end
 
 	rL23_cue_all(:, t) = rL23_cue;
@@ -1187,14 +1287,14 @@ inhDrive = iRunInhibitoryPool(Mouse.WIE_L5Read * activeSource / numSourceCells, 
 rL5Read = Params.ResponseScale * tanh(preL5Read - Params.Comp_Read * (Mouse.WEI_L5Read * inhDrive) / Params.NIL5Read);
 end
 
-function Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, activityL23, activityL5RewardRecv, readoutTargetPattern, plasticityMode)
-[Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23] = iInhibitoryAreaPlasticity(Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23, activityL23, Params, plasticityMode);
-[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv] = iInhibitoryAreaPlasticity(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv, activityL5RewardRecv, Params, plasticityMode);
+function Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, activityL23, activityL5RewardRecv, activityL5Read)
+[Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23] = iInhibitoryAreaHebb(Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23, activityL23, Params);
+[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv] = iInhibitoryAreaHebb(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv, activityL5RewardRecv, Params);
 readoutInhibitorySource = [activityL23; activityL5RewardRecv];
-[Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read] = iReadoutInhibitoryPlasticity(Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read, readoutInhibitorySource, readoutTargetPattern, Params, plasticityMode);
+[Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read] = iReadoutInhibitoryHebb(Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read, readoutInhibitorySource, activityL5Read, Params);
 end
 
-function [WIE, WEI, WII] = iInhibitoryAreaPlasticity(WIE, WEI, WII, activityE, Params, plasticityMode)
+function [WIE, WEI, WII] = iInhibitoryAreaHebb(WIE, WEI, WII, activityE, Params)
 activeE = max(activityE(:) - Params.InhTargetAct, 0);
 if ~any(iGatherValue(activeE > 0))
 	return;
@@ -1208,24 +1308,15 @@ end
 deltaWIE = Params.InhPlasticityRate * (inhDrive * activeE');
 deltaWEI = Params.InhPlasticityRate * (activeE * inhDrive');
 deltaWII = Params.InhPlasticityRate * (inhDrive * inhDrive');
-switch plasticityMode
-case "suppress"
-	WIE = WIE + deltaWIE;
-	WEI = WEI + deltaWEI;
-	WII = WII - deltaWII;
-case "protect"
-	WIE = WIE - deltaWIE;
-	WEI = WEI - deltaWEI;
-	WII = WII + deltaWII;
-otherwise
-	error('THModel:UnknownInhibitoryPlasticityMode', 'Unknown inhibitory plasticity mode: %s.', plasticityMode);
-end
+WIE = WIE + deltaWIE;
+WEI = WEI + deltaWEI;
+WII = WII + deltaWII;
 WIE = iClamp(WIE, Params.InhWeightMin, Params.InhWeightMax);
 WEI = iClamp(WEI, Params.InhWeightMin, Params.InhWeightMax);
 WII = iZeroSelfProjection(iClamp(WII, Params.InhWeightMin, Params.InhWeightMax));
 end
 
-function [WIE, WEI, WII] = iReadoutInhibitoryPlasticity(WIE, WEI, WII, sourceActivity, targetPattern, Params, plasticityMode)
+function [WIE, WEI, WII] = iReadoutInhibitoryHebb(WIE, WEI, WII, sourceActivity, readoutActivity, Params)
 activeSource = max(sourceActivity(:) - Params.InhTargetAct, 0);
 if ~any(iGatherValue(activeSource > 0))
 	return;
@@ -1236,29 +1327,16 @@ inhDrive = iRunInhibitoryPool(WIE * activeSource / numSourceCells, WII, Params, 
 if ~any(iGatherValue(inhDrive > 0))
 	return;
 end
-targetPattern = targetPattern(:);
-targetScale = abs(targetPattern);
-targetScaleMean = iGatherScalar(mean(targetScale, 'omitnan'));
-if ~isfinite(targetScaleMean) || targetScaleMean <= 0
+activeReadout = max(readoutActivity(:) - Params.InhTargetAct, 0);
+if ~any(iGatherValue(activeReadout > 0))
 	return;
 end
-targetScale = targetScale / targetScaleMean;
-targetDirection = -sign(targetPattern) .* targetScale;
 deltaWIE = Params.InhPlasticityRate * (inhDrive * activeSource');
-deltaWEI = Params.InhPlasticityRate * (targetDirection * inhDrive');
+deltaWEI = Params.InhPlasticityRate * (activeReadout * inhDrive');
 deltaWII = Params.InhPlasticityRate * (inhDrive * inhDrive');
-switch plasticityMode
-case "suppress"
-	WIE = WIE + deltaWIE;
-	WEI = WEI - deltaWEI;
-	WII = WII - deltaWII;
-case "protect"
-	WIE = WIE + deltaWIE;
-	WEI = WEI + deltaWEI;
-	WII = WII + deltaWII;
-otherwise
-	error('THModel:UnknownInhibitoryPlasticityMode', 'Unknown inhibitory plasticity mode: %s.', plasticityMode);
-end
+WIE = WIE + deltaWIE;
+WEI = WEI + deltaWEI;
+WII = WII + deltaWII;
 WIE = iClamp(WIE, Params.InhWeightMin, Params.InhWeightMax);
 WEI = iClamp(WEI, Params.InhWeightMin, Params.InhWeightMax);
 WII = iZeroSelfProjection(iClamp(WII, Params.InhWeightMin, Params.InhWeightMax));
@@ -1338,7 +1416,7 @@ W = iClampNegativeWeightsToZero(min(W, cap));
 end
 
 function W = iHebbAfferent(W, post, pre, eta, cap)
-W = iHebb(W, post, pre, eta / numel(pre), cap);
+W = iHebb(W, post, pre, eta, cap);
 end
 
 function recurrentWeights = iHebbNoSelf(recurrentWeights, activity, eta, cap)
