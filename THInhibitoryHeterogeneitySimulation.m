@@ -3,7 +3,7 @@
 % Minimal rate-model simulation for three qualitative findings:
 % 1) transfer starts from a higher first-session performance than naive,
 % 2) reward-dependent L5 recruitment increases process-averaged response heterogeneity,
-% 3) larger learning-process L2/3 heterogeneity correlates with faster subsequent learning.
+% 3) transfer has the highest L5 heterogeneity and fitted learning slope.
 %
 % The model contains:
 % - excitatory populations in L2/3 and L5,
@@ -70,18 +70,15 @@ for iCond = 1:height(Cond)
 	fprintf('%s: mean slope = %.3f, mean DeltaHit = %.3f\n', name, mean(slope, 'omitnan'), mean(dh, 'omitnan'));
 	fprintf('%s: mean reward-to-readout drive = %.3f, below decision threshold = %d/%d\n', name, mean(rewardReadoutDrive, 'omitnan'), sum(rewardReadoutDrive < Params.HitThreshold | ~isfinite(rewardReadoutDrive)), numel(rewardReadoutDrive));
 end
-[rhoL23, pL23] = corr(Summary.CorrMouse.MeanH23, Summary.CorrMouse.Slope, 'Type', 'Spearman', 'Rows', 'complete');
-fprintf('Slope vs L2/3 heterogeneity: rho = %.3f, p = %.4g\n', rhoL23, pL23);
-
 f = figure('Color', 'w', 'Name', 'TH inhibitory heterogeneity model');
 f.Units = 'centimeters';
-f.Position(3:4) = [18, 16];
+f.Position(3:4) = [18, 7];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 18, 16];
-f.PaperSize = [18, 16];
+f.PaperPosition = [0, 0, 18, 7];
+f.PaperSize = [18, 7];
 
-tl = tiledlayout(f, 2, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 3, 'TileSpacing', 'loose', 'Padding', 'compact');
 
 colors = Cond.Color;
 xSess = (1:Params.NumSessions)';
@@ -101,43 +98,25 @@ ylim(ax1, [0, 1]);
 
 ax2 = nexttile(tl, 2);
 hold(ax2, 'on');
-for iCond = 1:height(Cond)
-	mask = Summary.CorrMouse.Condition == Cond.Name(iCond);
-	scatter(ax2, Summary.CorrMouse.MeanH23(mask), Summary.CorrMouse.Slope(mask), 20, colors(iCond, :), 'filled', ...
-		'MarkerFaceAlpha', 0.55, 'MarkerEdgeColor', colors(iCond, :), 'LineWidth', 0.2);
-end
-allUse = isfinite(Summary.CorrMouse.MeanH23) & isfinite(Summary.CorrMouse.Slope);
-fitP23 = polyfit(Summary.CorrMouse.MeanH23(allUse), Summary.CorrMouse.Slope(allUse), 1);
-xFit23 = linspace(min(Summary.CorrMouse.MeanH23(allUse)), max(Summary.CorrMouse.MeanH23(allUse)), 50);
-plot(ax2, xFit23, polyval(fitP23, xFit23), '-', 'Color', [0, 0.6809, 0], 'LineWidth', 2, 'HandleVisibility', 'off');
+iStripMeanSem(ax2, Summary.PerMouse, Cond, 'MeanH5');
+iAnnotateMetricStats(ax2, Summary.PerMouse, Cond, 'MeanH5');
 iStyleScatterPanel(ax2);
-xlabel(ax2, 'Learning-process L2/3 heterogeneity', 'FontSize', 12);
-ylabel(ax2, 'Subsequent learning slope', 'FontSize', 12);
-title(ax2, 'Slope vs L2/3 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
-text(ax2, 0.97, 0.97, iPLabel(pL23, rhoL23), 'Units', 'normalized', 'HorizontalAlignment', 'right', ...
-	'VerticalAlignment', 'top', 'FontSize', 12);
+xlabel(ax2, '', 'FontSize', 12);
+ylabel(ax2, 'Mean L5 heterogeneity', 'FontSize', 12);
+title(ax2, 'L5 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
+ax2.XTickLabel = {};
+ax2.XTickLabelRotation = 0;
 
 ax3 = nexttile(tl, 3);
 hold(ax3, 'on');
-iStripMeanSem(ax3, Summary.PerMouse, Cond, 'MeanH5');
-iAnnotateMetricStats(ax3, Summary.PerMouse, Cond, 'MeanH5');
+iStripMeanSem(ax3, Summary.PerMouse, Cond, 'Slope');
+iAnnotateMetricStats(ax3, Summary.PerMouse, Cond, 'Slope');
 iStyleScatterPanel(ax3);
 xlabel(ax3, '', 'FontSize', 12);
-ylabel(ax3, 'Mean L5 heterogeneity', 'FontSize', 12);
-title(ax3, 'L5 heterogeneity', 'FontSize', 12, 'FontWeight', 'normal');
+ylabel(ax3, 'Learning slope', 'FontSize', 12);
+title(ax3, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
 ax3.XTickLabel = {};
 ax3.XTickLabelRotation = 0;
-
-ax4 = nexttile(tl, 4);
-hold(ax4, 'on');
-iStripMeanSem(ax4, Summary.PerMouse, Cond, 'Slope');
-iAnnotateMetricStats(ax4, Summary.PerMouse, Cond, 'Slope');
-iStyleScatterPanel(ax4);
-xlabel(ax4, '', 'FontSize', 12);
-ylabel(ax4, 'Learning slope', 'FontSize', 12);
-title(ax4, 'Learning slope', 'FontSize', 12, 'FontWeight', 'normal');
-ax4.XTickLabel = {};
-ax4.XTickLabelRotation = 0;
 
 lgd = legend(ax1, perfLines(1:height(Cond)), cellstr(Cond.Label), 'Location', 'north', 'Box', 'off', 'FontSize', 12, 'Orientation', 'horizontal', 'NumColumns', 3);
 lgd.Layout.Tile = 'north';
@@ -177,6 +156,7 @@ sigmoidSvgPath = fullfile(outDir, sigmoidSvgName);
 print(sigmoidFig, sigmoidSvgPath, '-dsvg', '-painters');
 sigmoidWorkspaceName = char("THInhibitoryHeterogeneitySigmoidFitSlopeMainline" + iWorkspaceNameSuffix(outputNameSuffix));
 assignin('base', sigmoidWorkspaceName, SigmoidStats);
+iCheckTransferSignificantlyHighest(Summary.PerMouse, SigmoidStats, Cond, Params);
 fprintf('Wrote: %s\n', sigmoidSvgPath);
 
 function outputNameSuffix = iOutputNameSuffix()
@@ -298,15 +278,15 @@ Params.NoiseRew = 0.15;
 Params.NoiseRead = 0.12;
 Params.Comp_Cue = 0.95;
 Params.Comp_Rew = 1.00;
-Params.Comp_Read = 1.00;
+Params.Comp_Read = 1.20;
 % Input gains
-Params.CueInputGain = 1.10;          % sensory cue drive (decision + learning)
+Params.CueInputGain = 1.00;          % sensory cue drive (decision + learning)
 Params.CueInputGainPretrain = 1.40;  % pretraining cue gain
 Params.RewInputGain = 1.45;          % reward pattern clamp amplitude (learning phase only)
-Params.THRewardRecvInputGain = 0.50; % reward/TH-gated direct L5RewardRecv teaching drive
-Params.ReadInputGain = 2.20;         % baseline readout pattern clamp amplitude (learning phase only)
-Params.THReadInputGain = 0.00;       % reward/TH-gated extra readout teaching amplitude
-Params.THReadHeterogeneityGain = 0.00; % reward/TH-gated L5Read heterogeneity teaching amplitude
+Params.THRewardRecvInputGain = 1.50; % reward/TH-gated direct L5RewardRecv teaching drive
+Params.ReadInputGain = 0.00;         % baseline readout pattern clamp amplitude (learning phase only)
+Params.THReadInputGain = 2.80;       % reward/TH-gated extra readout teaching amplitude
+Params.THReadHeterogeneityGain = 2.50; % reward/TH-gated L5Read heterogeneity teaching amplitude
 % Decision readout: initial input noise creates trial-to-trial variability,
 % and a hit is emitted when the readout crosses HitThreshold.
 Params.HitThreshold = 0.35;
@@ -315,6 +295,7 @@ Params.Ceiling = 1.00;
 % (that session and every subsequent one) so the plateau at 1.0 does
 % not compress the slope of fast learners.
 Params.SlopeHitPerfect = 1.00;
+Params.TransferHighestAlpha = 0.05;
 % Plastic weights: zero-mean init, symmetric caps.
 Params.InitWStd = 0.03;
 Params.WCap = 1.20;
@@ -324,10 +305,8 @@ Params.ClampNegativePlasticWeightsToZero = true;
 % Number of recurrent internal passes after external cue/reward/readout drive.
 Params.InternalRecurrentPasses = 2;
 % Per-trial Hebbian rate. With NumTrials=30 per session, total within-
-% session increase ≈ 30 * HebbRate * eta_factors.
-Params.HebbRate = 0.0110;
-Params.RewardAbsentHebbScale = 0.90;
-Params.RewardAbsentL5RewardRecvHebbScale = 0.00;
+% session increase ≈ 30 * HebbRate * mouse-level eta factor.
+Params.HebbRate = 0.0085;
 Params.RandomSeed = NaN;
 Params.FormalHebbGainStd = 0.35;
 Params.FormalHebbGainMin = 0.65;
@@ -347,7 +326,7 @@ Params.IToIPasses = 2;
 % component. The fixed CueIn->L23 map turns this sensory overlap into
 % partially overlapping L2/3 responses.
 % Correlation between CueInputPattern and PreCueInputPattern = CueModalityCorr.
-Params.CueModalityCorr = 0.50;
+Params.CueModalityCorr = 0.62;
 % Overnight consolidation
 Params.OvernightRetention = 0.96;
 Params.OvernightNoise = 0.002;
@@ -367,7 +346,7 @@ end
 if ~isstruct(paramOverrides)
 	error('THModel:InvalidParameterOverrides', 'THParamOverrides must be a scalar struct.');
 end
-protectedFieldNames = ["NumMice", "NumSessions", "NumTrials", "MaxPretrainSessions", "PostCeilingSessions", "HitThreshold", "Ceiling", "SlopeHitPerfect"];
+protectedFieldNames = ["NumMice", "NumSessions", "NumTrials", "MaxPretrainSessions", "PostCeilingSessions", "HitThreshold", "Ceiling", "SlopeHitPerfect", "TransferHighestAlpha"];
 fieldNames = fieldnames(paramOverrides);
 for iField = 1:numel(fieldNames)
 	fieldName = fieldNames{iField};
@@ -1054,7 +1033,7 @@ formalHebbGain = 1;
 if ~usePreCue
 	formalHebbGain = Mouse.FormalHebbGain;
 end
-eta = Params.HebbRate * formalHebbGain * iRewardGatedPlasticityScale(rewardInputLevel, Params);
+eta = Params.HebbRate * formalHebbGain;
 
 % Storage for session-level diagnostics.
 rL23_cue_all = iZeros([Params.NL23, NT], Params);
@@ -1100,7 +1079,7 @@ for t = 1:NT
 	Mouse.W_CueInputToL23 = iHebbAfferent(Mouse.W_CueInputToL23, rL23_L, cueInput_L, eta, Params.AfferentWCap);
 	Mouse.W_RewardToL5RewardRecv = iHebbAfferent(Mouse.W_RewardToL5RewardRecv, rL5RewardRecv_L, rReward_L, eta, Params.AfferentWCap);
 	internalActivity_L = [rL23_L; rL5RewardRecv_L; rL5Read_L];
-	Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_L, eta, Params, rewardInputLevel, Params.WCap);
+	Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_L, eta, Params.WCap);
 
 	% Per-trial inhibitory plasticity protects the rewarded pattern from local over-inhibition.
 	actL23Trial = (rL23_cue + rL23_L) / 2;
@@ -1137,7 +1116,7 @@ for t = 1:NT
 		Mouse.W_CueInputToL23 = iHebbAfferent(Mouse.W_CueInputToL23, rL23_BL, cueInput_BL, eta, Params.AfferentWCap);
 		Mouse.W_RewardToL5RewardRecv = iHebbAfferent(Mouse.W_RewardToL5RewardRecv, rL5RewardRecv_BL, rReward_BL, eta, Params.AfferentWCap);
 		internalActivity_BL = [rL23_BL; rL5RewardRecv_BL; rL5Read_BL];
-		Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_BL, eta, Params, rewardInputLevel, Params.WCap);
+		Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_BL, eta, Params.WCap);
 
 		Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, rL23_BL, rL5RewardRecv_BL, Mouse.L5ReadoutPattern, "suppress");
 	end
@@ -1199,10 +1178,6 @@ end
 if centerInh
 	inhI = inhI - mean(inhI, 1);
 end
-end
-
-function plasticityScale = iRewardGatedPlasticityScale(rewardInputLevel, Params)
-plasticityScale = Params.RewardAbsentHebbScale + rewardInputLevel * (1 - Params.RewardAbsentHebbScale);
 end
 
 function rL5Read = iRunReadoutArea(preL5Read, readoutInhibitorySource, Mouse, Params)
@@ -1371,17 +1346,8 @@ recurrentWeights = iHebb(recurrentWeights, activity, activity, eta, cap);
 recurrentWeights = iZeroSelfProjection(recurrentWeights);
 end
 
-function recurrentWeights = iHebbInternalNoSelf(recurrentWeights, activity, eta, Params, rewardInputLevel, cap)
-activityPost = activity;
-activityPre = activity;
-if rewardInputLevel <= 0 && Params.RewardAbsentL5RewardRecvHebbScale < 1
-	scale = iOnes([Params.NL23L5, 1], Params);
-	rewardRecvIdx = Params.NL23 + (1:Params.NL5RewardRecv);
-	scale(rewardRecvIdx) = Params.RewardAbsentL5RewardRecvHebbScale;
-	activityPost = scale .* activityPost;
-	activityPre = scale .* activityPre;
-end
-recurrentWeights = iHebb(recurrentWeights, activityPost, activityPre, eta, cap);
+function recurrentWeights = iHebbInternalNoSelf(recurrentWeights, activity, eta, cap)
+recurrentWeights = iHebb(recurrentWeights, activity, activity, eta, cap);
 recurrentWeights = iZeroSelfProjection(recurrentWeights);
 end
 
@@ -2102,6 +2068,76 @@ end
 		'VerticalAlignment', 'bottom', 'FontSize', 12, 'Color', 'k');
 end
 
+function iCheckTransferSignificantlyHighest(PerMouse, SigmoidStats, Cond, Params)
+iCheckTransferMetricSignificantlyHighest(PerMouse, Cond, "MeanH5", "Mean L5 heterogeneity", Params.TransferHighestAlpha);
+iCheckTransferSigmoidSlopeSignificantlyHighest(SigmoidStats, Cond, Params.TransferHighestAlpha);
+end
+
+function iCheckTransferMetricSignificantlyHighest(PerMouse, Cond, metricName, metricLabel, alpha)
+metricName = char(metricName);
+metricLabel = char(metricLabel);
+transferIndex = find(Cond.Name == "Transfer", 1);
+transferValues = PerMouse.(Cond.Name(transferIndex)).(metricName);
+transferValues = transferValues(isfinite(transferValues));
+failedComparisons = strings(0, 1);
+
+for iCond = 1:height(Cond)
+	if iCond == transferIndex
+		continue;
+	end
+	otherValues = PerMouse.(Cond.Name(iCond)).(metricName);
+	otherValues = otherValues(isfinite(otherValues));
+	transferMean = mean(transferValues, 'omitnan');
+	otherMean = mean(otherValues, 'omitnan');
+	pValue = ranksum(transferValues, otherValues);
+	if ~(transferMean > otherMean && pValue < alpha)
+		failedComparisons(end + 1, 1) = sprintf('%s: Transfer mean=%.4f, %s mean=%.4f, ranksum p=%.4g', ...
+			Cond.Name(iCond), transferMean, Cond.Label(iCond), otherMean, pValue); %#ok<AGROW>
+	end
+end
+
+if ~isempty(failedComparisons)
+	error('THModel:TransferNotSignificantlyHighest', ...
+		'Transfer must be significantly highest for %s (alpha=%.3f). %s', ...
+		metricLabel, alpha, strjoin(failedComparisons, '; '));
+end
+end
+
+function iCheckTransferSigmoidSlopeSignificantlyHighest(SigmoidStats, Cond, alpha)
+transferIndex = find(Cond.Name == "Transfer", 1);
+fitConditionNames = string(SigmoidStats.FitTable.Condition);
+transferFitIndex = find(fitConditionNames == "Transfer", 1);
+transferSlope = SigmoidStats.FitTable.Slope(transferFitIndex);
+failedComparisons = strings(0, 1);
+
+for iCond = 1:height(Cond)
+	if iCond == transferIndex
+		continue;
+	end
+	otherFitIndex = find(fitConditionNames == Cond.Name(iCond), 1);
+	otherSlope = SigmoidStats.FitTable.Slope(otherFitIndex);
+	comparisonIndex = find((SigmoidStats.ComparisonTable.BaselineIndex == iCond & SigmoidStats.ComparisonTable.TestIndex == transferIndex) | ...
+		(SigmoidStats.ComparisonTable.BaselineIndex == transferIndex & SigmoidStats.ComparisonTable.TestIndex == iCond), 1);
+	pValue = SigmoidStats.ComparisonTable.PValue(comparisonIndex);
+	observedDifference = SigmoidStats.ComparisonTable.ObservedDifference(comparisonIndex);
+	if SigmoidStats.ComparisonTable.TestIndex(comparisonIndex) == transferIndex
+		transferMinusOther = observedDifference;
+	else
+		transferMinusOther = -observedDifference;
+	end
+	if ~(transferSlope > otherSlope && transferMinusOther > 0 && pValue < alpha)
+		failedComparisons(end + 1, 1) = sprintf('%s: Transfer slope=%.4f, %s slope=%.4f, permutation p=%.4g', ...
+			Cond.Name(iCond), transferSlope, Cond.Label(iCond), otherSlope, pValue); %#ok<AGROW>
+	end
+end
+
+if ~isempty(failedComparisons)
+	error('THModel:TransferNotSignificantlyHighest', ...
+		'Transfer must be significantly highest for sigmoid slope (alpha=%.3f). %s', ...
+		alpha, strjoin(failedComparisons, '; '));
+end
+end
+
 function txt = iFormatPValue(p)
 if ~isfinite(p)
 	txt = 'p=NaN';
@@ -2137,21 +2173,6 @@ counts = histcounts(x, edges, 'Normalization', 'pdf');
 centers = edges(1:end-1) + diff(edges) / 2;
 xLine = centers(:);
 yLine = counts(:);
-end
-
-function txt = iPLabel(p, rho)
-if ~isfinite(p)
-	txt = sprintf('rho = %.2f\np = NaN', rho);
-	return;
-end
-if p < 0.001
-	pTxt = 'p < 0.001';
-elseif p < 0.01
-	pTxt = sprintf('p = %.3f', p);
-else
-	pTxt = sprintf('p = %.2f', p);
-end
-txt = sprintf('rho = %.2f\n%s', rho, pTxt);
 end
 
 function iStyleLinePanel(ax)
