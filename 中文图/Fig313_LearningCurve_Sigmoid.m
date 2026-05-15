@@ -2,7 +2,7 @@
 %
 % Output: SVG through the standard figure output path.
 
-svgName = '中文图Fig313A_LearningCurve_Sigmoid.svg';
+svgName = '中文图Fig313_LearningCurve_Sigmoid.svg';
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -80,10 +80,10 @@ t = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 curveColor = [0 0 0];
 axNaive = nexttile(t, 1);
-iPlotGroupMouseCurves(axNaive, displayedNaive, xFit, naiveFitCurve, curveColor, "Naive", fitNaive, false);
+iPlotGroupMeanErrorbars(axNaive, xFit, meanMatOut(:,1), semMatOut(:,1), naiveFitCurve, curveColor, "Naive", fitNaive, false);
 
 axTransfer = nexttile(t, 2);
-iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, curveColor, "Continual", fitTransfer, true);
+iPlotGroupMeanErrorbars(axTransfer, xFit, meanMatOut(:,2), semMatOut(:,2), transferFitCurve, curveColor, "Continual", fitTransfer, true);
 
 ylabel(axNaive, 'Hit rate', 'FontSize', 12);
 xlabel(t, 'Block', 'FontSize', 12);
@@ -98,7 +98,6 @@ for ax = reshape(allAxes, 1, [])
 end
 
 TransferLearning.Style.ApplyStandardFigureStyle(f, 2);
-iRetuneSingleMouseCurves(f);
 axTransfer.YAxis.Visible = 'off';
 svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(f, svgPath, '-dsvg');
@@ -270,17 +269,10 @@ function S = iSessionizeByDateTime(T)
 	perf = splitapply(@(x) mean(x, 'omitnan'), val, G);
 	nBlocks = splitapply(@(x) sum(isfinite(x)), val, G);
 	phaseSession = splitapply(@(x) iPickSessionPhase(x), string(T.Phase), G);
-	S = table(mouseKeys, dtKeys, perf, nBlocks, phaseSession, ...
-		'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession','Phase'});
+	S = table(mouseKeys, dtKeys, perf, nBlocks, phaseSession, 'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession','Phase'});
 end
 
 function ph = iPickSessionPhase(phases)
-	phases = string(phases);
-	phases = phases(~ismissing(phases) & phases ~= "");
-	if isempty(phases)
-		ph = "";
-		return;
-	end
 	[u,~,ic] = unique(phases);
 	counts = accumarray(ic, 1);
 	[~,ix] = max(counts);
@@ -440,34 +432,25 @@ function [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, se
 	end
 end
 
-function iPlotGroupMouseCurves(ax, T, xFit, yFit, lineColor, groupName, fitStruct, showLegend)
+function iPlotGroupMeanErrorbars(ax, blockX, meanCurve, semCurve, yFit, lineColor, groupName, fitStruct, showLegend)
 	hold(ax, 'on');
 	ax.FontSize = 12;
-	T = sortrows(T, {'Mouse','Session'});
-	T.Mouse = string(T.Mouse);
-	mice = unique(T.Mouse, 'stable');
-	nMice = numel(mice);
-	lightColor = 1 - (1 - lineColor) * 0.35;
-	mouseHandles = gobjects(0,1);
-	for i = 1:nMice
-		rows = T.Mouse == mice(i) & isfinite(double(T.Session)) & isfinite(double(T.Performance));
-		if ~any(rows)
-			continue;
-		end
-		xMouse = double(T.Session(rows));
-		yMouse = double(T.Performance(rows));
-		h = plot(ax, xMouse, yMouse, '-', ...
-			'Color', lightColor, ...
-			'LineWidth', 0.5, ...
-			'Marker', 'none', ...
-			'Tag', 'SingleMouseCurve');
-		if isempty(mouseHandles)
-			mouseHandles = h;
-		end
-	end
-	fitHandle = plot(ax, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.8);
-	if showLegend && ~isempty(mouseHandles)
-		lg = legend(ax, [mouseHandles(1), fitHandle], {'Per-mouse', 'Sigmoid fit'}, 'Location', 'southeast');
+	blockX = double(blockX(:));
+	meanCurve = double(meanCurve(:));
+	semCurve = double(semCurve(:));
+	rows = isfinite(blockX) & isfinite(meanCurve);
+	semCurve(~isfinite(semCurve)) = 0;
+	dataHandle = errorbar(ax, blockX(rows), meanCurve(rows), semCurve(rows), semCurve(rows), 'o', ...
+		'LineStyle', 'none', ...
+		'Color', lineColor, ...
+		'MarkerEdgeColor', lineColor, ...
+		'MarkerFaceColor', 'w', ...
+		'MarkerSize', 3, ...
+		'LineWidth', 0.5, ...
+		'CapSize', 5);
+	fitHandle = plot(ax, blockX, yFit, '-', 'Color', lineColor, 'LineWidth', 2.8);
+	if showLegend && isgraphics(dataHandle)
+		lg = legend(ax, [dataHandle, fitHandle], {'Mean ± SEM', 'Sigmoid fit'}, 'Location', 'southeast');
 		lg.FontSize = 9;
 		lg.Box = 'off';
 		lg.NumColumns = 1;
@@ -477,14 +460,6 @@ function iPlotGroupMouseCurves(ax, T, xFit, yFit, lineColor, groupName, fitStruc
 	box(ax, 'off');
 	grid(ax, 'off');
 	title(ax, {char(groupName), sprintf('slope=%.3f', fitStruct.Slope)}, 'FontSize', 10, 'FontWeight', 'normal');
-end
-
-function iRetuneSingleMouseCurves(fig)
-	mouseLines = findall(fig, 'Type', 'line', 'Tag', 'SingleMouseCurve');
-	for iLine = 1:numel(mouseLines)
-		mouseLines(iLine).LineWidth = 0.5;
-		mouseLines(iLine).Marker = 'none';
-	end
 end
 
 function fitOut = iFitSigmoidCurve(T, groupName)

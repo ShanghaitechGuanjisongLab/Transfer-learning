@@ -25,18 +25,16 @@ if isfolder(networkOutputRoot)
 else
 	outDir = fullfile(localOutputRoot, char(datetime('now', 'Format', 'yyyyMM')));
 end
+THForceRerun = true;
 outputNameSuffix = iOutputNameSuffix();
 svgName = iTaggedSvgName('TH_Mainline_Inhibitory_Heterogeneity_Model.svg', outputNameSuffix);
 preWeightDistributionSvgName = iTaggedSvgName('TH_Mainline_PreFormal_Naive_Transfer_Connection_Weight_Distribution.svg', outputNameSuffix);
 weightSvgName = iTaggedSvgName('TH_Mainline_Formal_Training_Connection_Type_Weight_SD.svg', outputNameSuffix);
 sigmoidSvgName = iTaggedSvgName('TH_Mainline_Sigmoid_Fit_Slope.svg', outputNameSuffix);
 
-Params = iDefaultParams();
-Params = iApplyBaseParameterOverrides(Params);
-if evalin('base', 'exist(''THRandomSeed'', ''var'')')
-	Params.RandomSeed = evalin('base', 'THRandomSeed');
-end
-Cond = iConditionTable();
+Params = TransferLearning.THModel.DefaultParams();
+Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
+Cond = TransferLearning.THModel.ConditionTable();
 if evalin('base', 'exist(''THDebugNonnegativeFormalFailure'', ''var'') && THDebugNonnegativeFormalFailure')
 	DebugReport = iRunNonnegativeFormalFailureDebug(Params, Cond);
 	assignin('base', 'THNonnegativeFormalFailureDebug', DebugReport);
@@ -48,7 +46,7 @@ if evalin('base', 'exist(''THDebugPretrainTrace'', ''var'') && THDebugPretrainTr
 	return;
 end
 workspaceVarNames = iWorkspaceVariableNames(outputNameSuffix);
-if iHasReusableWorkspaceSummary(workspaceVarNames, Params)
+if ~THForceRerun && iHasReusableWorkspaceSummary(workspaceVarNames, Params)
 	Summary = evalin('base', workspaceVarNames.Summary);
 	if evalin('base', sprintf('exist(''%s'', ''var'')', workspaceVarNames.Params)) == 1
 		Params = evalin('base', workspaceVarNames.Params);
@@ -56,8 +54,11 @@ if iHasReusableWorkspaceSummary(workspaceVarNames, Params)
 	if evalin('base', sprintf('exist(''%s'', ''var'')', workspaceVarNames.Cond)) == 1
 		Cond = evalin('base', workspaceVarNames.Cond);
 	end
-	fprintf('Using workspace variable %s for plotting; clear it to retrain.\n', workspaceVarNames.Summary);
+	fprintf('Using workspace variable %s for plotting; set THForceRerun=true to retrain.\n', workspaceVarNames.Summary);
 else
+	if THForceRerun
+		fprintf('THForceRerun=true; retraining instead of using workspace variable %s.\n', workspaceVarNames.Summary);
+	end
 	iPrepareParallelGpuWorkers();
 	Summary = iRunCohortModel(Params, Cond);
 end
@@ -233,164 +234,11 @@ assignin('base', workspaceVarNames.Cond, Cond);
 end
 
 function iPrepareParallelGpuWorkers()
-ParallelComputing.ParPool(20);
-spmd
-	if spmdIndex <= gpuDeviceCount
-		gpuDevice(spmdIndex);
-	else
-		gpuDevice([]);
-	end
-end
+TransferLearning.THModel.PrepareParallelGpuWorkers(20, 0);
 end
 
 function classification = iFormalTrainingConnectionWeightClassification()
-classification = "mainline_connection-type_EE-EI-IE-II_mouse-level-sd_random-plastic-wii_formal-hebb-mouse-var_itoi-v1";
-end
-
-function Params = iDefaultParams()
-% Cue/reward inputs plus three modeled cortical populations:
-%   CueIn    (sensory cue input vector, not counted as L2/3 activity)
-%   L23      (L2/3 population receiving CueIn through a plastic afferent map)
-%   Reward   (reward input cells, independent from L5)
-%   L5RewardRecv (L5 cells receiving L2/3 and Reward input)
-%   L5Read   (L5 behavioural readout cells with task-shaped I-pool)
-% One plastic E-E matrix spans all L2/3 and L5 cells. It is structurally
-% all-to-all except for the diagonal self-projections.
-% Decision phase uses sensory cue input only; L2/3 receives this input,
-% then all L2/3/L5 populations settle through the recurrent internal
-% projection. During learning, reward and readout feedback are added to the
-% settled cue-decision network state; Reward input drives L5RewardRecv through
-% a plastic afferent map, and readout drive remains a one-way input to L5Read.
-% Learning phase applies outer-product Hebbian updates on cue-to-L2/3,
-% reward-to-L5RewardRecv, and recurrent internal matrices plus cell-specific
-% inhibitory WIE/WEI plasticity in L23/L5RewardRecv/L5Read pathways.
-Params.NumMice = 20;
-Params.NumSessions = 8;
-Params.NumTrials = 30;
-Params.NCueInput = 96;
-Params.NL23 = 96;
-Params.NReward = 64;
-Params.NL5Read = 64;
-Params.NL5RewardRecv = 2 * Params.NL5Read;
-Params.NL5 = Params.NL5RewardRecv + Params.NL5Read;
-Params.NL23L5 = Params.NL23 + Params.NL5;
-Params.NIL23 = 24;
-Params.NIL5RewardRecv = 16;
-Params.NIL5Read = 16;
-Params.ResponseScale = 1.45;
-Params.NoiseCue = 0.70;             % input + L2/3 pre-noise together roughly match cue signal scale
-Params.NoiseRew = 0.15;
-Params.NoiseRead = 0.12;
-Params.Comp_Cue = 0.95;
-Params.Comp_Rew = 1.00;
-Params.Comp_Read = 1.20;
-% Input gains
-Params.CueInputGain = 1.00;          % sensory cue drive (decision + learning)
-Params.CueInputGainPretrain = 1.40;  % pretraining cue gain
-Params.RewInputGain = 1.45;          % reward pattern clamp amplitude (learning phase only)
-Params.THRewardRecvInputGain = 1.50; % reward/TH-gated direct L5RewardRecv teaching drive
-Params.ReadInputGain = 0.00;         % baseline readout pattern clamp amplitude (learning phase only)
-Params.THReadInputGain = 2.80;       % reward/TH-gated extra readout teaching amplitude
-Params.THReadHeterogeneityGain = 2.50; % reward/TH-gated L5Read heterogeneity teaching amplitude
-% Decision readout: initial input noise creates trial-to-trial variability,
-% and a hit is emitted when the readout crosses HitThreshold.
-Params.HitThreshold = 0.35;
-Params.Ceiling = 1.00;
-% Slope fit: drop sessions from the first 100%-hit session onward
-% (that session and every subsequent one) so the plateau at 1.0 does
-% not compress the slope of fast learners.
-Params.SlopeHitPerfect = 1.00;
-Params.TransferHighestAlpha = 0.05;
-% Plastic excitatory weights share one initialization distribution.
-Params.InitExcWeightMean = 0.00;
-Params.InitExcWeightStd = 0.03;
-Params.WCap = 2.00;
-Params.AfferentWCap = 2.00;
-Params.RewardAfferentNorm = 1.00;
-Params.ClampNegativePlasticWeightsToZero = true;
-% Number of recurrent internal passes after external cue/reward/readout drive.
-Params.InternalRecurrentPasses = 2;
-% Per-trial Hebbian rate. With NumTrials=30 per session, total within-
-% session increase ≈ 30 * HebbRate * mouse-level eta factor.
-Params.HebbRate = 0.0085;
-Params.RandomSeed = NaN;
-Params.FormalHebbGainStd = 0.35;
-Params.FormalHebbGainMin = 0.65;
-Params.FormalHebbGainMax = 1.55;
-% Inhibitory plasticity: InhGain is retired; WIE/WEI carry cell-specific plasticity.
-Params.InhPlasticityRate = 0.0035;
-Params.InhTargetAct = 0.00;
-Params.InhWeightMin = 0.00;
-Params.InhWeightMax = 1.00;
-Params.InitInhWeightMean = 0.72;
-Params.InitInhWeightStd = 0.20;
-Params.IToIGain = 0.50;
-Params.IToIPasses = 2;
-% Cross-modality overlap between pretraining cue input (e.g. sound) and new
-% cue input (e.g. light). Real sensory drives are never fully orthogonal;
-% each cue-input dimension has a shared component plus a modality-unique
-% component. The fixed CueIn->L23 map turns this sensory overlap into
-% partially overlapping L2/3 responses.
-% Correlation between CueInputPattern and PreCueInputPattern = CueModalityCorr.
-Params.CueModalityCorr = 0.62;
-% Overnight consolidation
-Params.OvernightRetention = 0.96;
-Params.OvernightNoise = 0.002;
-% Pretraining
-Params.MaxPretrainSessions = 150;
-Params.PostCeilingSessions = 2;
-end
-
-function Params = iApplyBaseParameterOverrides(Params)
-if evalin('base', 'exist(''THParamOverrides'', ''var'')') ~= 1
-	return;
-end
-paramOverrides = evalin('base', 'THParamOverrides');
-if isempty(paramOverrides)
-	return;
-end
-if ~isstruct(paramOverrides)
-	error('THModel:InvalidParameterOverrides', 'THParamOverrides must be a scalar struct.');
-end
-protectedFieldNames = ["NumMice", "NumSessions", "NumTrials", "MaxPretrainSessions", "PostCeilingSessions", "HitThreshold", "Ceiling", "SlopeHitPerfect", "TransferHighestAlpha"];
-fieldNames = fieldnames(paramOverrides);
-for iField = 1:numel(fieldNames)
-	fieldName = fieldNames{iField};
-	if any(string(fieldName) == protectedFieldNames)
-		error('THModel:ProtectedParameterOverride', 'THParamOverrides may not override gated/acceptance parameter: %s.', fieldName);
-	end
-	if ~isfield(Params, fieldName)
-		error('THModel:UnknownParameterOverride', 'Unknown THParamOverrides field: %s.', fieldName);
-	end
-	fieldValue = paramOverrides.(fieldName);
-	if ~isnumeric(fieldValue) || ~isscalar(fieldValue) || ~isfinite(fieldValue)
-		error('THModel:InvalidParameterOverrideValue', 'THParamOverrides.%s must be a finite numeric scalar.', fieldName);
-	end
-	Params.(fieldName) = fieldValue;
-end
-if Params.HitThreshold >= Params.ResponseScale
-	error('THModel:InvalidDecisionThreshold', 'HitThreshold must be below ResponseScale.');
-end
-end
-
-function Cond = iConditionTable()
-Cond = table;
-Cond.Name = ["Naive"; "Transfer"; "THOff"];
-Cond.Label = ["Naive"; "Transfer"; "TH inhibited"];
-Cond.Color = [1, 0, 0; 0, 0, 1; 0, 0, 0];
-Cond.RewardInputLevel = [1.00; 1.00; 0.00];
-end
-
-function iSeedMouseIfRequested(Params, condName, iMouse)
-if ~isfield(Params, 'RandomSeed') || ~isfinite(Params.RandomSeed)
-	return;
-end
-conditionNames = ["Naive", "Transfer", "THOff"];
-conditionIdx = find(conditionNames == string(condName), 1);
-if isempty(conditionIdx)
-	conditionIdx = 0;
-end
-rng(Params.RandomSeed + 100000 * conditionIdx + iMouse);
+classification = "mainline_connection-type_EE-EI-IE-II_mouse-level-sd_random-plastic-wii_formal-hebb-mouse-var_sync-recurrent-v1";
 end
 
 function DebugReport = iRunNonnegativeFormalFailureDebug(Params, Cond)
@@ -447,11 +295,10 @@ rowIndex = 0;
 for iCond = 1:numel(conditionNames)
 	condName = conditionNames(iCond);
 	for iMouse = 1:numDebugMice
-		iSeedMouseIfRequested(Params, condName, iMouse);
-		Mouse = iDrawMouse(Params);
-		initialDrive = iCueDecisionProbe(Mouse, Params, true);
-		initialDriveNoInh = iCueDecisionProbeNoLocalInh(Mouse, Params, true);
-		initialWeights = iPlasticWeightDebugSummary(Mouse, Params);
+		Mouse = TransferLearning.THModel.DrawMouse(Params);
+		initialDrive = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, true);
+		initialDriveNoInh = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, true);
+		initialWeights = TransferLearning.THModel.PlasticWeightDebugSummary(Mouse, Params);
 		trace = nan(Params.MaxPretrainSessions, 1);
 		driveTrace = nan(Params.MaxPretrainSessions + 1, 1);
 		driveNoInhTrace = nan(Params.MaxPretrainSessions + 1, 1);
@@ -465,33 +312,29 @@ for iCond = 1:numel(conditionNames)
 		internalMeanTrace(1) = initialWeights.InternalMean;
 		l5ReadWIEMeanTrace(1) = initialWeights.L5ReadWIEMean;
 		l5ReadWEIMeanTrace(1) = initialWeights.L5ReadWEIMean;
-		postCeilingCount = 0;
 		stopSession = Params.MaxPretrainSessions;
 		for iSess = 1:Params.MaxPretrainSessions
-			[perfObserved, ~, perfExpected, Mouse] = iSimulateSession(Mouse, Params, pretrainCond, true);
-			trace(iSess) = perfExpected;
-			postWeights = iPlasticWeightDebugSummary(Mouse, Params);
-			driveTrace(iSess + 1) = iCueDecisionProbe(Mouse, Params, true);
-			driveNoInhTrace(iSess + 1) = iCueDecisionProbeNoLocalInh(Mouse, Params, true);
+			[perfObserved, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
+			trace(iSess) = perfObserved;
+			postWeights = TransferLearning.THModel.PlasticWeightDebugSummary(Mouse, Params);
+			driveTrace(iSess + 1) = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, true);
+			driveNoInhTrace(iSess + 1) = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, true);
 			cueMeanTrace(iSess + 1) = postWeights.CueMean;
 			internalMeanTrace(iSess + 1) = postWeights.InternalMean;
 			l5ReadWIEMeanTrace(iSess + 1) = postWeights.L5ReadWIEMean;
 			l5ReadWEIMeanTrace(iSess + 1) = postWeights.L5ReadWEIMean;
-			if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
-				postCeilingCount = postCeilingCount + 1;
-				if postCeilingCount >= Params.PostCeilingSessions
-					stopSession = iSess;
-					break;
-				end
+			if perfObserved >= Params.Ceiling
+				stopSession = iSess;
+				break;
 			end
-			Mouse = iOvernightConsolidate(Mouse, Params);
+			Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
 		end
 		trace = trace(1:stopSession);
 		rowIndex = rowIndex + 1;
 		traceCells{rowIndex} = trace;
 		diagnosticCells{rowIndex} = table((0:stopSession)', [NaN; trace], driveTrace(1:stopSession + 1), driveNoInhTrace(1:stopSession + 1), cueMeanTrace(1:stopSession + 1), internalMeanTrace(1:stopSession + 1), l5ReadWIEMeanTrace(1:stopSession + 1), l5ReadWEIMeanTrace(1:stopSession + 1), ...
 			'VariableNames', {'Session','Hit','Drive','DriveNoInh','CueMean','InternalMean','L5ReadWIEMean','L5ReadWEIMean'});
-		rows(rowIndex).Condition = condName; %#ok<AGROW>
+		rows(rowIndex).Condition = condName;
 		rows(rowIndex).Mouse = iMouse;
 		rows(rowIndex).InitialDrive = initialDrive;
 		rows(rowIndex).InitialDriveNoInh = initialDriveNoInh;
@@ -505,8 +348,8 @@ for iCond = 1:numel(conditionNames)
 		end
 		rows(rowIndex).FirstNonzeroSession = firstNonzero;
 		rows(rowIndex).StopSession = stopSession;
-		rows(rowIndex).FinalDrive = iCueDecisionProbe(Mouse, Params, true);
-		rows(rowIndex).FinalDriveNoInh = iCueDecisionProbeNoLocalInh(Mouse, Params, true);
+		rows(rowIndex).FinalDrive = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, true);
+		rows(rowIndex).FinalDriveNoInh = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, true);
 	end
 end
 DebugReport.MouseTable = struct2table(rows);
@@ -516,8 +359,7 @@ disp(DebugReport.MouseTable(:, {'Condition','Mouse','FirstHit','MaxHit','LastHit
 end
 
 function row = iRunNonnegativeFormalFailureMouse(Params, condRow, condName, iMouse, numFormalDiagnosticSessions)
-iSeedMouseIfRequested(Params, condName, iMouse);
-Mouse = iDrawMouse(Params);
+Mouse = TransferLearning.THModel.DrawMouse(Params);
 pretrainPerf = NaN;
 pretrainSessions = 0;
 if condName ~= "Naive"
@@ -526,25 +368,39 @@ if condName ~= "Naive"
 	pretrainPerf = pretrainPerfTrace(end);
 end
 preDiag = iDecisionProbeSet(Mouse, Params, condRow);
-preWeights = iPlasticWeightDebugSummary(Mouse, Params);
+preWeights = TransferLearning.THModel.PlasticWeightDebugSummary(Mouse, Params);
 formalPerf = nan(1, numFormalDiagnosticSessions);
 sessionMeanL5 = nan(Params.NL5, numFormalDiagnosticSessions);
 sessionMeanL5RewardRecv = nan(Params.NL5RewardRecv, numFormalDiagnosticSessions);
 sessionMeanL5Read = nan(Params.NL5Read, numFormalDiagnosticSessions);
-[formalPerf(1), Signals, ~, Mouse] = iSimulateSession(Mouse, Params, condRow, false);
+[formalPerf(1), Signals, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, condRow, false);
 sessionMeanL5(:, 1) = Signals.ProcessMeanL5;
 sessionMeanL5RewardRecv(:, 1) = Signals.ProcessMeanL5RewardRecv;
 sessionMeanL5Read(:, 1) = Signals.ProcessMeanL5Read;
 afterFirstDiag = iDecisionProbeSet(Mouse, Params, condRow);
+firstPerfectSession = NaN;
+if formalPerf(1) >= Params.Ceiling
+	firstPerfectSession = 1;
+end
 for iSess = 2:numFormalDiagnosticSessions
-	Mouse = iOvernightConsolidate(Mouse, Params);
-	[formalPerf(iSess), Signals, ~, Mouse] = iSimulateSession(Mouse, Params, condRow, false);
+	if isfinite(firstPerfectSession)
+		formalPerf(iSess) = Params.Ceiling;
+		sessionMeanL5(:, iSess) = sessionMeanL5(:, iSess - 1);
+		sessionMeanL5RewardRecv(:, iSess) = sessionMeanL5RewardRecv(:, iSess - 1);
+		sessionMeanL5Read(:, iSess) = sessionMeanL5Read(:, iSess - 1);
+		continue;
+	end
+	Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
+	[formalPerf(iSess), Signals, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, condRow, false);
 	sessionMeanL5(:, iSess) = Signals.ProcessMeanL5;
 	sessionMeanL5RewardRecv(:, iSess) = Signals.ProcessMeanL5RewardRecv;
 	sessionMeanL5Read(:, iSess) = Signals.ProcessMeanL5Read;
+	if formalPerf(iSess) >= Params.Ceiling
+		firstPerfectSession = iSess;
+	end
 end
 finalDiag = iDecisionProbeSet(Mouse, Params, condRow);
-finalWeights = iPlasticWeightDebugSummary(Mouse, Params);
+finalWeights = TransferLearning.THModel.PlasticWeightDebugSummary(Mouse, Params);
 formalMeanH5 = iRestrictedStd(mean(sessionMeanL5, 2, 'omitnan'));
 formalMeanH5RewardRecv = iRestrictedStd(mean(sessionMeanL5RewardRecv, 2, 'omitnan'));
 formalMeanH5Read = iRestrictedStd(mean(sessionMeanL5Read, 2, 'omitnan'));
@@ -561,18 +417,14 @@ end
 function [Mouse, perfTrace] = iPretrainMouseWithTrace(Mouse, Params)
 pretrainCond.RewardInputLevel = 1.00;
 perfTrace = nan(Params.MaxPretrainSessions, 1);
-postCeilingCount = 0;
 for iSess = 1:Params.MaxPretrainSessions
-	[perfObserved, ~, perfExpected, Mouse] = iSimulateSession(Mouse, Params, pretrainCond, true);
+	[perfObserved, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
 	perfTrace(iSess) = perfObserved;
-	if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
-		postCeilingCount = postCeilingCount + 1;
-		if postCeilingCount >= Params.PostCeilingSessions
-			perfTrace = perfTrace(1:iSess);
-			return;
-		end
+	if perfObserved >= Params.Ceiling
+		perfTrace = perfTrace(1:iSess);
+		return;
 	end
-	Mouse = iOvernightConsolidate(Mouse, Params);
+	Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
 end
 error('THModel:PretrainDidNotReachCeiling', 'Debug pretraining did not reach ceiling within %d sessions. Final observed hit = %.3f.', Params.MaxPretrainSessions, perfTrace(end));
 end
@@ -664,48 +516,14 @@ conditionSummary = struct2table(summaryRows);
 end
 
 function diag = iDecisionProbeSet(Mouse, Params, Cond)
-diag.PreCueDrive = iCueDecisionProbe(Mouse, Params, true);
-diag.FormalCueDrive = iCueDecisionProbe(Mouse, Params, false);
-diag.FormalCueDriveNoInh = iCueDecisionProbeNoLocalInh(Mouse, Params, false);
+diag.PreCueDrive = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, true);
+diag.FormalCueDrive = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, false);
+diag.FormalCueDriveNoInh = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, false);
 diag.RewardDrive = iRewardReadoutProbe(Mouse, Params, Cond);
 	[randomMean, randomMax, randomHitFraction] = iRandomCueDecisionStats(Mouse, Params, 30);
 diag.RandomCueMeanDrive = randomMean;
 diag.RandomCueMaxDrive = randomMax;
 diag.RandomCueHitFraction = randomHitFraction;
-end
-
-function drive = iCueDecisionProbe(Mouse, Params, usePreCue)
-ProbeParams = Params;
-ProbeParams.NoiseCue = 0;
-ProbeParams.NoiseRew = 0;
-ProbeParams.NoiseRead = 0;
-if usePreCue
-	cueInputPat = Mouse.PreCueInputPattern;
-	cueGain = ProbeParams.CueInputGainPretrain;
-else
-	cueInputPat = Mouse.CueInputPattern;
-	cueGain = ProbeParams.CueInputGain;
-end
-cueInput = cueGain * cueInputPat;
-preL23 = Mouse.W_CueInputToL23 * cueInput;
-preL5RewardRecv = iZeros([ProbeParams.NL5RewardRecv, 1], ProbeParams);
-preL5Read = iZeros([ProbeParams.NL5Read, 1], ProbeParams);
-[~, ~, rL5Read] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
-drive = iGatherScalar(mean(Mouse.L5ReadoutPattern .* rL5Read));
-end
-
-function drive = iCueDecisionProbeNoLocalInh(Mouse, Params, usePreCue)
-MouseNoInh = Mouse;
-MouseNoInh.WIE_L23 = iZeros(size(Mouse.WIE_L23), Params);
-MouseNoInh.WEI_L23 = iZeros(size(Mouse.WEI_L23), Params);
-MouseNoInh.WII_L23 = iZeros(size(Mouse.WII_L23), Params);
-MouseNoInh.WIE_L5RewardRecv = iZeros(size(Mouse.WIE_L5RewardRecv), Params);
-MouseNoInh.WEI_L5RewardRecv = iZeros(size(Mouse.WEI_L5RewardRecv), Params);
-MouseNoInh.WII_L5RewardRecv = iZeros(size(Mouse.WII_L5RewardRecv), Params);
-MouseNoInh.WIE_L5Read = iZeros(size(Mouse.WIE_L5Read), Params);
-MouseNoInh.WEI_L5Read = iZeros(size(Mouse.WEI_L5Read), Params);
-MouseNoInh.WII_L5Read = iZeros(size(Mouse.WII_L5Read), Params);
-drive = iCueDecisionProbe(MouseNoInh, Params, usePreCue);
 end
 
 function [randomMean, randomMax, randomHitFraction] = iRandomCueDecisionStats(Mouse, Params, numSamples)
@@ -716,38 +534,15 @@ ProbeParams.NoiseRew = 0;
 ProbeParams.NoiseRead = 0;
 for iSample = 1:numSamples
 	cueInput = ProbeParams.CueInputGain * iStandardize(iRandn([ProbeParams.NCueInput, 1], ProbeParams));
-	preL23 = Mouse.W_CueInputToL23 * cueInput;
+	preL23 = cueInput;
 	preL5RewardRecv = iZeros([ProbeParams.NL5RewardRecv, 1], ProbeParams);
 	preL5Read = iZeros([ProbeParams.NL5Read, 1], ProbeParams);
-	[~, ~, rL5Read] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
+	[~, ~, rL5Read] = TransferLearning.THModel.RunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
 	drives(iSample) = iGatherScalar(mean(Mouse.L5ReadoutPattern .* rL5Read));
 end
 randomMean = mean(drives, 'omitnan');
 randomMax = max(drives);
 randomHitFraction = mean(drives >= Params.HitThreshold, 'omitnan');
-end
-
-function weightSummary = iPlasticWeightDebugSummary(Mouse, Params)
-cueWeights = iGatherValue(Mouse.W_CueInputToL23(:));
-rewardWeights = iGatherValue(Mouse.W_RewardToL5RewardRecv(:));
-internalWeights = iNonSelfInternalWeights(Mouse.W_L23L5ToL23L5);
-weightSummary.CueMean = mean(cueWeights, 'omitnan');
-weightSummary.CueZeroFraction = mean(cueWeights <= 0, 'omitnan');
-weightSummary.CueCapFraction = mean(cueWeights >= 0.999 * Params.AfferentWCap, 'omitnan');
-weightSummary.RewardMean = mean(rewardWeights, 'omitnan');
-weightSummary.RewardZeroFraction = mean(rewardWeights <= 0, 'omitnan');
-weightSummary.RewardCapFraction = mean(rewardWeights >= 0.999 * Params.AfferentWCap, 'omitnan');
-weightSummary.InternalMean = mean(internalWeights, 'omitnan');
-weightSummary.InternalZeroFraction = mean(internalWeights <= 0, 'omitnan');
-weightSummary.InternalCapFraction = mean(internalWeights >= 0.999 * Params.WCap, 'omitnan');
-readoutWIE = iGatherValue(Mouse.WIE_L5Read(:));
-readoutWEI = iGatherValue(Mouse.WEI_L5Read(:));
-weightSummary.L5ReadWIEMean = mean(readoutWIE, 'omitnan');
-weightSummary.L5ReadWIEZeroFraction = mean(readoutWIE <= 0, 'omitnan');
-weightSummary.L5ReadWIECapFraction = mean(readoutWIE >= 0.999 * Params.InhWeightMax, 'omitnan');
-weightSummary.L5ReadWEIMean = mean(readoutWEI, 'omitnan');
-weightSummary.L5ReadWEIZeroFraction = mean(readoutWEI <= 0, 'omitnan');
-weightSummary.L5ReadWEICapFraction = mean(readoutWEI >= 0.999 * Params.InhWeightMax, 'omitnan');
 end
 
 function Summary = iRunCohortModel(Params, Cond)
@@ -787,7 +582,7 @@ for iCond = 1:height(Cond)
 	condName = Cond.Name(iCond);
 	mouseResultCells = cell(Params.NumMice, 1);
 	parfor iMouse = 1:Params.NumMice
-		mouseResultCells{iMouse} = iRunOneMouseTask(Params, condRow, condName, iMouse);
+		mouseResultCells{iMouse} = iRunOneMouseTask(Params, condRow, condName);
 	end
 	for iMouse = 1:Params.NumMice
 		mouseResult = mouseResultCells{iMouse};
@@ -851,9 +646,8 @@ for iClass = 1:numel(classNames)
 end
 end
 
-function mouseResult = iRunOneMouseTask(Params, Cond, condName, iMouse)
-iSeedMouseIfRequested(Params, condName, iMouse);
-Mouse = iDrawMouse(Params);
+function mouseResult = iRunOneMouseTask(Params, Cond, condName)
+Mouse = TransferLearning.THModel.DrawMouse(Params);
 rewardReadoutPretrain = NaN;
 if condName ~= "Naive"
 	% Pretraining shapes afferent/internal matrices + inhibitory gains.
@@ -870,7 +664,7 @@ if condName ~= "Naive"
 	rewardReadoutPretrain = iRewardReadoutProbe(Mouse, Params, iFullRewardCondition());
 end
 formalTrainingConnectionWeightsPre = iCollectConnectionTypeWeights(Mouse, Params);
-[MouseResult, Mouse] = iSimulateMouse(Mouse, Params, Cond);
+[MouseResult, Mouse] = TransferLearning.THModel.SimulateFormalTraining(Mouse, Params, Cond);
 formalTrainingConnectionWeightsPost = iCollectConnectionTypeWeights(Mouse, Params);
 mouseResult.Performance = iGatherValue(MouseResult.Performance);
 mouseResult.H23 = iGatherValue(MouseResult.H23);
@@ -889,79 +683,22 @@ mouseResult.RewardReadoutFinal = iGatherScalar(iRewardReadoutProbe(Mouse, Params
 mouseResult.FormalHebbGain = iGatherScalar(Mouse.FormalHebbGain);
 end
 
-function Mouse = iDrawMouse(Params)
-% Fixed input / target patterns (zero-mean, unit-std).
-% PreCueInput and CueInput share a common component (cross-modal correlation a) so
-% that a fraction of sensory input dimensions drive both modalities.
-a = Params.CueModalityCorr;
-sharedCue = iStandardize(iRandn([Params.NCueInput, 1], Params));
-preCueU   = iStandardize(iRandn([Params.NCueInput, 1], Params));
-cueU      = iStandardize(iRandn([Params.NCueInput, 1], Params));
-Mouse.PreCueInputPattern = iStandardize(a * sharedCue + sqrt(1 - a^2) * preCueU);
-Mouse.CueInputPattern    = iStandardize(a * sharedCue + sqrt(1 - a^2) * cueU);
-Mouse.RewardPattern      = iStandardize(iRandn([Params.NReward, 1], Params) + 0.55 * sign(iRandn([Params.NReward, 1], Params)));
-Mouse.L5ReadoutPattern   = iStandardize(iRandn([Params.NL5Read, 1], Params)   + 0.55 * sign(iRandn([Params.NL5Read, 1], Params)));
-Mouse.FormalHebbGain = iMouseScalarGain(Params.FormalHebbGainStd, Params.FormalHebbGainMin, Params.FormalHebbGainMax, Params);
-Mouse.L5RewardRecvTeachingPattern = iStandardize(iRandn([Params.NL5RewardRecv, 1], Params) + 0.55 * sign(iRandn([Params.NL5RewardRecv, 1], Params)));
-readHeterogeneityPattern = iStandardize(iRandn([Params.NL5Read, 1], Params) + 0.55 * sign(iRandn([Params.NL5Read, 1], Params)));
-readHeterogeneityPattern = readHeterogeneityPattern - (sum(readHeterogeneityPattern .* Mouse.L5ReadoutPattern) / sum(Mouse.L5ReadoutPattern .^ 2)) * Mouse.L5ReadoutPattern;
-Mouse.L5ReadHeterogeneityPattern = iStandardize(readHeterogeneityPattern);
-
-Mouse.W_CueInputToL23 = iInitExcitatoryWeights([Params.NL23, Params.NCueInput], Params);
-Mouse.W_RewardToL5RewardRecv = iInitExcitatoryWeights([Params.NL5RewardRecv, Params.NReward], Params);
-
-% Plastic internal E-E matrix, W(post, pre). Every L2/3 or L5 cell projects
-% to every other L2/3/L5 cell; the diagonal is fixed at zero.
-Mouse.W_L23L5ToL23L5 = iZeroSelfProjection(iInitExcitatoryWeights([Params.NL23L5, Params.NL23L5], Params));
-
-% Inhibitory pools in L2/3, L5RewardRecv, and L5Read share one initialization distribution.
-Mouse.WIE_L23 = iInitInhibitoryWeights([Params.NIL23, Params.NL23], Params);
-Mouse.WEI_L23 = iInitInhibitoryWeights([Params.NL23,  Params.NIL23], Params);
-Mouse.WII_L23 = iInitIToIWeights(Params.NIL23, Params);
-Mouse.WIE_L5RewardRecv = iInitInhibitoryWeights([Params.NIL5RewardRecv, Params.NL5RewardRecv], Params);
-Mouse.WEI_L5RewardRecv = iInitInhibitoryWeights([Params.NL5RewardRecv,  Params.NIL5RewardRecv], Params);
-Mouse.WII_L5RewardRecv = iInitIToIWeights(Params.NIL5RewardRecv, Params);
-Mouse.WIE_L5Read = iInitInhibitoryWeights([Params.NIL5Read, Params.NL23 + Params.NL5RewardRecv], Params);
-Mouse.WEI_L5Read = iInitInhibitoryWeights([Params.NL5Read, Params.NIL5Read], Params);
-Mouse.WII_L5Read = iInitIToIWeights(Params.NIL5Read, Params);
-
-end
-
-function weights = iInitExcitatoryWeights(weightSize, Params)
-weights = Params.InitExcWeightMean + Params.InitExcWeightStd * iRandn(weightSize, Params);
-weights = iClampNegativeWeightsToZero(weights);
-end
-
-function weights = iInitInhibitoryWeights(weightSize, Params)
-weights = abs(Params.InitInhWeightMean + Params.InitInhWeightStd * iRandn(weightSize, Params));
-weights = iClamp(weights, Params.InhWeightMin, Params.InhWeightMax);
-end
-
-function WII = iInitIToIWeights(numInhibitoryCells, Params)
-weights = iInitInhibitoryWeights([numInhibitoryCells, numInhibitoryCells], Params);
-WII = iZeroSelfProjection(weights);
-end
-
 function Mouse = iPretrainMouse(Mouse, Params)
 % Pretraining uses PreCueInputPattern and keeps reward input intact.
 pretrainCond.RewardInputLevel = 1.00;
-lastPerfExpected = NaN;
-postCeilingCount = 0;
+lastPerfObserved = NaN;
 
 for iSess = 1:Params.MaxPretrainSessions
-	[perfObserved, ~, perfExpected, Mouse] = iSimulateSession(Mouse, Params, pretrainCond, true);
-	lastPerfExpected = perfExpected;
+	[perfObserved, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
+	lastPerfObserved = perfObserved;
 
-	if perfObserved >= Params.Ceiling || perfExpected >= Params.Ceiling - 2 / Params.NumTrials
-		postCeilingCount = postCeilingCount + 1;
-		if postCeilingCount >= Params.PostCeilingSessions
-			return;
-		end
+	if perfObserved >= Params.Ceiling
+		return;
 	end
-	Mouse = iOvernightConsolidate(Mouse, Params);
+	Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
 end
 
-error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final expected hit = %.3f.', Params.MaxPretrainSessions, lastPerfExpected);
+error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final observed hit = %.3f.', Params.MaxPretrainSessions, lastPerfObserved);
 end
 
 function Cond = iFullRewardCondition()
@@ -976,93 +713,18 @@ ProbeParams.NoiseRead = 0;
 
 preL23 = iZeros([ProbeParams.NL23, 1], ProbeParams);
 preReward = Cond.RewardInputLevel * ProbeParams.RewInputGain * Mouse.RewardPattern;
-rReward = iRunArea(preReward, 'reward', Mouse, ProbeParams);
+rReward = TransferLearning.THModel.RunArea(preReward, 'reward', Mouse, ProbeParams);
 preL5RewardRecv = (Mouse.W_RewardToL5RewardRecv * rReward) / ProbeParams.RewardAfferentNorm;
 preL5Read = iZeros([ProbeParams.NL5Read, 1], ProbeParams);
-[~, ~, rL5Read] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
+[~, ~, rL5Read] = TransferLearning.THModel.RunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
 readoutDrive = iGatherScalar(mean(Mouse.L5ReadoutPattern .* rL5Read));
-end
-
-function [Result, Mouse] = iSimulateMouse(Mouse, Params, Cond)
-perf = nan(1, Params.NumSessions);
-h23 = nan(1, Params.NumSessions);
-h5 = nan(1, Params.NumSessions);
-sessionMeanL23 = nan(Params.NL23, Params.NumSessions);
-sessionMeanL5  = nan(Params.NL5,  Params.NumSessions);
-sessionMeanL5RewardRecv = nan(Params.NL5RewardRecv, Params.NumSessions);
-sessionMeanL5Read = nan(Params.NL5Read, Params.NumSessions);
-
-for iSess = 1:Params.NumSessions
-	[perf(iSess), Signals, ~, Mouse] = iSimulateSession(Mouse, Params, Cond, false);
-	sessionMeanL23(:, iSess) = Signals.ProcessMeanL23;
-	sessionMeanL5(:, iSess)  = Signals.ProcessMeanL5;
-	sessionMeanL5RewardRecv(:, iSess) = Signals.ProcessMeanL5RewardRecv;
-	sessionMeanL5Read(:, iSess) = Signals.ProcessMeanL5Read;
-	h23(iSess) = iRestrictedStd(mean(sessionMeanL23(:, 1:iSess), 2, 'omitnan'));
-	h5(iSess)  = iRestrictedStd(mean(sessionMeanL5(:,  1:iSess), 2, 'omitnan'));
-
-	if iSess < Params.NumSessions
-		Mouse = iOvernightConsolidate(Mouse, Params);
-	end
-end
-
-first100 = find(perf >= Params.SlopeHitPerfect, 1, 'first');
-if isempty(first100)
-	useIdx = 1:Params.NumSessions;
-elseif first100 == 1
-	useIdx = [];
-else
-	useIdx = 1:first100-1;
-end
-
-heterogeneityIdx = 1:Params.NumSessions;
-finalMeanL23 = mean(sessionMeanL23(:, heterogeneityIdx), 2, 'omitnan');
-finalMeanL5 = mean(sessionMeanL5(:, heterogeneityIdx), 2, 'omitnan');
-finalMeanL5RewardRecv = mean(sessionMeanL5RewardRecv(:, heterogeneityIdx), 2, 'omitnan');
-finalMeanL5Read = mean(sessionMeanL5Read(:, heterogeneityIdx), 2, 'omitnan');
-resultMeanH23 = iRestrictedStd(finalMeanL23);
-resultMeanH5 = iRestrictedStd(finalMeanL5);
-resultMeanH5RewardRecv = iRestrictedStd(finalMeanL5RewardRecv);
-resultMeanH5Read = iRestrictedStd(finalMeanL5Read);
-
-if numel(useIdx) >= 2
-	fitX = (1:numel(useIdx))';
-	fitY = perf(useIdx)';
-	% Linear fit. Logit was tried but the logit(0.03)~-3.5 expansion at
-	% the low end inflates Naive's apparent slope more than it boosts
-	% Transfer's, which erases rather than reveals the N/T gap.
-	fitP = polyfit(fitX, fitY, 1);
-	dh = diff(fitY);
-	resultSlope = fitP(1);
-	resultDeltaHit = mean(dh, 'omitnan');
-elseif ~isempty(useIdx)
-	resultSlope = NaN;
-	resultDeltaHit = NaN;
-else
-	resultSlope = NaN;
-	resultDeltaHit = NaN;
-end
-
-Result.Performance = perf;
-Result.H23 = h23;
-Result.H5 = h5;
-Result.Slope = resultSlope;
-Result.MeanDeltaHit = resultDeltaHit;
-Result.MeanH23 = resultMeanH23;
-Result.MeanH5 = resultMeanH5;
-Result.MeanH5RewardRecv = resultMeanH5RewardRecv;
-Result.MeanH5Read = resultMeanH5Read;
-Result.ProcessMeanL5 = finalMeanL5;
-Result.ProcessMeanL5RewardRecv = finalMeanL5RewardRecv;
-Result.ProcessMeanL5Read = finalMeanL5Read;
 end
 
 function weightClasses = iCollectConnectionTypeWeights(Mouse, Params)
 weightClasses = iEmptyConnectionClassWeights();
 
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", Mouse.W_CueInputToL23);
 weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", Mouse.W_RewardToL5RewardRecv / Params.RewardAfferentNorm);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", iNonSelfInternalWeights(Mouse.W_L23L5ToL23L5) / Params.NL23L5);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", TransferLearning.THModel.NonSelfInternalWeights(Mouse.W_L23L5ToL23L5) / Params.NL23L5);
 weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L23 / Params.NL23);
 weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Cue * Mouse.WEI_L23 / Params.NIL23);
 weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L23 / Params.NIL23);
@@ -1093,373 +755,6 @@ end
 
 function classLabels = iConnectionClassLabels()
 classLabels = ["EE", "EI", "IE", "II"];
-end
-
-function weights = iNonSelfInternalWeights(weights)
-weights = iGatherValue(weights);
-numCells = size(weights, 1);
-internalMask = true(size(weights));
-internalMask(1:numCells+1:end) = false;
-weights = weights(internalMask);
-end
-
-function [perf, Signals, perfExpected, Mouse] = iSimulateSession(Mouse, Params, Cond, usePreCue)
-% Per-trial loop. Each trial has a decision phase (cue input -> L2/3 -> L5)
-% followed by a learning phase that continues from the settled cue-decision
-% state while adding Reward input to the L5 reward-receiving group. Hebbian
-% and inhibitory plasticity are applied AFTER EACH TRIAL so that within-session
-% learning accumulates.
-NT = Params.NumTrials;
-
-if usePreCue
-	cueInputPat = Mouse.PreCueInputPattern;
-	cueGain = Params.CueInputGainPretrain;
-else
-	cueInputPat = Mouse.CueInputPattern;
-	cueGain = Params.CueInputGain;
-end
-rewardInputLevel = Cond.RewardInputLevel;
-formalHebbGain = 1;
-if ~usePreCue
-	formalHebbGain = Mouse.FormalHebbGain;
-end
-eta = Params.HebbRate * formalHebbGain;
-
-% Storage for session-level diagnostics.
-rL23_cue_all = iZeros([Params.NL23, NT], Params);
-rL5RewardRecv_cue_all = iZeros([Params.NL5RewardRecv, NT], Params);
-rL5Read_cue_all = iZeros([Params.NL5Read, NT], Params);
-rL23_L_all = iZeros([Params.NL23, NT], Params);
-rReward_L_all = iZeros([Params.NReward, NT], Params);
-rL5RewardRecv_L_all = iZeros([Params.NL5RewardRecv, NT], Params);
-rL5Read_L_all = iZeros([Params.NL5Read, NT], Params);
-isHit = false(1, NT);
-
-for t = 1:NT
-	% ===== Decision phase (cue input -> recurrent L2/3-L5 network) =====
-	cueInput_cue  = cueGain              * cueInputPat            + Params.NoiseCue * iRandn([Params.NCueInput, 1], Params);
-	preL23_cue  = Mouse.W_CueInputToL23 * cueInput_cue  + Params.NoiseCue * iRandn([Params.NL23, 1], Params);
-	preL5RewardRecv_cue = Params.NoiseRew * iRandn([Params.NL5RewardRecv, 1], Params);
-	preL5Read_cue = Params.NoiseRead * iRandn([Params.NL5Read, 1], Params);
-	[rL23_cue, rL5RewardRecv_cue, rL5Read_cue, decisionActivityCue] = iRunInternalNetwork(preL23_cue, preL5RewardRecv_cue, preL5Read_cue, Mouse, Params);
-
-	decCue  = mean(Mouse.L5ReadoutPattern .* rL5Read_cue);
-	decision = iGatherScalar(decCue);
-	isHit(t) = decision >= Params.HitThreshold;
-	if isHit(t)
-		rL23_cue_all(:, t) = rL23_cue;
-		rL5RewardRecv_cue_all(:, t) = rL5RewardRecv_cue;
-		rL5Read_cue_all(:, t) = rL5Read_cue;
-		rL23_L_all(:, t) = rL23_cue;
-		rL5RewardRecv_L_all(:, t) = rL5RewardRecv_cue;
-		rL5Read_L_all(:, t) = rL5Read_cue;
-		continue;
-	end
-
-	% ===== Learning phase (reward/readout feedback continues from cue-decision state) =====
-	cueInput_L = cueInput_cue;
-	preL23_L = preL23_cue;
-	if rewardInputLevel > 0
-		preReward_L = rewardInputLevel * Params.RewInputGain * Mouse.RewardPattern + Params.NoiseRew * iRandn([Params.NReward, 1], Params);
-		rReward_L = iRunArea(preReward_L, 'reward', Mouse, Params);
-	else
-		rReward_L = iZeros([Params.NReward, 1], Params);
-	end
-	preL5RewardRecv_L = (Mouse.W_RewardToL5RewardRecv * rReward_L) / Params.RewardAfferentNorm ...
-		+ rewardInputLevel * Params.THRewardRecvInputGain * Mouse.L5RewardRecvTeachingPattern ...
-		+ Params.NoiseRew * iRandn([Params.NL5RewardRecv, 1], Params);
-	readTeachingGain = Params.ReadInputGain + rewardInputLevel * Params.THReadInputGain;
-	preL5Read_L = readTeachingGain * Mouse.L5ReadoutPattern ...
-		+ rewardInputLevel * Params.THReadHeterogeneityGain * Mouse.L5ReadHeterogeneityPattern ...
-		+ Params.NoiseRead * iRandn([Params.NL5Read, 1], Params);
-	[rL23_L, rL5RewardRecv_L, rL5Read_L] = iContinueInternalNetwork(preL23_L, preL5RewardRecv_L, preL5Read_L, decisionActivityCue, Mouse, Params);
-
-	% Per-trial Hebbian updates on learned afferent maps and the recurrent L2/3-L5 matrix.
-	Mouse.W_CueInputToL23 = iHebbAfferent(Mouse.W_CueInputToL23, rL23_L, cueInput_L, eta, Params.AfferentWCap);
-	Mouse.W_RewardToL5RewardRecv = iHebbAfferent(Mouse.W_RewardToL5RewardRecv, rL5RewardRecv_L, rReward_L, eta, Params.AfferentWCap);
-	internalActivity_L = [rL23_L; rL5RewardRecv_L; rL5Read_L];
-	Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_L, eta, Params.WCap);
-
-	% Per-trial inhibitory plasticity follows local activity only.
-	actL23Trial = (rL23_cue + rL23_L) / 2;
-	actL5RewardRecvTrial = (rL5RewardRecv_cue + rL5RewardRecv_L) / 2;
-	actL5ReadTrial = (rL5Read_cue + rL5Read_L) / 2;
-	Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, actL23Trial, actL5RewardRecvTrial, actL5ReadTrial);
-
-	% ===== Closed-loop noise Hebbian learning =====
-	% Test a fresh random-noise cue. If it falsely activates the behavioural
-	% readout, silence L5Read cells and train on that noise cue; then test a
-	% new random-noise cue. Continue until one random cue fails to activate.
-	while true
-		cueInput_BL = cueGain * iStandardize(iRandn([Params.NCueInput, 1], Params)) + Params.NoiseCue * iRandn([Params.NCueInput, 1], Params);
-		preL23_BLTest = Mouse.W_CueInputToL23 * cueInput_BL + Params.NoiseCue * iRandn([Params.NL23, 1], Params);
-		preL5RewardRecv_BLTest = Params.NoiseRew * iRandn([Params.NL5RewardRecv, 1], Params);
-		preL5Read_BLTest = Params.NoiseRead * iRandn([Params.NL5Read, 1], Params);
-		[~, ~, rL5Read_BLTest] = iRunInternalNetwork(preL23_BLTest, preL5RewardRecv_BLTest, preL5Read_BLTest, Mouse, Params);
-
-		decCue_BL = iGatherScalar(mean(Mouse.L5ReadoutPattern .* rL5Read_BLTest));
-		if decCue_BL < Params.HitThreshold
-			break;
-		end
-
-		preL23_BL = Mouse.W_CueInputToL23 * cueInput_BL + Params.NoiseCue * iRandn([Params.NL23, 1], Params);
-		if rewardInputLevel > 0
-			preReward_BL = Params.NoiseRew * iRandn([Params.NReward, 1], Params);
-			rReward_BL = iRunArea(preReward_BL, 'reward', Mouse, Params);
-		else
-			rReward_BL = iZeros([Params.NReward, 1], Params);
-		end
-		preL5RewardRecv_BL = (Mouse.W_RewardToL5RewardRecv * rReward_BL) / Params.RewardAfferentNorm + Params.NoiseRew * iRandn([Params.NL5RewardRecv, 1], Params);
-		preL5Read_BL = iZeros([Params.NL5Read, 1], Params);
-		[rL23_BL, rL5RewardRecv_BL, rL5Read_BL] = iRunInternalNetworkReadoutSilent(preL23_BL, preL5RewardRecv_BL, preL5Read_BL, Mouse, Params);
-
-		Mouse.W_CueInputToL23 = iHebbAfferent(Mouse.W_CueInputToL23, rL23_BL, cueInput_BL, eta, Params.AfferentWCap);
-		Mouse.W_RewardToL5RewardRecv = iHebbAfferent(Mouse.W_RewardToL5RewardRecv, rL5RewardRecv_BL, rReward_BL, eta, Params.AfferentWCap);
-		internalActivity_BL = [rL23_BL; rL5RewardRecv_BL; rL5Read_BL];
-		Mouse.W_L23L5ToL23L5 = iHebbInternalNoSelf(Mouse.W_L23L5ToL23L5, internalActivity_BL, eta, Params.WCap);
-
-		Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, rL23_BL, rL5RewardRecv_BL, rL5Read_BL);
-	end
-
-	rL23_cue_all(:, t) = rL23_cue;
-	rL5RewardRecv_cue_all(:, t) = rL5RewardRecv_cue;
-	rL5Read_cue_all(:, t) = rL5Read_cue;
-	rL23_L_all(:, t) = rL23_L;
-	rReward_L_all(:, t) = rReward_L;
-	rL5RewardRecv_L_all(:, t) = rL5RewardRecv_L;
-	rL5Read_L_all(:, t) = rL5Read_L;
-end
-
-perf = mean(isHit);
-% Kept for interface compatibility with pretraining logic. With hard-
-% threshold decisions and no extra Bernoulli sampling, expected and
-% observed session hit rates are identical under the realized noise.
-perfExpected = perf;
-
-Signals.mL23 = iGatherValue(mean(rL23_L_all, 2));
-Signals.mReward = iGatherValue(mean(rReward_L_all, 2));
-Signals.mL5RewardRecv = iGatherValue(mean(rL5RewardRecv_L_all, 2));
-Signals.mL5Read = iGatherValue(mean(rL5Read_L_all, 2));
-Signals.ProcessMeanL23 = iGatherValue(mean(rL23_cue_all, 2));
-processMeanL5RewardRecv = mean(rL5RewardRecv_cue_all, 2);
-processMeanL5Read = mean(rL5Read_cue_all, 2);
-Signals.ProcessMeanL5 = iGatherValue([processMeanL5RewardRecv; processMeanL5Read]);
-Signals.ProcessMeanL5RewardRecv = iGatherValue(processMeanL5RewardRecv);
-Signals.ProcessMeanL5Read = iGatherValue(processMeanL5Read);
-end
-
-function rE = iRunArea(pre, areaSpec, Mouse, Params)
-switch areaSpec
-case 'l23'
-	WIE = Mouse.WIE_L23; WEI = Mouse.WEI_L23; WII = Mouse.WII_L23;
-	NI = Params.NIL23; NE = Params.NL23; Comp = Params.Comp_Cue;
-case 'reward'
-	% Reward cells are modeled as an independent input population.
-	rE = Params.ResponseScale * tanh(pre);
-	return;
-case 'l5rewardrecv'
-	WIE = Mouse.WIE_L5RewardRecv; WEI = Mouse.WEI_L5RewardRecv; WII = Mouse.WII_L5RewardRecv;
-	NI = Params.NIL5RewardRecv; NE = Params.NL5RewardRecv; Comp = Params.Comp_Rew;
-end
-exc = max(pre, 0);
-inhI = iRunInhibitoryPool(WIE * exc / NE, WII, Params, NI, true);
-rE = Params.ResponseScale * tanh(pre - Comp * (WEI * inhI) / NI);
-end
-
-function inhI = iRunInhibitoryPool(feedforwardInh, WII, Params, numInhibitoryCells, centerInh)
-if nargin < 5
-	centerInh = true;
-end
-inhFeedforward = max(0, feedforwardInh);
-inhI = inhFeedforward;
-for iPass = 1:Params.IToIPasses
-	inhI = max(0, inhFeedforward - Params.IToIGain * (WII * inhI) / numInhibitoryCells);
-end
-if centerInh
-	inhI = inhI - mean(inhI, 1);
-end
-end
-
-function rL5Read = iRunReadoutArea(preL5Read, readoutInhibitorySource, Mouse, Params)
-activeSource = max(readoutInhibitorySource, 0);
-numSourceCells = size(activeSource, 1);
-inhDrive = iRunInhibitoryPool(Mouse.WIE_L5Read * activeSource / numSourceCells, Mouse.WII_L5Read, Params, Params.NIL5Read, false);
-rL5Read = Params.ResponseScale * tanh(preL5Read - Params.Comp_Read * (Mouse.WEI_L5Read * inhDrive) / Params.NIL5Read);
-end
-
-function Mouse = iApplyInhibitoryCircuitPlasticity(Mouse, Params, activityL23, activityL5RewardRecv, activityL5Read)
-[Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23] = iInhibitoryAreaHebb(Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23, activityL23, Params);
-[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv] = iInhibitoryAreaHebb(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv, activityL5RewardRecv, Params);
-readoutInhibitorySource = [activityL23; activityL5RewardRecv];
-[Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read] = iReadoutInhibitoryHebb(Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read, readoutInhibitorySource, activityL5Read, Params);
-end
-
-function [WIE, WEI, WII] = iInhibitoryAreaHebb(WIE, WEI, WII, activityE, Params)
-activeE = max(activityE(:) - Params.InhTargetAct, 0);
-if ~any(iGatherValue(activeE > 0))
-	return;
-end
-numExcCells = numel(activeE);
-numInhibitoryCells = size(WII, 1);
-inhDrive = iRunInhibitoryPool(WIE * activeE / numExcCells, WII, Params, numInhibitoryCells, false);
-if ~any(iGatherValue(inhDrive > 0))
-	return;
-end
-deltaWIE = Params.InhPlasticityRate * (inhDrive * activeE');
-deltaWEI = Params.InhPlasticityRate * (activeE * inhDrive');
-deltaWII = Params.InhPlasticityRate * (inhDrive * inhDrive');
-WIE = WIE + deltaWIE;
-WEI = WEI + deltaWEI;
-WII = WII + deltaWII;
-WIE = iClamp(WIE, Params.InhWeightMin, Params.InhWeightMax);
-WEI = iClamp(WEI, Params.InhWeightMin, Params.InhWeightMax);
-WII = iZeroSelfProjection(iClamp(WII, Params.InhWeightMin, Params.InhWeightMax));
-end
-
-function [WIE, WEI, WII] = iReadoutInhibitoryHebb(WIE, WEI, WII, sourceActivity, readoutActivity, Params)
-activeSource = max(sourceActivity(:) - Params.InhTargetAct, 0);
-if ~any(iGatherValue(activeSource > 0))
-	return;
-end
-numSourceCells = numel(activeSource);
-numInhibitoryCells = size(WII, 1);
-inhDrive = iRunInhibitoryPool(WIE * activeSource / numSourceCells, WII, Params, numInhibitoryCells, false);
-if ~any(iGatherValue(inhDrive > 0))
-	return;
-end
-activeReadout = max(readoutActivity(:) - Params.InhTargetAct, 0);
-if ~any(iGatherValue(activeReadout > 0))
-	return;
-end
-deltaWIE = Params.InhPlasticityRate * (inhDrive * activeSource');
-deltaWEI = Params.InhPlasticityRate * (activeReadout * inhDrive');
-deltaWII = Params.InhPlasticityRate * (inhDrive * inhDrive');
-WIE = WIE + deltaWIE;
-WEI = WEI + deltaWEI;
-WII = WII + deltaWII;
-WIE = iClamp(WIE, Params.InhWeightMin, Params.InhWeightMax);
-WEI = iClamp(WEI, Params.InhWeightMin, Params.InhWeightMax);
-WII = iZeroSelfProjection(iClamp(WII, Params.InhWeightMin, Params.InhWeightMax));
-end
-
-function [rL23, rL5RewardRecv, rL5Read, internalActivity] = iRunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, Params)
-externalPre = [preL23; preL5RewardRecv; preL5Read];
-internalActivity = iRunInternalAreas(externalPre, Mouse, Params);
-for iPass = 1:Params.InternalRecurrentPasses
-	recurrentPre = externalPre + (Mouse.W_L23L5ToL23L5 * internalActivity) / Params.NL23L5;
-	internalActivity = iRunInternalAreas(recurrentPre, Mouse, Params);
-end
-[rL23, rL5RewardRecv, rL5Read] = iSplitInternalActivity(internalActivity, Params);
-end
-
-function [rL23, rL5RewardRecv, rL5Read] = iContinueInternalNetwork(preL23, preL5RewardRecv, preL5Read, initialActivity, Mouse, Params)
-externalPre = [preL23; preL5RewardRecv; preL5Read];
-internalActivity = initialActivity;
-for iPass = 1:Params.InternalRecurrentPasses
-	recurrentPre = externalPre + (Mouse.W_L23L5ToL23L5 * internalActivity) / Params.NL23L5;
-	internalActivity = iRunInternalAreas(recurrentPre, Mouse, Params, false);
-end
-[rL23, rL5RewardRecv, rL5Read] = iSplitInternalActivity(internalActivity, Params);
-end
-
-function [rL23, rL5RewardRecv, rL5Read] = iRunInternalNetworkReadoutSilent(preL23, preL5RewardRecv, preL5Read, Mouse, Params)
-externalPre = [preL23; preL5RewardRecv; preL5Read];
-internalActivity = iRunInternalAreasReadoutSilent(externalPre, Mouse, Params);
-for iPass = 1:Params.InternalRecurrentPasses
-	recurrentPre = externalPre + (Mouse.W_L23L5ToL23L5 * internalActivity) / Params.NL23L5;
-	internalActivity = iRunInternalAreasReadoutSilent(recurrentPre, Mouse, Params);
-end
-[rL23, rL5RewardRecv, rL5Read] = iSplitInternalActivity(internalActivity, Params);
-end
-
-function internalActivity = iRunInternalAreas(internalPre, Mouse, Params, useReadoutInhibition)
-if nargin < 4
-	useReadoutInhibition = true;
-end
-[preL23, preL5RewardRecv, preL5Read] = iSplitInternalActivity(internalPre, Params);
-rL23 = iRunArea(preL23, 'l23', Mouse, Params);
-rL5RewardRecv = iRunArea(preL5RewardRecv, 'l5rewardrecv', Mouse, Params);
-if useReadoutInhibition
-	readoutInhibitorySource = [rL23; rL5RewardRecv];
-	rL5Read = iRunReadoutArea(preL5Read, readoutInhibitorySource, Mouse, Params);
-else
-	rL5Read = Params.ResponseScale * tanh(preL5Read);
-end
-internalActivity = [rL23; rL5RewardRecv; rL5Read];
-end
-
-function internalActivity = iRunInternalAreasReadoutSilent(internalPre, Mouse, Params)
-[preL23, preL5RewardRecv, ~] = iSplitInternalActivity(internalPre, Params);
-rL23 = iRunArea(preL23, 'l23', Mouse, Params);
-rL5RewardRecv = iRunArea(preL5RewardRecv, 'l5rewardrecv', Mouse, Params);
-rL5Read = iZeros([Params.NL5Read, size(internalPre, 2)], Params);
-internalActivity = [rL23; rL5RewardRecv; rL5Read];
-end
-
-function [l23Part, l5RewardRecvPart, l5ReadPart] = iSplitInternalActivity(internalActivity, Params)
-l23End = Params.NL23;
-l5RewardRecvEnd = Params.NL23 + Params.NL5RewardRecv;
-l23Part = internalActivity(1:l23End, :);
-l5RewardRecvPart = internalActivity(l23End+1:l5RewardRecvEnd, :);
-l5ReadPart = internalActivity(l5RewardRecvEnd+1:end, :);
-end
-
-function Mouse = iApplyHebbianUpdates(Mouse, Params, Signals)
-eta = Params.HebbRate;
-internalActivity = [Signals.mL23; Signals.mL5RewardRecv; Signals.mL5Read];
-Mouse.W_L23L5ToL23L5 = iHebbNoSelf(Mouse.W_L23L5ToL23L5, internalActivity, eta, Params.WCap);
-end
-
-function W = iHebb(W, post, pre, eta, cap)
-W = W + eta * (post * pre');
-W = iClampNegativeWeightsToZero(min(W, cap));
-end
-
-function W = iHebbAfferent(W, post, pre, eta, cap)
-W = iHebb(W, post, pre, eta, cap);
-end
-
-function recurrentWeights = iHebbNoSelf(recurrentWeights, activity, eta, cap)
-recurrentWeights = iHebb(recurrentWeights, activity, activity, eta, cap);
-recurrentWeights = iZeroSelfProjection(recurrentWeights);
-end
-
-function recurrentWeights = iHebbInternalNoSelf(recurrentWeights, activity, eta, cap)
-recurrentWeights = iHebb(recurrentWeights, activity, activity, eta, cap);
-recurrentWeights = iZeroSelfProjection(recurrentWeights);
-end
-
-function recurrentWeights = iZeroSelfProjection(recurrentWeights)
-numCells = size(recurrentWeights, 1);
-recurrentWeights(1:numCells+1:end) = 0;
-end
-
-function Mouse = iOvernightConsolidate(Mouse, Params)
-ret = Params.OvernightRetention;
-sd = Params.OvernightNoise;
-Mouse.W_CueInputToL23 = ret * Mouse.W_CueInputToL23 + sd * iRandn(size(Mouse.W_CueInputToL23), Params);
-Mouse.W_RewardToL5RewardRecv = ret * Mouse.W_RewardToL5RewardRecv + sd * iRandn(size(Mouse.W_RewardToL5RewardRecv), Params);
-Mouse.W_L23L5ToL23L5 = iZeroSelfProjection(ret * Mouse.W_L23L5ToL23L5 + sd * iRandn(size(Mouse.W_L23L5ToL23L5), Params));
-Mouse.W_CueInputToL23 = iClampNegativeWeightsToZero(Mouse.W_CueInputToL23);
-Mouse.W_RewardToL5RewardRecv = iClampNegativeWeightsToZero(Mouse.W_RewardToL5RewardRecv);
-Mouse.W_L23L5ToL23L5 = iZeroSelfProjection(iClampNegativeWeightsToZero(Mouse.W_L23L5ToL23L5));
-end
-
-function W = iClampNegativeWeightsToZero(W)
-W(W < 0) = 0;
-end
-
-function y = iClamp(x, lo, hi)
-y = max(min(x, hi), lo);
-end
-
-function gain = iMouseScalarGain(stdValue, minValue, maxValue, Params)
-if stdValue <= 0
-	gain = 1;
-	return;
-end
-gain = 1 + stdValue * iGatherScalar(iRandn([1, 1], Params));
-gain = iClamp(gain, minValue, maxValue);
 end
 
 function s = iRestrictedStd(x)

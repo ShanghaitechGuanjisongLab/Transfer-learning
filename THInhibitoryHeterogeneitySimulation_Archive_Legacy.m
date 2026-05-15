@@ -31,13 +31,9 @@ PrintCuePretrainDebug = false;     % prints cue-specific vs non-cue L2/3 learnin
 
 RandomSeed = 20260510;
 rng(RandomSeed, 'twister');
-ParallelComputing.ParPool(11);
+ParallelComputing.ParPool(20);
 spmd
-	if spmdIndex<=gpuDeviceCount
-		gpuDevice(spmdIndex);
-	else
 		gpuDevice([]);
-	end
 end
 networkOutputRoot = '\\Data-Server-2\个人数据\张天夫';
 localOutputRoot = fullfile(fileparts(mfilename('fullpath')), 'resources');

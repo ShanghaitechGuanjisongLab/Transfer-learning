@@ -42,6 +42,9 @@ end
 function iSetAllLineWidths(Fig, lineWidth)
 handles = findall(Fig, '-property', 'LineWidth');
 for iH = 1:numel(handles)
+	if iIsBidirectionalErrorBar(handles(iH))
+		continue;
+	end
 	handles(iH).LineWidth = lineWidth;
 end
 end
@@ -49,11 +52,30 @@ end
 function iSetAllNonScatterLineWidths(Fig, lineWidth)
 handles = findall(Fig, '-property', 'LineWidth');
 for iH = 1:numel(handles)
-	if isa(handles(iH), 'matlab.graphics.chart.primitive.Scatter')
+	if isa(handles(iH), 'matlab.graphics.chart.primitive.Scatter') || iIsBidirectionalErrorBar(handles(iH))
 		continue;
 	end
 	handles(iH).LineWidth = lineWidth;
 end
+end
+
+function tf = iIsBidirectionalErrorBar(handleObj)
+tf = isa(handleObj, 'matlab.graphics.chart.primitive.ErrorBar') && ...
+	(iHasBidirectionalDelta(handleObj, 'X') || iHasBidirectionalDelta(handleObj, 'Y'));
+end
+
+function tf = iHasBidirectionalDelta(handleObj, axisName)
+negativeProp = [axisName, 'NegativeDelta'];
+positiveProp = [axisName, 'PositiveDelta'];
+if ~isprop(handleObj, negativeProp) || ~isprop(handleObj, positiveProp)
+	tf = false;
+	return;
+end
+negativeDelta = double(handleObj.(negativeProp));
+positiveDelta = double(handleObj.(positiveProp));
+hasNegativeDelta = any(isfinite(negativeDelta(:)) & abs(negativeDelta(:)) > 0);
+hasPositiveDelta = any(isfinite(positiveDelta(:)) & abs(positiveDelta(:)) > 0);
+tf = hasNegativeDelta && hasPositiveDelta;
 end
 
 function iSetAxisLineWidths(Fig, lineWidth)
