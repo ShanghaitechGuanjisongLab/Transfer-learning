@@ -166,6 +166,7 @@ sigmoidWorkspaceName = char("THInhibitoryHeterogeneitySigmoidFitSlopeMainline" +
 assignin('base', sigmoidWorkspaceName, SigmoidStats);
 iCheckNaiveLastSessionExceedsFirst(Summary.Performance, Cond);
 iCheckTransferTHOffFirstSessionHitBelowMax(Summary.Performance, Cond, Params.TransferTHOffFirstSessionHitMax);
+iCheckFirstSessionHitRateRankAcceptance(Summary.Performance, Cond, Params.TransferHighestAlpha);
 iCheckTransferSignificantlyHighest(Summary.PerMouse, SigmoidStats, Cond, Params);
 fprintf('Wrote: %s\n', sigmoidSvgPath);
 
@@ -1421,6 +1422,71 @@ if ~isempty(failedConditions)
 	error('THModel:TransferTHOffFirstSessionHitTooHigh', ...
 		'Transfer and THOff first-session mean hit rates must be <= %.3f. %s', ...
 		maxFirstSessionHit, strjoin(failedConditions, '; '));
+end
+end
+
+function iCheckFirstSessionHitRateRankAcceptance(Performance, Cond, alpha)
+iCheckFirstSessionHitRateSignificantlyHighest(Performance, Cond, "Transfer", alpha);
+iCheckFirstSessionHitRateSignificantlyLowest(Performance, Cond, "Naive", alpha);
+end
+
+function iCheckFirstSessionHitRateSignificantlyHighest(Performance, Cond, conditionName, alpha)
+conditionIndex = find(Cond.Name == conditionName, 1);
+conditionValues = Performance.(Cond.Name(conditionIndex));
+conditionValues = conditionValues(:, 1);
+conditionValues = conditionValues(isfinite(conditionValues));
+conditionMean = mean(conditionValues, 'omitnan');
+failedComparisons = strings(0, 1);
+
+for iCond = 1:height(Cond)
+	if iCond == conditionIndex
+		continue;
+	end
+	otherValues = Performance.(Cond.Name(iCond));
+	otherValues = otherValues(:, 1);
+	otherValues = otherValues(isfinite(otherValues));
+	otherMean = mean(otherValues, 'omitnan');
+	pValue = ranksum(conditionValues, otherValues);
+	if ~(conditionMean > otherMean && pValue < alpha)
+		failedComparisons(end + 1, 1) = sprintf('%s: %s first-session mean=%.4f, %s first-session mean=%.4f, ranksum p=%.4g', ...
+			Cond.Name(iCond), conditionName, conditionMean, Cond.Label(iCond), otherMean, pValue); %#ok<AGROW>
+	end
+end
+
+if ~isempty(failedComparisons)
+	error('THModel:FirstSessionHitRateNotSignificantlyHighest', ...
+		'%s first-session hit rate must be significantly highest (alpha=%.3f). %s', ...
+		conditionName, alpha, strjoin(failedComparisons, '; '));
+end
+end
+
+function iCheckFirstSessionHitRateSignificantlyLowest(Performance, Cond, conditionName, alpha)
+conditionIndex = find(Cond.Name == conditionName, 1);
+conditionValues = Performance.(Cond.Name(conditionIndex));
+conditionValues = conditionValues(:, 1);
+conditionValues = conditionValues(isfinite(conditionValues));
+conditionMean = mean(conditionValues, 'omitnan');
+failedComparisons = strings(0, 1);
+
+for iCond = 1:height(Cond)
+	if iCond == conditionIndex
+		continue;
+	end
+	otherValues = Performance.(Cond.Name(iCond));
+	otherValues = otherValues(:, 1);
+	otherValues = otherValues(isfinite(otherValues));
+	otherMean = mean(otherValues, 'omitnan');
+	pValue = ranksum(conditionValues, otherValues);
+	if ~(conditionMean < otherMean && pValue < alpha)
+		failedComparisons(end + 1, 1) = sprintf('%s: %s first-session mean=%.4f, %s first-session mean=%.4f, ranksum p=%.4g', ...
+			Cond.Name(iCond), conditionName, conditionMean, Cond.Label(iCond), otherMean, pValue); %#ok<AGROW>
+	end
+end
+
+if ~isempty(failedComparisons)
+	error('THModel:FirstSessionHitRateNotSignificantlyLowest', ...
+		'%s first-session hit rate must be significantly lowest (alpha=%.3f). %s', ...
+		conditionName, alpha, strjoin(failedComparisons, '; '));
 end
 end
 
