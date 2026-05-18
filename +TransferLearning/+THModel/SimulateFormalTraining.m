@@ -36,8 +36,7 @@ for iSession = 1:numSessions
 
 	if perf(iSession) >= Params.Ceiling
 		firstPerfectSession = iSession;
-	elseif iSession < numSessions
-		Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
+		perf(iSession) = Params.Ceiling;
 	end
 end
 

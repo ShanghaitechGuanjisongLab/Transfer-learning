@@ -34,6 +34,10 @@ sigmoidSvgName = iTaggedSvgName('TH_Mainline_Sigmoid_Fit_Slope.svg', outputNameS
 
 Params = TransferLearning.THModel.DefaultParams();
 Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
+if evalin('base', 'exist(''THNoiseFirstStateCarryoverBranch'', ''var'') && THNoiseFirstStateCarryoverBranch')
+	Params.NoiseFirstStateCarryover = 1;
+	fprintf('Noise-first state-carryover branch enabled: each trial backtrains noise before cue training.\n');
+end
 Cond = TransferLearning.THModel.ConditionTable();
 if evalin('base', 'exist(''THDebugNonnegativeFormalFailure'', ''var'') && THDebugNonnegativeFormalFailure')
 	DebugReport = iRunNonnegativeFormalFailureDebug(Params, Cond);
@@ -59,7 +63,7 @@ else
 	if THForceRerun
 		fprintf('THForceRerun=true; retraining instead of using workspace variable %s.\n', workspaceVarNames.Summary);
 	end
-	iPrepareParallelGpuWorkers();
+	iPrepareParallelWorkers();
 	Summary = iRunCohortModel(Params, Cond);
 end
 iStoreWorkspaceRun(Summary, Params, Cond, workspaceVarNames);
@@ -70,11 +74,9 @@ for iCond = 1:height(Cond)
 	perf = Summary.Performance.(name);
 	slope = Summary.PerMouse.(name).Slope;
 	dh = Summary.PerMouse.(name).MeanDeltaHit;
-	rewardReadoutDrive = Summary.PerMouse.(name).RewardReadoutFinal;
 	fprintf('%s: first-session hit = %.3f, last-session hit = %.3f\n', name, mean(perf(:, 1), 'omitnan'), mean(perf(:, end), 'omitnan'));
 	fprintf('%s: mean process L2/3 heterogeneity = %.3f, mean process L5 heterogeneity = %.3f\n', name, mean(Summary.PerMouse.(name).MeanH23, 'omitnan'), mean(Summary.PerMouse.(name).MeanH5, 'omitnan'));
 	fprintf('%s: mean slope = %.3f, mean DeltaHit = %.3f\n', name, mean(slope, 'omitnan'), mean(dh, 'omitnan'));
-	fprintf('%s: mean reward-to-readout drive = %.3f, below decision threshold = %d/%d\n', name, mean(rewardReadoutDrive, 'omitnan'), sum(rewardReadoutDrive < Params.HitThreshold | ~isfinite(rewardReadoutDrive)), numel(rewardReadoutDrive));
 end
 f = figure('Color', 'w', 'Name', 'TH inhibitory heterogeneity model');
 f.Units = 'centimeters';
@@ -147,7 +149,7 @@ svgPath = fullfile(outDir, svgName);
 print(f, svgPath, '-dsvg', '-painters');
 fprintf('Wrote: %s\n', svgPath);
 
-preWeightDistributionFig = iPlotPreFormalConnectionWeightDistributions(Summary, Cond);
+preWeightDistributionFig = iPlotPreFormalConnectionWeightDistributions(Summary, Cond, Params);
 preWeightDistributionSvgPath = fullfile(outDir, preWeightDistributionSvgName);
 print(preWeightDistributionFig, preWeightDistributionSvgPath, '-dsvg', '-painters');
 fprintf('Wrote: %s\n', preWeightDistributionSvgPath);
@@ -162,6 +164,8 @@ sigmoidSvgPath = fullfile(outDir, sigmoidSvgName);
 print(sigmoidFig, sigmoidSvgPath, '-dsvg', '-painters');
 sigmoidWorkspaceName = char("THInhibitoryHeterogeneitySigmoidFitSlopeMainline" + iWorkspaceNameSuffix(outputNameSuffix));
 assignin('base', sigmoidWorkspaceName, SigmoidStats);
+iCheckNaiveLastSessionExceedsFirst(Summary.Performance, Cond);
+iCheckTransferTHOffFirstSessionHitBelowMax(Summary.Performance, Cond, Params.TransferTHOffFirstSessionHitMax);
 iCheckTransferSignificantlyHighest(Summary.PerMouse, SigmoidStats, Cond, Params);
 fprintf('Wrote: %s\n', sigmoidSvgPath);
 
@@ -233,12 +237,15 @@ assignin('base', workspaceVarNames.Params, Params);
 assignin('base', workspaceVarNames.Cond, Cond);
 end
 
-function iPrepareParallelGpuWorkers()
-TransferLearning.THModel.PrepareParallelGpuWorkers(20, 0);
+function iPrepareParallelWorkers()
+pool = gcp('nocreate');
+if isempty(pool)
+	parpool('local', 20);
+end
 end
 
 function classification = iFormalTrainingConnectionWeightClassification()
-classification = "mainline_connection-type_EE-EI-IE-II_mouse-level-sd_random-plastic-wii_formal-hebb-mouse-var_sync-recurrent-v1";
+classification = "mainline_connection-type_EE-EI-IE-II_raw-synaptic-weights_global-hebb_l23i-cue-l5-projection_l5i-readout_sync-recurrent-v1";
 end
 
 function DebugReport = iRunNonnegativeFormalFailureDebug(Params, Cond)
@@ -257,7 +264,7 @@ end
 rows = struct([]);
 fprintf('\n=== Nonnegative formal failure debug ===\n');
 if numDebugMice > 1
-	iPrepareParallelGpuWorkers();
+	iPrepareParallelWorkers();
 end
 for iCond = 1:height(Cond)
 	condRow = Cond(iCond, :);
@@ -268,7 +275,6 @@ for iCond = 1:height(Cond)
 	conditionRows = cell(numDebugMice, 1);
 	if numDebugMice > 1
 		parfor iMouse = 1:numDebugMice
-			iSelectValidationGpu(iMouse);
 			conditionRows{iMouse} = iRunNonnegativeFormalFailureMouse(Params, condRow, condName, iMouse, numFormalDiagnosticSessions);
 		end
 	else
@@ -325,14 +331,22 @@ for iCond = 1:numel(conditionNames)
 			l5ReadWEIMeanTrace(iSess + 1) = postWeights.L5ReadWEIMean;
 			if perfObserved >= Params.Ceiling
 				stopSession = iSess;
+				trace(iSess) = Params.Ceiling;
 				break;
 			end
-			Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
 		end
-		trace = trace(1:stopSession);
+		if stopSession < Params.MaxPretrainSessions
+			trace(stopSession + 1:end) = Params.Ceiling;
+			driveTrace(stopSession + 2:end) = driveTrace(stopSession + 1);
+			driveNoInhTrace(stopSession + 2:end) = driveNoInhTrace(stopSession + 1);
+			cueMeanTrace(stopSession + 2:end) = cueMeanTrace(stopSession + 1);
+			internalMeanTrace(stopSession + 2:end) = internalMeanTrace(stopSession + 1);
+			l5ReadWIEMeanTrace(stopSession + 2:end) = l5ReadWIEMeanTrace(stopSession + 1);
+			l5ReadWEIMeanTrace(stopSession + 2:end) = l5ReadWEIMeanTrace(stopSession + 1);
+		end
 		rowIndex = rowIndex + 1;
 		traceCells{rowIndex} = trace;
-		diagnosticCells{rowIndex} = table((0:stopSession)', [NaN; trace], driveTrace(1:stopSession + 1), driveNoInhTrace(1:stopSession + 1), cueMeanTrace(1:stopSession + 1), internalMeanTrace(1:stopSession + 1), l5ReadWIEMeanTrace(1:stopSession + 1), l5ReadWEIMeanTrace(1:stopSession + 1), ...
+		diagnosticCells{rowIndex} = table((0:Params.MaxPretrainSessions)', [NaN; trace], driveTrace, driveNoInhTrace, cueMeanTrace, internalMeanTrace, l5ReadWIEMeanTrace, l5ReadWEIMeanTrace, ...
 			'VariableNames', {'Session','Hit','Drive','DriveNoInh','CueMean','InternalMean','L5ReadWIEMean','L5ReadWEIMean'});
 		rows(rowIndex).Condition = condName;
 		rows(rowIndex).Mouse = iMouse;
@@ -363,9 +377,8 @@ Mouse = TransferLearning.THModel.DrawMouse(Params);
 pretrainPerf = NaN;
 pretrainSessions = 0;
 if condName ~= "Naive"
-	[Mouse, pretrainPerfTrace] = iPretrainMouseWithTrace(Mouse, Params);
-	pretrainSessions = numel(pretrainPerfTrace);
-	pretrainPerf = pretrainPerfTrace(end);
+	[Mouse, pretrainPerfTrace, pretrainSessions] = iPretrainMouseWithTrace(Mouse, Params);
+	pretrainPerf = pretrainPerfTrace(pretrainSessions);
 end
 preDiag = iDecisionProbeSet(Mouse, Params, condRow);
 preWeights = TransferLearning.THModel.PlasticWeightDebugSummary(Mouse, Params);
@@ -381,6 +394,7 @@ afterFirstDiag = iDecisionProbeSet(Mouse, Params, condRow);
 firstPerfectSession = NaN;
 if formalPerf(1) >= Params.Ceiling
 	firstPerfectSession = 1;
+	formalPerf(1) = Params.Ceiling;
 end
 for iSess = 2:numFormalDiagnosticSessions
 	if isfinite(firstPerfectSession)
@@ -390,13 +404,13 @@ for iSess = 2:numFormalDiagnosticSessions
 		sessionMeanL5Read(:, iSess) = sessionMeanL5Read(:, iSess - 1);
 		continue;
 	end
-	Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
 	[formalPerf(iSess), Signals, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, condRow, false);
 	sessionMeanL5(:, iSess) = Signals.ProcessMeanL5;
 	sessionMeanL5RewardRecv(:, iSess) = Signals.ProcessMeanL5RewardRecv;
 	sessionMeanL5Read(:, iSess) = Signals.ProcessMeanL5Read;
 	if formalPerf(iSess) >= Params.Ceiling
 		firstPerfectSession = iSess;
+		formalPerf(iSess) = Params.Ceiling;
 	end
 end
 finalDiag = iDecisionProbeSet(Mouse, Params, condRow);
@@ -407,26 +421,15 @@ formalMeanH5Read = iRestrictedStd(mean(sessionMeanL5Read, 2, 'omitnan'));
 row = iNonnegativeFormalFailureRow(condName, iMouse, pretrainSessions, pretrainPerf, formalPerf, formalMeanH5, formalMeanH5RewardRecv, formalMeanH5Read, preDiag, afterFirstDiag, finalDiag, preWeights, finalWeights, Mouse);
 end
 
-function iSelectValidationGpu(workerSlot)
-numGpuDevices = gpuDeviceCount;
-if numGpuDevices > 0
-	gpuDevice(mod(workerSlot - 1, numGpuDevices) + 1);
-end
-end
-
-function [Mouse, perfTrace] = iPretrainMouseWithTrace(Mouse, Params)
+function [Mouse, perfTrace, firstPerfectSession] = iPretrainMouseWithTrace(Mouse, Params)
 pretrainCond.RewardInputLevel = 1.00;
-perfTrace = nan(Params.MaxPretrainSessions, 1);
-for iSess = 1:Params.MaxPretrainSessions
-	[perfObserved, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
-	perfTrace(iSess) = perfObserved;
-	if perfObserved >= Params.Ceiling
-		perfTrace = perfTrace(1:iSess);
-		return;
-	end
-	Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
+[Mouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(Mouse, Params, pretrainCond);
+perfTrace = pretrainResult.Performance(:);
+firstPerfectSession = pretrainResult.FirstPerfectSession;
+if pretrainResult.Reached
+	return;
 end
-error('THModel:PretrainDidNotReachCeiling', 'Debug pretraining did not reach ceiling within %d sessions. Final observed hit = %.3f.', Params.MaxPretrainSessions, perfTrace(end));
+error('THModel:PretrainDidNotReachCeiling', 'Debug pretraining did not reach ceiling within %d sessions. Final observed hit = %.3f.', Params.MaxPretrainSessions, pretrainResult.FinalHit);
 end
 
 function row = iNonnegativeFormalFailureRow(condName, iMouse, pretrainSessions, pretrainPerf, formalPerf, formalMeanH5, formalMeanH5RewardRecv, formalMeanH5Read, preDiag, afterFirstDiag, finalDiag, preWeights, finalWeights, ~)
@@ -452,8 +455,6 @@ row.FormalCueDriveAfterFirst = afterFirstDiag.FormalCueDrive;
 row.FormalCueDriveFinal = finalDiag.FormalCueDrive;
 row.FormalCueDriveNoInhBeforeFormal = preDiag.FormalCueDriveNoInh;
 row.FormalCueDriveNoInhFinal = finalDiag.FormalCueDriveNoInh;
-row.RewardDriveBeforeFormal = preDiag.RewardDrive;
-row.RewardDriveFinal = finalDiag.RewardDrive;
 row.RandomCueHitFractionBeforeFormal = preDiag.RandomCueHitFraction;
 row.RandomCueMaxDriveBeforeFormal = preDiag.RandomCueMaxDrive;
 row.CueWeightZeroFractionBeforeFormal = preWeights.CueZeroFraction;
@@ -497,7 +498,6 @@ for iCond = 1:height(Cond)
 	summaryRow.FormalCueDriveFinalMean = mean(condTable.FormalCueDriveFinal, 'omitnan');
 	summaryRow.FormalCueDriveNoInhBeforeFormalMean = mean(condTable.FormalCueDriveNoInhBeforeFormal, 'omitnan');
 	summaryRow.FormalCueDriveNoInhFinalMean = mean(condTable.FormalCueDriveNoInhFinal, 'omitnan');
-	summaryRow.RewardDriveBeforeFormalMean = mean(condTable.RewardDriveBeforeFormal, 'omitnan');
 	summaryRow.RandomCueHitFractionBeforeFormalMean = mean(condTable.RandomCueHitFractionBeforeFormal, 'omitnan');
 	summaryRow.CueWeightZeroFractionBeforeFormalMean = mean(condTable.CueWeightZeroFractionBeforeFormal, 'omitnan');
 	summaryRow.CueWeightZeroFractionFinalMean = mean(condTable.CueWeightZeroFractionFinal, 'omitnan');
@@ -515,11 +515,10 @@ end
 conditionSummary = struct2table(summaryRows);
 end
 
-function diag = iDecisionProbeSet(Mouse, Params, Cond)
+function diag = iDecisionProbeSet(Mouse, Params, ~)
 diag.PreCueDrive = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, true);
 diag.FormalCueDrive = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, false);
 diag.FormalCueDriveNoInh = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, false);
-diag.RewardDrive = iRewardReadoutProbe(Mouse, Params, Cond);
 	[randomMean, randomMax, randomHitFraction] = iRandomCueDecisionStats(Mouse, Params, 30);
 diag.RandomCueMeanDrive = randomMean;
 diag.RandomCueMaxDrive = randomMax;
@@ -529,16 +528,15 @@ end
 function [randomMean, randomMax, randomHitFraction] = iRandomCueDecisionStats(Mouse, Params, numSamples)
 drives = nan(numSamples, 1);
 ProbeParams = Params;
-ProbeParams.NoiseCue = 0;
-ProbeParams.NoiseRew = 0;
-ProbeParams.NoiseRead = 0;
+ProbeParams.NoiseScale = 0;
 for iSample = 1:numSamples
 	cueInput = ProbeParams.CueInputGain * iStandardize(iRandn([ProbeParams.NCueInput, 1], ProbeParams));
+	inputIL23 = ProbeParams.CueInputGain * TransferLearning.THModel.BinaryPattern(iStandardize(iRandn([ProbeParams.NIL23, 1], ProbeParams)));
 	preL23 = cueInput;
 	preL5RewardRecv = iZeros([ProbeParams.NL5RewardRecv, 1], ProbeParams);
 	preL5Read = iZeros([ProbeParams.NL5Read, 1], ProbeParams);
-	[~, ~, rL5Read] = TransferLearning.THModel.RunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
-	drives(iSample) = iGatherScalar(mean(Mouse.L5ReadoutPattern .* rL5Read));
+	[~, ~, rL5Read, ~, inhibitoryState] = TransferLearning.THModel.RunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams, inputIL23);
+	drives(iSample) = TransferLearning.THModel.ReadoutDecisionDrive(Mouse, rL5Read, inhibitoryState.L5Read, ProbeParams);
 end
 randomMean = mean(drives, 'omitnan');
 randomMax = max(drives);
@@ -559,8 +557,6 @@ AllH23 = [];
 AllH5 = [];
 AllH5RewardRecv = [];
 AllH5Read = [];
-AllRewardReadoutPretrain = [];
-AllRewardReadoutFinal = [];
 AllCond = strings(0, 1);
 classNames = iConnectionClassNames();
 
@@ -568,8 +564,8 @@ for iCond = 1:height(Cond)
 	perf = nan(Params.NumMice, Params.NumSessions);
 	h23 = nan(Params.NumMice, Params.NumSessions);
 	h5 = nan(Params.NumMice, Params.NumSessions);
-	perMouse = table('Size', [Params.NumMice, 9], 'VariableTypes', {'double','double','double','double','double','double','double','double','double'}, ...
-		'VariableNames', {'Slope','MeanDeltaHit','MeanH23','MeanH5','MeanH5RewardRecv','MeanH5Read','RewardReadoutPretrain','RewardReadoutFinal','FormalHebbGain'});
+		perMouse = table('Size', [Params.NumMice, 6], 'VariableTypes', {'double','double','double','double','double','double'}, ...
+			'VariableNames', {'Slope','MeanDeltaHit','MeanH23','MeanH5','MeanH5RewardRecv','MeanH5Read'});
 	repProcessL5 = cell(Params.NumMice, 1);
 	preWeightCells = struct();
 	postWeightCells = struct();
@@ -595,9 +591,6 @@ for iCond = 1:height(Cond)
 		perMouse.MeanH5(iMouse) = mouseResult.MeanH5;
 		perMouse.MeanH5RewardRecv(iMouse) = mouseResult.MeanH5RewardRecv;
 		perMouse.MeanH5Read(iMouse) = mouseResult.MeanH5Read;
-		perMouse.RewardReadoutPretrain(iMouse) = mouseResult.RewardReadoutPretrain;
-		perMouse.RewardReadoutFinal(iMouse) = mouseResult.RewardReadoutFinal;
-		perMouse.FormalHebbGain(iMouse) = mouseResult.FormalHebbGain;
 		repProcessL5{iMouse} = mouseResult.ProcessMeanL5;
 		for iClass = 1:numel(classNames)
 			className = classNames(iClass);
@@ -625,13 +618,11 @@ for iCond = 1:height(Cond)
 	AllH5 = [AllH5; perMouse.MeanH5]; %#ok<AGROW>
 	AllH5RewardRecv = [AllH5RewardRecv; perMouse.MeanH5RewardRecv]; %#ok<AGROW>
 	AllH5Read = [AllH5Read; perMouse.MeanH5Read]; %#ok<AGROW>
-	AllRewardReadoutPretrain = [AllRewardReadoutPretrain; perMouse.RewardReadoutPretrain]; %#ok<AGROW>
-	AllRewardReadoutFinal = [AllRewardReadoutFinal; perMouse.RewardReadoutFinal]; %#ok<AGROW>
 	AllCond = [AllCond; repmat(Cond.Name(iCond), Params.NumMice, 1)]; %#ok<AGROW>
 end
 
-Summary.AllMouse = table(AllCond, AllSlope, AllH23, AllH5, AllH5RewardRecv, AllH5Read, AllRewardReadoutPretrain, AllRewardReadoutFinal, ...
-	'VariableNames', {'Condition','Slope','MeanH23','MeanH5','MeanH5RewardRecv','MeanH5Read','RewardReadoutPretrain','RewardReadoutFinal'});
+Summary.AllMouse = table(AllCond, AllSlope, AllH23, AllH5, AllH5RewardRecv, AllH5Read, ...
+	'VariableNames', {'Condition','Slope','MeanH23','MeanH5','MeanH5RewardRecv','MeanH5Read'});
 Summary.CorrMouse = Summary.AllMouse;
 Summary.FormalTrainingConnectionWeightStats = iFormalTrainingConnectionWeightStats(Summary.FormalTrainingConnectionWeightMouseStd, Cond);
 Summary.FormalTrainingConnectionWeightClassification = iFormalTrainingConnectionWeightClassification();
@@ -648,9 +639,8 @@ end
 
 function mouseResult = iRunOneMouseTask(Params, Cond, condName)
 Mouse = TransferLearning.THModel.DrawMouse(Params);
-rewardReadoutPretrain = NaN;
 if condName ~= "Naive"
-	% Pretraining shapes afferent/internal matrices + inhibitory gains.
+	% Pretraining shapes internal matrices + inhibitory gains.
 	% No artificial pruning on task switch: the same M2 L2/3 and L5
 	% populations carry both modalities, so synapses are fully inherited.
 	% The "transfer advantage" emerges naturally because
@@ -658,10 +648,8 @@ if condName ~= "Naive"
 	%     (cross-modal correlation = Params.CueModalityCorr), and
 	% (ii) the all-to-all L2/3-L5 recurrent matrix encodes a task schema that is
 	%     common to both cues.
-	% OvernightRetention already models the small natural drift
 	% between pretraining and the new task.
 	Mouse = iPretrainMouse(Mouse, Params);
-	rewardReadoutPretrain = iRewardReadoutProbe(Mouse, Params, iFullRewardCondition());
 end
 formalTrainingConnectionWeightsPre = iCollectConnectionTypeWeights(Mouse, Params);
 [MouseResult, Mouse] = TransferLearning.THModel.SimulateFormalTraining(Mouse, Params, Cond);
@@ -678,62 +666,34 @@ mouseResult.MeanH5Read = iGatherScalar(MouseResult.MeanH5Read);
 mouseResult.ProcessMeanL5 = iGatherValue(MouseResult.ProcessMeanL5);
 mouseResult.FormalTrainingConnectionWeights.Pre = formalTrainingConnectionWeightsPre;
 mouseResult.FormalTrainingConnectionWeights.Post = formalTrainingConnectionWeightsPost;
-mouseResult.RewardReadoutPretrain = iGatherScalar(rewardReadoutPretrain);
-mouseResult.RewardReadoutFinal = iGatherScalar(iRewardReadoutProbe(Mouse, Params, Cond));
-mouseResult.FormalHebbGain = iGatherScalar(Mouse.FormalHebbGain);
 end
 
 function Mouse = iPretrainMouse(Mouse, Params)
 % Pretraining uses PreCueInputPattern and keeps reward input intact.
 pretrainCond.RewardInputLevel = 1.00;
-lastPerfObserved = NaN;
-
-for iSess = 1:Params.MaxPretrainSessions
-	[perfObserved, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
-	lastPerfObserved = perfObserved;
-
-	if perfObserved >= Params.Ceiling
-		return;
-	end
-	Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
+[Mouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(Mouse, Params, pretrainCond);
+if pretrainResult.Reached
+	return;
 end
 
-error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final observed hit = %.3f.', Params.MaxPretrainSessions, lastPerfObserved);
+error('THModel:PretrainDidNotReachCeiling', 'Pretraining did not reach ceiling within %d sessions. Final observed hit = %.3f.', Params.MaxPretrainSessions, pretrainResult.FinalHit);
 end
 
-function Cond = iFullRewardCondition()
-Cond.RewardInputLevel = 1.00;
-end
-
-function readoutDrive = iRewardReadoutProbe(Mouse, Params, Cond)
-ProbeParams = Params;
-ProbeParams.NoiseCue = 0;
-ProbeParams.NoiseRew = 0;
-ProbeParams.NoiseRead = 0;
-
-preL23 = iZeros([ProbeParams.NL23, 1], ProbeParams);
-preReward = Cond.RewardInputLevel * ProbeParams.RewInputGain * Mouse.RewardPattern;
-rReward = TransferLearning.THModel.RunArea(preReward, 'reward', Mouse, ProbeParams);
-preL5RewardRecv = (Mouse.W_RewardToL5RewardRecv * rReward) / ProbeParams.RewardAfferentNorm;
-preL5Read = iZeros([ProbeParams.NL5Read, 1], ProbeParams);
-[~, ~, rL5Read] = TransferLearning.THModel.RunInternalNetwork(preL23, preL5RewardRecv, preL5Read, Mouse, ProbeParams);
-readoutDrive = iGatherScalar(mean(Mouse.L5ReadoutPattern .* rL5Read));
-end
-
-function weightClasses = iCollectConnectionTypeWeights(Mouse, Params)
+function weightClasses = iCollectConnectionTypeWeights(Mouse, ~)
 weightClasses = iEmptyConnectionClassWeights();
 
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", Mouse.W_RewardToL5RewardRecv / Params.RewardAfferentNorm);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", TransferLearning.THModel.NonSelfInternalWeights(Mouse.W_L23L5ToL23L5) / Params.NL23L5);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L23 / Params.NL23);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Cue * Mouse.WEI_L23 / Params.NIL23);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L23 / Params.NIL23);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L5RewardRecv / Params.NL5RewardRecv);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Rew * Mouse.WEI_L5RewardRecv / Params.NIL5RewardRecv);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L5RewardRecv / Params.NIL5RewardRecv);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WIE_L5Read / (Params.NL23 + Params.NL5RewardRecv));
-weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Params.Comp_Read * Mouse.WEI_L5Read / Params.NIL5Read);
-weightClasses = iAppendConnectionClassWeights(weightClasses, "II", Params.IToIGain * Mouse.WII_L5Read / Params.NIL5Read);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EE", TransferLearning.THModel.NonSelfInternalWeights(Mouse.W_L23L5ToL23L5));
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WEI_L23);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Mouse.WIE_L23);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "II", TransferLearning.THModel.NonSelfInternalWeights(Mouse.WII_L23));
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WEI_L5RewardRecv);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Mouse.WIE_L5RewardRecv);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "II", TransferLearning.THModel.NonSelfInternalWeights(Mouse.WII_L5RewardRecv));
+weightClasses = iAppendConnectionClassWeights(weightClasses, "EI", Mouse.WEI_L5Read);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Mouse.WIE_L5Read);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "II", TransferLearning.THModel.NonSelfInternalWeights(Mouse.WII_L5Read));
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Mouse.WI23ToL5RewardRecv);
+weightClasses = iAppendConnectionClassWeights(weightClasses, "IE", Mouse.WI23ToL5Read);
 end
 
 function weightClasses = iEmptyConnectionClassWeights()
@@ -744,8 +704,8 @@ end
 end
 
 function weightClasses = iAppendConnectionClassWeights(weightClasses, className, weights)
-weights = abs(iGatherValue(weights(:)));
-weights = weights(isfinite(weights) & weights ~= 0);
+weights = iGatherValue(weights(:));
+weights = weights(isfinite(weights) & weights > 0);
 weightClasses.(className) = [weightClasses.(className); weights];
 end
 
@@ -797,48 +757,28 @@ end
 v = v ./ sd;
 end
 
-function tf = iUseGPU()
-deviceManager = parallel.gpu.GPUDeviceManager.instance;
-tf = ~isempty(deviceManager.SelectedDevice);
-end
-
 function values = iRandn(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.randn(sz(1), sz(2));
-else
-	values = randn(sz);
-end
+values = randn(sz);
 end
 
 function values = iZeros(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.zeros(sz(1), sz(2));
-else
-	values = zeros(sz);
-end
+values = zeros(sz);
 end
 
 function values = iOnes(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.ones(sz(1), sz(2));
-else
-	values = ones(sz);
-end
+values = ones(sz);
 end
 
 function values = iGatherValue(values)
-if isa(values, 'gpuArray')
-	values = gather(values);
-end
 end
 
 function value = iGatherScalar(value)
@@ -904,7 +844,7 @@ else
 end
 end
 
-function fDist = iPlotPreFormalConnectionWeightDistributions(Summary, Cond)
+function fDist = iPlotPreFormalConnectionWeightDistributions(Summary, Cond, Params)
 classNames = iConnectionClassNames();
 classLabels = iConnectionClassLabels();
 plotConditionNames = ["Naive", "Transfer"];
@@ -928,35 +868,30 @@ for iClass = 1:numel(classNames)
 	allPlotValues = [];
 	for iPlotCond = 1:numel(plotConditionNames)
 		weights = iPreFormalWeightsForCondition(Summary, className, plotConditionNames(iPlotCond));
-		plotValues = log10(weights(weights > 0));
+		plotValues = weights(weights > 0);
 		plotValues = plotValues(isfinite(plotValues));
 		plotValuesByCondition{iPlotCond} = plotValues;
 		allPlotValues = [allPlotValues; plotValues]; %#ok<AGROW>
 	end
 	allPlotValues = allPlotValues(isfinite(allPlotValues));
 	if isempty(allPlotValues)
-		allPlotValues = [0; 1];
+		allPlotValues = [eps; Params.WeightMax];
 	end
-	displayRange = quantile(allPlotValues, [0.001, 0.999]);
-	if ~all(isfinite(displayRange)) || displayRange(1) >= displayRange(2)
-		displayRange = [min(allPlotValues, [], 'omitnan'), max(allPlotValues, [], 'omitnan')];
-	end
-	if ~all(isfinite(displayRange)) || displayRange(1) >= displayRange(2)
-		displayRange = [0, 1];
-	end
-	edges = linspace(displayRange(1), displayRange(2), 80);
+	displayMin = min([eps; allPlotValues], [], 'omitnan');
+	displayMax = max([Params.WeightMax; allPlotValues], [], 'omitnan');
+	edges = linspace(displayMin, displayMax, 90);
 	for iPlotCond = 1:numel(plotConditionNames)
 		condName = plotConditionNames(iPlotCond);
 		condIdx = find(Cond.Name == condName, 1, 'first');
 		plotValues = plotValuesByCondition{iPlotCond};
-		plotValues = plotValues(plotValues >= displayRange(1) & plotValues <= displayRange(2));
-		[xLine, yLine] = iDensityFromHist(plotValues, edges);
-		legendHandles(iPlotCond) = plot(ax, xLine, yLine, '-', 'Color', Cond.Color(condIdx, :), 'LineWidth', 2);
+		legendHandles(iPlotCond) = histogram(ax, plotValues, edges, 'Normalization', 'probability', ...
+			'DisplayStyle', 'stairs', 'EdgeColor', Cond.Color(condIdx, :), 'LineWidth', 1.8);
 	end
 	iStyleLinePanel(ax);
-	xlabel(ax, 'log10 absolute effective weight', 'FontSize', 12);
-	ylabel(ax, 'Density', 'FontSize', 12);
+	xlabel(ax, 'Positive connection weight', 'FontSize', 12);
+	ylabel(ax, 'Bin probability', 'FontSize', 12);
 	title(ax, classLabels(iClass), 'FontSize', 12, 'FontWeight', 'normal');
+	xlim(ax, [displayMin, displayMax]);
 	ax.FontSize = 12;
 	ax.LineWidth = 2;
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
@@ -966,7 +901,7 @@ end
 
 legendLabels = cellstr(Cond.Label(ismember(Cond.Name, plotConditionNames)));
 lgd = legend(legendHandles, legendLabels, 'Location', 'north', 'Box', 'off', ...
-	'FontSize', 12, 'Orientation', 'horizontal', 'NumColumns', numel(plotConditionNames));
+	'FontSize', 12, 'Orientation', 'horizontal', 'NumColumns', numel(legendLabels));
 lgd.Layout.Tile = 'north';
 end
 
@@ -1446,6 +1381,49 @@ iCheckTransferMetricSignificantlyHighest(PerMouse, Cond, "MeanH5", "Mean L5 hete
 iCheckTransferSigmoidSlopeSignificantlyHighest(SigmoidStats, Cond, Params.TransferHighestAlpha);
 end
 
+function iCheckNaiveLastSessionExceedsFirst(Performance, Cond)
+naiveIndex = find(Cond.Name == "Naive", 1);
+naivePerformance = Performance.(Cond.Name(naiveIndex));
+firstSessionHit = naivePerformance(:, 1);
+lastSessionHit = naivePerformance(:, end);
+failedMouseIndex = find(~(lastSessionHit > firstSessionHit));
+if ~isempty(failedMouseIndex)
+	failureText = strings(numel(failedMouseIndex), 1);
+	for iFailure = 1:numel(failedMouseIndex)
+		iMouse = failedMouseIndex(iFailure);
+		failureText(iFailure) = sprintf('mouse %d: first=%.4f, last=%.4f', iMouse, firstSessionHit(iMouse), lastSessionHit(iMouse));
+	end
+	error('THModel:NaiveLastSessionNotAboveFirst', ...
+		'Every Naive mouse must have last-session hit rate above first-session hit rate. %s', ...
+		strjoin(failureText, '; '));
+end
+end
+
+function iCheckTransferTHOffFirstSessionHitBelowMax(Performance, Cond, maxFirstSessionHit)
+conditionNamesToCheck = ["Transfer", "THOff"];
+failedConditions = strings(0, 1);
+for iCondition = 1:numel(conditionNamesToCheck)
+	condName = conditionNamesToCheck(iCondition);
+	condIndex = find(Cond.Name == condName, 1);
+	if isempty(condIndex)
+		error('THModel:MissingFirstSessionCapCondition', ...
+			'Condition %s is required for first-session hit-rate acceptance.', condName);
+	end
+	conditionPerformance = Performance.(Cond.Name(condIndex));
+	firstSessionMean = mean(conditionPerformance(:, 1), 'omitnan');
+	if ~(isfinite(firstSessionMean) && firstSessionMean <= maxFirstSessionHit)
+		failedConditions(end + 1, 1) = sprintf('%s first-session mean=%.4f, max allowed=%.4f', ...
+			condName, firstSessionMean, maxFirstSessionHit); %#ok<AGROW>
+	end
+end
+
+if ~isempty(failedConditions)
+	error('THModel:TransferTHOffFirstSessionHitTooHigh', ...
+		'Transfer and THOff first-session mean hit rates must be <= %.3f. %s', ...
+		maxFirstSessionHit, strjoin(failedConditions, '; '));
+end
+end
+
 function iCheckTransferMetricSignificantlyHighest(PerMouse, Cond, metricName, metricLabel, alpha)
 metricName = char(metricName);
 metricLabel = char(metricLabel);
@@ -1539,13 +1517,6 @@ elseif p < 0.05
 else
 	txt = 'n.s.';
 end
-end
-
-function [xLine, yLine] = iDensityFromHist(x, edges)
-counts = histcounts(x, edges, 'Normalization', 'pdf');
-centers = edges(1:end-1) + diff(edges) / 2;
-xLine = centers(:);
-yLine = counts(:);
 end
 
 function iStyleLinePanel(ax)

@@ -120,9 +120,6 @@ end
 function [naivePerf, transferPerf, pretrainReached, pretrainSessions, pretrainFinalHit, naiveSlope, transferSlope, naiveMeanDeltaHit, transferMeanDeltaHit, naiveFirstPerfectSession, transferFirstPerfectSession] = iEvaluateOneMouse(Params, pretrainCond, formalCond, seedValue)
 if isfinite(seedValue)
 	rng(seedValue, 'twister');
-	if TransferLearning.THModel.UseGPU()
-		parallel.gpu.rng(seedValue, 'Threefry');
-	end
 end
 
 naiveMouse = TransferLearning.THModel.DrawMouse(Params);
@@ -133,18 +130,10 @@ naiveMeanDeltaHit = naiveResult.MeanDeltaHit;
 naiveFirstPerfectSession = naiveResult.FirstPerfectSession;
 
 transferMouse = TransferLearning.THModel.DrawMouse(Params);
-pretrainReached = false;
-pretrainSessions = Params.MaxPretrainSessions;
-pretrainFinalHit = NaN;
-for iPretrainSession = 1:Params.MaxPretrainSessions
-	[pretrainFinalHit, ~, ~, transferMouse] = TransferLearning.THModel.SimulateSession(transferMouse, Params, pretrainCond, true);
-	if pretrainFinalHit >= Params.Ceiling
-		pretrainReached = true;
-		pretrainSessions = iPretrainSession;
-		break;
-	end
-	transferMouse = TransferLearning.THModel.OvernightConsolidate(transferMouse, Params);
-end
+[transferMouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(transferMouse, Params, pretrainCond);
+pretrainReached = pretrainResult.Reached;
+pretrainSessions = pretrainResult.TrainingSessions;
+pretrainFinalHit = pretrainResult.FinalHit;
 
 [transferResult, ~] = TransferLearning.THModel.SimulateFormalTraining(transferMouse, Params, formalCond);
 transferPerf = transferResult.Performance;

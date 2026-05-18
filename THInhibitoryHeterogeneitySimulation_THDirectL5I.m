@@ -54,7 +54,7 @@ if iHasReusableWorkspaceSummary(workspaceVarNames, Params)
 	end
 	fprintf('Using workspace variable %s for plotting; clear it to retrain.\n', workspaceVarNames.Summary);
 else
-	iPrepareParallelGpuWorkers();
+	iPrepareParallelWorkers();
 	Summary = iRunCohortModel(Params, Cond);
 end
 iStoreWorkspaceRun(Summary, Params, Cond, workspaceVarNames);
@@ -228,15 +228,8 @@ assignin('base', workspaceVarNames.Params, Params);
 assignin('base', workspaceVarNames.Cond, Cond);
 end
 
-function iPrepareParallelGpuWorkers()
+function iPrepareParallelWorkers()
 ParallelComputing.ParPool(20);
-spmd
-	if spmdIndex <= gpuDeviceCount
-		gpuDevice(spmdIndex);
-	else
-		gpuDevice([]);
-	end
-end
 end
 
 function classification = iFormalTrainingConnectionWeightClassification()
@@ -406,7 +399,7 @@ end
 rows = struct([]);
 fprintf('\n=== Nonnegative formal failure debug ===\n');
 if numDebugMice > 1
-	iPrepareParallelGpuWorkers();
+	iPrepareParallelWorkers();
 end
 for iCond = 1:height(Cond)
 	condRow = Cond(iCond, :);
@@ -417,7 +410,6 @@ for iCond = 1:height(Cond)
 	conditionRows = cell(numDebugMice, 1);
 	if numDebugMice > 1
 		parfor iMouse = 1:numDebugMice
-			iSelectValidationGpu(iMouse);
 			conditionRows{iMouse} = iRunNonnegativeFormalFailureMouse(Params, condRow, condName, iMouse, numFormalDiagnosticSessions);
 		end
 	else
@@ -464,13 +456,6 @@ formalMeanH5 = iRestrictedStd(mean(sessionMeanL5, 2, 'omitnan'));
 formalMeanH5RewardRecv = iRestrictedStd(mean(sessionMeanL5RewardRecv, 2, 'omitnan'));
 formalMeanH5Read = iRestrictedStd(mean(sessionMeanL5Read, 2, 'omitnan'));
 row = iNonnegativeFormalFailureRow(condName, iMouse, pretrainSessions, pretrainPerf, formalPerf, formalMeanH5, formalMeanH5RewardRecv, formalMeanH5Read, preDiag, afterFirstDiag, finalDiag, preWeights, finalWeights, Mouse);
-end
-
-function iSelectValidationGpu(workerSlot)
-numGpuDevices = gpuDeviceCount;
-if numGpuDevices > 0
-	gpuDevice(mod(workerSlot - 1, numGpuDevices) + 1);
-end
 end
 
 function [Mouse, perfTrace] = iPretrainMouseWithTrace(Mouse, Params)
@@ -1469,48 +1454,28 @@ end
 v = v ./ sd;
 end
 
-function tf = iUseGPU()
-deviceManager = parallel.gpu.GPUDeviceManager.instance;
-tf = ~isempty(deviceManager.SelectedDevice);
-end
-
 function values = iRandn(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.randn(sz(1), sz(2));
-else
-	values = randn(sz);
-end
+values = randn(sz);
 end
 
 function values = iZeros(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.zeros(sz(1), sz(2));
-else
-	values = zeros(sz);
-end
+values = zeros(sz);
 end
 
 function values = iOnes(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.ones(sz(1), sz(2));
-else
-	values = ones(sz);
-end
+values = ones(sz);
 end
 
 function values = iGatherValue(values)
-if isa(values, 'gpuArray')
-	values = gather(values);
-end
 end
 
 function value = iGatherScalar(value)

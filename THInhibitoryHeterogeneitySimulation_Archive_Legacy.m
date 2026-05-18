@@ -32,9 +32,6 @@ PrintCuePretrainDebug = false;     % prints cue-specific vs non-cue L2/3 learnin
 RandomSeed = 20260510;
 rng(RandomSeed, 'twister');
 ParallelComputing.ParPool(20);
-spmd
-		gpuDevice([]);
-end
 networkOutputRoot = '\\Data-Server-2\个人数据\张天夫';
 localOutputRoot = fullfile(fileparts(mfilename('fullpath')), 'resources');
 if isfolder(networkOutputRoot)
@@ -1531,9 +1528,6 @@ end
 function mask = iLogicalMaskFromIndices(numCells, selectedIdx, ~)
 mask = false(numCells, 1);
 mask(selectedIdx) = true;
-if iUseGPU()
-	mask = gpuArray(mask);
-end
 end
 
 function Mouse = iPretrainMouse(Mouse, Params)
@@ -3371,11 +3365,6 @@ Mouse.Z_InternalToInternal = iShiftRecurrentColumnsToNonnegative(ret * Mouse.Z_I
 Mouse.W_InternalToInternal = iAccumulatorToInternalWeight(Mouse.Z_InternalToInternal, Params);
 end
 
-function tf = iUseGPU()
-deviceManager = parallel.gpu.GPUDeviceManager.instance;
-tf = ~isempty(deviceManager.SelectedDevice);
-end
-
 function accumulator = iInitChiSquareAccumulator(sz, scale, dof, Params)
 accumulator = scale * iRandChiSquare(sz, dof, Params);
 end
@@ -3392,39 +3381,24 @@ function values = iRandn(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.randn(sz(1), sz(2));
-else
 	values = randn(sz);
-end
 end
 
 function values = iRand(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.rand(sz(1), sz(2));
-else
 	values = rand(sz);
-end
 end
 
 function values = iZeros(sz, ~)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU()
-	values = gpuArray.zeros(sz(1), sz(2));
-else
 	values = zeros(sz);
-end
 end
 
 function values = iGatherValue(values)
-if isa(values, 'gpuArray')
-	values = gather(values);
-end
 end
 
 function value = iGatherScalar(value)

@@ -17,16 +17,10 @@ formalTrialTables = cell(numMice, 1);
 for iMouse = 1:numMice
 	Mouse = TransferLearning.THModel.DrawMouse(Params);
 	initialMouse = Mouse;
-	pretrainReached = false;
-	pretrainFinalHit = NaN;
-	for iSession = 1:Params.MaxPretrainSessions
-		[pretrainFinalHit, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
-		if pretrainFinalHit >= Params.Ceiling
-			pretrainReached = true;
-			break;
-		end
-		Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
-	end
+	[Mouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(Mouse, Params, pretrainCond);
+	pretrainReached = pretrainResult.Reached;
+	pretrainSessions = pretrainResult.TrainingSessions;
+	pretrainFinalHit = pretrainResult.FinalHit;
 
 	preFormalMouse = Mouse;
 	preCueProbe = TransferLearning.THModel.CueDecisionDrive(preFormalMouse, Params, true);
@@ -42,21 +36,21 @@ for iMouse = 1:numMice
 	randomDeterministic = TransferLearning.THModel.SampleDecisionTrials(preFormalMouse, Params, "randomCue", numProbeTrials, false);
 	zeroDeterministic = TransferLearning.THModel.SampleDecisionTrials(preFormalMouse, Params, "zeroCue", numProbeTrials, false);
 	initialFormalCueDrive = TransferLearning.THModel.CueDecisionDrive(initialMouse, Params, false);
-	cueAfferentOnlyFormalDrive = NaN;
-	noTrainedCueAfferentFormalDrive = NaN;
+	directCueOnlyFormalDrive = NaN;
+	noTrainedDirectCueFormalDrive = NaN;
 
 	formalMouse = preFormalMouse;
 	[formalFirstHit, ~, ~, postFormalMouse, formalTrialTable] = TransferLearning.THModel.SimulateSession(formalMouse, Params, formalCond, false);
 	formalTrialTables{iMouse} = formalTrialTable;
 
 	unrelatedMouse = preFormalMouse;
-	unrelatedMouse.CueInputPattern = TransferLearning.THModel.ClampPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NCueInput, 1])), Params);
+	unrelatedMouse.CueInputPattern = TransferLearning.THModel.DrawCuePattern(Params.NCueInput, Params.CueInputGain, Params);
 	unrelatedNoLearning = TransferLearning.THModel.SampleDecisionTrials(unrelatedMouse, Params, "formalCue", Params.NumTrials, true);
 	[unrelatedFirstHit, ~, ~, ~] = TransferLearning.THModel.SimulateSession(unrelatedMouse, Params, formalCond, false);
 
 	rows(iMouse).Mouse = iMouse;
 	rows(iMouse).PretrainReached = pretrainReached;
-	rows(iMouse).PretrainSessions = iSession;
+	rows(iMouse).PretrainSessions = pretrainSessions;
 	rows(iMouse).PretrainFinalHit = pretrainFinalHit;
 	rows(iMouse).InputCueCorr = iCueCorrelation(preFormalMouse.PreCueInputPattern, preFormalMouse.CueInputPattern);
 	rows(iMouse).UnrelatedCueCorr = iCueCorrelation(preFormalMouse.PreCueInputPattern, unrelatedMouse.CueInputPattern);
@@ -67,8 +61,8 @@ for iMouse = 1:numMice
 	rows(iMouse).InitialFormalNoLearningHitRate = mean(initialFormalNoLearning.Hit, 'omitnan');
 	rows(iMouse).InitialFormalFirstSessionHitRate = initialFormalFirstHit;
 	rows(iMouse).InitialZeroCueHitRate = mean(initialZeroNoLearning.Hit, 'omitnan');
-	rows(iMouse).CueAfferentOnlyFormalDrive = cueAfferentOnlyFormalDrive;
-	rows(iMouse).NoTrainedCueAfferentFormalDrive = noTrainedCueAfferentFormalDrive;
+	rows(iMouse).DirectCueOnlyFormalDrive = directCueOnlyFormalDrive;
+	rows(iMouse).NoTrainedDirectCueFormalDrive = noTrainedDirectCueFormalDrive;
 	rows(iMouse).FormalNoLearningHitRate = mean(formalNoLearning.Hit, 'omitnan');
 	rows(iMouse).FormalNoLearningMeanDrive = mean(formalNoLearning.Drive, 'omitnan');
 	rows(iMouse).FormalNoLearningFirstDrive = formalNoLearning.Drive(1);
@@ -109,12 +103,12 @@ Report.Summary = table( ...
 	mean(MouseTable.ZeroCueHitRate, 'omitnan'), ...
 	mean(MouseTable.FormalCueDrive, 'omitnan'), ...
 	mean(MouseTable.InitialFormalCueDrive, 'omitnan'), ...
-	mean(MouseTable.CueAfferentOnlyFormalDrive, 'omitnan'), ...
-	mean(MouseTable.NoTrainedCueAfferentFormalDrive, 'omitnan'), ...
+	mean(MouseTable.DirectCueOnlyFormalDrive, 'omitnan'), ...
+	mean(MouseTable.NoTrainedDirectCueFormalDrive, 'omitnan'), ...
 	mean(MouseTable.RandomCueMeanDrive, 'omitnan'), ...
 	mean(MouseTable.ZeroCueMeanDrive, 'omitnan'), ...
 	mean(MouseTable.PostFormalCueDrive, 'omitnan'), ...
-	'VariableNames', {'PretrainReachRate','MeanPretrainSessions','MeanInputCueCorr','MeanUnrelatedCueCorr','MeanFormalFirstSessionHitRate','MeanFormalNoLearningHitRate','MeanFormalWithinSessionLift','MeanInitialFormalFirstSessionHitRate','MeanInitialFormalNoLearningHitRate','MeanInitialZeroCueHitRate','MeanUnrelatedFirstSessionHitRate','MeanUnrelatedNoLearningHitRate','MeanRandomCueHitRate','MeanZeroCueHitRate','MeanFormalCueDrive','MeanInitialFormalCueDrive','MeanCueAfferentOnlyFormalDrive','MeanNoTrainedCueAfferentFormalDrive','MeanRandomCueDrive','MeanZeroCueDrive','MeanPostFormalCueDrive'});
+	'VariableNames', {'PretrainReachRate','MeanPretrainSessions','MeanInputCueCorr','MeanUnrelatedCueCorr','MeanFormalFirstSessionHitRate','MeanFormalNoLearningHitRate','MeanFormalWithinSessionLift','MeanInitialFormalFirstSessionHitRate','MeanInitialFormalNoLearningHitRate','MeanInitialZeroCueHitRate','MeanUnrelatedFirstSessionHitRate','MeanUnrelatedNoLearningHitRate','MeanRandomCueHitRate','MeanZeroCueHitRate','MeanFormalCueDrive','MeanInitialFormalCueDrive','MeanDirectCueOnlyFormalDrive','MeanNoTrainedDirectCueFormalDrive','MeanRandomCueDrive','MeanZeroCueDrive','MeanPostFormalCueDrive'});
 end
 
 function rho = iCueCorrelation(a, b)

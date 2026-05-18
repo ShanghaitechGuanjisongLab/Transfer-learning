@@ -26,11 +26,6 @@ PrintCuePretrainDebug = false;     % prints cue-specific vs non-cue L2/3 learnin
 
 rng('shuffle');
 ParallelComputing.ParPool(9);
-spmd
-	if spmdIndex<=gpuDeviceCount
-		gpuDevice(spmdIndex);
-	end
-end
 networkOutputRoot = '\\Data-Server-2\个人数据\张天夫';
 localOutputRoot = fullfile(fileparts(mfilename('fullpath')), 'resources');
 if isfolder(networkOutputRoot)
@@ -150,7 +145,6 @@ function Params = iDefaultParams()
 % Learning phase applies outer-product Hebbian updates on the recurrent
 % internal matrix plus the per-cell
 % inhibitory gain in L23/L5RewardRecv areas.
-Params.UseGPU = gpuDeviceCount > 0;
 Params.NumMice = 9;
 Params.NumSessions = 8;
 Params.NumTrials = 30;
@@ -1205,9 +1199,6 @@ end
 function mask = iLogicalMaskFromIndices(numCells, selectedIdx, Params)
 mask = false(numCells, 1);
 mask(selectedIdx) = true;
-if iUseGPU(Params)
-	mask = gpuArray(mask);
-end
 end
 
 function Mouse = iPretrainMouse(Mouse, Params)
@@ -2696,10 +2687,6 @@ Mouse.Z_InternalToInternal = iShiftRecurrentColumnsToNonnegative(ret * Mouse.Z_I
 Mouse.W_InternalToInternal = iAccumulatorToInternalWeight(Mouse.Z_InternalToInternal, Params);
 end
 
-function tf = iUseGPU(Params)
-tf = isfield(Params, 'UseGPU') && Params.UseGPU;
-end
-
 function accumulator = iInitChiSquareAccumulator(sz, scale, dof, Params)
 accumulator = scale * iRandChiSquare(sz, dof, Params);
 end
@@ -2716,39 +2703,24 @@ function values = iRandn(sz, Params)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU(Params)
-	values = gpuArray.randn(sz(1), sz(2));
-else
 	values = randn(sz);
-end
 end
 
 function values = iRand(sz, Params)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU(Params)
-	values = gpuArray.rand(sz(1), sz(2));
-else
 	values = rand(sz);
-end
 end
 
 function values = iZeros(sz, Params)
 if isscalar(sz)
 	sz = [sz, 1];
 end
-if iUseGPU(Params)
-	values = gpuArray.zeros(sz(1), sz(2));
-else
 	values = zeros(sz);
-end
 end
 
 function values = iGatherValue(values)
-if isa(values, 'gpuArray')
-	values = gather(values);
-end
 end
 
 function value = iGatherScalar(value)

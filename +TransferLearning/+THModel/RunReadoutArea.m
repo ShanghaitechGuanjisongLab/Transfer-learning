@@ -1,7 +1,7 @@
-function rL5Read = RunReadoutArea(preL5Read, readoutInhibitorySource, Mouse, Params)
+function [rL5Read, rL5ReadInhibitory] = RunReadoutArea(preL5Read, readoutInhibitorySource, Mouse, Params)
 activeSource = max(readoutInhibitorySource, 0);
-numSourceCells = size(activeSource, 1);
-inhDrive = TransferLearning.THModel.RunInhibitoryPool(Mouse.WIE_L5Read * activeSource / numSourceCells, Mouse.WII_L5Read, Params, Params.NIL5Read, false);
-rL5Read = Params.ResponseScale * tanh(preL5Read - Params.Comp_Read * (Mouse.WEI_L5Read * inhDrive) / Params.NIL5Read);
+[inhDrive, rawL5ReadInhibitory] = TransferLearning.THModel.RunInhibitoryPool(max(Mouse.WEI_L5Read, 0) * activeSource, Mouse.WII_L5Read, Params, false);
+rL5ReadInhibitory = TransferLearning.THModel.ClampActivity(Params.ResponseScale * tanh(rawL5ReadInhibitory), Params);
+rL5Read = Params.ResponseScale * tanh(preL5Read - Params.InhibitorySuppressionGain * (max(Mouse.WIE_L5Read, 0) * inhDrive));
 rL5Read = TransferLearning.THModel.ClampActivity(rL5Read, Params);
 end

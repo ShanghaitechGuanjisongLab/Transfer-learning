@@ -38,7 +38,6 @@ for iMouse = 1:numMice
 		if sessionSummary.HitRate >= Params.Ceiling
 			break;
 		end
-		Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
 	end
 end
 SessionTable = struct2table(sessionRows);

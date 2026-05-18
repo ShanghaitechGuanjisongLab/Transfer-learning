@@ -1,11 +1,11 @@
 function drive = CueDecisionDriveNoLocalInh(Mouse, Params, usePreCue)
 if usePreCue
 	cueInputPattern = Mouse.PreCueInputPattern;
-	cueGain = Params.CueInputGainPretrain;
+	l23InhibitoryCuePattern = Mouse.PreCueL23InhibitoryPattern;
 else
 	cueInputPattern = Mouse.CueInputPattern;
-	cueGain = Params.CueInputGain;
+	l23InhibitoryCuePattern = Mouse.CueL23InhibitoryPattern;
 end
-Probe = TransferLearning.THModel.CueDecisionProbeNoLocalInh(Mouse, cueInputPattern, Params, cueGain);
+Probe = TransferLearning.THModel.CueDecisionProbeNoLocalInh(Mouse, cueInputPattern, Params, 1, l23InhibitoryCuePattern);
 drive = Probe.Drive;
 end

@@ -1,29 +1,26 @@
 function Mouse = DrawMouse(Params)
-preCueInputPattern = TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NCueInput, 1]));
-cueUnique = TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NCueInput, 1]));
-cueUnique = cueUnique - (sum(cueUnique .* preCueInputPattern) / sum(preCueInputPattern .^ 2)) * preCueInputPattern;
-cueUnique = TransferLearning.THModel.Standardize(cueUnique);
-cueInputPattern = TransferLearning.THModel.Standardize(Params.CueModalityCorr * preCueInputPattern + sqrt(1 - Params.CueModalityCorr ^ 2) * cueUnique);
-Mouse.PreCueInputPattern = TransferLearning.THModel.ClampPattern(preCueInputPattern, Params);
-Mouse.CueInputPattern = TransferLearning.THModel.ClampPattern(cueInputPattern, Params);
-Mouse.RewardPattern = TransferLearning.THModel.ClampPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NReward, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NReward, 1]))), Params);
-Mouse.L5ReadoutPattern = TransferLearning.THModel.ClampPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NL5Read, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NL5Read, 1]))), Params);
-Mouse.FormalHebbGain = TransferLearning.THModel.MouseScalarGain(Params.FormalHebbGainStd, Params.FormalHebbGainMin, Params.FormalHebbGainMax);
-Mouse.L5RewardRecvTeachingPattern = TransferLearning.THModel.ClampPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NL5RewardRecv, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NL5RewardRecv, 1]))), Params);
-readHeterogeneityPattern = TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NL5Read, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NL5Read, 1])));
-readHeterogeneityPattern = readHeterogeneityPattern - (sum(readHeterogeneityPattern .* Mouse.L5ReadoutPattern) / sum(Mouse.L5ReadoutPattern .^ 2)) * Mouse.L5ReadoutPattern;
-Mouse.L5ReadHeterogeneityPattern = TransferLearning.THModel.ClampPattern(TransferLearning.THModel.Standardize(readHeterogeneityPattern), Params);
+[Mouse.PreCueInputPattern, Mouse.CueInputPattern] = TransferLearning.THModel.DrawCuePatternPair(Params.NCueInput, Params.CueInputGainPretrain, Params.CueInputGain, Params.CueModalityCorr, Params);
+[Mouse.PreCueL23InhibitoryPattern, Mouse.CueL23InhibitoryPattern] = TransferLearning.THModel.DrawCuePatternPair(Params.NIL23, Params.CueInputGainPretrain, Params.CueInputGain, Params.CueModalityCorr, Params);
+Mouse.L5ReadoutPattern = TransferLearning.THModel.BinaryPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NL5Read, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NL5Read, 1]))));
+Mouse.L5ReadInhibitoryReadoutPattern = TransferLearning.THModel.BinaryPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NIL5Read, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NIL5Read, 1]))));
 
-Mouse.W_RewardToL5RewardRecv = TransferLearning.THModel.InitExcitatoryWeights([Params.NL5RewardRecv, Params.NReward], Params);
 Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.InitExcitatoryWeights([Params.NL23L5, Params.NL23L5], Params));
 
-Mouse.WIE_L23 = TransferLearning.THModel.InitInhibitoryWeights([Params.NIL23, Params.NL23], Params);
-Mouse.WEI_L23 = TransferLearning.THModel.InitInhibitoryWeights([Params.NL23, Params.NIL23], Params);
+weightEToI_L23 = TransferLearning.THModel.InitInhibitoryWeights([Params.NIL23, Params.NL23], Params);
+weightIToE_L23 = TransferLearning.THModel.InitInhibitoryWeights([Params.NL23, Params.NIL23], Params);
+Mouse.WIE_L23 = weightIToE_L23;
+Mouse.WEI_L23 = weightEToI_L23;
 Mouse.WII_L23 = TransferLearning.THModel.InitIToIWeights(Params.NIL23, Params);
-Mouse.WIE_L5RewardRecv = TransferLearning.THModel.InitInhibitoryWeights([Params.NIL5RewardRecv, Params.NL5RewardRecv], Params);
-Mouse.WEI_L5RewardRecv = TransferLearning.THModel.InitInhibitoryWeights([Params.NL5RewardRecv, Params.NIL5RewardRecv], Params);
+weightEToI_L5RewardRecv = TransferLearning.THModel.InitInhibitoryWeights([Params.NIL5RewardRecv, Params.NL5RewardRecv], Params);
+weightIToE_L5RewardRecv = TransferLearning.THModel.InitInhibitoryWeights([Params.NL5RewardRecv, Params.NIL5RewardRecv], Params);
+Mouse.WIE_L5RewardRecv = weightIToE_L5RewardRecv;
+Mouse.WEI_L5RewardRecv = weightEToI_L5RewardRecv;
 Mouse.WII_L5RewardRecv = TransferLearning.THModel.InitIToIWeights(Params.NIL5RewardRecv, Params);
-Mouse.WIE_L5Read = TransferLearning.THModel.InitInhibitoryWeights([Params.NIL5Read, Params.NL23 + Params.NL5RewardRecv], Params);
-Mouse.WEI_L5Read = TransferLearning.THModel.InitInhibitoryWeights([Params.NL5Read, Params.NIL5Read], Params);
+weightEToI_L5Read = TransferLearning.THModel.InitInhibitoryWeights([Params.NIL5Read, Params.NL23 + Params.NL5RewardRecv], Params);
+weightIToE_L5Read = TransferLearning.THModel.InitInhibitoryWeights([Params.NL5Read, Params.NIL5Read], Params);
+Mouse.WIE_L5Read = weightIToE_L5Read;
+Mouse.WEI_L5Read = weightEToI_L5Read;
 Mouse.WII_L5Read = TransferLearning.THModel.InitIToIWeights(Params.NIL5Read, Params);
+Mouse.WI23ToL5RewardRecv = TransferLearning.THModel.InitInhibitoryWeights([Params.NL5RewardRecv, Params.NIL23], Params);
+Mouse.WI23ToL5Read = TransferLearning.THModel.InitInhibitoryWeights([Params.NL5Read, Params.NIL23], Params);
 end

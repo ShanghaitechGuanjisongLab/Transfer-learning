@@ -138,11 +138,11 @@ function Cache = iEnsureBlocks(Cache, blockUID)
 		blockTable.CellUID = blockGroup.fun1_CellUID{iBlock};
 		blockTable.BlockSignal = vertcat(blockGroup.fun1_BlockSignal{iBlock}{:});
 		blockTable.Mean = mean(blockTable.BlockSignal, 2);
-		blockTable.Covariance = MATLAB.DataFun.ShrinkageCov(gpuArray(blockTable.BlockSignal), 1, 2);
+		blockTable.Covariance = MATLAB.DataFun.ShrinkageCov(blockTable.BlockSignal, 1, 2);
 		[~, blockEntropy] = MATLAB.DataFun.CovarianceToEntropy(blockTable.Covariance);
 		newCache.BlockUID(iBlock) = uint64(blockGroup.BlockUID(iBlock));
 		newCache.Cells{iBlock} = blockTable;
-		newCache.BlockEntropy{iBlock} = gather(double(blockEntropy(:).'));
+		newCache.BlockEntropy{iBlock} = double(blockEntropy(:).');
 	end
 
 	Cache.BlockCache = sortrows([Cache.BlockCache; newCache], 'BlockUID');

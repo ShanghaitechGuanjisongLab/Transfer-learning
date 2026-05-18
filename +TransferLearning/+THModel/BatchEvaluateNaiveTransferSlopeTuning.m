@@ -36,14 +36,12 @@ pretrainSessions = nan(numTasks, 1);
 pretrainFinalHit = nan(numTasks, 1);
 taskElapsedSeconds = nan(numTasks, 1);
 taskWorkerID = nan(numTasks, 1);
-taskUsedGPU = false(numTasks, 1);
 
 useParallel = numTasks > 1 && ~isempty(gcp('nocreate'));
 if useParallel
 	parfor taskIndex = 1:numTasks
 		taskTimer = tic;
 		taskWorkerID(taskIndex) = iCurrentWorkerID();
-		taskUsedGPU(taskIndex) = TransferLearning.THModel.UseGPU();
 		[candidateIndex, ~, ~] = iTaskSubscripts(taskIndex, numCandidates, numSeeds, numMice);
 		Params = iParamsForCandidate(BaseParams, CandidateTable, candidateIndex);
 		seedValue = taskSeedValues(taskIndex);
@@ -63,7 +61,6 @@ else
 	for taskIndex = 1:numTasks
 		taskTimer = tic;
 		taskWorkerID(taskIndex) = iCurrentWorkerID();
-		taskUsedGPU(taskIndex) = TransferLearning.THModel.UseGPU();
 		[candidateIndex, ~, ~] = iTaskSubscripts(taskIndex, numCandidates, numSeeds, numMice);
 		Params = iParamsForCandidate(BaseParams, CandidateTable, candidateIndex);
 		seedValue = taskSeedValues(taskIndex);
@@ -81,7 +78,7 @@ else
 	end
 end
 
-TaskTable = iBuildTaskTable(CandidateTable, seedBases, numMice, taskSeedValues, taskElapsedSeconds, taskWorkerID, taskUsedGPU, pretrainReached, pretrainSessions, pretrainFinalHit);
+TaskTable = iBuildTaskTable(CandidateTable, seedBases, numMice, taskSeedValues, taskElapsedSeconds, taskWorkerID, pretrainReached, pretrainSessions, pretrainFinalHit);
 RunTable = iBuildRunTable(CandidateTable, seedBases, numMice, naivePerf, transferPerf, naiveSlope, transferSlope, naiveFirstPerfectSession, transferFirstPerfectSession, pretrainReached, pretrainSessions, pretrainFinalHit);
 CandidateSummary = iBuildCandidateSummary(CandidateTable, RunTable, numCandidates);
 
@@ -104,10 +101,9 @@ Report.PretrainSessions = pretrainSessions;
 Report.PretrainFinalHit = pretrainFinalHit;
 Report.TaskElapsedSeconds = taskElapsedSeconds;
 Report.TaskWorkerID = taskWorkerID;
-Report.TaskUsedGPU = taskUsedGPU;
 end
 
-function TaskTable = iBuildTaskTable(CandidateTable, seedBases, numMice, taskSeedValues, taskElapsedSeconds, taskWorkerID, taskUsedGPU, pretrainReached, pretrainSessions, pretrainFinalHit)
+function TaskTable = iBuildTaskTable(CandidateTable, seedBases, numMice, taskSeedValues, taskElapsedSeconds, taskWorkerID, pretrainReached, pretrainSessions, pretrainFinalHit)
 numTasks = numel(taskSeedValues);
 numSeeds = numel(seedBases);
 taskIndexValues = (1:numTasks)';
@@ -122,8 +118,8 @@ for taskIndex = 1:numTasks
 	mouseIndexValues(taskIndex) = mouseIndex;
 	labelValues(taskIndex) = iCandidateLabel(CandidateTable, candidateIndex);
 end
-TaskTable = table(taskIndexValues, candidateIndexValues, labelValues, seedIndexValues, mouseIndexValues, taskSeedValues(:), taskWorkerID(:), taskUsedGPU(:), taskElapsedSeconds(:), pretrainReached(:), pretrainSessions(:), pretrainFinalHit(:), ...
-	'VariableNames', {'TaskIndex','CandidateIndex','Label','SeedIndex','MouseIndex','SeedValue','WorkerID','UsedGPU','ElapsedSeconds','PretrainReached','PretrainSessions','PretrainFinalHit'});
+TaskTable = table(taskIndexValues, candidateIndexValues, labelValues, seedIndexValues, mouseIndexValues, taskSeedValues(:), taskWorkerID(:), taskElapsedSeconds(:), pretrainReached(:), pretrainSessions(:), pretrainFinalHit(:), ...
+	'VariableNames', {'TaskIndex','CandidateIndex','Label','SeedIndex','MouseIndex','SeedValue','WorkerID','ElapsedSeconds','PretrainReached','PretrainSessions','PretrainFinalHit'});
 end
 
 function workerID = iCurrentWorkerID()
@@ -177,15 +173,13 @@ Params = TransferLearning.THModel.RefreshDerivedCellCounts(Params);
 if Params.HitThreshold >= Params.ResponseScale
 	error('THModel:InvalidDecisionThreshold', 'HitThreshold must be below ResponseScale.');
 end
+TransferLearning.THModel.ValidateCueFractionParameters(Params);
 TransferLearning.THModel.ValidateParameterGrouping(Params);
 end
 
 function [naivePerf, transferPerf, naiveSlope, transferSlope, naiveFirstPerfectSession, transferFirstPerfectSession, pretrainReached, pretrainSessions, pretrainFinalHit] = iEvaluateOneMouse(Params, seedValue)
 if isfinite(seedValue)
 	rng(seedValue, 'twister');
-	if TransferLearning.THModel.UseGPU()
-		parallel.gpu.rng(seedValue, 'Threefry');
-	end
 end
 
 formalCond.RewardInputLevel = 1.00;
@@ -198,18 +192,10 @@ naiveSlope = naiveResult.Slope;
 naiveFirstPerfectSession = naiveResult.FirstPerfectSession;
 
 transferMouse = TransferLearning.THModel.DrawMouse(Params);
-pretrainReached = false;
-pretrainSessions = Params.MaxPretrainSessions;
-pretrainFinalHit = NaN;
-for iPretrainSession = 1:Params.MaxPretrainSessions
-	[pretrainFinalHit, ~, ~, transferMouse] = TransferLearning.THModel.SimulateSession(transferMouse, Params, pretrainCond, true);
-	if pretrainFinalHit >= Params.Ceiling
-		pretrainReached = true;
-		pretrainSessions = iPretrainSession;
-		break;
-	end
-	transferMouse = TransferLearning.THModel.OvernightConsolidate(transferMouse, Params);
-end
+[transferMouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(transferMouse, Params, pretrainCond);
+pretrainReached = pretrainResult.Reached;
+pretrainSessions = pretrainResult.TrainingSessions;
+pretrainFinalHit = pretrainResult.FinalHit;
 
 [transferResult, ~] = TransferLearning.THModel.SimulateFormalTraining(transferMouse, Params, formalCond);
 transferPerf = transferResult.Performance;

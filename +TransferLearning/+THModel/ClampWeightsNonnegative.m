@@ -1,3 +1,3 @@
 function weights = ClampWeightsNonnegative(weights, upperBound)
-weights = max(min(weights, upperBound), 0);
+weights = min(weights, upperBound);
 end

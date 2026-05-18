@@ -29,5 +29,7 @@ Params = TransferLearning.THModel.RefreshDerivedCellCounts(Params);
 if Params.HitThreshold >= Params.ResponseScale
 	error('THModel:InvalidDecisionThreshold', 'HitThreshold must be below ResponseScale.');
 end
+TransferLearning.THModel.ValidateCueFractionParameters(Params);
+TransferLearning.THModel.ValidateDecisionIterationWeighting(Params);
 TransferLearning.THModel.ValidateParameterGrouping(Params);
 end

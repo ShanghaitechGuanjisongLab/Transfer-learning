@@ -17,16 +17,10 @@ rowIndex = 0;
 
 for iMouse = 1:numMice
 	Mouse = TransferLearning.THModel.DrawMouse(Params);
-	pretrainReached = false;
-	pretrainFinalHit = NaN;
-	for iPretrainSession = 1:Params.MaxPretrainSessions
-		[pretrainFinalHit, ~, ~, Mouse] = TransferLearning.THModel.SimulateSession(Mouse, Params, pretrainCond, true);
-		if pretrainFinalHit >= Params.Ceiling
-			pretrainReached = true;
-			break;
-		end
-		Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
-	end
+	[Mouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(Mouse, Params, pretrainCond);
+	pretrainReached = pretrainResult.Reached;
+	pretrainSessions = pretrainResult.TrainingSessions;
+	pretrainFinalHit = pretrainResult.FinalHit;
 
 	formalHit = nan(numDiagnosticSessions, 1);
 	endDrive = nan(numDiagnosticSessions, 1);
@@ -53,6 +47,7 @@ for iMouse = 1:numMice
 			endNoInhDrive(iSession) = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, false);
 			if formalHit(iSession) >= Params.Ceiling
 				first100 = iSession;
+				formalHit(iSession) = Params.Ceiling;
 			end
 		end
 
@@ -68,9 +63,6 @@ for iMouse = 1:numMice
 		sessionRows(rowIndex).RandomCueHitRate = randomCueHit(iSession);
 		sessionRows(rowIndex).ZeroCueHitRate = zeroCueHit(iSession);
 
-		if iSession < numDiagnosticSessions && ~isfinite(first100)
-			Mouse = TransferLearning.THModel.OvernightConsolidate(Mouse, Params);
-		end
 	end
 
 	lateStart = max(1, numDiagnosticSessions - 3);
@@ -83,7 +75,7 @@ for iMouse = 1:numMice
 	end
 	mouseRows(iMouse).Mouse = iMouse;
 	mouseRows(iMouse).PretrainReached = pretrainReached;
-	mouseRows(iMouse).PretrainSessions = iPretrainSession;
+	mouseRows(iMouse).PretrainSessions = pretrainSessions;
 	mouseRows(iMouse).PretrainFinalHit = pretrainFinalHit;
 	mouseRows(iMouse).FirstFormalHit = formalHit(1);
 	mouseRows(iMouse).FormalHitAtNominalLast = formalHit(min(Params.NumSessions, numDiagnosticSessions));
