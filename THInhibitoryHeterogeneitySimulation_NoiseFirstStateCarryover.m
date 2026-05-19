@@ -1,4 +1,4 @@
-% THInhibitoryHeterogeneitySimulation_NoiseFirstStateCarryover
+﻿% THInhibitoryHeterogeneitySimulation_NoiseFirstStateCarryover
 %
 % Branch entry for the noise-first state-carryover trial sequence.
 % Difference from the mainline: each trial performs noise-cue backtraining

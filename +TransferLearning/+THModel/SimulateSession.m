@@ -40,10 +40,13 @@ for iTrial = 1:numTrials
 	if size(heterogeneityHistoryCue, 2) < Params.RecurrentPasses + 1
 		[~, ~, ~, ~, ~, heterogeneityHistoryCue] = TransferLearning.THModel.RunInternalNetwork(preL23Cue, preL5RewardRecvCue, preL5ReadCue, Mouse, Params, inputIL23Cue, Params.RecurrentPasses, false);
 	end
-	[~, l5RewardRecvHeterogeneity, l5ReadHeterogeneity] = TransferLearning.THModel.DecisionIterationDeltaActivity(heterogeneityHistoryCue, Mouse, Params, teachingSignalScale);
-
 	decisionDrive(iTrial) = TransferLearning.THModel.ReadoutDecisionDrive(Mouse, rL5ReadCue, inhibitoryStateCue.L5Read, Params);
 	isHit(iTrial) = decisionDrive(iTrial) >= Params.HitThreshold;
+	heterogeneityTeachingSignalScale = teachingSignalScale;
+	if ~isHit(iTrial)
+		heterogeneityTeachingSignalScale = 0;
+	end
+	[~, l5RewardRecvHeterogeneity, l5ReadHeterogeneity] = TransferLearning.THModel.DecisionIterationDeltaActivity(heterogeneityHistoryCue, Mouse, Params, heterogeneityTeachingSignalScale);
 	[Mouse, ~, rL23Learning, rL5RewardRecvLearning, rL5ReadLearning, rL5ReadInhibitoryLearning] = TransferLearning.THModel.ApplyTeachingSignalLearning(Mouse, Params, preL23Cue, decisionActivityCue, rL23Cue, rL5RewardRecvCue, rL5ReadCue, teachingSignalScale, eta, 1, inhibitoryStateCue.L23, inhibitoryStateCue.L5Read, internalHistoryCue);
 
 	[Mouse, ~] = TransferLearning.THModel.RunNoiseCueBacktrainingUntilPass(Mouse, Params, eta);

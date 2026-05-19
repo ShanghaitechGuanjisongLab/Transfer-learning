@@ -1,6 +1,9 @@
-function [Result, Mouse] = SimulateFormalTraining(Mouse, Params, Cond, numSessions)
+function [Result, Mouse, State] = SimulateFormalTraining(Mouse, Params, Cond, numSessions, InitialState)
 if nargin < 4 || isempty(numSessions)
 	numSessions = Params.NumSessions;
+end
+if nargin < 5
+	InitialState = [];
 end
 
 perf = nan(1, numSessions);
@@ -12,8 +15,22 @@ sessionMeanL5RewardRecv = nan(Params.NL5RewardRecv, numSessions);
 sessionMeanL5Read = nan(Params.NL5Read, numSessions);
 firstPerfectSession = NaN;
 lastSignals = [];
+completedSessions = 0;
 
-for iSession = 1:numSessions
+if ~isempty(InitialState)
+	completedSessions = InitialState.CompletedSessions;
+	perf(1:completedSessions) = InitialState.Performance(1:completedSessions);
+	h23(1:completedSessions) = InitialState.H23(1:completedSessions);
+	h5(1:completedSessions) = InitialState.H5(1:completedSessions);
+	sessionMeanL23(:, 1:completedSessions) = InitialState.SessionMeanL23(:, 1:completedSessions);
+	sessionMeanL5(:, 1:completedSessions) = InitialState.SessionMeanL5(:, 1:completedSessions);
+	sessionMeanL5RewardRecv(:, 1:completedSessions) = InitialState.SessionMeanL5RewardRecv(:, 1:completedSessions);
+	sessionMeanL5Read(:, 1:completedSessions) = InitialState.SessionMeanL5Read(:, 1:completedSessions);
+	firstPerfectSession = InitialState.FirstPerfectSession;
+	lastSignals = InitialState.LastSignals;
+end
+
+for iSession = completedSessions + 1:numSessions
 	if isfinite(firstPerfectSession)
 		perf(iSession) = Params.Ceiling;
 		sessionMeanL23(:, iSession) = lastSignals.ProcessMeanL23;
@@ -81,6 +98,16 @@ Result.ProcessMeanL5 = finalMeanL5;
 Result.ProcessMeanL5RewardRecv = finalMeanL5RewardRecv;
 Result.ProcessMeanL5Read = finalMeanL5Read;
 Result.FirstPerfectSession = firstPerfectSession;
+State.Performance = perf;
+State.H23 = h23;
+State.H5 = h5;
+State.SessionMeanL23 = sessionMeanL23;
+State.SessionMeanL5 = sessionMeanL5;
+State.SessionMeanL5RewardRecv = sessionMeanL5RewardRecv;
+State.SessionMeanL5Read = sessionMeanL5Read;
+State.FirstPerfectSession = firstPerfectSession;
+State.LastSignals = lastSignals;
+State.CompletedSessions = numSessions;
 end
 
 function value = iRestrictedStd(values)
