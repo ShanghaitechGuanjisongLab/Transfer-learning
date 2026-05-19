@@ -17,7 +17,7 @@ function Params = DefaultParams()
 % scripts may not override these fields through THParamOverrides.
 Params.MaxPretrainSessions = 16;
 Params.NoiseCueBacktrainMaxAttempts = 64;
-Params.NumMice = 20;
+Params.NumMice = 30;
 Params.NumSessions = 8;
 Params.NumTrials = 30;
 Params.Ceiling = 1.00;
@@ -54,8 +54,8 @@ Params.InitWeightMin = -0.8;
 Params.WeightMax = 0.5;
 Params.ExcitatoryPostActivityThreshold = 0.3;
 Params.PretrainHebbRate = 9e-3;
-Params.FormalHebbRate = 5e-3;
-Params.CueModalityCorr = 0.2;
+Params.FormalHebbRate = 6e-3;
+Params.CueModalityCorr = 0.1;
 TransferLearning.THModel.ValidateCueFractionParameters(Params);
 TransferLearning.THModel.ValidateDecisionIterationWeighting(Params);
 TransferLearning.THModel.ValidateParameterGrouping(Params);
