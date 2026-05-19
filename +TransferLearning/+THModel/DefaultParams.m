@@ -16,7 +16,7 @@ function Params = DefaultParams()
 % Locked parameters: experiment design, acceptance/stop gates, and mechanism switches. Tuning
 % scripts may not override these fields through THParamOverrides.
 Params.MaxPretrainSessions = 16;
-Params.NoiseCueBacktrainMaxAttempts = 32;
+Params.NoiseCueBacktrainMaxAttempts = 64;
 Params.NumMice = 20;
 Params.NumSessions = 8;
 Params.NumTrials = 30;
@@ -25,7 +25,7 @@ Params.TransferHighestAlpha = 0.05;
 Params.TransferTHOffFirstSessionHitMax = 0.60;
 Params.ClampNegativeActivity = 1;
 Params.ClampNegativePatterns = 1;
-Params.NoiseFirstStateCarryover = 0;
+Params.NoiseFirstStateCarryover = 1;
 
 % Tunable parameters: network size, behavior threshold, iteration count,
 % model dynamics, plasticity strength, connection caps, initialization
@@ -40,7 +40,7 @@ Params.NIL5Read = 16;
 Params.HitThreshold = 0.8;
 Params.RecurrentPasses = 5;
 Params.DecisionIterationEarlyWeightDecay = 0.6;
-Params.NoiseCueBacktrainRecurrentPasses = 11;
+Params.NoiseCueBacktrainRecurrentPasses = 18;
 Params.THOffTeachingSignalScale = 0.3;
 Params = TransferLearning.THModel.RefreshDerivedCellCounts(Params);
 
@@ -50,8 +50,8 @@ Params.InhibitorySuppressionGain = 1.00;
 Params.CueInputGain = 0.10;
 Params.NoiseCueBacktrainInputGain = 0.02;
 Params.CueInputGainPretrain = 0.30;
-Params.InitWeightMin = -0.7;
-Params.WeightMax = 0.4;
+Params.InitWeightMin = -0.8;
+Params.WeightMax = 0.5;
 Params.ExcitatoryPostActivityThreshold = 0.3;
 Params.PretrainHebbRate = 9e-3;
 Params.FormalHebbRate = 5e-3;

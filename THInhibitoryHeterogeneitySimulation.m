@@ -34,8 +34,8 @@ sigmoidSvgName = iTaggedSvgName('TH_Mainline_Sigmoid_Fit_Slope.svg', outputNameS
 
 Params = TransferLearning.THModel.DefaultParams();
 Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
-if evalin('base', 'exist(''THNoiseFirstStateCarryoverBranch'', ''var'') && THNoiseFirstStateCarryoverBranch')
-	Params.NoiseFirstStateCarryover = 1;
+if evalin('base', 'exist(''THNoiseFirstStateCarryoverBranch'', ''var'')')
+	Params.NoiseFirstStateCarryover = double(evalin('base', 'THNoiseFirstStateCarryoverBranch') ~= 0);
 	fprintf('Noise-first state-carryover branch enabled: each trial backtrains noise before cue training.\n');
 end
 Cond = TransferLearning.THModel.ConditionTable();

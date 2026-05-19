@@ -1,16 +1,17 @@
-﻿% THInhibitoryHeterogeneitySimulation_NoiseFirstStateCarryover
+% THInhibitoryHeterogeneitySimulation_OriginalMainlineBackup
 %
-% Compatibility entry for the noise-first state-carryover trial sequence.
-% NoiseFirst is now the default mainline path; this script still forces that
-% path and appends a tag for comparison runs.
+% Branch entry for the pre-NoiseFirst mainline trial sequence.
+% NoiseFirst state carryover is now the default mainline path; this script
+% explicitly disables it for backup comparisons against the previous trial
+% order.
 
-branchTag = "NoiseFirstStateCarryover";
+branchTag = "OriginalMainlineBackup";
 mainlinePath = fullfile(fileparts(mfilename('fullpath')), 'THInhibitoryHeterogeneitySimulation.m');
 
 [hadBranchFlag, previousBranchFlag] = iReadBaseValue('THNoiseFirstStateCarryoverBranch');
 [hadOutputNameSuffix, previousOutputNameSuffix] = iReadBaseValue('THOutputNameSuffix');
 
-assignin('base', 'THNoiseFirstStateCarryoverBranch', true);
+assignin('base', 'THNoiseFirstStateCarryoverBranch', false);
 assignin('base', 'THOutputNameSuffix', iAppendBranchTag(previousOutputNameSuffix, hadOutputNameSuffix, branchTag));
 
 try
