@@ -2,13 +2,15 @@
 
 iEnsureTransferLearningProject();
 
-fractions = [80, 20];
-labels = {'Exc. 80%', 'Inh. 20%'};
+Params = TransferLearning.THModel.DefaultParams();
+excitatoryTotal = Params.NL23 + Params.NL5RewardRecv + Params.NL5Read;
+inhibitoryTotal = Params.NIL23 + Params.NIL5RewardRecv + Params.NIL5Read;
+cellCounts = [excitatoryTotal, inhibitoryTotal];
 sliceColors = [47, 93, 168; 176, 65, 74] ./ 255;
 
 fig = figure('Color', 'w', 'Units', 'centimeters', 'Position', [3, 3, 3, 4]);
 chartAxes = axes(fig);
-pieHandles = pie(chartAxes, fractions);
+pieHandles = pie(chartAxes, cellCounts);
 axis(chartAxes, 'equal');
 axis(chartAxes, 'off');
 
@@ -21,12 +23,11 @@ end
 
 textHandles = pieHandles(2:2:end);
 for textIndex = 1:numel(textHandles)
-	textHandles(textIndex).FontName = 'Arial';
-	textHandles(textIndex).FontWeight = 'bold';
-	textHandles(textIndex).Color = [0.12, 0.14, 0.17];
+	delete(textHandles(textIndex));
 end
 
-legend(chartAxes, patchHandles, labels, 'Location', 'southoutside', 'Orientation', 'vertical', 'Box', 'off');
+text(chartAxes, -1.02, -0.74, sprintf('Exc.\nn=%d', excitatoryTotal), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontName', 'Arial', 'FontWeight', 'bold', 'Color', [0.12, 0.14, 0.17]);
+text(chartAxes, 0.95, 0.55, sprintf('Inh.\nn=%d', inhibitoryTotal), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontName', 'Arial', 'FontWeight', 'bold', 'Color', [0.12, 0.14, 0.17]);
 title(chartAxes, 'E/I cells');
 svgPath = TransferLearning.ExportStandardFigure(fig, 1, '中文图Fig381B_NeuronTypePie.svg');
 fprintf('Wrote: %s\n', svgPath);
