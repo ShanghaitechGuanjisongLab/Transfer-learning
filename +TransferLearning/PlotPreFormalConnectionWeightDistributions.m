@@ -9,8 +9,9 @@ classTitles = ["E→E", "E→I", "I→E", "I→I"];
 legendLabels = {'Naive', 'After pretrain'};
 naiveColor = Cond.Color(Cond.Name == "Naive", :);
 afterPretrainColor = Cond.Color(Cond.Name == "Transfer", :);
+binEdges = iSharedBinEdges(WeightValues, classNames);
 
-fig = figure('Color', 'w', 'Name', 'Fig382B pre-formal connection weight distributions');
+fig = figure('Color', 'w', 'Name', 'Fig382A pre-formal connection weight distributions');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 fig.PaperUnits = 'centimeters';
@@ -31,13 +32,13 @@ for classIndex = 1:numel(classNames)
 	className = classNames(classIndex);
 	naiveValues = WeightValues.Naive.(className);
 	afterPretrainValues = WeightValues.AfterPretrain.(className);
-	[~, binEdges] = histcounts([naiveValues(:); afterPretrainValues(:)]);
 	hNaive = histogram(ax, naiveValues, binEdges, 'Normalization', 'probability', ...
 		'DisplayStyle', 'bar', 'FaceColor', naiveColor, 'FaceAlpha', 0.48, ...
 		'EdgeColor', 'none');
 	hAfterPretrain = histogram(ax, afterPretrainValues, binEdges, 'Normalization', 'probability', ...
 		'DisplayStyle', 'bar', 'FaceColor', afterPretrainColor, 'FaceAlpha', 0.48, ...
 		'EdgeColor', 'none');
+	ax.YScale = 'log';
 	if classIndex == 1
 		legendHandles = [hNaive; hAfterPretrain];
 	end
@@ -60,4 +61,15 @@ ylabel(layout, 'Probability');
 legendObject = legend(axesGrid(1, 1), legendHandles, legendLabels, ...
 	'Orientation', 'horizontal', 'Box', 'off');
 legendObject.Layout.Tile = 'north';
+end
+
+function binEdges = iSharedBinEdges(WeightValues, classNames)
+valueCells = cell(2 * numel(classNames), 1);
+for classIndex = 1:numel(classNames)
+	className = classNames(classIndex);
+	valueCells{2 * classIndex - 1} = WeightValues.Naive.(className)(:);
+	valueCells{2 * classIndex} = WeightValues.AfterPretrain.(className)(:);
+end
+allValues = vertcat(valueCells{:});
+[~, binEdges] = histcounts(allValues);
 end

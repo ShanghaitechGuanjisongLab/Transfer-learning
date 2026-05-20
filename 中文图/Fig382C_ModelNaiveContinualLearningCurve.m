@@ -1,6 +1,6 @@
-% Fig382A model-simulated Naive/Continual learning curve with sigmoid fits.
+% Fig382C model-simulated Naive/Continual learning curve with sigmoid fits.
 
-svgName = '中文图Fig382A_ModelNaiveContinualLearningCurve.svg';
+svgName = '中文图Fig382C_ModelNaiveContinualLearningCurve.svg';
 iEnsureTransferLearningProject();
 
 if evalin('base', 'exist(''THRandomSeed'', ''var'')')
@@ -17,7 +17,7 @@ Cond = TransferLearning.THModel.ConditionTable();
 [fig, SigmoidStats] = TransferLearning.PlotSigmoidLearningCurvePanels( ...
 	naivePerformance, continualPerformance, ...
 	"Naive", "Transfer", "Naive", "Continual", ...
-	FigureName="Fig382A model Naive Continual sigmoid", ...
+	FigureName="Fig382C model Naive Continual sigmoid", ...
 	FigureSizeCm=[9, 8], ...
 	Scale=2, ...
 	NPermutation=0);
@@ -26,9 +26,9 @@ svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(fig, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig382A_ModelNaiveContinualPerformance', struct('Naive', naivePerformance, 'Continual', continualPerformance));
-assignin('base', 'Fig382A_ModelNaiveContinualRunInfo', RunInfo);
-assignin('base', 'Fig382A_ModelNaiveContinualSigmoidStats', SigmoidStats);
+assignin('base', 'Fig382C_ModelNaiveContinualPerformance', struct('Naive', naivePerformance, 'Continual', continualPerformance));
+assignin('base', 'Fig382C_ModelNaiveContinualRunInfo', RunInfo);
+assignin('base', 'Fig382C_ModelNaiveContinualSigmoidStats', SigmoidStats);
 
 function iEnsureTransferLearningProject()
 if ~exist('TransferLearning', 'class')
@@ -59,7 +59,7 @@ end
 
 if ~all(pretrainReached)
 	failedMice = find(~pretrainReached);
-	error('Fig382A:PretrainDidNotReachCeiling', 'Continual pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), numMice, failedMice(1));
+	error('Fig382C:PretrainDidNotReachCeiling', 'Continual pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), numMice, failedMice(1));
 end
 RunInfo = table((1:numMice)', mouseSeeds(:, 1), mouseSeeds(:, 2), pretrainReached, pretrainSessions, ...
 	'VariableNames', {'Mouse','NaiveSeed','ContinualSeed','ContinualPretrainReached','ContinualPretrainSessions'});

@@ -1,8 +1,9 @@
-function [WeightValues, RunInfo] = PreFormalConnectionTypeWeightDistributions(Params, numMice, seedValues)
+function [WeightValues, RunInfo] = PreFormalConnectionTypeWeightDistributions(Params, numMice, seedValues, collectHeterogeneity)
 arguments
 	Params (1, 1) struct
 	numMice (1, 1) double {mustBeInteger, mustBePositive} = Params.NumMice
 	seedValues (:, 2) double = nan(numMice, 2)
+	collectHeterogeneity (1, 1) logical = false
 end
 
 if size(seedValues, 1) ~= numMice
@@ -13,16 +14,21 @@ if any(~isfinite(seedValues), 'all')
 end
 
 classNames = ["EE", "EI", "IE", "II"];
+heterogeneityNames = ["L23E", "L23I", "L5E", "L5I"];
 naiveMouseWeights = cell(numMice, 1);
 afterPretrainMouseWeights = cell(numMice, 1);
+naiveMouseHeterogeneity = cell(numMice, 1);
+afterPretrainMouseHeterogeneity = cell(numMice, 1);
 pretrainReached = false(numMice, 1);
 pretrainSessions = nan(numMice, 1);
 
 	iPrepareParallelWorkers(numMice);
 parfor mouseIndex = 1:numMice
-	[naiveOne, afterPretrainOne, reachedOne, sessionsOne] = iRunOneMouse(Params, seedValues(mouseIndex, :));
-	naiveMouseWeights{mouseIndex} = naiveOne;
-	afterPretrainMouseWeights{mouseIndex} = afterPretrainOne;
+	[naiveWeightsOne, afterPretrainWeightsOne, naiveHeterogeneityOne, afterPretrainHeterogeneityOne, reachedOne, sessionsOne] = iRunOneMouse(Params, seedValues(mouseIndex, :), collectHeterogeneity);
+	naiveMouseWeights{mouseIndex} = naiveWeightsOne;
+	afterPretrainMouseWeights{mouseIndex} = afterPretrainWeightsOne;
+	naiveMouseHeterogeneity{mouseIndex} = naiveHeterogeneityOne;
+	afterPretrainMouseHeterogeneity{mouseIndex} = afterPretrainHeterogeneityOne;
 	pretrainReached(mouseIndex) = reachedOne;
 	pretrainSessions(mouseIndex) = sessionsOne;
 end
@@ -33,6 +39,13 @@ for classIndex = 1:numel(classNames)
 	WeightValues.AfterPretrain.(className) = iVertcatClassWeights(afterPretrainMouseWeights, className);
 	WeightValues.MouseStd.Naive.(className) = iClassWeightStdByMouse(naiveMouseWeights, className);
 	WeightValues.MouseStd.AfterPretrain.(className) = iClassWeightStdByMouse(afterPretrainMouseWeights, className);
+end
+if collectHeterogeneity
+	for heterogeneityIndex = 1:numel(heterogeneityNames)
+		heterogeneityName = heterogeneityNames(heterogeneityIndex);
+		WeightValues.Heterogeneity.Naive.(heterogeneityName) = iHeterogeneityByMouse(naiveMouseHeterogeneity, heterogeneityName);
+		WeightValues.Heterogeneity.AfterPretrain.(heterogeneityName) = iHeterogeneityByMouse(afterPretrainMouseHeterogeneity, heterogeneityName);
+	end
 end
 RunInfo = table((1:numMice)', seedValues(:, 1), seedValues(:, 2), pretrainReached, pretrainSessions, ...
 	'VariableNames', {'Mouse','NaiveSeed','AfterPretrainSeed','PretrainReached','PretrainSessions'});
@@ -63,18 +76,41 @@ end
 stdWeight = std(weights, 0, 'omitnan');
 end
 
-function [naiveWeights, afterPretrainWeights, pretrainReached, pretrainSessions] = iRunOneMouse(Params, mouseSeeds)
+function heterogeneityValues = iHeterogeneityByMouse(mouseHeterogeneity, heterogeneityName)
+heterogeneityValues = nan(numel(mouseHeterogeneity), 1);
+for mouseIndex = 1:numel(mouseHeterogeneity)
+	heterogeneityValues(mouseIndex) = mouseHeterogeneity{mouseIndex}.(heterogeneityName);
+end
+end
+
+function [naiveWeights, afterPretrainWeights, naiveHeterogeneity, afterPretrainHeterogeneity, pretrainReached, pretrainSessions] = iRunOneMouse(Params, mouseSeeds, collectHeterogeneity)
+naiveHeterogeneity = struct();
+afterPretrainHeterogeneity = struct();
 rng(mouseSeeds(1), 'twister');
 naiveMouse = TransferLearning.THModel.DrawMouse(Params);
 naiveWeights = iCollectConnectionTypeWeights(naiveMouse);
 
 rng(mouseSeeds(2), 'twister');
 afterPretrainMouse = TransferLearning.THModel.DrawMouse(Params);
-pretrainCond.RewardInputLevel = 1.00;
-[afterPretrainMouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(afterPretrainMouse, Params, pretrainCond);
+Cond = TransferLearning.THModel.ConditionTable();
+continualCond = Cond(Cond.Name == "Transfer", :);
+[afterPretrainMouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(afterPretrainMouse, Params, continualCond);
 pretrainReached = pretrainResult.Reached;
 pretrainSessions = pretrainResult.TrainingSessions;
 afterPretrainWeights = iCollectConnectionTypeWeights(afterPretrainMouse);
+if collectHeterogeneity
+	naiveCond = Cond(Cond.Name == "Naive", :);
+	naiveHeterogeneity = iCollectFormalLayerNeuronTypeHeterogeneity(naiveMouse, Params, naiveCond);
+	afterPretrainHeterogeneity = iCollectFormalLayerNeuronTypeHeterogeneity(afterPretrainMouse, Params, continualCond);
+end
+end
+
+function heterogeneity = iCollectFormalLayerNeuronTypeHeterogeneity(Mouse, Params, Cond)
+formalResult = TransferLearning.THModel.SimulateFormalTraining(Mouse, Params, Cond);
+heterogeneity.L23E = formalResult.MeanH23;
+heterogeneity.L23I = formalResult.MeanH23I;
+heterogeneity.L5E = formalResult.MeanH5;
+heterogeneity.L5I = formalResult.MeanH5I;
 end
 
 function weightClasses = iCollectConnectionTypeWeights(Mouse)

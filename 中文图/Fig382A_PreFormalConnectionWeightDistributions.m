@@ -1,6 +1,6 @@
-% Fig382B model pre-formal connection weight distributions.
+% Fig382A model pre-formal connection weight distributions.
 
-svgName = '中文图Fig382B_PreFormalConnectionWeightDistributions.svg';
+svgName = '中文图Fig382A_PreFormalConnectionWeightDistributions.svg';
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
@@ -26,6 +26,6 @@ fig = TransferLearning.PlotPreFormalConnectionWeightDistributions(WeightValues, 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig382B_PreFormalWeightValues', WeightValues);
-assignin('base', 'Fig382B_PreFormalWeightRunInfo', RunInfo);
-assignin('base', 'Fig382B_PreFormalWeightSvgPath', svgPath);
+assignin('base', 'Fig382A_PreFormalWeightValues', WeightValues);
+assignin('base', 'Fig382A_PreFormalWeightRunInfo', RunInfo);
+assignin('base', 'Fig382A_PreFormalWeightSvgPath', svgPath);
