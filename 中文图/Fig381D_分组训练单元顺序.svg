@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="95.371811mm"
-   height="33.611286mm"
-   viewBox="0 0 540.44026 190.46395"
+   width="95.390419mm"
+   height="37.491177mm"
+   viewBox="0 0 540.5457 212.45"
    role="img"
    aria-labelledby="title desc"
    version="1.1"
@@ -30,9 +30,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.0969522"
-     inkscape:cx="168.10112"
-     inkscape:cy="3.0997369"
+     inkscape:zoom="2.9655382"
+     inkscape:cx="179.39408"
+     inkscape:cy="41.307847"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -45,6 +45,25 @@
      id="desc">Compact schematic of training-unit sequence, unit count, trial count, and teaching-signal setting for each model group.</desc>
   <defs
      id="defs2">
+    <marker
+       style="overflow:visible"
+       id="Triangle"
+       refX="3"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
+    </marker>
     <marker
        id="arrow"
        markerWidth="7"
@@ -101,22 +120,22 @@
     </style>
   </defs>
   <line
-     x1="65.690262"
-     y1="16.511486"
-     x2="219.69026"
-     y2="16.511486"
+     x1="65.795685"
+     y1="38.497509"
+     x2="219.79568"
+     y2="38.497509"
      class="bracket"
      id="line9" />
   <line
-     x1="333.69025"
-     y1="16.511486"
-     x2="524.69025"
-     y2="16.511486"
+     x1="333.79565"
+     y1="38.497509"
+     x2="524.79565"
+     y2="38.497509"
      class="bracket"
      id="line10" />
   <rect
-     x="65.690262"
-     y="32.511486"
+     x="65.795685"
+     y="54.497509"
      width="154"
      height="58"
      rx="6"
@@ -124,7 +143,7 @@
      class="empty-stage"
      id="rect11" />
   <path
-     d="m 227.69026,61.511487 h 87"
+     d="m 227.79568,83.497511 h 87"
      class="arrow-line"
      id="path13" />
   <use
@@ -132,10 +151,10 @@
      y="0"
      xlink:href="#use119"
      id="use120"
-     transform="translate(-1.2639401,0.25278828)" />
+     transform="translate(-1.2639401,0.25278803)" />
   <rect
-     x="327.69025"
-     y="32.511486"
+     x="327.79565"
+     y="54.497509"
      width="212"
      height="58"
      rx="6"
@@ -147,10 +166,10 @@
      y="0"
      xlink:href="#use118"
      id="use119"
-     transform="translate(24.520447,-0.25278772)" />
+     transform="translate(24.520447,-0.25278797)" />
   <rect
-     x="65.690262"
-     y="124.51149"
+     x="65.795685"
+     y="146.49751"
      width="154"
      height="62"
      rx="6"
@@ -158,12 +177,12 @@
      class="pretrain"
      id="rect29" />
   <path
-     d="m 227.69026,155.51149 h 87"
+     d="m 227.79568,177.49751 h 87"
      class="blue-arrow"
      id="path35" />
   <text
-     x="271.69025"
-     y="144.51149"
+     x="271.79565"
+     y="166.49751"
      text-anchor="middle"
      class="muted-text"
      id="text36"
@@ -171,8 +190,8 @@
        style="font-size:11.9944px"
        id="tspan122">switch to new cue</tspan></text>
   <rect
-     x="327.69025"
-     y="124.51149"
+     x="327.79565"
+     y="146.49751"
      width="212"
      height="62"
      rx="6"
@@ -180,32 +199,32 @@
      class="formal-transfer"
      id="rect36" />
   <text
-     x="435.83524"
-     y="142.36897"
+     x="435.94064"
+     y="164.355"
      text-anchor="middle"
      class="txt"
      id="text38"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:normal;font-family:Arial, sans-serif"><tspan
        sodipodi:role="line"
-       x="435.83524"
-       y="142.36897"
+       x="435.94064"
+       y="164.355"
        style="font-size:11.9944px"
        id="tspan85">up to 8 blocks × 30 trials</tspan><tspan
        sodipodi:role="line"
        id="tspan82"
-       x="435.83524"
-       y="157.36197"
+       x="435.94064"
+       y="179.34799"
        style="font-size:11.9944px">stop at 100% hit</tspan></text>
   <rect
-     x="341.69025"
-     y="176.18776"
+     x="341.79565"
+     y="198.17378"
      width="16"
      height="11.323727"
      class="unit unit-transfer"
      id="rect39" />
   <text
-     x="349.69025"
-     y="186.01149"
+     x="349.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text40"
@@ -217,10 +236,10 @@
      y="0"
      xlink:href="#rect39"
      id="use93"
-     transform="translate(23.416012,-0.17874828)" />
+     transform="translate(23.416012,-0.17874803)" />
   <text
-     x="373.69025"
-     y="186.01149"
+     x="373.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text41"
@@ -232,10 +251,10 @@
      y="0"
      xlink:href="#use93"
      id="use94"
-     transform="translate(24.309753,0.17874772)" />
+     transform="translate(24.309753,0.17874797)" />
   <text
-     x="397.69025"
-     y="186.01149"
+     x="397.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text42"
@@ -247,10 +266,10 @@
      y="0"
      xlink:href="#use94"
      id="use95"
-     transform="translate(24.66725,-0.53624428)" />
+     transform="translate(24.66725,-0.53624403)" />
   <text
-     x="421.69025"
-     y="186.01149"
+     x="421.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text43"
@@ -262,10 +281,10 @@
      y="0"
      xlink:href="#use95"
      id="use96"
-     transform="translate(24.039,0.25278772)" />
+     transform="translate(24.039,0.25278797)" />
   <text
-     x="445.69025"
-     y="186.01149"
+     x="445.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text44"
@@ -277,10 +296,10 @@
      y="0"
      xlink:href="#use96"
      id="use97"
-     transform="translate(23.416012,0.10470872)" />
+     transform="translate(23.416012,0.10470897)" />
   <text
-     x="469.69025"
-     y="186.01149"
+     x="469.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text45"
@@ -292,10 +311,10 @@
      y="0"
      xlink:href="#use97"
      id="use98"
-     transform="translate(23.490052,-0.10470828)" />
+     transform="translate(23.490052,-0.10470803)" />
   <text
-     x="493.69025"
-     y="186.01149"
+     x="493.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text46"
@@ -307,10 +326,10 @@
      y="0"
      xlink:href="#use98"
      id="use99"
-     transform="translate(24.59321,0.28345672)" />
+     transform="translate(24.59321,0.28345697)" />
   <text
-     x="517.69025"
-     y="186.01149"
+     x="517.79565"
+     y="207.99751"
      text-anchor="middle"
      class="num"
      id="text47"
@@ -320,79 +339,79 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.9944px;font-family:Arial;-inkscape-font-specification:'Arial Bold';writing-mode:lr-tb;direction:ltr;fill:#222222;fill-opacity:1;stroke-width:0.999538"
-     x="111.47466"
-     y="8.5858355"
+     x="111.58009"
+     y="30.571859"
      id="text73"><tspan
        sodipodi:role="line"
        id="tspan73"
        style="fill:#222222;fill-opacity:1;stroke-width:0.999537"
-       x="111.47466"
-       y="8.5858355">Pretraining</tspan></text>
+       x="111.58009"
+       y="30.571859">Pretraining</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.9944px;font-family:Arial;-inkscape-font-specification:'Arial Bold';writing-mode:lr-tb;direction:ltr;fill:#222222;fill-opacity:1;stroke-width:0.999538"
-     x="241.91331"
-     y="10.102567"
+     x="242.01874"
+     y="32.088593"
      id="text74"><tspan
        sodipodi:role="line"
        id="tspan74"
        style="stroke-width:0.999537"
-       x="241.91331"
-       y="10.102567">Task switch</tspan></text>
+       x="242.01874"
+       y="32.088593">Task switch</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.9944px;font-family:Arial;-inkscape-font-specification:'Arial Bold';writing-mode:lr-tb;direction:ltr;fill:#222222;fill-opacity:1;stroke-width:0.999538"
-     x="378.66422"
-     y="9.0914125"
+     x="378.76962"
+     y="31.077436"
      id="text75"><tspan
        sodipodi:role="line"
        id="tspan75"
        style="stroke-width:0.999537"
-       x="378.66422"
-       y="9.0914125">Formal training</tspan></text>
+       x="378.76962"
+       y="31.077436">Formal training</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.9944px;font-family:Arial;-inkscape-font-specification:'Arial Bold';writing-mode:lr-tb;direction:ltr;fill:#222222;fill-opacity:1;stroke-width:0.999538"
-     x="0.24788108"
-     y="58.63789"
+     x="0.35330063"
+     y="80.623917"
      id="text76"><tspan
        sodipodi:role="line"
        id="tspan76"
        style="fill:#ff0000;fill-opacity:1;stroke-width:0.999537"
-       x="0.24788108"
-       y="58.63789">Naive</tspan><tspan
+       x="0.35330063"
+       y="80.623917">Naive</tspan><tspan
        sodipodi:role="line"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;stroke-width:0.999537"
-       x="0.24788108"
-       y="73.63089"
-       id="tspan77">30 mice</tspan></text>
+       x="0.35330063"
+       y="95.616913"
+       id="tspan77">40 mice</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.9944px;font-family:Arial;-inkscape-font-specification:'Arial Bold';writing-mode:lr-tb;direction:ltr;fill:#222222;fill-opacity:1;stroke-width:0.999538"
-     x="-0.25769219"
-     y="149.13603"
+     x="-0.15227266"
+     y="171.12206"
      id="text79"><tspan
        sodipodi:role="line"
        id="tspan78"
        style="fill:#0000ff;fill-opacity:1;stroke-width:0.999537"
-       x="-0.25769219"
-       y="149.13603">Transfer</tspan><tspan
+       x="-0.15227266"
+       y="171.12206">Transfer</tspan><tspan
        sodipodi:role="line"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;stroke-width:0.999537"
-       x="-0.25769219"
-       y="164.12903"
-       id="tspan79">30 mice</tspan></text>
+       x="-0.15227266"
+       y="186.11505"
+       id="tspan79">40 mice</tspan></text>
   <rect
-     x="342.19583"
-     y="80.128281"
+     x="342.30124"
+     y="102.1143"
      width="16"
      height="11.323727"
      class="unit unit-transfer"
      id="rect106"
      style="fill:#edcba9;fill-opacity:1;stroke:#d62728;stroke-opacity:1" />
   <text
-     x="350.19583"
-     y="89.952011"
+     x="350.30124"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text106"
@@ -404,10 +423,10 @@
      y="0"
      xlink:href="#rect106"
      id="use113"
-     transform="translate(24.01487,-0.25278828)" />
+     transform="translate(24.01487,-0.25278803)" />
   <text
-     x="374.19583"
-     y="89.952011"
+     x="374.30124"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text107"
@@ -419,10 +438,10 @@
      y="0"
      xlink:href="#use113"
      id="use114"
-     transform="translate(23.762082,0.25278772)" />
+     transform="translate(23.762082,0.25278797)" />
   <text
-     x="398.19583"
-     y="89.952011"
+     x="398.30124"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text108"
@@ -436,8 +455,8 @@
      id="use115"
      transform="translate(24.773235)" />
   <text
-     x="422.19583"
-     y="89.952011"
+     x="422.30124"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text109"
@@ -449,10 +468,10 @@
      y="0"
      xlink:href="#use115"
      id="use116"
-     transform="translate(23.256506,-0.25278828)" />
+     transform="translate(23.256506,-0.25278803)" />
   <text
-     x="446.19583"
-     y="89.952011"
+     x="446.30124"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text110"
@@ -464,10 +483,10 @@
      y="0"
      xlink:href="#use116"
      id="use117"
-     transform="translate(23.762082,0.25278772)" />
+     transform="translate(23.762082,0.25278797)" />
   <text
-     x="470.1958"
-     y="89.952011"
+     x="470.30121"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text111"
@@ -479,10 +498,10 @@
      y="0"
      xlink:href="#use117"
      id="use118"
-     transform="translate(24.267658,-0.50557628)" />
+     transform="translate(24.267658,-0.50557603)" />
   <text
-     x="494.1958"
-     y="89.952011"
+     x="494.30121"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text112"
@@ -490,8 +509,8 @@
        style="font-size:11.9944px"
        id="tspan112">7</tspan></text>
   <text
-     x="518.1958"
-     y="89.952011"
+     x="518.30121"
+     y="111.93803"
      text-anchor="middle"
      class="num"
      id="text113"
@@ -503,34 +522,34 @@
      y="0"
      xlink:href="#text38"
      id="use122"
-     transform="translate(-3.6175603e-7,-91.876571)" />
+     transform="translate(-3.5853542e-7,-91.876566)" />
   <text
-     x="143.40321"
-     y="144.15648"
+     x="143.50864"
+     y="166.1425"
      text-anchor="middle"
      class="txt"
      id="text125"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:normal;font-family:Arial, sans-serif"><tspan
        sodipodi:role="line"
-       x="143.40321"
-       y="144.15648"
+       x="143.50864"
+       y="166.1425"
        style="font-size:11.9944px"
        id="tspan124">up to 16 blocks × 30 trials</tspan><tspan
        sodipodi:role="line"
        id="tspan125"
-       x="143.40321"
-       y="159.14948"
+       x="143.50864"
+       y="181.1355"
        style="font-size:11.9944px">stop at 100% hit</tspan></text>
   <rect
-     x="74.282974"
-     y="178.69023"
+     x="74.388397"
+     y="200.67625"
      width="16"
      height="11.323727"
      class="unit unit-transfer"
      id="rect126" />
   <text
-     x="82.282974"
-     y="188.51396"
+     x="82.388397"
+     y="210.49998"
      text-anchor="middle"
      class="num"
      id="text126"
@@ -542,10 +561,10 @@
      y="0"
      xlink:href="#rect39"
      id="use126"
-     transform="translate(-243.99127,2.3237267)" />
+     transform="translate(-243.99127,2.323727)" />
   <text
-     x="106.28297"
-     y="188.51396"
+     x="106.38839"
+     y="210.49998"
      text-anchor="middle"
      class="num"
      id="text127"
@@ -557,10 +576,10 @@
      y="0"
      xlink:href="#use93"
      id="use127"
-     transform="translate(-243.09753,2.6812227)" />
+     transform="translate(-243.09753,2.681223)" />
   <text
-     x="130.28297"
-     y="188.51396"
+     x="130.3884"
+     y="210.49998"
      text-anchor="middle"
      class="num"
      id="text128"
@@ -572,10 +591,10 @@
      y="0"
      xlink:href="#use94"
      id="use128"
-     transform="translate(-242.74004,1.9662297)" />
+     transform="translate(-242.74004,1.96623)" />
   <text
-     x="154.28297"
-     y="188.51396"
+     x="154.3884"
+     y="210.49998"
      text-anchor="middle"
      class="num"
      id="text129"
@@ -587,10 +606,10 @@
      y="0"
      xlink:href="#use95"
      id="use129"
-     transform="translate(-243.36829,2.7552627)" />
+     transform="translate(-243.36829,2.755263)" />
   <text
-     x="178.28297"
-     y="188.51396"
+     x="178.3884"
+     y="210.49998"
      text-anchor="middle"
      class="num"
      id="text130"
@@ -602,10 +621,10 @@
      y="0"
      xlink:href="#use96"
      id="use130"
-     transform="translate(-243.99127,2.6071827)" />
+     transform="translate(-243.99127,2.607183)" />
   <text
-     x="202.28297"
-     y="188.51396"
+     x="202.3884"
+     y="210.49998"
      text-anchor="middle"
      class="num"
      id="text131"
@@ -613,21 +632,21 @@
        style="font-size:11.9944px"
        id="tspan131">16</tspan></text>
   <text
-     x="145.19069"
-     y="56.927349"
+     x="145.29611"
+     y="78.913376"
      text-anchor="middle"
      class="txt"
      id="text135"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:normal;font-family:Arial, sans-serif"><tspan
        sodipodi:role="line"
-       x="145.19069"
-       y="56.927349"
+       x="145.29611"
+       y="78.913376"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.9944px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif Bold'"
        id="tspan133">No pre-training</tspan><tspan
        sodipodi:role="line"
        id="tspan135"
-       x="145.19069"
-       y="71.920349"
+       x="145.29611"
+       y="93.906372"
        style="font-size:11.9944px">Start new-cue task directly</tspan></text>
   <metadata
      id="metadata136">
@@ -638,4 +657,115 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <circle
+     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="path3"
+     cx="184.66643"
+     cy="25.497873"
+     r="2.8333333" />
+  <circle
+     style="fill:none;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle3"
+     cx="190.33308"
+     cy="25.319126"
+     r="2.8333333" />
+  <circle
+     style="fill:none;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle4"
+     cx="190.33308"
+     cy="30.985792"
+     r="2.8333333" />
+  <circle
+     style="fill:none;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle5"
+     cx="184.66643"
+     cy="30.985792"
+     r="2.8333333" />
+  <path
+     style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.999537;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Triangle)"
+     d="M 185.30433,11.333333 184.7939,22.667456"
+     id="path5"
+     inkscape:connector-type="polyline"
+     inkscape:connector-curvature="0"
+     inkscape:connection-end="#path3"
+     inkscape:connection-start="#g5" />
+  <g
+     id="g5"
+     transform="translate(-9.1161566,41.469574)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.9944px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+       x="177.96281"
+       y="-31.851299"
+       id="text5"><tspan
+         sodipodi:role="line"
+         id="tspan5"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999537"
+         x="177.96281"
+         y="-31.851299">Cue A</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5"
+       width="33.999996"
+       height="11.333333"
+       x="177.67569"
+       y="-41.469574"
+       rx="0"
+       ry="0" />
+  </g>
+  <circle
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle6"
+     cx="476.38342"
+     cy="26.212868"
+     r="2.8333333" />
+  <circle
+     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle7"
+     cx="482.05008"
+     cy="26.034119"
+     r="2.8333333" />
+  <circle
+     style="fill:none;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle8"
+     cx="482.05008"
+     cy="31.700785"
+     r="2.8333333" />
+  <circle
+     style="fill:none;stroke:#000000;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+     id="circle9"
+     cx="476.38342"
+     cy="31.700785"
+     r="2.8333333" />
+  <path
+     style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.999537;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Triangle)"
+     d="m 477.02134,12.048326 4.07008,11.319594"
+     id="path9"
+     inkscape:connector-type="polyline"
+     inkscape:connector-curvature="0"
+     inkscape:connection-end="#circle7" />
+  <g
+     id="g9"
+     transform="translate(282.60085,42.184567)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.9944px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+       x="177.96281"
+       y="-31.851299"
+       id="text9"><tspan
+         sodipodi:role="line"
+         id="tspan9"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999537"
+         x="177.96281"
+         y="-31.851299">Cue B</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.999537;stroke-dasharray:none;stroke-opacity:1"
+       id="rect9"
+       width="33.999996"
+       height="11.333333"
+       x="177.67569"
+       y="-41.469574"
+       rx="0"
+       ry="0" />
+  </g>
 </svg>
