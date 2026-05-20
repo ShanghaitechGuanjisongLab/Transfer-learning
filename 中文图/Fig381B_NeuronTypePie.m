@@ -9,12 +9,16 @@ cellCounts = [excitatoryTotal, inhibitoryTotal];
 sliceColors = [47, 93, 168; 176, 65, 74] ./ 255;
 
 fig = figure('Color', 'w', 'Units', 'centimeters', 'Position', [3, 3, 3, 4]);
+fig.PaperUnits = 'centimeters';
+fig.PaperPositionMode = 'manual';
+fig.PaperPosition = [0, 0, 2.99, 3.99];
+fig.PaperSize = [2.99, 3.99];
 chartAxes = axes(fig);
 pieHandles = pie(chartAxes, cellCounts);
 axis(chartAxes, 'equal');
 axis(chartAxes, 'off');
-xlim(chartAxes, [-1.55, 1.55]);
-ylim(chartAxes, [-1.32, 1.24]);
+xlim(chartAxes, [-1.95, 1.95]);
+ylim(chartAxes, [-1.48, 1.34]);
 
 patchHandles = pieHandles(1:2:end);
 for patchIndex = 1:numel(patchHandles)
@@ -28,8 +32,8 @@ for textIndex = 1:numel(textHandles)
 	delete(textHandles(textIndex));
 end
 
-text(chartAxes, -1.18, -0.80, sprintf('Exc.\nn=%d', excitatoryTotal), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontName', 'Arial', 'FontWeight', 'bold', 'Color', [0.12, 0.14, 0.17]);
-text(chartAxes, 1.18, 0.62, sprintf('Inh.\nn=%d', inhibitoryTotal), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontName', 'Arial', 'FontWeight', 'bold', 'Color', [0.12, 0.14, 0.17]);
+text(chartAxes, -1.46, -0.86, sprintf('Exc.\n%d cells', excitatoryTotal), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontName', 'Arial', 'FontWeight', 'bold', 'Color', [0.12, 0.14, 0.17]);
+text(chartAxes, 1.46, 0.70, sprintf('Inh.\n%d cells', inhibitoryTotal), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontName', 'Arial', 'FontWeight', 'bold', 'Color', [0.12, 0.14, 0.17]);
 title(chartAxes, 'E/I cells');
 svgPath = TransferLearning.ExportStandardFigure(fig, 1, '中文图Fig381B_NeuronTypePie.svg');
 fprintf('Wrote: %s\n', svgPath);

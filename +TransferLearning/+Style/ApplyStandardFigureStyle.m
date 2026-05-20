@@ -30,6 +30,33 @@ handles = findall(Fig, '-property', 'FontSize');
 for iH = 1:numel(handles)
 	handles(iH).FontSize = fontSize;
 end
+iSetAxesFontMultipliers(Fig);
+iSetTiledLayoutTextFontSizes(Fig, fontSize);
+end
+
+function iSetAxesFontMultipliers(Fig)
+axesHandles = findall(Fig, 'Type', 'axes');
+for axisIndex = 1:numel(axesHandles)
+	ax = axesHandles(axisIndex);
+	ax.LabelFontSizeMultiplier = 1;
+	ax.TitleFontSizeMultiplier = 1;
+end
+end
+
+function iSetTiledLayoutTextFontSizes(Fig, fontSize)
+layouts = findall(Fig, '-isa', 'matlab.graphics.layout.TiledChartLayout');
+for layoutIndex = 1:numel(layouts)
+	layout = layouts(layoutIndex);
+	iSetObjectFontSize(layout, 'Title', fontSize);
+	iSetObjectFontSize(layout, 'XLabel', fontSize);
+	iSetObjectFontSize(layout, 'YLabel', fontSize);
+end
+end
+
+function iSetObjectFontSize(parentObject, propertyName, fontSize)
+if isprop(parentObject, propertyName) && isprop(parentObject.(propertyName), 'FontSize')
+	parentObject.(propertyName).FontSize = fontSize;
+end
 end
 
 function iSetLegendBoxesOff(Fig)
@@ -141,6 +168,10 @@ barSpec = table.empty;
 if isempty(bars)
 	return;
 end
+if iHasGroupedBars(bars)
+	return;
+end
+bars = flipud(bars(:));
 
 entryObject = gobjects(0, 1);
 entryPointIndex = zeros(0, 1);
@@ -180,6 +211,19 @@ for iB = 1:numel(bars)
 	end
 	barSpec = table(sortedX, sortedColors, 'VariableNames', {'X', 'Color'});
 end
+
+function tf = iHasGroupedBars(bars)
+	tf = false;
+	if numel(bars) < 2
+		return;
+	end
+	for iB = 1:numel(bars)
+		if isprop(bars(iB), 'BarLayout') && string(bars(iB).BarLayout) == "grouped"
+			tf = true;
+			return;
+		end
+	end
+	end
 
 function iColorErrorBarsInAxes(ax, barSpec)
 	errorBars = findall(ax, '-isa', 'matlab.graphics.chart.primitive.ErrorBar');
