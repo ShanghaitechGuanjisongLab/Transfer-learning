@@ -1,4 +1,4 @@
-﻿% 英文图1F：四泳道热图（Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater）
+% 英文图1F：四泳道热图（Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater）
 %
 % 细胞排序：按1s处 Learned AudioWater 和 Transfer LightWater 中较小值降序
 % 活跃判定：在任一泳道（共4个）1s处 > baseline+3σ
@@ -119,7 +119,7 @@ f.Units = 'centimeters';
 f.Position(3:4) = [12.0, 8.0]; % 120mm x 80mm
 
 Layout = tiledlayout(f, 1, 4, 'TileSpacing', 'none', 'Padding', 'tight');
-subTitles = ["", "", "100% hit", "Transfer"];
+subTitles = ["", "", "100% hit", "Continual"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...

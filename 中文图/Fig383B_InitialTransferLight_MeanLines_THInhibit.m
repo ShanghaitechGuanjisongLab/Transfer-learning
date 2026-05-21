@@ -1,4 +1,4 @@
-% 中文图332B草稿：初始光水、迁移光水与 TH 抑制组均值钙曲线
+% 中文图383B：初始光水、迁移光水与 TH 抑制组均值钙曲线
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -16,18 +16,16 @@ end
 xsSec = seconds(xs);
 [idx0s, ok0s] = iFindTimeIndex(xsSec, 0, 0.25);
 if ~ok0s
-	error('Fig332BDraft:No0s', 'Cannot find sample close to 0s.');
+	error('Fig383B:No0s', 'Cannot find sample close to 0s.');
 end
 xMask = (xsSec >= 0) & (xsSec <= 2);
 xsPlot = xsSec(xMask);
 
-GInitial = iQueryInitialLightAll();
 GTransfer = iQueryTransferLightAll();
-XInitialByLayer = iNtatsByLayer(GInitial);
 XTransferByLayer = iNtatsByLayer(GTransfer);
 XTHByLayer = iQueryTHInhibitLightAll_Fig3HStyle();
 
-f = figure('Color', 'w', 'Name', '中文图332B 草稿 初始/迁移/TH 光水均值线');
+f = figure('Color', 'w', 'Name', '中文图383B 初始/迁移/TH 光水均值线');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 12];
 f.PaperUnits = 'centimeters';
@@ -36,9 +34,12 @@ f.PaperPosition = [0, 0, 12, 12];
 f.PaperSize = [12, 12];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+title(Layout, 'Real mice', 'FontSize', 12, 'FontWeight', 'normal');
+ylabel(Layout, 'z-score', 'FontSize', 12);
 
 lineColors = TransferLearning.FigurePalette(3);
-groupLabels = ["Naive", "Continual", "TH inhibited"];
+lineColors = lineColors([2 3], :);
+groupLabels = ["Continual", "TH inhibited"];
 layerFields = ["L23", "L5"];
 layerTitles = ["L2/3", "L5"];
 nGroup = numel(groupLabels);
@@ -46,16 +47,15 @@ nTime = numel(xsPlot);
 Stats = struct();
 for iLayer = 1:numel(layerFields)
 	layerField = char(layerFields(iLayer));
-	XInitial = iPrepareTraceMatrix(XInitialByLayer.(layerField), idx0s, xMask);
 	XTransfer = iPrepareTraceMatrix(XTransferByLayer.(layerField), idx0s, xMask);
 	XTH = iPrepareTraceMatrix(XTHByLayer.(layerField), idx0s, xMask);
-	[Y, E, nEff] = iMeanSemByGroup({XInitial, XTransfer, XTH}, nTime, nGroup);
+	[Y, E, nEff] = iMeanSemByGroup({XTransfer, XTH}, nTime, nGroup);
 	Stats.(layerField).Mean = Y;
 	Stats.(layerField).SEM = E;
 	Stats.(layerField).N = nEff;
-	fprintf('%s Naive rows: %d\n', char(layerTitles(iLayer)), size(XInitial, 1));
 	fprintf('%s Continual rows: %d\n', char(layerTitles(iLayer)), size(XTransfer, 1));
 	fprintf('%s TH inhibited rows: %d\n', char(layerTitles(iLayer)), size(XTH, 1));
+	Stats.(layerField).ContinualVsTHInhibitedP = iLineComparisonPValue(XTransfer, XTH);
 
 	ax = nexttile(Layout, iLayer);
 	hold(ax, 'on');
@@ -81,9 +81,11 @@ for iLayer = 1:numel(layerFields)
 	grid(ax, 'off');
 	if iLayer == numel(layerFields)
 		xlabel(ax, 'Time', 'FontSize', 12);
+	else
+		ax.XAxis.Visible = 'off';
 	end
-	ylabel(ax, 'z-score', 'FontSize', 12);
-	title(ax, layerTitles(iLayer), 'FontSize', 12, 'FontWeight', 'normal');
+	ylabel(ax, layerTitles(iLayer), 'FontSize', 12);
+	iAnnotateLineComparison(ax, xsPlot, Y, Stats.(layerField).ContinualVsTHInhibitedP);
 	ax.XTick = [0 1];
 	ax.XTickLabel = {"💡", "💧"};
 	if iLayer == 1
@@ -96,24 +98,10 @@ for iLayer = 1:numel(layerFields)
 	end
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig332B_InitialTransferLight_MeanLines_THInhibitDraft.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig383B_InitialTransferLight_MeanLines_THInhibit.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig332BDraft_InitialTransferTH_ByLayer', Stats);
-
-function G = iQueryInitialLightAll()
-LAB = TransferLearning.LightAudioBaseline();
-LAI = TransferLearning.LAInterspersed();
-qNaiveLW = struct('Phase', 'Naive', 'Stimulus', 'LightWater');
-badNaive = iFindMiceWithAudioWaterInPhase(LAI, "Naive");
-qNaiveLW_LAI = qNaiveLW;
-qNaiveLW_LAI.Mouse = iMiceInPhaseStimulus(LAI, "Naive", "LightWater", badNaive);
-G1 = LAB.QueryNTATS(qNaiveLW, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-G2 = LAI.QueryNTATS(qNaiveLW_LAI, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-G1 = iAttachZLayer(G1, LAB);
-G2 = iAttachZLayer(G2, LAI);
-G = iVcatNtatsTables(G1, G2);
-end
+assignin('base', 'Fig383B_InitialTransferTH_ByLayer', Stats);
 
 function G = iQueryTransferLightAll()
 ALB = TransferLearning.AudioLightBaseline();
@@ -129,14 +117,14 @@ SessTH = iKeepPureLW_NoMustWarn(THDS, SessTH);
 SessTH = iKeepPhaseRange(THDS, SessTH, "Transfer", "Final");
 SessTH = iExcludeCeilingSessions(SessTH);
 if isempty(SessTH)
-	error('Fig332BDraft:NoTHSessions', 'No retained TH inhibited LightWater sessions using the Fig3H data path.');
+	error('Fig383B:NoTHSessions', 'No retained TH inhibited LightWater sessions using the Fig3H data path.');
 end
 dtTH = unique(SessTH.DateTime);
 rawTH = iBatchQueryRawNTS(THDS, dtTH);
 rawTH = iAttachZLayer(rawTH, THDS);
 XByLayer = iSessionCellMedianTracesByLayer(rawTH, dtTH);
 if isempty(XByLayer.L23) && isempty(XByLayer.L5)
-	error('Fig332BDraft:NoTHNTS', 'No TH inhibited NTS traces were retained.');
+	error('Fig383B:NoTHNTS', 'No TH inhibited NTS traces were retained.');
 end
 end
 
@@ -223,6 +211,57 @@ for iGroup = 1:nGroup
 end
 end
 
+function pValue = iLineComparisonPValue(XA, XB)
+a = mean(XA, 2, 'omitnan');
+b = mean(XB, 2, 'omitnan');
+a = a(isfinite(a));
+b = b(isfinite(b));
+if isempty(a) || isempty(b)
+	pValue = NaN;
+	return;
+end
+pValue = ranksum(a, b);
+end
+
+function iAnnotateLineComparison(ax, xsPlot, Y, pValue)
+if ~isfinite(pValue) || pValue >= 0.05
+	return;
+end
+meanDiff = abs(Y(:, 1) - Y(:, 2));
+meanDiff(~all(isfinite(Y), 2)) = NaN;
+if all(isnan(meanDiff))
+	return;
+end
+[~, idxMax] = max(meanDiff, [], 'omitnan');
+xAt = xsPlot(idxMax);
+yPair = Y(idxMax, :);
+yMid = mean(yPair);
+yHalfLen = abs(diff(yPair)) / 4;
+if yHalfLen == 0
+	yHalfLen = diff(ax.YLim) * 0.015;
+end
+plot(ax, [xAt xAt], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 2, 'HandleVisibility', 'off');
+if xAt < mean(xsPlot([1 end]))
+	xText = xAt + 0.05 * range(xsPlot);
+	hAlign = 'left';
+else
+	xText = xAt - 0.05 * range(xsPlot);
+	hAlign = 'right';
+end
+text(ax, xText, yMid, iPToStars(pValue), 'FontSize', 12, ...
+	'HorizontalAlignment', hAlign, 'VerticalAlignment', 'middle', 'HandleVisibility', 'off');
+end
+
+function stars = iPToStars(pValue)
+if pValue < 0.001
+	stars = '***';
+elseif pValue < 0.01
+	stars = '**';
+else
+	stars = '*';
+end
+end
+
 function T = iAttachZLayer(T, DS)
 if isempty(T)
 	T.ZLayer = strings(0, 1);
@@ -243,47 +282,6 @@ if isa(trialSignal, 'MATLAB.DataTypes.NDTable')
 	sig = double(trialSignal.Data);
 else
 	sig = double(trialSignal);
-end
-end
-
-function mice = iMiceInPhaseStimulus(DS, phaseName, stimulusName, excludeMice)
-T = DS.TableQuery("Mouse", Phase=phaseName, Stimulus=stimulusName);
-if isempty(T)
-	mice = string.empty(0,1);
-	return;
-end
-mice = unique(string(T.Mouse));
-mice = mice(~ismember(mice, string(excludeMice(:))));
-end
-
-function badMice = iFindMiceWithAudioWaterInPhase(DS, phaseName)
-T = DS.TableQuery(["Mouse","BlockUID"], Phase=phaseName);
-if isempty(T)
-	badMice = strings(0,1);
-	return;
-end
-Tr = DS.Trials;
-TrStim = string(Tr.Stimulus);
-TrBU = uint64(Tr.BlockUID);
-T.Mouse = string(T.Mouse);
-blkBU = uint64(T.BlockUID);
-mice = unique(T.Mouse);
-bad = false(size(mice));
-for iMouse = 1:numel(mice)
-	bu = blkBU(T.Mouse == mice(iMouse));
-	rows = ismember(TrBU, bu);
-	bad(iMouse) = any(TrStim(rows) == "AudioWater");
-end
-badMice = mice(bad);
-end
-
-function G = iVcatNtatsTables(G1, G2)
-if isempty(G1)
-	G = G2;
-elseif isempty(G2)
-	G = G1;
-else
-	G = [G1; G2];
 end
 end
 

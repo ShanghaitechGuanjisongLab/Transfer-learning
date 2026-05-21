@@ -1,4 +1,4 @@
-﻿% English Fig2H: LightWater Naive vs Transfer Divergence by layer
+% English Fig2H: LightWater Naive vs Transfer Divergence by layer
 %
 % 上面板：L2/3  Naive LW vs Transfer LW（非配对 ranksum）
 % 下面板：L5    Naive LW vs Transfer LW（非配对 ranksum）
@@ -44,9 +44,9 @@ aggL5  = splitapply(@(x) mean(x, 'omitnan'), T.DivL5, G);
 S = table(mouseU, groupU, aggL23, aggL5, 'VariableNames', {'Mouse','Group','DivL23','DivL5'});
 
 naiveL23 = S.DivL23(S.Group == "Naive");
-tranL23  = S.DivL23(S.Group == "Transfer");
+tranL23  = S.DivL23(S.Group == "Continual");
 naiveL5  = S.DivL5(S.Group == "Naive");
-tranL5   = S.DivL5(S.Group == "Transfer");
+tranL5   = S.DivL5(S.Group == "Continual");
 
 naiveL23 = naiveL23(isfinite(naiveL23));
 tranL23  = tranL23(isfinite(tranL23));

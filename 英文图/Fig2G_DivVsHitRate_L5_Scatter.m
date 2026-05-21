@@ -1,4 +1,4 @@
-﻿% 英文图2G：Divergence vs 首会话命中率 散点图 — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
+% 英文图2G：Divergence vs 首会话命中率 散点图 — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
 %
 % 2×2 布局：行=层(L2/3, L5), 列=组(Naive, Transfer)
 % 关键发现：仅 Transfer L5 显著负相关
@@ -212,7 +212,7 @@ rhoVals  = [rhoNL23, rhoTL23; rhoNL5, rhoTL5];
 pVals    = [pNL23,   pTL23;   pNL5,   pTL5];
 colors   = {colorNaive, colorTransfer; colorNaive, colorTransfer};
 rowTitle  = ["L2/3", "L5"];
-colTitle  = ["Naive", "Transfer"];
+colTitle  = ["Naive", "Continual"];
 
 for iR = 1:2
 	for iC = 1:2

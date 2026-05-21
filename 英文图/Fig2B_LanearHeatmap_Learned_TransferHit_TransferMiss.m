@@ -1,4 +1,4 @@
-﻿% 英文图2B：三泳道热图（Learned AW / Transfer Hit / Transfer Miss）
+% 英文图2B：三泳道热图（Learned AW / Transfer Hit / Transfer Miss）
 %
 % 按 Learned-Miss delta@1s 排序，展示"哪些细胞被复用决定了行为结局"。
 % 数据来源：AudioLightBaseline, Median ZScore NTATS, 0~1.5s
@@ -96,7 +96,7 @@ f.PaperPosition = [0, 0, 12, 8];
 f.PaperSize = [12, 8];
 
 Layout = tiledlayout(f, 1, 3, 'TileSpacing','tight', 'Padding','tight');
-subTitles = ["Learned 🔊💧", "Tr 💡💧 Hit", "Tr 💡💧 Miss"];
+subTitles = ["Learned 🔊💧", "Co 💡💧 Hit", "Co 💡💧 Miss"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...
