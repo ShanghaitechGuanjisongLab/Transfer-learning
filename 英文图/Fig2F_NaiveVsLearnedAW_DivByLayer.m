@@ -167,9 +167,8 @@ colorLearn = palette2(2,:);
 % --- Top tile: L2/3 ---
 nexttile(Layout, 1);
 [~, ~, Bars1, EB1] = UniExp.BarScatterCompare({divNaiveL23, divLearnedL23}, true, ...
-	table([1 2], 'VariableNames', {'GroupPair'}));
+	table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB1.Object(:)', eb.LineWidth = 1; end
 ax1 = gca;
 ax1.FontSize = 6;
 ax1.FontName = 'Arial';
@@ -185,28 +184,14 @@ legend(ax1, 'off');
 box(ax1, 'off');
 grid(ax1, 'off');
 
-if isscalar(Bars1)
-	Bars1.FaceColor = 'flat';
-	Bars1.CData = [colorNaive; colorLearn];
-	Bars1.BarWidth = 0.5;
-	Bars1.LineWidth = 1;
-	Bars1.BaseLine.LineWidth = 1;
-	Bars1.EdgeColor = 'none';
-	Bars1.FaceAlpha = 1/3;
-else
-	for ib = 1:numel(Bars1)
-		if mod(ib,2)==1, Bars1(ib).FaceColor = colorNaive; else, Bars1(ib).FaceColor = colorLearn; end
-		Bars1(ib).FaceAlpha = 1/3; Bars1(ib).LineWidth = 1; Bars1(ib).BaseLine.LineWidth = 1; Bars1(ib).EdgeColor = 'none';
-	end
-end
+iStyleBarsAndErrorbars(Bars1, EB1, [colorNaive; colorLearn]);
 for t = findobj(ax1, 'Type', 'Text')', t.FontSize = 6; end
 
 % --- Bottom tile: L5 ---
 nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare({divNaiveL5, divLearnedL5}, true, ...
-	table([1 2], 'VariableNames', {'GroupPair'}));
+	table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars);
 delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB2.Object(:)', eb.LineWidth = 1; end
 ax2 = gca;
 ax2.FontSize = 6;
 ax2.FontName = 'Arial';
@@ -223,20 +208,7 @@ legend(ax2, 'off');
 box(ax2, 'off');
 grid(ax2, 'off');
 
-if isscalar(Bars2)
-	Bars2.FaceColor = 'flat';
-	Bars2.CData = [colorNaive; colorLearn];
-	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 1;
-	Bars2.BaseLine.LineWidth = 1;
-	Bars2.EdgeColor = 'none';
-	Bars2.FaceAlpha = 1/3;
-else
-	for ib = 1:numel(Bars2)
-		if mod(ib,2)==1, Bars2(ib).FaceColor = colorNaive; else, Bars2(ib).FaceColor = colorLearn; end
-		Bars2(ib).FaceAlpha = 1/3; Bars2(ib).LineWidth = 1; Bars2(ib).BaseLine.LineWidth = 1; Bars2(ib).EdgeColor = 'none';
-	end
-end
+iStyleBarsAndErrorbars(Bars2, EB2, [colorNaive; colorLearn]);
 for t = findobj(ax2, 'Type', 'Text')', t.FontSize = 6; end
 
 % --- Export ---
@@ -253,6 +225,38 @@ assignin('base', 'Fig2F_LearnedAW_L5', divLearnedL5);
 assignin('base', 'Fig2F_pL5', pL5);
 
 %% ===== local functions =====
+
+function iStyleBarsAndErrorbars(Bars, ErrorBars, colors)
+if isscalar(Bars)
+	Bars.FaceColor = 'flat';
+	nBars = numel(Bars.YData);
+	barColors = repmat(colors, ceil(nBars / size(colors, 1)), 1);
+	Bars.CData = barColors(1:nBars, :);
+	Bars.BarWidth = 0.5;
+	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
+	Bars.FaceAlpha = 1/3;
+else
+	for iBar = 1:numel(Bars)
+		colorIndex = mod(iBar - 1, size(colors, 1)) + 1;
+		Bars(iBar).FaceColor = colors(colorIndex, :);
+		Bars(iBar).FaceAlpha = 1/3;
+		Bars(iBar).LineWidth = 1;
+		Bars(iBar).BaseLine.LineWidth = 1;
+		Bars(iBar).EdgeColor = 'none';
+	end
+end
+
+for eb = ErrorBars.Object(:)'
+	eb.LineWidth = 1;
+	if isprop(eb, 'Color')
+		x = mean(double(eb.XData), 'omitnan');
+		colorIndex = min(max(round(x), 1), size(colors, 1));
+		eb.Color = colors(colorIndex, :);
+	end
+end
+end
 
 function div = iDivFromX(X)
 totalSignal = sum(mean(X, 2).^2);

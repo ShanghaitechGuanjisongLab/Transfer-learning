@@ -1,6 +1,6 @@
-% Fig383C model-simulated Continual/TH inhibited learning curve with sigmoid fits.
+% Fig383B model-simulated Continual/TH inhibited learning curve with sigmoid fits.
 
-svgName = '中文图Fig383C_ModelContinualTHInhibitedLearningCurve.svg';
+svgName = '中文图Fig383B_ModelContinualTHInhibitedLearningCurve.svg';
 iEnsureTransferLearningProject();
 
 if evalin('base', 'exist(''Fig38C_ModelLearningCurveSeedBase'', ''var'')')
@@ -18,23 +18,25 @@ Cond = TransferLearning.THModel.ConditionTable();
 iAssertAllPretrained(RunInfo);
 continualPerformance = Performance.Continual;
 thInhibitedPerformance = Performance.THInhibited;
+%% 
 
 [fig, SigmoidStats] = TransferLearning.PlotSigmoidLearningCurvePanels( ...
 	continualPerformance, thInhibitedPerformance, ...
 	"Transfer", "THOff", "Continual", "TH inhibited", ...
-	FigureName="Fig383C model Continual TH inhibited sigmoid", ...
+	FigureName="Fig383B model Continual TH inhibited sigmoid", ...
 	FigureSizeCm=[9, 8], ...
 	Scale=2, ...
+	LegendPanel="A", ...
 	NPermutation=0);
 
 svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(fig, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig383C_ModelContinualTHInhibitedPerformance', struct('Continual', continualPerformance, 'THInhibited', thInhibitedPerformance));
-assignin('base', 'Fig383C_ModelContinualTHInhibitedRunInfo', RunInfo);
-assignin('base', 'Fig383C_ModelContinualTHInhibitedSigmoidStats', SigmoidStats);
-assignin('base', 'Fig383C_ModelContinualTHInhibitedSvgPath', svgPath);
+assignin('base', 'Fig383B_ModelContinualTHInhibitedPerformance', struct('Continual', continualPerformance, 'THInhibited', thInhibitedPerformance));
+assignin('base', 'Fig383B_ModelContinualTHInhibitedRunInfo', RunInfo);
+assignin('base', 'Fig383B_ModelContinualTHInhibitedSigmoidStats', SigmoidStats);
+assignin('base', 'Fig383B_ModelContinualTHInhibitedSvgPath', svgPath);
 
 function iEnsureTransferLearningProject()
 if ~exist('TransferLearning', 'class')
@@ -52,10 +54,10 @@ continualPretrainReached = RunInfo.ContinualPretrainReached;
 thInhibitedPretrainReached = RunInfo.THInhibitedPretrainReached;
 if ~all(continualPretrainReached)
 	failedMice = find(~continualPretrainReached);
-	error('Fig383C:ContinualPretrainDidNotReachCeiling', 'Continual pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
+	error('Fig383B:ContinualPretrainDidNotReachCeiling', 'Continual pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
 end
 if ~all(thInhibitedPretrainReached)
 	failedMice = find(~thInhibitedPretrainReached);
-	error('Fig383C:THInhibitedPretrainDidNotReachCeiling', 'TH inhibited pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
+	error('Fig383B:THInhibitedPretrainDidNotReachCeiling', 'TH inhibited pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
 end
 end

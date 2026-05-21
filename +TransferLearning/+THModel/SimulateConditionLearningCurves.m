@@ -1,4 +1,4 @@
-function [Performance, RunInfo] = SimulateConditionLearningCurves(Params, Cond, conditionNames, options)
+function [Performance, RunInfo, Stats] = SimulateConditionLearningCurves(Params, Cond, conditionNames, options)
 arguments
 	Params (1, 1) struct
 	Cond table
@@ -20,23 +20,32 @@ seedValues = iConditionSeedValues(numMice, conditionNames, options.SeedBase);
 performanceCells = cell(numMice, 1);
 pretrainReachedCells = cell(numMice, 1);
 pretrainSessionCells = cell(numMice, 1);
+heterogeneityCells = cell(numMice, 1);
 
 iPrepareParallelWorkers();
 parfor mouseIndex = 1:numMice
-	[performanceCells{mouseIndex}, pretrainReachedCells{mouseIndex}, pretrainSessionCells{mouseIndex}] = iRunOneMouseConditions(Params, Cond, conditionNames, seedValues(mouseIndex, :));
+	[performanceCells{mouseIndex}, pretrainReachedCells{mouseIndex}, pretrainSessionCells{mouseIndex}, heterogeneityCells{mouseIndex}] = iRunOneMouseConditions(Params, Cond, conditionNames, seedValues(mouseIndex, :));
 end
 
 Performance = struct();
+Stats = struct();
+Stats.Heterogeneity = struct();
 pretrainReached = false(numMice, numConditions);
 pretrainSessions = nan(numMice, numConditions);
+heterogeneityNames = ["L23E", "L23I", "L5E", "L5I"];
 for conditionIndex = 1:numConditions
 	conditionPerformance = nan(numMice, numSessions);
+	heterogeneityValues = nan(numMice, numel(heterogeneityNames));
 	for mouseIndex = 1:numMice
 		conditionPerformance(mouseIndex, :) = performanceCells{mouseIndex}(conditionIndex, :);
 		pretrainReached(mouseIndex, conditionIndex) = pretrainReachedCells{mouseIndex}(conditionIndex);
 		pretrainSessions(mouseIndex, conditionIndex) = pretrainSessionCells{mouseIndex}(conditionIndex);
+		heterogeneityValues(mouseIndex, :) = heterogeneityCells{mouseIndex}(conditionIndex, :);
 	end
 	Performance.(outputNames(conditionIndex)) = conditionPerformance;
+	for heterogeneityIndex = 1:numel(heterogeneityNames)
+		Stats.Heterogeneity.(outputNames(conditionIndex)).(heterogeneityNames(heterogeneityIndex)) = heterogeneityValues(:, heterogeneityIndex);
+	end
 end
 
 RunInfo = table((1:numMice)', 'VariableNames', {'Mouse'});
@@ -48,11 +57,12 @@ for conditionIndex = 1:numConditions
 end
 end
 
-function [performanceByCondition, pretrainReached, pretrainSessions] = iRunOneMouseConditions(Params, Cond, conditionNames, seedValues)
+function [performanceByCondition, pretrainReached, pretrainSessions, heterogeneityByCondition] = iRunOneMouseConditions(Params, Cond, conditionNames, seedValues)
 numConditions = numel(conditionNames);
 performanceByCondition = nan(numConditions, Params.NumSessions);
 pretrainReached = false(1, numConditions);
 pretrainSessions = nan(1, numConditions);
+heterogeneityByCondition = nan(numConditions, 4);
 
 for conditionIndex = 1:numConditions
 	conditionName = conditionNames(conditionIndex);
@@ -73,6 +83,7 @@ for conditionIndex = 1:numConditions
 	end
 	formalResult = TransferLearning.THModel.SimulateFormalTraining(Mouse, Params, condRow);
 	performanceByCondition(conditionIndex, :) = TransferLearning.THModel.GatherValue(formalResult.Performance);
+	heterogeneityByCondition(conditionIndex, :) = [formalResult.MeanH23, formalResult.MeanH23I, formalResult.MeanH5, formalResult.MeanH5I];
 end
 end
 

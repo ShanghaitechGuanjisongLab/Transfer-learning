@@ -11,6 +11,7 @@ arguments
 	options.Scale (1, 1) double {mustBePositive} = 2
 	options.CurveColor (1, 3) double = [0, 0, 0]
 	options.ShowLegend (1, 1) logical = true
+	options.LegendPanel {mustBeTextScalar} = "B"
 	options.NPermutation (1, 1) double {mustBeNonnegative, mustBeInteger} = 0
 	options.RngSeed = []
 end
@@ -27,10 +28,10 @@ fig.Position(3:4) = options.FigureSizeCm;
 layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 axA = nexttile(layout, 1);
-iPlotPanel(axA, xFit, summary.Mean(:, 1), summary.Sem(:, 1), fitCurveA, options.CurveColor, displayNameA, stats.FitA, false);
+iPlotPanel(axA, xFit, summary.Mean(:, 1), summary.Sem(:, 1), fitCurveA, options.CurveColor, displayNameA, stats.FitA, options.ShowLegend && strcmpi(string(options.LegendPanel), "A"));
 
 axB = nexttile(layout, 2);
-iPlotPanel(axB, xFit, summary.Mean(:, 2), summary.Sem(:, 2), fitCurveB, options.CurveColor, displayNameB, stats.FitB, options.ShowLegend);
+iPlotPanel(axB, xFit, summary.Mean(:, 2), summary.Sem(:, 2), fitCurveB, options.CurveColor, displayNameB, stats.FitB, options.ShowLegend && strcmpi(string(options.LegendPanel), "B"));
 
 ylabel(axA, 'Hit rate', 'FontSize', 12);
 xlabel(layout, 'Block', 'FontSize', 12);
@@ -97,7 +98,7 @@ dataHandle = errorbar(ax, blockX(rows), meanCurve(rows), semCurve(rows), semCurv
 	'CapSize', 5);
 fitHandle = plot(ax, blockX, fitCurve, '-', 'Color', lineColor, 'LineWidth', 2.8);
 if showLegend && isgraphics(dataHandle)
-	legendHandle = legend(ax, [dataHandle, fitHandle], {'Mean ± SEM', 'Sigmoid fit'}, 'Location', 'southeast');
+	legendHandle = legend(ax, [dataHandle, fitHandle], {'Mean ± SEM', 'Sigmoid fit'}, 'Location', 'southwest');
 	legendHandle.FontSize = 9;
 	legendHandle.Box = 'off';
 	legendHandle.NumColumns = 1;

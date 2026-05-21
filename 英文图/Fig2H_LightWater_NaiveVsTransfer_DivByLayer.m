@@ -42,11 +42,12 @@ end
 aggL23 = splitapply(@(x) mean(x, 'omitnan'), T.DivL23, G);
 aggL5  = splitapply(@(x) mean(x, 'omitnan'), T.DivL5, G);
 S = table(mouseU, groupU, aggL23, aggL5, 'VariableNames', {'Mouse','Group','DivL23','DivL5'});
+%% 
 
 naiveL23 = S.DivL23(S.Group == "Naive");
-tranL23  = S.DivL23(S.Group == "Continual");
+tranL23  = S.DivL23(S.Group == "Transfer");
 naiveL5  = S.DivL5(S.Group == "Naive");
-tranL5   = S.DivL5(S.Group == "Continual");
+tranL5   = S.DivL5(S.Group == "Transfer");
 
 naiveL23 = naiveL23(isfinite(naiveL23));
 tranL23  = tranL23(isfinite(tranL23));
@@ -324,7 +325,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 1;
 end
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Transfer'};
+ax.XTickLabel = {'Naive', 'Continual'};
 legend(ax, 'off');
 box(ax, 'off');
 grid(ax, 'off');

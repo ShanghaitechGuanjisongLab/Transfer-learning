@@ -26,12 +26,15 @@ fig.PaperSize = [12, 8];
 
 tileLayout = tiledlayout(fig, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 topAx = nexttile(tileLayout, 1);
-topBars = iPlotGroupedBars(topAx, weightMeanMat, weightSemMat, weightPValues, classLabels, groupFields, topGroupLabels, groupConditionNames, Cond, 'Connection type', 'Weight SD');
+[topBars, topPLines, topPTexts] = iPlotGroupedBars(topAx, weightMeanMat, weightSemMat, weightPValues, classLabels, groupFields, topGroupLabels, groupConditionNames, Cond, 'Connection type', 'Weight SD');
 legend(topAx, topBars, cellstr(topGroupLabels), 'Location', 'eastoutside', 'Orientation', 'vertical', 'Box', 'off', 'FontSize', 12);
 
 bottomAx = nexttile(tileLayout, 2);
-bottomBars = iPlotGroupedBars(bottomAx, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityPValues, heterogeneityLabels, groupFields, bottomGroupLabels, groupConditionNames, Cond, 'Layer and cell type', 'Heterogeneity');
+[bottomBars, bottomPLines, bottomPTexts] = iPlotGroupedBars(bottomAx, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityPValues, heterogeneityLabels, groupFields, bottomGroupLabels, groupConditionNames, Cond, 'Layer and cell type', 'Heterogeneity');
 legend(bottomAx, bottomBars, cellstr(bottomGroupLabels), 'Location', 'eastoutside', 'Orientation', 'vertical', 'Box', 'off', 'FontSize', 12);
+iSetFigureTextFontSize(fig, 12);
+iRetunePValueLines(topPLines, topPTexts);
+iRetunePValueLines(bottomPLines, bottomPTexts);
 
 weightSummary = iSummaryTable("ConnectionWeightSD", classNames, topGroupLabels, weightMeanMat, weightSemMat, weightNMat);
 heterogeneitySummary = iSummaryTable("ProcessHeterogeneity", heterogeneityNames, bottomGroupLabels, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityNMat);
@@ -53,7 +56,7 @@ for itemIndex = 1:numel(itemNames)
 end
 end
 
-function barHandles = iPlotGroupedBars(ax, meanMat, semMat, pValues, itemLabels, groupFields, groupLabels, groupConditionNames, Cond, xLabelText, yLabelText)
+function [barHandles, pLines, pTexts] = iPlotGroupedBars(ax, meanMat, semMat, pValues, itemLabels, groupFields, groupLabels, groupConditionNames, Cond, xLabelText, yLabelText)
 hold(ax, 'on');
 barHandles = bar(ax, meanMat, 'grouped', 'LineStyle', 'none');
 errorbarHandles = gobjects(numel(groupFields), 1);
@@ -67,7 +70,7 @@ for groupIndex = 1:numel(groupFields)
 	yBar = barHandles(groupIndex).YEndPoints;
 	upperError = semMat(:, groupIndex)';
 	upperError(~isfinite(upperError)) = 0;
-	errorbarHandles(groupIndex) = errorbar(ax, xBar, yBar, zeros(size(upperError)), upperError, ...
+	errorbarHandles(groupIndex) = errorbar(ax, xBar, yBar, [], upperError, ...
 		'LineStyle', 'none', ...
 		'Color', color, ...
 		'LineWidth', 1, ...
@@ -87,10 +90,12 @@ xlabel(ax, xLabelText);
 ylabel(ax, yLabelText);
 box(ax, 'off');
 grid(ax, 'off');
-iDrawPValueLines(ax, errorbarHandles, pValues);
+[pLines, pTexts] = iDrawPValueLines(errorbarHandles, pValues);
 end
 
-function iDrawPValueLines(ax, errorbarHandles, pValues)
+function [pLines, pTexts] = iDrawPValueLines(errorbarHandles, pValues)
+pLines = gobjects(0, 1);
+pTexts = gobjects(0, 1);
 comparisonIndexValues = find(isfinite(pValues));
 comparisonCount = numel(comparisonIndexValues);
 if comparisonCount == 0
@@ -108,7 +113,12 @@ extraOffset = zeros(comparisonCount, 1);
 descriptors = table(objectA, objectB, indexA, indexB, pText, extraOffset, ...
 	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
 [pLines, pTexts] = MATLAB.Graphics.PLine(descriptors);
-iSetFigureTextFontSize(ax, 12);
+end
+
+function iRetunePValueLines(pLines, pTexts)
+if isempty(pLines)
+	return;
+end
 MATLAB.Graphics.PLineRetune(pLines, pTexts);
 end
 

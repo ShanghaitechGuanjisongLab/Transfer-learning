@@ -15,3 +15,5 @@ MATLAB：多鼠/多条件模型诊断和验证要优先并行运算（如 `parfo
 图窗尺寸的亚毫米误差忽略不计
 
 禁止使用`matlab batch`，用MCP工具
+
+tiledlayout的TileSpacing和Padding参数必须设置为'tight'
