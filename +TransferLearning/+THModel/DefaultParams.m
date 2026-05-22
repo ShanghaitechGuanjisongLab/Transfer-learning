@@ -26,6 +26,7 @@ Params.TransferTHOffFirstSessionHitMax = 0.60;
 Params.ClampNegativeActivity = 1;
 Params.ClampNegativePatterns = 1;
 Params.NoiseFirstStateCarryover = 1;
+Params.SingleTeachingEventLearning = 0;
 
 % Tunable parameters: network size, behavior threshold, iteration count,
 % model dynamics, plasticity strength, connection caps, initialization
@@ -40,7 +41,8 @@ Params.NIL5Read = 16;
 Params.HitThreshold = 0.8;
 Params.RecurrentPasses = 5;
 Params.DecisionIterationEarlyWeightDecay = 0.6;
-Params.NoiseCueBacktrainRecurrentPasses = 6;
+Params.PlasticityEligibilityDecay = 1.0;
+Params.NoiseCueBacktrainRecurrentPasses = 8;
 Params.THOffTeachingSignalScale = 0.3;
 Params = TransferLearning.THModel.RefreshDerivedCellCounts(Params);
 
@@ -48,9 +50,9 @@ Params.ResponseScale = 1;
 Params.NoiseScale = 0.05;
 Params.InhibitorySuppressionGain = 1.00;
 Params.CueInputGain = 0.14;
-Params.NoiseCueBacktrainInputGain = 0.008;
+Params.NoiseCueBacktrainInputGain = 0.010;
 Params.CueInputGainPretrain = 0.60;
-Params.InitWeightMin = -0.75;
+Params.InitWeightMin = -0.7;
 Params.WeightMax = 0.50;
 Params.ExcitatoryPostActivityThreshold = 0.3;
 Params.PretrainHebbRate = 20e-3;

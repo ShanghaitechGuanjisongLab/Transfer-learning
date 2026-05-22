@@ -10,18 +10,11 @@ if ~exist('TransferLearning', 'class')
 	end
 end
 
-if evalin('base', 'exist(''THRandomSeed'', ''var'')')
-	rng(evalin('base', 'THRandomSeed'));
-else
-	rng('shuffle');
-end
-
-Params = TransferLearning.THModel.DefaultParams();
-Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
-Cond = TransferLearning.THModel.ConditionTable();
-seedValues = randi(2^31 - 1, Params.NumMice, 2);
-[WeightValues, RunInfo] = TransferLearning.THModel.PreFormalConnectionTypeWeightDistributions(Params, Params.NumMice, seedValues, true);
-%% 
+run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
+WeightValues = Fig382383Data.PreFormalWeightValues;
+RunInfo = Fig382383Data.RunInfo;
+Cond = Fig382383Data.Cond;
+%%
 
 [fig, SummaryTable] = TransferLearning.PlotPreFormalConnectionWeightStdBars(WeightValues, Cond);
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);

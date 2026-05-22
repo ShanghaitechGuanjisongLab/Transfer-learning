@@ -3,24 +3,13 @@
 svgName = '中文图Fig383B_ModelContinualTHInhibitedLearningCurve.svg';
 iEnsureTransferLearningProject();
 
-if evalin('base', 'exist(''Fig38C_ModelLearningCurveSeedBase'', ''var'')')
-	seedBase = evalin('base', 'Fig38C_ModelLearningCurveSeedBase');
-elseif evalin('base', 'exist(''THRandomSeed'', ''var'')')
-	seedBase = evalin('base', 'THRandomSeed');
-else
-	seedBase = 38238302;
-end
-
-Params = TransferLearning.THModel.DefaultParams();
-Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
-Cond = TransferLearning.THModel.ConditionTable();
-[Performance, RunInfo] = TransferLearning.THModel.SimulateConditionLearningCurves(Params, Cond, ["Transfer", "THOff"], OutputNames=["Continual", "THInhibited"], SeedBase=seedBase);
-iAssertAllPretrained(RunInfo);
-continualPerformance = Performance.Continual;
-thInhibitedPerformance = Performance.THInhibited;
+run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
+RunInfo = Fig382383Data.RunInfo;
+continualPerformance = Fig382383Data.Performance.Transfer;
+thInhibitedPerformance = Fig382383Data.Performance.THOff;
 %% 
 
-[fig, SigmoidStats] = TransferLearning.PlotSigmoidLearningCurvePanels( ...
+[fig, ~] = TransferLearning.PlotSigmoidLearningCurvePanels( ...
 	continualPerformance, thInhibitedPerformance, ...
 	"Transfer", "THOff", "Continual", "TH inhibited", ...
 	FigureName="Fig383B model Continual TH inhibited sigmoid", ...
@@ -28,6 +17,8 @@ thInhibitedPerformance = Performance.THInhibited;
 	Scale=2, ...
 	LegendPanel="A", ...
 	NPermutation=0);
+SigmoidStats = Fig382383Data.Sigmoid.Fig383B;
+iPrintPermutationResult('Fig383B', SigmoidStats);
 
 svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(fig, svgPath, '-dsvg');
@@ -38,6 +29,12 @@ assignin('base', 'Fig383B_ModelContinualTHInhibitedRunInfo', RunInfo);
 assignin('base', 'Fig383B_ModelContinualTHInhibitedSigmoidStats', SigmoidStats);
 assignin('base', 'Fig383B_ModelContinualTHInhibitedSvgPath', svgPath);
 
+function iPrintPermutationResult(figureLabel, SigmoidStats)
+comparison = SigmoidStats.ComparisonTable;
+fprintf('%s permutation slope difference (%s): %.4f\n', figureLabel, comparison.Comparison(1), comparison.ObservedSlopeDifference(1));
+fprintf('%s permutation two-sided p = %.4g (%d permutations)\n', figureLabel, comparison.PValueTwoSided(1), comparison.NPermutation(1));
+end
+
 function iEnsureTransferLearningProject()
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
@@ -46,18 +43,5 @@ if ~exist('TransferLearning', 'class')
 	if exist(projectFile, 'file')
 		matlab.project.loadProject(projectFile);
 	end
-end
-end
-
-function iAssertAllPretrained(RunInfo)
-continualPretrainReached = RunInfo.ContinualPretrainReached;
-thInhibitedPretrainReached = RunInfo.THInhibitedPretrainReached;
-if ~all(continualPretrainReached)
-	failedMice = find(~continualPretrainReached);
-	error('Fig383B:ContinualPretrainDidNotReachCeiling', 'Continual pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
-end
-if ~all(thInhibitedPretrainReached)
-	failedMice = find(~thInhibitedPretrainReached);
-	error('Fig383B:THInhibitedPretrainDidNotReachCeiling', 'TH inhibited pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
 end
 end

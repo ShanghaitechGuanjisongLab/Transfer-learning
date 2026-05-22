@@ -4,26 +4,37 @@ arguments
 end
 
 if isfield(HeatmapData, 'ConditionData')
-	laneData = cat(3, HeatmapData.ConditionData{1}.MedianZ, HeatmapData.ConditionData{2}.MedianZ);
+	laneData = cat(3, HeatmapData.ConditionData{1}.MedianDelta, HeatmapData.ConditionData{2}.MedianDelta);
 else
-	laneData = cat(3, HeatmapData.Naive.MedianZ, HeatmapData.Continual.MedianZ);
+	laneData = cat(3, HeatmapData.Naive.MedianDelta, HeatmapData.Continual.MedianDelta);
 end
-sortKey = squeeze(max(max(laneData, [], 2, 'omitnan'), [], 3, 'omitnan'));
-sortKey(~isfinite(sortKey)) = -inf;
-[~, sortIndex] = sort(sortKey, 'descend');
-laneData = laneData(sortIndex, :, :);
+sortedLaneData = nan(size(laneData));
+sortIndex = nan(size(laneData, 1), size(laneData, 3));
+sortKey = nan(size(laneData, 1), size(laneData, 3));
+for conditionIndex = 1:size(laneData, 3)
+	conditionLaneData = laneData(:, :, conditionIndex);
+	conditionLaneDataForSort = conditionLaneData;
+	conditionLaneDataForSort(~isfinite(conditionLaneDataForSort)) = 0;
+	conditionSortKey = trapz(HeatmapData.Iterations, conditionLaneDataForSort, 2);
+	conditionSortKey(~isfinite(conditionSortKey)) = -inf;
+	[~, conditionSortIndex] = sort(conditionSortKey, 'descend');
+	sortedLaneData(:, :, conditionIndex) = conditionLaneData(conditionSortIndex, :);
+	sortIndex(:, conditionIndex) = conditionSortIndex;
+	sortKey(:, conditionIndex) = conditionSortKey;
+end
+laneData = sortedLaneData;
 
-negValue = min(laneData, [], 'all', 'omitnan');
-posValue = max(laneData, [], 'all', 'omitnan');
-if ~isfinite(negValue)
-	negValue = -1;
+negativeValue = min(laneData, [], 'all', 'omitnan');
+positiveValue = max(laneData, [], 'all', 'omitnan');
+if ~isfinite(negativeValue)
+	negativeValue = -1;
 end
-if ~isfinite(posValue)
-	posValue = 1;
+if ~isfinite(positiveValue)
+	positiveValue = 1;
 end
-climLowAbs = sqrt(abs(min(negValue, 0)));
-climHighAbs = sqrt(abs(max(posValue, 0)));
-colorLimits = [-climLowAbs, climHighAbs];
+colorLimitLowAbs = sqrt(abs(min(negativeValue, 0)));
+colorLimitHighAbs = sqrt(abs(max(positiveValue, 0)));
+colorLimits = [-colorLimitLowAbs, colorLimitHighAbs];
 
 fig = figure('Color', 'w', 'Name', 'Model first formal unit decision heatmap');
 fig.Units = 'centimeters';
@@ -33,7 +44,7 @@ fig.PaperPositionMode = 'manual';
 fig.PaperPosition = [0, 0, 9, 8];
 fig.PaperSize = [9, 8];
 
-layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
+layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'none', 'Padding', 'tight');
 [~, axesList] = UniExp.LanearHeatmap( ...
 	laneData, ...
 	SubTitles=HeatmapData.DisplayNames, ...
@@ -48,7 +59,8 @@ ylabel(layout, sprintf('%d cells', size(laneData, 1)), 'FontSize', 12);
 
 colorbarHandle = colorbar;
 colorbarHandle.Layout.Tile = 'east';
-colorbarHandle.Label.String = 'z-score';
+colorbarHandle.Label.String = 'ΔF';
+colorbarHandle.Label.Interpreter = 'none';
 colorbarHandle.FontSize = 12;
 colorbarHandle.Label.FontSize = 12;
 colorbarHandle.Box = 'off';

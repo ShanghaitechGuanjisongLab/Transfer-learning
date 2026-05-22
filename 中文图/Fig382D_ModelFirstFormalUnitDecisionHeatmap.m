@@ -10,16 +10,9 @@ if ~exist('TransferLearning', 'class')
 	end
 end
 
-if evalin('base', 'exist(''Fig382D_ModelDecisionHeatmapSeeds'', ''var'')')
-	seedValues = evalin('base', 'Fig382D_ModelDecisionHeatmapSeeds');
-else
-	seedValues = [38204101, 38204102];
-end
-
-Params = TransferLearning.THModel.DefaultParams();
-Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
-Cond = TransferLearning.THModel.ConditionTable();
-[HeatmapData, RunInfo] = TransferLearning.THModel.FirstFormalUnitDecisionHeatmapData(Params, Cond, seedValues);
+run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
+HeatmapData = Fig382383Data.HeatmapData;
+RunInfo = Fig382383Data.HeatmapRunInfo;
 
 [fig, PlotData] = TransferLearning.PlotModelFirstFormalUnitDecisionHeatmap(HeatmapData);
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);

@@ -3,26 +3,18 @@
 svgName = '中文图Fig383C_ModelLayerNeuronTypeHeterogeneityBars.svg';
 iEnsureTransferLearningProject();
 
-if evalin('base', 'exist(''Fig38C_ModelLearningCurveSeedBase'', ''var'')')
-	seedBase = evalin('base', 'Fig38C_ModelLearningCurveSeedBase');
-elseif evalin('base', 'exist(''THRandomSeed'', ''var'')')
-	seedBase = evalin('base', 'THRandomSeed');
-else
-	seedBase = 38238302;
-end
+run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
+Cond = Fig382383Data.Cond;
+RunInfo = Fig382383Data.RunInfo;
+Heterogeneity.Continual = Fig382383Data.Heterogeneity.Transfer;
+Heterogeneity.THInhibited = Fig382383Data.Heterogeneity.THOff;
+%%
 
-Params = TransferLearning.THModel.DefaultParams();
-Params = TransferLearning.THModel.ApplyBaseParameterOverrides(Params);
-Cond = TransferLearning.THModel.ConditionTable();
-[~, RunInfo, Stats] = TransferLearning.THModel.SimulateConditionLearningCurves(Params, Cond, ["Transfer", "THOff"], OutputNames=["Continual", "THInhibited"], SeedBase=seedBase);
-iAssertAllPretrained(RunInfo);
-%% 
-
-[fig, SummaryTable] = iPlotLayerNeuronTypeHeterogeneityBars(Stats.Heterogeneity, Cond);
+[fig, SummaryTable] = iPlotLayerNeuronTypeHeterogeneityBars(Heterogeneity, Cond);
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig383C_ModelLayerNeuronTypeHeterogeneity', Stats.Heterogeneity);
+assignin('base', 'Fig383C_ModelLayerNeuronTypeHeterogeneity', Heterogeneity);
 assignin('base', 'Fig383C_ModelLayerNeuronTypeRunInfo', RunInfo);
 assignin('base', 'Fig383C_ModelLayerNeuronTypeSummary', SummaryTable);
 assignin('base', 'Fig383C_ModelLayerNeuronTypeSvgPath', svgPath);
@@ -35,19 +27,6 @@ if ~exist('TransferLearning', 'class')
 	if exist(projectFile, 'file')
 		matlab.project.loadProject(projectFile);
 	end
-end
-end
-
-function iAssertAllPretrained(RunInfo)
-continualPretrainReached = RunInfo.ContinualPretrainReached;
-thInhibitedPretrainReached = RunInfo.THInhibitedPretrainReached;
-if ~all(continualPretrainReached)
-	failedMice = find(~continualPretrainReached);
-	error('Fig383C:ContinualPretrainDidNotReachCeiling', 'Continual pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
-end
-if ~all(thInhibitedPretrainReached)
-	failedMice = find(~thInhibitedPretrainReached);
-	error('Fig383C:THInhibitedPretrainDidNotReachCeiling', 'TH inhibited pretraining failed for %d/%d mice. First failed mouse index: %d.', numel(failedMice), height(RunInfo), failedMice(1));
 end
 end
 
