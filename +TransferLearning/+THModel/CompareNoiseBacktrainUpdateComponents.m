@@ -20,12 +20,12 @@ for iMode = 1:numModes
 	for iBacktrainAttempt = 1:maxAttempts
 		backtrainCuePattern = TransferLearning.THModel.ClampPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NCueInput, 1])), Params);
 		backtrainL23InhibitoryPattern = TransferLearning.THModel.BinaryPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NIL23, 1])));
-		cueInputBacktrain = Params.NoiseCueBacktrainInputGain * backtrainCuePattern + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NCueInput, 1]);
-		inputIL23Backtrain = Params.NoiseCueBacktrainInputGain * backtrainL23InhibitoryPattern + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NIL23, 1]);
+		cueInputBacktrain = Params.NoiseScale * backtrainCuePattern + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NCueInput, 1]);
+		inputIL23Backtrain = Params.NoiseScale * backtrainL23InhibitoryPattern + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NIL23, 1]);
 		preL23Backtrain = cueInputBacktrain + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NL23, 1]);
 		preL5RewardRecvBacktrain = Params.NoiseScale * TransferLearning.THModel.Randn([Params.NL5RewardRecv, 1]);
 		preL5ReadBacktrain = Params.NoiseScale * TransferLearning.THModel.Randn([Params.NL5Read, 1]);
-		[rL23Backtrain, rL5RewardRecvBacktrain, rL5ReadBacktrain, ~, inhibitoryStateBacktrain, internalHistoryBacktrain] = TransferLearning.THModel.RunInternalNetwork(preL23Backtrain, preL5RewardRecvBacktrain, preL5ReadBacktrain, Mouse, Params, inputIL23Backtrain, Params.NoiseCueBacktrainRecurrentPasses);
+		[~, ~, rL5ReadBacktrain, ~, inhibitoryStateBacktrain, internalHistoryBacktrain, inhibitoryHistoryBacktrain] = TransferLearning.THModel.RunInternalNetwork(preL23Backtrain, preL5RewardRecvBacktrain, preL5ReadBacktrain, Mouse, Params, inputIL23Backtrain, Params.NoiseCueBacktrainRecurrentPasses);
 		[decisionDrive(iBacktrainAttempt), combinedTarget(iBacktrainAttempt), combinedOffTarget(iBacktrainAttempt)] = TransferLearning.THModel.ReadoutDecisionDrive(Mouse, rL5ReadBacktrain, inhibitoryStateBacktrain.L5Read, Params);
 		if isnan(firstPassAttempt) && decisionDrive(iBacktrainAttempt) < Params.HitThreshold
 			firstPassAttempt = iBacktrainAttempt;
@@ -33,10 +33,12 @@ for iMode = 1:numModes
 		if iBacktrainAttempt < maxAttempts && decisionDrive(iBacktrainAttempt) >= Params.HitThreshold
 			backtrainEta = -eta;
 			if modeName == "InternalOnly" || modeName == "All"
-				Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistory(Mouse.W_L23L5ToL23L5, internalHistoryBacktrain, internalHistoryBacktrain, backtrainEta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold);
+				Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalDecayedHistoryMax(Mouse.W_L23L5ToL23L5, internalHistoryBacktrain, internalHistoryBacktrain, backtrainEta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, Params.DecisionIterationEarlyWeightDecay);
 			end
 			if modeName == "InhibitoryOnly" || modeName == "All"
-				Mouse = TransferLearning.THModel.ApplyInhibitoryCircuitPlasticity(Mouse, Params, rL23Backtrain, rL5RewardRecvBacktrain, rL5ReadBacktrain, backtrainEta, inhibitoryStateBacktrain.L23);
+				[actL23Backtrain, actL5RewardRecvBacktrain, actL5ReadBacktrain] = TransferLearning.THModel.SplitInternalActivity(TransferLearning.THModel.DecayedHistoryMaxActivity(internalHistoryBacktrain, Params.DecisionIterationEarlyWeightDecay), Params);
+				inhibitoryLearningActivity = TransferLearning.THModel.DecayedInhibitoryHistoryMax(inhibitoryHistoryBacktrain, Params);
+				Mouse = TransferLearning.THModel.ApplyInhibitoryCircuitPlasticity(Mouse, Params, actL23Backtrain, actL5RewardRecvBacktrain, actL5ReadBacktrain, backtrainEta, inhibitoryLearningActivity.L23, inhibitoryLearningActivity.L5Read, inhibitoryLearningActivity.L5RewardRecv);
 			end
 			[~, ~, rL5ReadPostUpdate, ~, inhibitoryStatePostUpdate] = TransferLearning.THModel.RunInternalNetwork(preL23Backtrain, preL5RewardRecvBacktrain, preL5ReadBacktrain, Mouse, Params, inputIL23Backtrain, Params.NoiseCueBacktrainRecurrentPasses);
 			sameCuePostUpdateDrive(iBacktrainAttempt) = TransferLearning.THModel.ReadoutDecisionDrive(Mouse, rL5ReadPostUpdate, inhibitoryStatePostUpdate.L5Read, Params);

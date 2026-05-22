@@ -1,24 +1,22 @@
 function [WIE, WEI, WII] = ReadoutInhibitoryHebb(WIE, WEI, WII, sourceActivity, readoutActivity, Params, eta, readoutInhibitoryActivity)
-hasInhibitoryTeaching = nargin >= 8 && ~isempty(readoutInhibitoryActivity);
+hasProvidedInhibitoryActivity = nargin >= 8 && ~isempty(readoutInhibitoryActivity);
 activeSource = max(sourceActivity(:), 0);
-inhDrive = TransferLearning.THModel.RunInhibitoryPool(max(WEI, 0) * activeSource, WII, Params, false);
-if hasInhibitoryTeaching
-	taughtInhDrive = max(readoutInhibitoryActivity(:), 0);
+if hasProvidedInhibitoryActivity
+	inhDrive = max(readoutInhibitoryActivity(:), 0);
 else
-	taughtInhDrive = inhDrive;
+	inhDrive = TransferLearning.THModel.RunInhibitoryPool(max(WEI, 0) * activeSource, WII, Params, false);
 end
 hasCurrentInhDrive = any(TransferLearning.THModel.GatherValue(inhDrive > 0));
-hasTaughtInhDrive = any(TransferLearning.THModel.GatherValue(taughtInhDrive > 0));
-if ~hasCurrentInhDrive && ~hasTaughtInhDrive
+if ~hasCurrentInhDrive
 	return;
 end
 activeReadout = max(readoutActivity(:), 0);
 hasActiveReadout = any(TransferLearning.THModel.GatherValue(activeReadout > 0));
-if ~hasActiveReadout && ~hasInhibitoryTeaching
+if ~hasActiveReadout && ~hasProvidedInhibitoryActivity
 	return;
 end
 deltaWIE = TransferLearning.THModel.Zeros(size(WIE));
-deltaWEI = eta * ((taughtInhDrive - 0.5) * activeSource');
+deltaWEI = eta * ((inhDrive - 0.5) * activeSource');
 deltaWII = TransferLearning.THModel.Zeros(size(WII));
 if hasActiveReadout
 	deltaWIE = eta * (activeReadout .* (inhDrive' - activeReadout));

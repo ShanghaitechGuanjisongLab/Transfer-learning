@@ -56,7 +56,7 @@ end
 function [Mouse, row] = iSimulateDiagnosticFormalSession(Mouse, Params, Cond)
 numTrials = Params.NumTrials;
 teachingSignalScale = TransferLearning.THModel.TeachingSignalScale(Cond, Params, false);
-eta = Params.FormalHebbRate;
+eta = Params.HebbRate;
 l5TargetMask = Mouse.L5ReadoutPattern(:) > 0;
 l5OffTargetMask = ~l5TargetMask;
 iTargetMask = Mouse.L5ReadInhibitoryReadoutPattern(:) > 0;
@@ -84,14 +84,14 @@ for iTrial = 1:numTrials
 	initialActivityCue(l23Rows) = TransferLearning.THModel.ClampActivity(initialActivityCue(l23Rows) + cueInputCue, Params);
 	zeroL5RewardRecvInput = TransferLearning.THModel.Zeros([Params.NL5RewardRecv, 1]);
 	zeroL5ReadInput = TransferLearning.THModel.Zeros([Params.NL5Read, 1]);
-	[rL23Cue, rL5RewardRecvCue, rL5ReadCue, decisionActivityCue, inhibitoryStateCue, internalHistoryCue] = TransferLearning.THModel.RunInternalNetworkFromState(initialActivityCue, noisePassState.InhibitoryState.L23, cueInputCue, zeroL5RewardRecvInput, zeroL5ReadInput, Mouse, Params, inputIL23Cue, Params.RecurrentPasses, true);
+	[rL23Cue, rL5RewardRecvCue, rL5ReadCue, decisionActivityCue, inhibitoryStateCue, internalHistoryCue, inhibitoryHistoryCue] = TransferLearning.THModel.RunInternalNetworkFromState(initialActivityCue, noisePassState.InhibitoryState.L23, cueInputCue, zeroL5RewardRecvInput, zeroL5ReadInput, Mouse, Params, inputIL23Cue, Params.RecurrentPasses, true);
 	[decisionDrive(iTrial), combinedTarget(iTrial), combinedOffTarget(iTrial)] = TransferLearning.THModel.ReadoutDecisionDrive(Mouse, rL5ReadCue, inhibitoryStateCue.L5Read, Params);
 	isHit(iTrial) = decisionDrive(iTrial) >= Params.HitThreshold;
 	l5ReadTarget(iTrial) = mean(rL5ReadCue(l5TargetMask), 'omitnan');
 	l5ReadOffTarget(iTrial) = mean(rL5ReadCue(l5OffTargetMask), 'omitnan');
 	iL5ReadTarget(iTrial) = mean(inhibitoryStateCue.L5Read(iTargetMask), 'omitnan');
 	iL5ReadOffTarget(iTrial) = mean(inhibitoryStateCue.L5Read(iOffTargetMask), 'omitnan');
-	Mouse = TransferLearning.THModel.ApplyTeachingSignalLearning(Mouse, Params, cueInputCue, decisionActivityCue, rL23Cue, rL5RewardRecvCue, rL5ReadCue, teachingSignalScale, eta, 1, inhibitoryStateCue.L23, inhibitoryStateCue.L5Read, internalHistoryCue);
+	Mouse = TransferLearning.THModel.ApplyTeachingSignalLearning(Mouse, Params, cueInputCue, decisionActivityCue, rL23Cue, rL5RewardRecvCue, rL5ReadCue, teachingSignalScale, eta, 1, inhibitoryStateCue.L23, inhibitoryStateCue.L5Read, internalHistoryCue, inhibitoryHistoryCue);
 end
 
 weightSummary = TransferLearning.THModel.PlasticWeightDebugSummary(Mouse, Params);

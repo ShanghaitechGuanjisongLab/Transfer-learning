@@ -17,8 +17,8 @@ function Params = DefaultParams()
 % scripts may not override these fields through THParamOverrides.
 Params.MaxPretrainSessions = 16;
 Params.NoiseCueBacktrainMaxAttempts = 64;
-Params.NumMice = 30;
-Params.NumSessions = 8;
+Params.NumMice = 50;
+Params.NumSessions = 16;
 Params.NumTrials = 30;
 Params.Ceiling = 1.00;
 Params.TransferHighestAlpha = 0.05;
@@ -30,32 +30,30 @@ Params.NoiseFirstStateCarryover = 1;
 % Tunable parameters: network size, behavior threshold, iteration count,
 % model dynamics, plasticity strength, connection caps, initialization
 % distributions, and cue active fractions/overlap.
-Params.NL23 = 96;
+Params.NL23 = 64;
 Params.NCueInput = Params.NL23;
-Params.NL5Read = 64;
-Params.NL5RewardRecv = 2 * Params.NL5Read;
-Params.NIL23 = 24;
-Params.NIL5RewardRecv = 16;
-Params.NIL5Read = 16;
-Params.HitThreshold = 0.8;
+Params.NL5Read = 32;
+Params.NL5RewardRecv = Params.NL5Read;
+Params.NIL23 = Params.NL23/4;
+Params.NIL5RewardRecv = Params.NL5RewardRecv/4;
+Params.NIL5Read = Params.NL5Read/4;
+Params.HitThreshold = 0.6;
 Params.RecurrentPasses = 5;
-Params.DecisionIterationEarlyWeightDecay = 0.6;
-Params.NoiseCueBacktrainRecurrentPasses = 18;
-Params.THOffTeachingSignalScale = 0.3;
+Params.DecisionIterationEarlyWeightDecay = 0.8; % also decays older cue-response history before max-pooling learning activity
+Params.NoiseCueBacktrainRecurrentPasses = 20;
+Params.THOffTeachingSignalScale = 0.5;
 Params = TransferLearning.THModel.RefreshDerivedCellCounts(Params);
 
 Params.ResponseScale = 1;
-Params.NoiseScale = 0.06;
+Params.NoiseScale = 0.05;
 Params.InhibitorySuppressionGain = 1.00;
-Params.CueInputGain = 0.10;
-Params.NoiseCueBacktrainInputGain = 0.02;
-Params.CueInputGainPretrain = 0.30;
-Params.InitWeightMin = -0.8;
-Params.WeightMax = 0.5;
+Params.CueInputGain = 0.1;
+Params.CueInputGainPretrain = 0.20;
+Params.InitWeightMin = -5;
+Params.WeightMax = 0.7;
 Params.ExcitatoryPostActivityThreshold = 0.3;
-Params.PretrainHebbRate = 9e-3;
-Params.FormalHebbRate = 6e-3;
-Params.CueModalityCorr = 0.1;
+Params.HebbRate = 0.06;
+Params.CueModalityCorr = 0.3;
 TransferLearning.THModel.ValidateCueFractionParameters(Params);
 TransferLearning.THModel.ValidateDecisionIterationWeighting(Params);
 TransferLearning.THModel.ValidateParameterGrouping(Params);
