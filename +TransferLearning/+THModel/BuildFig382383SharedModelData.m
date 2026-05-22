@@ -29,7 +29,7 @@ if options.IncludeHeatmap
 end
 
 Data = struct();
-Data.CacheVersion = 1;
+Data.CacheVersion = 2;
 Data.SeedBase = options.SeedBase;
 Data.NPermutation = options.NPermutation;
 Data.PermutationSeed = options.PermutationSeed;
@@ -69,7 +69,7 @@ for conditionIndex = 1:numel(conditionNames)
 		pretrainFinalHit = pretrainResult.FinalHit;
 	end
 	preFormalWeights = iCollectConnectionTypeWeights(Mouse);
-	[formalResult, Mouse] = TransferLearning.THModel.SimulateFormalTraining(Mouse, Params, condRow);
+	[formalResult, Mouse] = TransferLearning.THModel.SimulateFormalTrainingWithInhibitoryStats(Mouse, Params, condRow);
 	postFormalWeights = iCollectConnectionTypeWeights(Mouse);
 	conditionResults{conditionIndex} = iBuildOneConditionResult(formalResult, pretrainReached, pretrainSessions, pretrainFinalHit, preFormalWeights, postFormalWeights);
 end

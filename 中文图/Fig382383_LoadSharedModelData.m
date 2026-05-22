@@ -1,8 +1,8 @@
 % Shared model data cache for Chinese Fig382/Fig383 scripts.
 
 cacheName = 'Fig382383_ModelData';
-cacheVersion = 1;
-seedBase = 38238304;
+cacheVersion = 2;
+seedBase = 38238307;
 permutationCount = 10000;
 permutationSeed = 1;
 
