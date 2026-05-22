@@ -1,7 +1,6 @@
 % Fig382D model first formal training unit L5 response heatmap.
 
 svgName = '中文图Fig382D_ModelFirstFormalUnitDecisionHeatmap.svg';
-backupSvgName = '中文图Fig382D_ModelFirstFormalUnitDecisionHeatmap_AllCellsDeltaF_Backup.svg';
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
@@ -16,11 +15,6 @@ FullCellDeltaFHeatmapData = Fig382383Data.HeatmapData;
 Params = Fig382383Data.Params;
 RunInfo = Fig382383Data.HeatmapRunInfo;
 
-[backupFig, BackupPlotData] = TransferLearning.PlotModelFirstFormalUnitDecisionHeatmap(FullCellDeltaFHeatmapData);
-backupSvgPath = TransferLearning.ExportStandardFigure(backupFig, 2, backupSvgName);
-close(backupFig);
-fprintf('Wrote backup: %s\n', backupSvgPath);
-
 HeatmapData = iBuildL5RawResponseHeatmapData(FullCellDeltaFHeatmapData, Params);
 [fig, PlotData] = TransferLearning.PlotModelFirstFormalUnitDecisionHeatmap(HeatmapData, ...
 	YLabel=sprintf('%d L5 cells', HeatmapData.NumCells), ...
@@ -33,9 +27,6 @@ assignin('base', 'Fig382D_ModelDecisionHeatmapData', HeatmapData);
 assignin('base', 'Fig382D_ModelDecisionHeatmapRunInfo', RunInfo);
 assignin('base', 'Fig382D_ModelDecisionHeatmapPlotData', PlotData);
 assignin('base', 'Fig382D_ModelDecisionHeatmapSvgPath', svgPath);
-assignin('base', 'Fig382D_ModelDecisionHeatmapBackupData', FullCellDeltaFHeatmapData);
-assignin('base', 'Fig382D_ModelDecisionHeatmapBackupPlotData', BackupPlotData);
-assignin('base', 'Fig382D_ModelDecisionHeatmapBackupSvgPath', backupSvgPath);
 
 function HeatmapData = iBuildL5RawResponseHeatmapData(HeatmapData, Params)
 cellsPerMouse = HeatmapData.NumCellsPerMouse;
