@@ -1,31 +1,37 @@
-function [Mouse, rewardActivity, l23LearningActivity, l5RewardRecvLearningActivity, l5ReadLearningActivity, l5ReadInhibitoryLearningActivity] = ApplyTeachingSignalLearning(Mouse, Params, ~, ~, l23CueActivity, l5RewardRecvCueActivity, l5ReadCueActivity, teachingSignalScale, eta, teachingScale, l23InhibitoryCueActivity, ~, internalHistory)
+function [Mouse, rewardActivity, l23LearningActivity, l5RewardRecvLearningActivity, l5ReadLearningActivity, l5ReadInhibitoryLearningActivity] = ApplyTeachingSignalLearning(Mouse, Params, ~, ~, ~, ~, ~, teachingSignalScale, eta, teachingScale, ~, ~, internalHistory, inhibitoryHistory)
 if nargin < 10 || isempty(teachingScale)
 	teachingScale = 1;
 end
-if nargin < 11 || isempty(l23InhibitoryCueActivity)
-	l23InhibitoryCueActivity = [];
-end
 scaledTeachingSignal = teachingScale * teachingSignalScale;
 rewardActivity = TransferLearning.THModel.Zeros([Params.NL5RewardRecv, 1]);
-l23LearningActivity = l23CueActivity;
-fullL5ReadTeachingActivity = TransferLearning.THModel.PatternActivity(Mouse.L5ReadoutPattern, Params);
 fullL5ReadInhibitoryTeachingActivity = TransferLearning.THModel.PatternActivity(Mouse.L5ReadInhibitoryReadoutPattern, Params);
-l5RewardRecvLearningActivity = l5RewardRecvCueActivity;
-l5ReadLearningActivity = l5ReadCueActivity + scaledTeachingSignal * (fullL5ReadTeachingActivity - l5ReadCueActivity);
 l5ReadInhibitoryLearningActivity = scaledTeachingSignal * fullL5ReadInhibitoryTeachingActivity;
 
 postHistory = internalHistory;
-l5ReadRows = Params.NL23 + Params.NL5RewardRecv + (1:Params.NL5Read);
-postHistory(l5ReadRows, :) = internalHistory(l5ReadRows, :) + scaledTeachingSignal * (repmat(fullL5ReadTeachingActivity(:), 1, size(internalHistory, 2)) - internalHistory(l5ReadRows, :));
-Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistory(Mouse.W_L23L5ToL23L5, postHistory, internalHistory, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold);
-
-actL23Trial = (l23CueActivity + l23LearningActivity) / 2;
-actL5RewardRecvTrial = (l5RewardRecvCueActivity + l5RewardRecvLearningActivity) / 2;
-actL5ReadTrial = (l5ReadCueActivity + l5ReadLearningActivity) / 2;
-if scaledTeachingSignal > 0
-	actL5ReadInhibitoryTrial = l5ReadInhibitoryLearningActivity;
-else
-	actL5ReadInhibitoryTrial = [];
+postHistory(:, end) = TransferLearning.THModel.ApplyReadoutTeachingToInternalActivity(internalHistory(:, end), Mouse, Params, scaledTeachingSignal);
+preActivity = TransferLearning.THModel.DecayedHistoryMaxActivity(internalHistory, Params.DecisionIterationEarlyWeightDecay);
+postActivity = TransferLearning.THModel.DecayedHistoryMaxActivity(postHistory, Params.DecisionIterationEarlyWeightDecay);
+Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.Hebb(Mouse.W_L23L5ToL23L5, postActivity, preActivity, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold);
+Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.ZeroSelfProjection(Mouse.W_L23L5ToL23L5);
+[l23LearningActivity, l5RewardRecvLearningActivity, l5ReadLearningActivity] = TransferLearning.THModel.SplitInternalActivity(postActivity, Params);
+if nargin < 14
+	inhibitoryHistory = [];
 end
-Mouse = TransferLearning.THModel.ApplyInhibitoryCircuitPlasticity(Mouse, Params, actL23Trial, actL5RewardRecvTrial, actL5ReadTrial, eta, l23InhibitoryCueActivity, actL5ReadInhibitoryTrial);
+inhibitoryLearningActivity = TransferLearning.THModel.DecayedInhibitoryHistoryMax(inhibitoryHistory, Params);
+
+actL23Trial = l23LearningActivity;
+actL5RewardRecvTrial = l5RewardRecvLearningActivity;
+actL5ReadTrial = l5ReadLearningActivity;
+if scaledTeachingSignal > 0
+	if isempty(inhibitoryHistory)
+		actL5ReadInhibitoryTrial = l5ReadInhibitoryLearningActivity;
+	else
+		l5ReadInhibitoryPostHistory = inhibitoryHistory.L5Read;
+		l5ReadInhibitoryPostHistory(:, end) = l5ReadInhibitoryLearningActivity;
+		actL5ReadInhibitoryTrial = TransferLearning.THModel.DecayedHistoryMaxActivity(l5ReadInhibitoryPostHistory, Params.DecisionIterationEarlyWeightDecay);
+	end
+else
+	actL5ReadInhibitoryTrial = inhibitoryLearningActivity.L5Read;
+end
+Mouse = TransferLearning.THModel.ApplyInhibitoryCircuitPlasticity(Mouse, Params, actL23Trial, actL5RewardRecvTrial, actL5ReadTrial, eta, inhibitoryLearningActivity.L23, actL5ReadInhibitoryTrial, inhibitoryLearningActivity.L5RewardRecv);
 end

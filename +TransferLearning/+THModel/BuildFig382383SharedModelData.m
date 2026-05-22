@@ -29,7 +29,7 @@ if options.IncludeHeatmap
 end
 
 Data = struct();
-Data.CacheVersion = 2;
+Data.CacheVersion = 3;
 Data.SeedBase = options.SeedBase;
 Data.NPermutation = options.NPermutation;
 Data.PermutationSeed = options.PermutationSeed;

@@ -98,7 +98,7 @@ function [UnitData, Mouse] = iCollectFirstFormalUnit(Mouse, Params, Cond)
 numTrials = Params.NumTrials;
 numCells = Params.NL23L5;
 numDecisionIterations = Params.RecurrentPasses + 1;
-eta = Params.FormalHebbRate;
+eta = Params.HebbRate;
 teachingSignalScale = TransferLearning.THModel.TeachingSignalScale(Cond, Params, false);
 
 deltaHistory = nan(numCells, numDecisionIterations, numTrials);
@@ -125,17 +125,11 @@ for trialIndex = 1:numTrials
 	zeroL5RewardRecvInput = TransferLearning.THModel.Zeros([Params.NL5RewardRecv, 1]);
 	zeroL5ReadInput = TransferLearning.THModel.Zeros([Params.NL5Read, 1]);
 
-	[rL23Cue, rL5RewardRecvCue, rL5ReadCue, decisionActivityCue, inhibitoryStateCue, internalHistoryCue] = TransferLearning.THModel.RunInternalNetworkFromState(initialActivity, noisePassState.InhibitoryState.L23, cueInput, zeroL5RewardRecvInput, zeroL5ReadInput, Mouse, Params, inputIL23, Params.RecurrentPasses, true);
-	[~, ~, ~, ~, ~, fullDecisionHistory] = TransferLearning.THModel.RunInternalNetworkFromState(initialActivity, noisePassState.InhibitoryState.L23, cueInput, zeroL5RewardRecvInput, zeroL5ReadInput, Mouse, Params, inputIL23, Params.RecurrentPasses, true, false);
-
-	decisionDrive(trialIndex) = TransferLearning.THModel.ReadoutDecisionDrive(Mouse, rL5ReadCue, inhibitoryStateCue.L5Read, Params);
-	isHit(trialIndex) = decisionDrive(trialIndex) >= Params.HitThreshold;
-	displayHistory = TransferLearning.THModel.GatherValue(fullDecisionHistory);
-	if isHit(trialIndex)
-		displayHistory = iApplyOldHitTeachingToDisplayHistory(displayHistory, Mouse, Params, teachingSignalScale);
-	end
+	[Mouse, cueDecision] = TransferLearning.THModel.RunCueDecisionLearningFromState(Mouse, Params, initialActivity, noisePassState.InhibitoryState.L23, cueInput, zeroL5RewardRecvInput, zeroL5ReadInput, inputIL23, eta, teachingSignalScale, Params.RecurrentPasses, true);
+	decisionDrive(trialIndex) = cueDecision.DecisionDrive;
+	isHit(trialIndex) = cueDecision.Hit;
+	displayHistory = TransferLearning.THModel.GatherValue(cueDecision.InternalHistory);
 	deltaHistory(:, :, trialIndex) = displayHistory - baselineMean;
-	[Mouse, ~] = TransferLearning.THModel.ApplyTeachingSignalLearning(Mouse, Params, cueInput, decisionActivityCue, rL23Cue, rL5RewardRecvCue, rL5ReadCue, teachingSignalScale, eta, 1, inhibitoryStateCue.L23, inhibitoryStateCue.L5Read, internalHistoryCue);
 end
 
 UnitData = struct();
@@ -146,12 +140,6 @@ UnitData.DecisionDrive = decisionDrive;
 UnitData.Hit = isHit(:);
 UnitData.TrialTable = table((1:numTrials)', isHit(:), decisionDrive, noisePassAttempt, noisePassDecisionDrive, ...
 	'VariableNames', {'Trial','Hit','DecisionDrive','NoisePassAttempt','NoisePassDecisionDrive'});
-end
-
-function displayHistory = iApplyOldHitTeachingToDisplayHistory(displayHistory, Mouse, Params, teachingSignalScale)
-l5ReadRows = Params.NL23 + Params.NL5RewardRecv + (1:Params.NL5Read);
-l5ReadTeachingActivity = TransferLearning.THModel.PatternActivity(Mouse.L5ReadoutPattern, Params);
-displayHistory(l5ReadRows, 2:end) = displayHistory(l5ReadRows, 2:end) + teachingSignalScale * (repmat(l5ReadTeachingActivity(:), 1, Params.RecurrentPasses) - displayHistory(l5ReadRows, 2:end));
 end
 
 function seedValues = iExpandSeedValues(seedValues, numMice, numConditions)

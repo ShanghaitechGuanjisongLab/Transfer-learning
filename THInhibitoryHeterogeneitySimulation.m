@@ -249,7 +249,7 @@ end
 end
 
 function classification = iFormalTrainingConnectionWeightClassification()
-classification = "mainline_connection-type_EE-EI-IE-II_raw-synaptic-weights_global-hebb_l23i-cue-l5-projection_l5i-readout_sync-recurrent-v1";
+classification = "mainline_connection-type_EE-EI-IE-II_raw-synaptic-weights_single-cue-teaching_history-max-v3";
 end
 
 function DebugReport = iRunNonnegativeFormalFailureDebug(Params, Cond)
@@ -1264,7 +1264,7 @@ if isempty(xObs)
 	error('THModel:NoDataForSigmoidFit', 'No valid session data for group %s.', char(groupName));
 end
 
-p0 = [iSigmoidLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); log(max(median(xObs), 1))];
+p0 = [log(0.8); median(xObs)];
 obj = @(p) sum((yObs - iModelSigmoidFromParams(p, xObs)).^2, 'omitnan');
 opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
 p = fminsearch(obj, p0, opt);
@@ -1336,15 +1336,10 @@ y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
 end
 
 function [lower, upper, slope, midpoint] = iDecodeModelSigmoidParams(p)
-lower = 1 ./ (1 + exp(-p(1)));
+lower = 0;
 upper = 1;
-slope = exp(p(2));
-midpoint = exp(p(3));
-end
-
-function y = iSigmoidLogit(x)
-x = min(max(x, 1e-6), 1 - 1e-6);
-y = log(x ./ (1 - x));
+slope = exp(p(1));
+midpoint = p(2);
 end
 
 function [MeanTbl, SemTbl] = iCurveStats(DataStruct, order)

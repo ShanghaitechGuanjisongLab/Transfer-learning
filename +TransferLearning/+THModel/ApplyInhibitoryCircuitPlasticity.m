@@ -1,9 +1,12 @@
-function Mouse = ApplyInhibitoryCircuitPlasticity(Mouse, Params, activityL23, activityL5RewardRecv, activityL5Read, eta, activityIL23, activityIL5Read)
+function Mouse = ApplyInhibitoryCircuitPlasticity(Mouse, Params, activityL23, activityL5RewardRecv, activityL5Read, eta, activityIL23, activityIL5Read, activityIL5RewardRecv)
 if nargin < 8
 	activityIL5Read = [];
 end
-[Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23] = TransferLearning.THModel.InhibitoryAreaHebb(Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23, activityL23, Params, eta);
-[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv] = TransferLearning.THModel.InhibitoryAreaHebb(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv, activityL5RewardRecv, Params, eta);
+if nargin < 9
+	activityIL5RewardRecv = [];
+end
+[Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23] = TransferLearning.THModel.InhibitoryAreaHebb(Mouse.WIE_L23, Mouse.WEI_L23, Mouse.WII_L23, activityL23, Params, eta, activityIL23);
+[Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv] = TransferLearning.THModel.InhibitoryAreaHebb(Mouse.WIE_L5RewardRecv, Mouse.WEI_L5RewardRecv, Mouse.WII_L5RewardRecv, activityL5RewardRecv, Params, eta, activityIL5RewardRecv);
 readoutInhibitorySource = [activityL23; activityL5RewardRecv];
 [Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read] = TransferLearning.THModel.ReadoutInhibitoryHebb(Mouse.WIE_L5Read, Mouse.WEI_L5Read, Mouse.WII_L5Read, readoutInhibitorySource, activityL5Read, Params, eta, activityIL5Read);
 if nargin < 7 || isempty(activityIL23)
