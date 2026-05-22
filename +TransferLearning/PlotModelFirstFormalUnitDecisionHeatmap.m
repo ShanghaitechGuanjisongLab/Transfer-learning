@@ -1,6 +1,9 @@
-function [fig, PlotData] = PlotModelFirstFormalUnitDecisionHeatmap(HeatmapData)
+function [fig, PlotData] = PlotModelFirstFormalUnitDecisionHeatmap(HeatmapData, options)
 arguments
 	HeatmapData (1, 1) struct
+	options.YLabel {mustBeTextScalar} = ""
+	options.ColorbarLabel {mustBeTextScalar} = "ΔF"
+	options.FigureName {mustBeTextScalar} = "Model first formal unit decision heatmap"
 end
 
 if isfield(HeatmapData, 'ConditionData')
@@ -36,7 +39,7 @@ colorLimitLowAbs = sqrt(abs(min(negativeValue, 0)));
 colorLimitHighAbs = sqrt(abs(max(positiveValue, 0)));
 colorLimits = [-colorLimitLowAbs, colorLimitHighAbs];
 
-fig = figure('Color', 'w', 'Name', 'Model first formal unit decision heatmap');
+fig = figure('Color', 'w', 'Name', char(options.FigureName));
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 fig.PaperUnits = 'centimeters';
@@ -55,11 +58,16 @@ layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'none', 'Padding', 'tight');
 	LMHColor=[0,0,1; 1,1,1; 1,0,0]);
 
 xlabel(layout, 'Recurrent iterations', 'FontSize', 12);
-ylabel(layout, sprintf('%d cells', size(laneData, 1)), 'FontSize', 12);
+if strlength(string(options.YLabel)) == 0
+	yLabelText = sprintf('%d cells', size(laneData, 1));
+else
+	yLabelText = char(options.YLabel);
+end
+ylabel(layout, yLabelText, 'FontSize', 12);
 
 colorbarHandle = colorbar;
 colorbarHandle.Layout.Tile = 'east';
-colorbarHandle.Label.String = 'ΔF';
+colorbarHandle.Label.String = char(options.ColorbarLabel);
 colorbarHandle.Label.Interpreter = 'none';
 colorbarHandle.FontSize = 12;
 colorbarHandle.Label.FontSize = 12;
@@ -87,6 +95,8 @@ PlotData.LaneData = laneData;
 PlotData.SortIndex = sortIndex;
 PlotData.SortKey = sortKey;
 PlotData.CLim = colorLimits;
+PlotData.YLabel = string(yLabelText);
+PlotData.ColorbarLabel = string(options.ColorbarLabel);
 PlotData.Axes = axesList;
 end
 
