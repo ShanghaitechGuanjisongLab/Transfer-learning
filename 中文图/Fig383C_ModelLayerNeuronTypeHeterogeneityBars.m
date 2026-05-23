@@ -35,7 +35,7 @@ layerNames = ["L23", "L5"];
 layerLabels = ["L2/3", "L5"];
 cellTypeLabels = ["E", "I"];
 groupFields = ["Continual", "THInhibited"];
-groupLabels = ["Continual", "TH inhibited"];
+groupLabels = ["Normal", "TH inhibited"];
 groupConditionNames = ["Transfer", "THOff"];
 
 fig = figure('Color', 'w', 'Name', 'Fig383C layer and neuron type heterogeneity bars');
