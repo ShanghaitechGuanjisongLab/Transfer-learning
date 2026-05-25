@@ -51,7 +51,7 @@ f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
 f.PaperSize = [12, 8];
 
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
 hLegend = gobjects(2, 1);
 axAll = gobjects(numel(layers), 1);
@@ -209,7 +209,7 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 	if isempty(xObs)
 		error('English_Fig3H:NoDataForGroup', 'No valid session data for group %s.', char(groupName));
 	end
-	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); log(max(median(xObs), 1))];
+	p0 = [log(0.8); median(xObs, 'omitnan')];
 	obj = @(p) sum((yObs - iSigmoidFromParams(p, xObs)).^2, 'omitnan');
 	opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
 	p = fminsearch(obj, p0, opt);
@@ -236,15 +236,15 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 end
 
 function y = iSigmoidFromParams(p, x)
-	[lower, upper, slope, midpoint] = iDecodeSigmoidParams(p);
-	y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
+	[~, ~, slope, midpoint] = iDecodeSigmoidParams(p);
+	y = 1 ./ (1 + exp(-slope .* (x - midpoint)));
 end
 
 function [lower, upper, slope, midpoint] = iDecodeSigmoidParams(p)
-	lower = 1 ./ (1 + exp(-p(1)));
+	lower = 0;
 	upper = 1;
-	slope = exp(p(2));
-	midpoint = exp(p(3));
+	slope = exp(p(1));
+	midpoint = p(2);
 end
 
 function T = iAddSessionIndex(T)
@@ -254,11 +254,6 @@ function T = iAddSessionIndex(T)
 	[G, ~] = findgroups(T.Group, T.Mouse);
 	sessCell = splitapply(@(x) {(1:numel(x))'}, T.DateTime, G);
 	T.Session = vertcat(sessCell{:});
-end
-
-function y = iLogit(x)
-	x = max(min(double(x), 1 - 1e-6), 1e-6);
-	y = log(x ./ (1 - x));
 end
 
 function sdVec = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll)
@@ -295,7 +290,7 @@ end
 function rawTbl = iBatchQueryRawNTS(DS, dts)
 	q = struct('Stimulus', 'LightWater', 'DateTime', dts);
 	try
-		ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+		ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', "DateTime");
 	catch
 		rawTbl = table();
 		return;
