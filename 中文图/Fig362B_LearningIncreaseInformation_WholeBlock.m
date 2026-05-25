@@ -12,10 +12,12 @@ end
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 barPhases = ["NaiveAudio", "LearnedAudio", "NaiveLight", "LearnedLight", "TransferLight"];
 barLabels = {"Naive 🔊💧", "Learned 🔊💧", "Naive 💡💧", "Learned 💡💧", "Continual 💡💧"};
-compareGroup = table(["NaiveAudio", "LearnedAudio"; "NaiveLight", "LearnedLight"; "NaiveLight", "TransferLight"], 'VariableNames', "GroupPair");
+compareGroup = table([1, 2; 3, 4; 3, 5], 'VariableNames', "GroupPair");
+plotColor = [0, 0, 0];
 
 Data = Fig362_GlobalInformationCache(string.empty(1, 0), barPhases);
 entropyCell = cellfun(@(phaseName) double(Data.Phase.(phaseName).BlockEntropy(:)), cellstr(barPhases), 'UniformOutput', false);
+entropyCell = reshape(entropyCell, 1, []);
 
 f = figure('Color', 'w', 'Name', '中文图362B Learning increases information Whole-block');
 f.Units = 'centimeters';
@@ -26,7 +28,7 @@ f.PaperPosition = [0, 0, 4.5, 4.0];
 f.PaperSize = [4.5, 4.0];
 
 ax = axes(f);
-[~, Opt, Bars, EB] = UniExp.BarScatterCompare(cell2struct(entropyCell(:), cellstr(barPhases), 1), false, compareGroup, AsteriskThreshold=0.01);
+[~, Opt, Bars, EB] = UniExp.BarScatterCompare(entropyCell, compareGroup, AsteriskThreshold=0.01);
 delete(findobj(ax, 'Type', 'Scatter'));
 
 for eb = EB.Object(:)'
@@ -35,7 +37,7 @@ end
 
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
-	Bars.CData = repmat([0, 0, 0], numel(Bars.YData), 1);
+	Bars.CData = repmat(plotColor, numel(Bars.YData), 1);
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
@@ -43,7 +45,7 @@ if isscalar(Bars)
 	Bars.FaceAlpha = 1;
 else
 	for iBar = 1:numel(Bars)
-		Bars(iBar).FaceColor = [0, 0, 0];
+		Bars(iBar).FaceColor = plotColor;
 		Bars(iBar).FaceAlpha = 1;
 		Bars(iBar).LineWidth = 1;
 		Bars(iBar).BaseLine.LineWidth = 1;
@@ -60,7 +62,7 @@ for iGroup = 1:numel(entropyCell)
 end
 
 xPos = iBarCenters(Bars, numel(entropyCell));
-iDrawOneSidedErrorbars(ax, xPos, means, sems, 1);
+iDrawOneSidedErrorbars(ax, xPos, means, sems, 1, plotColor);
 
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
@@ -117,7 +119,7 @@ function xPos = iBarCenters(Bars, nGroup)
 	end
 end
 
-function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth)
+function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth, plotColor)
 	hold(ax, 'on');
 	xPos = reshape(double(xPos), 1, []);
 	means = reshape(double(means), 1, []);
@@ -128,8 +130,8 @@ function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth)
 			continue;
 		end
 		yTop = means(iPoint) + sems(iPoint);
-		line(ax, [xPos(iPoint), xPos(iPoint)], [means(iPoint), yTop], 'Color', 'k', 'LineWidth', lineWidth);
-		line(ax, [xPos(iPoint) - capWidth, xPos(iPoint) + capWidth], [yTop, yTop], 'Color', 'k', 'LineWidth', lineWidth);
+		line(ax, [xPos(iPoint), xPos(iPoint)], [means(iPoint), yTop], 'Color', plotColor, 'LineWidth', lineWidth);
+		line(ax, [xPos(iPoint) - capWidth, xPos(iPoint) + capWidth], [yTop, yTop], 'Color', plotColor, 'LineWidth', lineWidth);
 	end
 end
 

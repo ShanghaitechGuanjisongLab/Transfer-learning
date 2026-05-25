@@ -1,4 +1,4 @@
-﻿% 中文图333D：模仿英文图2G算法、英文图3I样式，比较首会话命中率与散度的相关性
+% 中文图333D：模仿英文图2G算法、英文图3I样式，比较首会话命中率与散度的相关性
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -33,7 +33,7 @@ colorNaive = palette3(1, :);
 colorTransfer = palette3(2, :);
 colorFit = palette3(3, :);
 
-f = figure('Color', 'w', 'Name', 'Fig333D First-session hit rate vs divergence');
+f = figure('Color', 'w', 'Name', 'Fig333D First-block hit rate vs divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [6, 8];
 f.PaperUnits = 'centimeters';
@@ -74,7 +74,7 @@ end
 
 hN = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), 5, colorNaive, 'o', 'filled', 'LineWidth', 0.2);
 hT = scatter(ax, Data.Divergence(maskTran), Data.HitRate(maskTran), 8, colorTransfer, '^', 'filled', 'LineWidth', 0.2);
-ylabel(ax, 'First session hit rate', 'FontSize', 12);
+ylabel(ax, 'First block hit rate', 'FontSize', 12);
 
 fitP = polyfit(xAll, yAll, 1);
 xFit = [min(xAll), max(xAll)];
@@ -96,7 +96,7 @@ Stats.NContinual(1) = nnz(maskTran);
 fprintf('\n=== Fig333D All cells ===\n');
 fprintf('Naive mice: %d\n', nnz(maskNaive));
 fprintf('Continual mice: %d\n', nnz(maskTran));
-fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
+fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
 svgPath = '中文图Fig333D_FirstSessionHitRateVsDivergence.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);

@@ -1,4 +1,4 @@
-% English Fig3C: Per-mouse learning slope vs Response heterogeneity
+% English Fig3C: Per-mouse complete learning-curve slope vs Response heterogeneity
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -29,21 +29,30 @@ f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
 f.PaperSize = [12, 8];
 
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
 hLegend = gobjects(2, 1);
 axAll = gobjects(numel(layers), 1);
+dataParts = cell(numel(layers), 1);
+
+[SessUsedN, miceNAll, slopeNAll] = iNaiveSlopeData(DS_LAB, DS_LAI);
+[SessUsedT, miceTAll, slopeTAll] = iSingleDatasetSlopeData(DS_T, "Transfer", "Final");
 
 for iL = 1:numel(layers)
     layerName = layers(iL);
     layerLabel = layerLabels(iL);
-    [slopeN, sdN, miceN] = iNaiveCohortDataByLayer(DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName);
-    [slopeT, sdT, miceT] = iSingleDatasetCohortDataByLayer(DS_T, CellT, idx1s, "Transfer", "Final", layerName);
+    sdNAll = iNaiveHeterogeneityByLayer(SessUsedN, miceNAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName);
+    sdTAll = iSingleDatasetHeterogeneityByLayer(SessUsedT, miceTAll, DS_T, CellT, idx1s, layerName);
+    [slopeN, sdN, miceN] = iKeepFiniteLayerData(miceNAll, slopeNAll, sdNAll);
+    [slopeT, sdT, miceT] = iKeepFiniteLayerData(miceTAll, slopeTAll, sdTAll);
 
     slopeAll = [slopeN; slopeT];
     sdAll = [sdN; sdT];
+    mouseAll = [miceN; miceT];
     groupAll = [repmat("Naive", numel(miceN), 1); repmat("Transfer", numel(miceT), 1)];
     use = isfinite(slopeAll) & isfinite(sdAll);
+    dataParts{iL} = table(repmat(layerLabel, nnz(use), 1), groupAll(use), mouseAll(use), sdAll(use), slopeAll(use), ...
+        'VariableNames', {'Layer','Group','Mouse','Heterogeneity','Slope'});
     if nnz(use) >= 3 && std(sdAll(use)) > 0 && std(slopeAll(use)) > 0
         [rho, p] = corr(sdAll(use), slopeAll(use), 'Type', 'Spearman');
     else
@@ -73,7 +82,7 @@ for iL = 1:numel(layers)
     hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 's', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hN; hT];
-        ylabel(ax, 'Learning slope', 'FontSize', 12);
+        ylabel(ax, 'Sigmoid slope', 'FontSize', 12);
     else
         ax.YAxis.Visible = 'off';
     end
@@ -88,12 +97,15 @@ for iL = 1:numel(layers)
     axAll(iL) = ax;
 
     fprintf('\n=== Fig3C %s ===\n', layerLabel);
-    fprintf('Naive mice: %d\n', nnz(maskN));
-    fprintf('Transfer mice: %d\n', nnz(maskT));
-    fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
+    fprintf('Naive n = %d mice\n', nnz(maskN));
+    fprintf('Continual n = %d mice\n', nnz(maskT));
+    fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 end
 
-MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
+iUnifyYLimits(axAll(:));
+fig3CDataTable = vertcat(dataParts{:});
+assignin('base', 'Fig3C_SlopeVsHeterogeneity_Data', fig3CDataTable);
+iAssertSharedMouseSlopesConsistent(fig3CDataTable);
 
 lgd = legend(hLegend, {'Naive', 'Continual'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
@@ -101,17 +113,26 @@ lgd.Layout.Tile = 'south';
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = 'English_Fig3C_SlopeVsHeterogeneity.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
+iUnifyYLimits(axAll(:));
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
-function [slopeVec, sdVec, miceKept] = iNaiveCohortDataByLayer(DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName)
+function [SessUsed, miceAll, slopeAll] = iNaiveSlopeData(DS_LAB, DS_LAI)
 Sess = iGatherNaiveSessions(DS_LAB, DS_LAI);
 Sess = iExcludeAudioWaterSessions(Sess, DS_LAB, DS_LAI);
-Sess = iExcludeCeilingSessions(Sess);
 [SessUsed, miceAll, slopeAll] = iPerMouseSlopeSessions(Sess);
+end
+
+function [SessUsed, miceAll, slopeAll] = iSingleDatasetSlopeData(DS, phaseStart, phaseEnd)
+Sess = iLightWaterSessions(DS);
+Sess = iKeepPureLW_NoMustWarn(DS, Sess);
+Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
+[SessUsed, miceAll, slopeAll] = iPerMouseSlopeSessions(Sess);
+end
+
+function sdAll = iNaiveHeterogeneityByLayer(SessUsed, miceAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName)
 if isempty(SessUsed)
-    slopeVec = [];
-    sdVec = [];
-    miceKept = string.empty(0,1);
+    sdAll = nan(numel(miceAll), 1);
     return;
 end
 
@@ -134,22 +155,11 @@ else
     medTbl = iPerSessionCellMedianTable(vertcat(rawParts{:}), idx1s, layerName, true);
     sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, true);
 end
-keep = isfinite(slopeAll) & isfinite(sdAll);
-slopeVec = slopeAll(keep);
-sdVec = sdAll(keep);
-miceKept = miceAll(keep);
 end
 
-function [slopeVec, sdVec, miceKept] = iSingleDatasetCohortDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)
-Sess = iLightWaterSessions(DS);
-Sess = iKeepPureLW_NoMustWarn(DS, Sess);
-Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
-Sess = iExcludeCeilingSessions(Sess);
-[SessUsed, miceAll, slopeAll] = iPerMouseSlopeSessions(Sess);
+function sdAll = iSingleDatasetHeterogeneityByLayer(SessUsed, miceAll, DS, cellMap, idx1s, layerName)
 if isempty(SessUsed)
-    slopeVec = [];
-    sdVec = [];
-    miceKept = string.empty(0,1);
+    sdAll = nan(numel(miceAll), 1);
     return;
 end
 rawTbl = iBatchQueryRawNTS(DS, unique(SessUsed.DateTime));
@@ -160,10 +170,40 @@ else
     medTbl = iPerSessionCellMedianTable(rawTbl, idx1s, layerName, false);
     sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, false);
 end
+end
+
+function [slopeVec, sdVec, miceKept] = iKeepFiniteLayerData(miceAll, slopeAll, sdAll)
 keep = isfinite(slopeAll) & isfinite(sdAll);
 slopeVec = slopeAll(keep);
 sdVec = sdAll(keep);
 miceKept = miceAll(keep);
+end
+
+function iAssertSharedMouseSlopesConsistent(dataTable)
+if isempty(dataTable)
+    return;
+end
+mouseId = string(dataTable.Group) + "|" + string(dataTable.Mouse);
+[groupIndex, mouseIds] = findgroups(mouseId);
+maxSlope = splitapply(@max, double(dataTable.Slope), groupIndex);
+minSlope = splitapply(@min, double(dataTable.Slope), groupIndex);
+badRows = (maxSlope - minSlope) > 1e-9 .* max(1, max(abs(maxSlope), abs(minSlope)));
+if any(badRows)
+    badText = mouseIds(badRows) + ": " + string(minSlope(badRows)) + " vs " + string(maxSlope(badRows));
+    error('Fig3C:LayerSlopeMismatch', 'Shared mice have inconsistent slopes across layer tiles.\n%s', char(strjoin(badText, newline)));
+end
+end
+
+function iUnifyYLimits(axList)
+axList = axList(isgraphics(axList, 'axes'));
+if numel(axList) < 2
+    return;
+end
+yLimMat = vertcat(axList.YLim);
+commonYLim = [min(yLimMat(:, 1)), max(yLimMat(:, 2))];
+for iAx = 1:numel(axList)
+    ylim(axList(iAx), commonYLim);
+end
 end
 
 function [SessUsed, mice, slopeVec] = iPerMouseSlopeSessions(Sess)
@@ -181,25 +221,92 @@ for iM = 1:numel(mice)
     m = mice(iM);
     R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
     if height(R) < 2, continue; end
-    first100 = find(double(R.Performance) >= 1 - 1e-12, 1, 'first');
-    if ~isempty(first100)
-        if first100 == 1, continue; end
-        R = R(1:first100-1, :);
-    end
+    perf = double(R.Performance);
+    finiteRows = isfinite(perf);
+    R = R(finiteRows, :);
+    perf = perf(finiteRows);
     if height(R) < 2, continue; end
-    xi = (1:height(R))';
-    yi = double(R.Performance);
-    ok = isfinite(yi);
-    if nnz(ok) < 2, continue; end
-    fitP = polyfit(xi(ok), yi(ok), 1);
-    slopeVec(iM) = fitP(1);
-    rows = string(Sess.Mouse) == m & ismember(Sess.DateTime, R.DateTime);
+    if numel(unique(perf)) < 2, continue; end
+    usedDateTimes = R.DateTime;
     if ismember('Source', Sess.Properties.VariableNames)
-        rows = rows & ismember(string(Sess.Source), unique(string(R.Source)));
+        usedSources = unique(string(R.Source));
+    else
+        usedSources = strings(0,1);
+    end
+    fitTable = R(:, {'Mouse','DateTime','Performance'});
+    fitTable.Group = repmat("Fit", height(fitTable), 1);
+    fitTable = movevars(fitTable, 'Group', 'Before', 'Mouse');
+    fitTable.Session = (1:height(fitTable))';
+    fitOut = iFitSigmoidCurve(fitTable, m);
+    slopeVec(iM) = fitOut.Slope;
+    rows = string(Sess.Mouse) == m & ismember(Sess.DateTime, usedDateTimes);
+    if ismember('Source', Sess.Properties.VariableNames)
+        rows = rows & ismember(string(Sess.Source), usedSources);
     end
     keepRows = keepRows | rows;
 end
 SessUsed = Sess(keepRows, :);
+end
+
+function fitOut = iFitSigmoidCurve(T, groupName)
+T = sortrows(T, {'Mouse','DateTime'});
+xObs = double(T.Session(:));
+yObs = double(T.Performance(:));
+use = isfinite(xObs) & isfinite(yObs);
+xObs = xObs(use);
+yObs = yObs(use);
+if isempty(xObs)
+    error('Fig3C:NoDataForGroup', 'No valid session data for group %s.', char(groupName));
+end
+slopeStarts = [0, 0.2, 0.8, 2, 5, 20];
+midpointStarts = unique([median(xObs), min(xObs), max(xObs), min(xObs) - numel(xObs), max(xObs) + numel(xObs)]);
+opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
+obj = @(p) sum((yObs - iSigmoidFromFixedLowerParams(p, xObs)).^2, 'omitnan');
+bestSse = inf;
+p = [sqrt(0.8); median(xObs)];
+for iSlope = 1:numel(slopeStarts)
+    for iMidpoint = 1:numel(midpointStarts)
+        p0 = [sqrt(slopeStarts(iSlope)); midpointStarts(iMidpoint)];
+        pTry = fminsearch(obj, p0, opt);
+        sseTry = obj(pTry);
+        if sseTry < bestSse
+            bestSse = sseTry;
+            p = pTry;
+        end
+    end
+end
+yHat = iSigmoidFromFixedLowerParams(p, xObs);
+[lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p);
+sse = sum((yObs - yHat).^2, 'omitnan');
+sst = sum((yObs - mean(yObs, 'omitnan')).^2, 'omitnan');
+if sst == 0
+    rSquared = NaN;
+else
+    rSquared = 1 - sse / sst;
+end
+fitOut = struct;
+fitOut.Group = string(groupName);
+fitOut.ParamRaw = p;
+fitOut.Lower = lower;
+fitOut.Upper = upper;
+fitOut.Slope = slope;
+fitOut.Midpoint = midpoint;
+fitOut.SSE = sse;
+fitOut.RSquared = rSquared;
+fitOut.XObserved = xObs;
+fitOut.YObserved = yObs;
+end
+
+function y = iSigmoidFromFixedLowerParams(p, x)
+[lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p);
+y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
+end
+
+function [lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p)
+lower = 0;
+upper = 1;
+slope = p(1).^2;
+midpoint = p(2);
 end
 
 function sdVec = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, hasSource)
@@ -247,7 +354,7 @@ end
 function rawTbl = iBatchQueryRawNTS(DS, dts)
 q = struct('Stimulus', 'LightWater', 'DateTime', dts);
 try
-    ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+    ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', "DateTime");
 catch
     rawTbl = table();
     return;
@@ -436,20 +543,6 @@ for i = 1:height(AllSess)
     end
 end
 AllSess = AllSess(keep, :);
-end
-
-function SessOut = iExcludeCeilingSessions(SessIn)
-SessOut = sortrows(SessIn, {'Mouse','DateTime'});
-remove = false(height(SessOut), 1);
-for m = unique(SessOut.Mouse)'
-    rows = find(SessOut.Mouse == m);
-    p = double(SessOut.Performance(rows));
-    i100 = find(p >= 1 - 1e-12, 1, 'first');
-    if ~isempty(i100), remove(rows(i100:end)) = true; end
-end
-SessOut(remove, :) = [];
-perf = double(SessOut.Performance);
-SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end
 
 function tf = iHasStimulus(DS, mouseName, dt, stim)

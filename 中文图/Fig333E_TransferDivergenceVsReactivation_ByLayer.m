@@ -1,4 +1,4 @@
-﻿% 中文图333E：迁移光水散度与重激活率的相关性（全细胞单 tile）
+% 中文图333E：迁移光水散度与重激活率的相关性（全细胞单 tile）
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -77,7 +77,7 @@ Stats.PValue(1) = p;
 Stats.N(1) = nnz(use);
 
 fprintf('\n=== Fig333E All ===\n');
-fprintf('n=%d, rho=%.3f, p=%.4g\n', nnz(use), rho, p);
+fprintf('n=%d, ρ=%.3f, p=%.4g\n', nnz(use), rho, p);
 
 svgPath = '中文图Fig333E_TransferDivergenceVsReactivation_ByLayer.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);

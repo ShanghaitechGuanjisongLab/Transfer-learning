@@ -110,7 +110,8 @@ axesHandles = findall(Fig, 'Type', 'axes');
 for iA = 1:numel(axesHandles)
 	ax = axesHandles(iA);
 	ax.LineWidth = lineWidth;
-	for axisObj = [ax.XAxis, ax.YAxis, ax.ZAxis]
+	axisObjects = iAxesRulerObjects(ax);
+	for axisObj = axisObjects(:).'
 		axisObj.LineWidth = lineWidth;
 	end
 end
@@ -119,6 +120,11 @@ colorBars = findall(Fig, '-isa', 'matlab.graphics.illustration.ColorBar');
 for iC = 1:numel(colorBars)
 	colorBars(iC).LineWidth = lineWidth;
 end
+end
+
+function axisObjects = iAxesRulerObjects(ax)
+axisObjects = [ax.XAxis(:); ax.YAxis(:); ax.ZAxis(:)];
+axisObjects = axisObjects(isgraphics(axisObjects));
 end
 
 function iSetConstantLineWidths(Fig, lineWidth)
@@ -185,12 +191,12 @@ for iB = 1:numel(bars)
 	entryObject = [entryObject; repmat(bars(iB), nPoint, 1)]; %#ok<AGROW>
 	entryPointIndex = [entryPointIndex; (1:nPoint).']; %#ok<AGROW>
 	entryX = [entryX; x(:)]; %#ok<AGROW>
-	bars(iB).FaceColor = 'flat';
-	bars(iB).EdgeColor = 'none';
-		bars(iB).FaceAlpha = 1;
 	end
 
 	if isempty(entryX)
+		return;
+	end
+	if numel(entryX) > size(palette, 1)
 		return;
 	end
 
@@ -199,6 +205,11 @@ for iB = 1:numel(bars)
 	sortedColors = sortedColors(1:numel(sortedX), :);
 	entryColors = zeros(numel(sortedX), 3);
 	entryColors(order, :) = sortedColors;
+	for iB = 1:numel(bars)
+		bars(iB).FaceColor = 'flat';
+		bars(iB).EdgeColor = 'none';
+		bars(iB).FaceAlpha = 1;
+	end
 	for iB = 1:numel(bars)
 		x = iGetBarXPositions(bars(iB));
 		if isempty(x)

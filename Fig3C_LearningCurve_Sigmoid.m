@@ -17,7 +17,7 @@ perMouseStatsTxtName = 'Fig3C_LearningCurve_SigmoidPerMouseStats.txt';
 naiveMouseAllow = ["vtf0030"; "yqn0022"; "yqn0044"; "yqn0404"; "yqn0440"; "yqn1001"; "yqn1002"; "yqn1013"; "yqn2003"; "yqn2005"; "yqn3000"; "yqn3001"; "yqn3002"];
 continualMouseAllow = ["vtf0233"; "vtf0352"; "vtf0353"; "vtf0354"; "vtf1233"; "yqn0133"; "yqn0411"; "yqn1018"];
 
-if ~exist('UniExp.DataSet','class')
+if ~exist('TransferLearning','class') || ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
 	prjFile = fullfile(thisDir, 'Transferlearning.prj');
@@ -29,9 +29,9 @@ if ~exist('UniExp.DataSet','class')
 	end
 end
 
-DS_LAB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat');
-DS_LAI = UniExp.DataSet('\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v5.mat');
-DS_T = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v5.mat');
+DS_LAB = TransferLearning.LightAudioBaseline();
+DS_LAI = TransferLearning.LAInterspersed();
+DS_T = TransferLearning.AudioLightBaseline();
 
 naiveSess = iGatherNaiveSessions(DS_LAB, DS_LAI);
 naiveSess = iExcludeAudioWaterSessions(naiveSess, DS_LAB, DS_LAI);

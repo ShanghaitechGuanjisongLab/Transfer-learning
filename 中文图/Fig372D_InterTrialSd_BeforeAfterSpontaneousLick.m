@@ -28,9 +28,11 @@ set(Lines, 'LineWidth', 2);
 ylabel(ax, 'Inter-trial SD', 'FontSize', 12);
 
 yyaxis(ax, 'right');
-BehaviorLines = MATLAB.Graphics.MultiShadowedLines(Data.BehaviorMean, Data.BehaviorSem, 1/4, X=double(Data.X), EdgeColors=[0, 0.6809, 0]);
+behaviorColor = [0, 0.6809, 0];
+BehaviorLines = MATLAB.Graphics.MultiShadowedLines(Data.BehaviorMean, Data.BehaviorSem, 1/4, X=double(Data.X), EdgeColors=behaviorColor);
 set(BehaviorLines, 'LineWidth', 2);
 ylabel(ax, 'Lick probability', 'FontSize', 12);
+ax.YAxis(2).Color = behaviorColor;
 
 ax.FontSize = 12;
 ax.FontName = 'Arial';

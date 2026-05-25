@@ -1,4 +1,4 @@
-﻿% 中文图36：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
+% 中文图36：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -20,11 +20,11 @@ PlotData = iComputePcaPlotData(GPlot);
 
 f = figure('Color', 'w', 'Name', '中文图36 Learned AudioWater PCA No Align');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 9.0];
+f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 12, 9.0];
-f.PaperSize = [12, 9.0];
+f.PaperPosition = [0, 0, 12, 8];
+f.PaperSize = [12, 8];
 
 tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 ax1 = nexttile(tlo, 1);

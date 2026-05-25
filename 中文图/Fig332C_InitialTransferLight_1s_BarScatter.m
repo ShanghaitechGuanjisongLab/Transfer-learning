@@ -1,4 +1,4 @@
-﻿% 中文图332C：比较初始光水与迁移光水的1s-0s z-score（全细胞，不做筛选）
+% 中文图332C：比较初始光水与迁移光水的1s-0s z-score（全细胞，不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -65,7 +65,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.XAxis.LineWidth = 1;
 	ax.YAxis.LineWidth = 1;
 end
-ylabel(ax, '\Delta z-score');
+ylabel(ax, 'z-score');
 ax.XTick = [];
 ax.XTickLabel = {};
 box(ax, 'off');
@@ -146,7 +146,7 @@ if isprop(axBottom.XAxis, 'LineWidth')
 end
 axBottom.XTick = [1 2];
 axBottom.XTickLabel = {'Naive', 'Continual'};
-ylabel(axBottom, 'active fraction');
+ylabel(axBottom, 'Active fraction');
 box(axBottom, 'off');
 grid(axBottom, 'off');
 

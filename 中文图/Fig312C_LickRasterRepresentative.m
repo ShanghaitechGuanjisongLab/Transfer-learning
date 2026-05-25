@@ -7,10 +7,14 @@
 
 warning('off', 'backtrace');
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-outDirLocal = fullfile(pwd, 'Temp');
-if ~isfolder(outDirUNC); mkdir(outDirUNC); end
-if ~isfolder(outDirLocal); mkdir(outDirLocal); end
+if ~exist('TransferLearning','class') || ~exist('UniExp.DataSet','class')
+	thisFile = mfilename('fullpath');
+	thisDir = fileparts(thisFile);
+	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
+	if exist(prjFile,'file')
+		matlab.project.loadProject(prjFile);
+	end
+end
 
 %% 加载数据
 LAB = TransferLearning.LightAudioBaseline();  % Naive LightWater
@@ -42,7 +46,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0 0 9 8];
 f.PaperSize = [9 8];
 
-tl = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+tl = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 % 💡 at t=0, 💧 at t=1
 tLight = 0;
@@ -95,9 +99,8 @@ lg.FontSize = 12;
 lg.Box = 'off';
 
 %% 导出
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'Fig312C_LickRaster.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312C_LickRaster.svg');
 fprintf('Saved SVG: %s\n', svgPath);
-fprintf('Saved PNG: %s\n', pngPath);
 
 %% === 辅助函数 ===
 

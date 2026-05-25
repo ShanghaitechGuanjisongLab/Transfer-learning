@@ -15,7 +15,7 @@ datasetPath = "\\Data-Server-2\个人数据\张天夫\202601\cFos合集.v2.mat";
 dataset = UniExp.DataSet(datasetPath);
 
 groupOrder = ["Control", "MOp"];
-displayGroup = ["Control", "cFos"];
+displayGroup = ["Control", "cFos inhibited"];
 
 allSessions = iBuildLightWaterBlockSessions(dataset, groupOrder);
 if isempty(allSessions)
@@ -26,6 +26,8 @@ allSessions = TransferLearning.BehaviorSessions.iAddSessionIndex(allSessions);
 
 displayedControl = iFilterToDisplayedMice(allSessions(string(allSessions.Group) == groupOrder(1), :));
 displayedCFos = iFilterToDisplayedMice(allSessions(string(allSessions.Group) == groupOrder(2), :));
+nControlMice = numel(unique(string(displayedControl.Mouse)));
+nCFosMice = numel(unique(string(displayedCFos.Mouse)));
 
 sessionForSummary = allSessions(:, ["Mouse","DateTime","Performance","Group"]);
 sessionForSummary.Group = string(sessionForSummary.Group);
@@ -56,10 +58,10 @@ layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 curveColor = [0 0 0];
 axisControl = nexttile(layout, 1);
-iPlotGroupMouseCurves(axisControl, displayedControl, xFit, controlFitCurve, curveColor, displayGroup(1), fitControl, false);
+iPlotGroupMeanErrorbars(axisControl, xFit, meanMatOut(:,1), semMatOut(:,1), controlFitCurve, curveColor, displayGroup(1), fitControl, true);
 
 axisCFos = nexttile(layout, 2);
-iPlotGroupMouseCurves(axisCFos, displayedCFos, xFit, cfosFitCurve, curveColor, displayGroup(2), fitCFos, true);
+iPlotGroupMeanErrorbars(axisCFos, xFit, meanMatOut(:,2), semMatOut(:,2), cfosFitCurve, curveColor, displayGroup(2), fitCFos, false);
 
 ylabel(axisControl, 'Hit rate', 'FontSize', 12);
 xlabel(layout, 'Block', 'FontSize', 12);
@@ -76,7 +78,6 @@ for axisItem = reshape(allAxes, 1, [])
 end
 
 TransferLearning.Style.ApplyStandardFigureStyle(fig, 2);
-iRetuneSingleMouseCurves(fig);
 ylim(axisControl, [0 1]);
 ylim(axisCFos, [0 1]);
 axisCFos.YAxis.Visible = 'off';
@@ -115,10 +116,11 @@ summaryTable.ControlSigmoid = controlFitCurve(:);
 summaryTable.CFosSigmoid = cfosFitCurve(:);
 
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Mouse count: Control n = %d, cFos n = %d\n', nControlMice, nCFosMice);
 fprintf('Control sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitControl.Lower, fitControl.Upper, fitControl.Slope, fitControl.Midpoint, fitControl.RSquared);
 fprintf('cFos sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitCFos.Lower, fitCFos.Upper, fitCFos.Slope, fitCFos.Midpoint, fitCFos.RSquared);
 fprintf('Permutation slope difference (cFos - Control): %.4f\n', permResult.ObservedDifference);
-fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
+fprintf('Permutation significance p-value (two-sided) = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
 
 assignin('base', 'Fig334G_BlockSigmoid_AllSessions', allSessions);
 assignin('base', 'Fig334G_BlockSigmoid_FitTable', fitTable);
@@ -260,33 +262,25 @@ shownMice = unique(string(sessionTable.Mouse(rows)), 'stable');
 sessionTable = sessionTable(ismember(string(sessionTable.Mouse), shownMice), :);
 end
 
-function iPlotGroupMouseCurves(axisHandle, sessionTable, xFit, yFit, lineColor, groupName, fitStruct, showLegend)
+function iPlotGroupMeanErrorbars(axisHandle, blockX, meanCurve, semCurve, yFit, lineColor, groupName, fitStruct, showLegend)
 hold(axisHandle, 'on');
 axisHandle.FontSize = 12;
-sessionTable = sortrows(sessionTable, {'Mouse','Session'});
-sessionTable.Mouse = string(sessionTable.Mouse);
-mice = unique(sessionTable.Mouse, 'stable');
-lightColor = 1 - (1 - lineColor) * 0.35;
-mouseHandles = gobjects(0,1);
-for iMouse = 1:numel(mice)
-	rows = sessionTable.Mouse == mice(iMouse) & isfinite(double(sessionTable.Session)) & isfinite(double(sessionTable.Performance));
-	if ~any(rows)
-		continue;
-	end
-	xMouse = double(sessionTable.Session(rows));
-	yMouse = double(sessionTable.Performance(rows));
-	mouseLine = plot(axisHandle, xMouse, yMouse, '-', ...
-		'Color', lightColor, ...
-		'LineWidth', 0.5, ...
-		'Marker', 'none', ...
-		'Tag', 'SingleMouseCurve');
-	if isempty(mouseHandles)
-		mouseHandles = mouseLine;
-	end
-end
-fitHandle = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.8);
-if showLegend && ~isempty(mouseHandles)
-	legendHandle = legend(axisHandle, [mouseHandles(1), fitHandle], {'Per-mouse', 'Sigmoid fit'}, 'Location', 'northwest');
+blockX = double(blockX(:));
+meanCurve = double(meanCurve(:));
+semCurve = double(semCurve(:));
+rows = isfinite(blockX) & isfinite(meanCurve);
+semCurve(~isfinite(semCurve)) = 0;
+dataHandle = errorbar(axisHandle, blockX(rows), meanCurve(rows), semCurve(rows), semCurve(rows), 'o', ...
+	'LineStyle', 'none', ...
+	'Color', lineColor, ...
+	'MarkerEdgeColor', lineColor, ...
+	'MarkerFaceColor', 'w', ...
+	'MarkerSize', 3, ...
+	'LineWidth', 0.5, ...
+	'CapSize', 5);
+fitHandle = plot(axisHandle, blockX, yFit, '-', 'Color', lineColor, 'LineWidth', 2.8);
+if showLegend && isgraphics(dataHandle)
+	legendHandle = legend(axisHandle, [dataHandle, fitHandle], {'Mean ± SEM', 'Sigmoid fit'}, 'Location', 'southeast');
 	legendHandle.FontSize = 9;
 	legendHandle.Box = 'off';
 	legendHandle.NumColumns = 1;
@@ -296,14 +290,6 @@ end
 box(axisHandle, 'off');
 grid(axisHandle, 'off');
 title(axisHandle, {char(groupName), sprintf('slope=%.3f', fitStruct.Slope)}, 'FontSize', 10, 'FontWeight', 'normal');
-end
-
-function iRetuneSingleMouseCurves(fig)
-mouseLines = findall(fig, 'Type', 'line', 'Tag', 'SingleMouseCurve');
-for iLine = 1:numel(mouseLines)
-	mouseLines(iLine).LineWidth = 0.5;
-	mouseLines(iLine).Marker = 'none';
-end
 end
 
 function fitOut = iFitSigmoidCurve(sessionTable, groupName)

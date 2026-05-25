@@ -1,4 +1,4 @@
-﻿% 英文图1K: Reactivation vs Transfer hit rate (layers merged)
+% 英文图1K: Reactivation vs Transfer hit rate (layers merged)
 %
 % Reactivation = P(Transfer active | Learned active) at 1s
 % Sessions (pure):
@@ -57,10 +57,12 @@ catch
 end
 ax.LineWidth = 1;
 
+rho = NaN;
 p = NaN;
 if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
-	[~, p] = corr(x(mask), y(mask), 'type','Spearman');
+	[rho, p] = corr(x(mask), y(mask), 'type','Spearman');
 end
+fprintf('Spearman ρ = %.4f (n = %d)\n', rho, nnz(mask));
 
 % 散点：空心圆，边框0.2
 palette2 = [1, 0, 0; 0, 0, 1];

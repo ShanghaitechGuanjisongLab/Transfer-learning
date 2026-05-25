@@ -12,6 +12,8 @@ for iValue = 1:numel(valueNames)
     values.(valueNames(iValue)) = double(values.(valueNames(iValue))(:));
     values.(valueNames(iValue)) = values.(valueNames(iValue))(isfinite(values.(valueNames(iValue))));
 end
+dataCell = iStructToRowCell(values, valueNames);
+compareGroup = iCompareGroupToIndex(compareGroup, valueNames);
 
 f = figure('Color', 'w', 'Name', char(svgFileName));
 f.Units = 'centimeters';
@@ -23,7 +25,7 @@ f.PaperSize = [4.5, 4.0];
 
 ax = axes(f);
 ax.FontSize = 6;
-[~, Optional, barsObj, errorBars] = UniExp.BarScatterCompare(values, false, compareGroup, AsteriskThreshold=0.01);
+[~, Optional, barsObj, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, AsteriskThreshold=0.01, CapSize=0.5);
 
 ax.FontName = 'Segoe UI Emoji';
 ax.LineWidth = 1;
@@ -40,7 +42,7 @@ ax.XTickLabelRotation = 25;
 
 iStyleBarsBlack(barsObj);
 iRemoveScatter(ax);
-iReplaceErrorBars(ax, barsObj, errorBars, values, valueNames);
+iStyleErrorBarsBlack(errorBars);
 iStyleAxesContents(f, ax);
 
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
@@ -55,6 +57,26 @@ svgPath = char(svgFileName);
     MATLAB.Graphics.PLineRetune(Optional.MultiCompare.PLine, Optional.MultiCompare.PText);
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+end
+
+function dataCell = iStructToRowCell(values, valueNames)
+dataCell = cell(1, numel(valueNames));
+for iValue = 1:numel(valueNames)
+    dataCell{iValue} = values.(valueNames(iValue));
+end
+end
+
+function compareGroup = iCompareGroupToIndex(compareGroup, valueNames)
+if isempty(compareGroup) || ~ismember('GroupPair', compareGroup.Properties.VariableNames) || isnumeric(compareGroup.GroupPair)
+    return;
+end
+
+[isFound, groupPairIndex] = ismember(string(compareGroup.GroupPair), valueNames);
+if ~all(isFound, 'all')
+    missingGroup = unique(string(compareGroup.GroupPair(~isFound)));
+    error('Fig371:CompareGroupNotFound', 'Compare group is missing from bar values: %s', strjoin(missingGroup, ', '));
+end
+compareGroup.GroupPair = groupPairIndex;
 end
 
 function iStyleBarsBlack(barsObj)
@@ -85,52 +107,21 @@ for iScatter = 1:numel(scatters)
 end
 end
 
-function iReplaceErrorBars(ax, barsObj, errorBars, values, valueNames)
-if isstruct(errorBars) && isfield(errorBars, 'Object')
-    for iEb = 1:numel(errorBars.Object)
-        if isgraphics(errorBars.Object(iEb))
-            delete(errorBars.Object(iEb));
-        end
-    end
+function iStyleErrorBarsBlack(errorBars)
+if istable(errorBars) && ismember('Object', errorBars.Properties.VariableNames)
+    errorBarObjects = errorBars.Object;
+elseif isstruct(errorBars) && isfield(errorBars, 'Object')
+    errorBarObjects = errorBars.Object;
+else
+    errorBarObjects = gobjects(0, 1);
 end
 
-xPos = iBarXPositions(barsObj, numel(valueNames));
-means = nan(1, numel(valueNames));
-sems = nan(1, numel(valueNames));
-for iValue = 1:numel(valueNames)
-    v = values.(valueNames(iValue));
-    means(iValue) = mean(v, 'omitnan');
-    sems(iValue) = std(v, 0, 'omitnan') ./ sqrt(sum(isfinite(v)));
-end
-
-capWidth = 0.18;
-for iValue = 1:numel(valueNames)
-    if ~isfinite(xPos(iValue)) || ~isfinite(means(iValue)) || ~isfinite(sems(iValue)) || sems(iValue) <= 0
+for iEb = 1:numel(errorBarObjects)
+    if ~isgraphics(errorBarObjects(iEb))
         continue;
     end
-    line(ax, [xPos(iValue), xPos(iValue)], [means(iValue), means(iValue) + sems(iValue)], ...
-        'Color', 'k', 'LineWidth', 1, 'Clipping', 'on', 'HandleVisibility', 'off');
-    line(ax, [xPos(iValue) - capWidth / 2, xPos(iValue) + capWidth / 2], [means(iValue) + sems(iValue), means(iValue) + sems(iValue)], ...
-        'Color', 'k', 'LineWidth', 1, 'Clipping', 'on', 'HandleVisibility', 'off');
-end
-end
-
-function xPos = iBarXPositions(barsObj, nBar)
-if isscalar(barsObj)
-    if isprop(barsObj, 'XEndPoints') && ~isempty(barsObj.XEndPoints)
-        xPos = reshape(double(barsObj.XEndPoints), 1, []);
-    else
-        xPos = 1:nBar;
-    end
-else
-    xPos = nan(1, numel(barsObj));
-    for iBar = 1:numel(barsObj)
-        if isprop(barsObj(iBar), 'XEndPoints') && ~isempty(barsObj(iBar).XEndPoints)
-            xPos(iBar) = double(barsObj(iBar).XEndPoints(1));
-        else
-            xPos(iBar) = iBar;
-        end
-    end
+    errorBarObjects(iEb).Color = [0, 0, 0];
+    errorBarObjects(iEb).LineWidth = 1;
 end
 end
 

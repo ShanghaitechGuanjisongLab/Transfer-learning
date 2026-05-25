@@ -1,6 +1,6 @@
 ﻿% 中文图342G：响应异质性 vs 路程/直线距离（全细胞，Naive/Transfer 分色）
 
-if ~exist('UniExp.DataSet', 'class')
+if ~exist('TransferLearning', 'class') || ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
 	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
@@ -12,7 +12,7 @@ end
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgName = "中文图Fig342G_ResponseHeterogeneityVsPathOverDirect_AllCells_v2.svg";
 
-StateData = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.No_special_operation);
+StateData = TransferLearning.Fig341.BuildStateSpaceSummary(false, UniExp.Flags.No_special_operation);
 States = StateData.MouseStates;
 Metrics = table(strings(0,1), strings(0,1), strings(0,1), nan(0,1), ...
 	'VariableNames', {'Mouse', 'Group', 'Source', 'PathOverDirect'});
@@ -30,7 +30,7 @@ else
 end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('中文图342G:Bad1sIndex', 'Cannot find sample close to 1 s in TransferLearning.Xs.');
+	error('Fig342G:Bad1sIndex', 'Cannot find sample close to 1 s in TransferLearning.Xs.');
 end
 
 FirstSess = table(strings(0,1), strings(0,1), strings(0,1), NaT(0,1), ...
@@ -90,13 +90,13 @@ for iSrc = 1:numel(srcList)
 end
 
 if isempty(Rows)
-	error('中文图342G:NoHeterogeneityRows', 'No mouse-level response heterogeneity data were built.');
+	error('Fig342G:NoHeterogeneityRows', 'No mouse-level response heterogeneity data were built.');
 end
 
 Het = struct2table(Rows);
 Data = innerjoin(Het, Metrics, 'Keys', {'Mouse', 'Group', 'Source'});
 if isempty(Data)
-	error('中文图342G:NoMatchedRows', 'No matched rows between heterogeneity and PathOverDirect.');
+	error('Fig342G:NoMatchedRows', 'No matched rows between heterogeneity and PathOverDirect.');
 end
 
 palette2 = TransferLearning.FigurePalette(2);
@@ -111,13 +111,13 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 4.5, 4.0];
 f.PaperSize = [4.5, 4.0];
 
-tl = tiledlayout(f, 1, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 Stats = table(nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), ...
 	'VariableNames', {'Rho', 'PValue', 'NAll', 'NNaive', 'NTransfer'});
 
 use = isfinite(Data.PathOverDirect) & isfinite(Data.ResponseHeterogeneity);
 if nnz(use) < 3
-	error('中文图342G:TooFewPoints', 'Too few valid mice for all-cell correlation.');
+	error('Fig342G:TooFewPoints', 'Too few valid mice for all-cell correlation.');
 end
 R = Data(use, :);
 x = double(R.PathOverDirect);
@@ -163,6 +163,11 @@ Stats.NAll(1) = height(R);
 Stats.NNaive(1) = nnz(maskNaive);
 Stats.NTransfer(1) = nnz(maskTran);
 
+fprintf('\n=== Fig342G All cells ===\n');
+fprintf('Naive mice: %d\n', nnz(maskNaive));
+fprintf('Continual mice: %d\n', nnz(maskTran));
+fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
+
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
@@ -185,7 +190,7 @@ end
 
 function CellMap = iCellMap(DS)
 if ~isprop(DS, 'Cells')
-	error('中文图342G:MissingCells', 'DataSet %s has no Cells table.', class(DS));
+	error('Fig342G:MissingCells', 'DataSet %s has no Cells table.', class(DS));
 end
 CellMap = DS.Cells(:, {'CellUID', 'ZLayer'});
 CellMap.CellUID = uint64(CellMap.CellUID);

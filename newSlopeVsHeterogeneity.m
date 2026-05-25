@@ -11,7 +11,7 @@ transferDataCsvName = 'newSlopeVsHeterogeneity_ContinualData.csv';
 naiveMouseAllow = ["vtf0030"; "yqn0022"; "yqn0044"; "yqn0404"; "yqn0440"; "yqn1001"; "yqn1002"; "yqn1013"; "yqn2003"; "yqn2005"; "yqn3000"; "yqn3001"; "yqn3002"];
 transferMouseAllow = ["vtf0233"; "vtf0352"; "vtf0353"; "vtf0354"; "vtf1233"; "yqn0133"; "yqn0411"; "yqn1018"];
 
-if ~exist('UniExp.DataSet', 'class')
+if ~exist('TransferLearning', 'class') || ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
 	prjFile = fullfile(thisDir, 'Transferlearning.prj');
@@ -23,15 +23,15 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-LAB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat');
-LAPB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat');
-LAI = UniExp.DataSet('\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v5.mat');
-ALB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v5.mat');
-ALPB = UniExp.DataSet('\\Data-Server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat');
+LAB = TransferLearning.LightAudioBaseline();
+LAPB = TransferLearning.LAPureBehavior();
+LAI = TransferLearning.LAInterspersed();
+ALB = TransferLearning.AudioLightBaseline();
+ALPB = TransferLearning.ALPureBehavior();
 
-DS_LAB_F3C = TransferLearning.LightAudioBaseline();
-DS_LAI_F3C = TransferLearning.LAInterspersed();
-DS_T_F3C = TransferLearning.AudioLightBaseline();
+DS_LAB_F3C = LAB;
+DS_LAI_F3C = LAI;
+DS_T_F3C = ALB;
 
 CellLAB = iCellLayerTable(DS_LAB_F3C, "LAB");
 CellLAI = iCellLayerTable(DS_LAI_F3C, "LAI");
@@ -99,7 +99,7 @@ f.PaperPositionMode = 'auto';
 f.PaperUnits = 'centimeters';
 f.PaperSize = [12, 8];
 
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
 hLegend = gobjects(2, 1);
 axAll = gobjects(numel(layers), 1);
@@ -157,7 +157,7 @@ for iL = 1:numel(layers)
 	fprintf('\n=== newSlopeVsHeterogeneity %s ===\n', layerLabel);
 	fprintf('Naive mice: %d\n', nnz(maskN));
 	fprintf('Transfer mice: %d\n', nnz(maskT));
-	fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
+	fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 end
 
 MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
@@ -654,7 +654,7 @@ end
 function rawTbl = iBatchQueryRawNTS(DS, dts)
 	q = struct('Stimulus', 'LightWater', 'DateTime', dts);
 	try
-		ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+		ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', "DateTime");
 	catch
 		rawTbl = table();
 		return;
