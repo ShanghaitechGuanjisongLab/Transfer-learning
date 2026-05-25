@@ -21,7 +21,7 @@ groupPerMouse = repelem(groupNames, Options.NMicePerGroup, 1);
 mouseNames = "M" + compose('%03d', (1:nMice).');
 sessionIndex = (1:Options.NSessions).';
 
-reuseScale = zeros(nMice, 1);
+reuseScale = zeros(nMice, 1);    
 reuseScale(groupPerMouse ~= "Naive") = 1;
 
 thalamusScale = ones(nMice, 1);
