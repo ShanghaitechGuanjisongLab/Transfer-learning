@@ -1,8 +1,8 @@
 function Mouse = DrawMouse(Params)
 [Mouse.PreCueInputPattern, Mouse.CueInputPattern] = TransferLearning.THModel.DrawCuePatternPair(Params.NCueInput, Params.CueInputGainPretrain, Params.CueInputGain, Params.CueModalityCorr, Params);
 [Mouse.PreCueL23InhibitoryPattern, Mouse.CueL23InhibitoryPattern] = TransferLearning.THModel.DrawCuePatternPair(Params.NIL23, Params.CueInputGainPretrain, Params.CueInputGain, Params.CueModalityCorr, Params);
-Mouse.L5ReadoutPattern = TransferLearning.THModel.BinaryPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NL5Read, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NL5Read, 1]))));
-Mouse.L5ReadInhibitoryReadoutPattern = TransferLearning.THModel.BinaryPattern(TransferLearning.THModel.Standardize(TransferLearning.THModel.Randn([Params.NIL5Read, 1]) + 0.55 * sign(TransferLearning.THModel.Randn([Params.NIL5Read, 1]))));
+Mouse.L5ReadoutPattern = TransferLearning.THModel.DrawBalancedBinaryPattern(Params.NL5Read);
+Mouse.L5ReadInhibitoryReadoutPattern = TransferLearning.THModel.DrawBalancedBinaryPattern(Params.NIL5Read);
 
 Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.InitExcitatoryWeights([Params.NL23L5, Params.NL23L5], Params));
 
