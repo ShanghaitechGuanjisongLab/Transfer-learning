@@ -50,6 +50,8 @@ allSessions = iAddSessionIndex(allSessions);
 
 displayedNaive = iFilterToDisplayedMice(allSessions(string(allSessions.Group) == "Naive", :));
 displayedTransfer = iFilterToDisplayedMice(allSessions(string(allSessions.Group) == "Transfer", :));
+naiveMouseN = numel(unique(string(displayedNaive.Mouse)));
+transferMouseN = numel(unique(string(displayedTransfer.Mouse)));
 
 sessionForSummary = allSessions(:, ["Mouse","DateTime","Performance","Group"]);
 sessionForSummary.Group = string(sessionForSummary.Group);
@@ -110,6 +112,7 @@ fitTable.Slope = [fitNaive.Slope; fitTransfer.Slope];
 fitTable.Midpoint = [fitNaive.Midpoint; fitTransfer.Midpoint];
 fitTable.SSE = [fitNaive.SSE; fitTransfer.SSE];
 fitTable.RSquared = [fitNaive.RSquared; fitTransfer.RSquared];
+fitTable.NMouse = [naiveMouseN; transferMouseN];
 
 permTable = table;
 permTable.ObservedNaiveSlope = permResult.ObservedNaiveSlope;
@@ -134,6 +137,8 @@ summaryTable.NaiveSigmoid = naiveFitCurve(:);
 summaryTable.TransferSigmoid = transferFitCurve(:);
 
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Naive mice: %d\n', naiveMouseN);
+fprintf('Transfer mice: %d\n', transferMouseN);
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
 fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
 fprintf('Permutation slope difference (Transfer - Naive): %.4f\n', permResult.ObservedDifference);

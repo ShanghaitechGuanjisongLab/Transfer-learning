@@ -7,10 +7,16 @@ arguments
 end
 
 if isfield(HeatmapData, 'ConditionData')
-	laneData = cat(3, HeatmapData.ConditionData{1}.MedianDelta, HeatmapData.ConditionData{2}.MedianDelta);
+	numConditions = numel(HeatmapData.ConditionData);
+	laneCells = cell(1, numConditions);
+	for conditionIndex = 1:numConditions
+		laneCells{conditionIndex} = HeatmapData.ConditionData{conditionIndex}.MedianDelta;
+	end
+	laneData = cat(3, laneCells{:});
 else
 	laneData = cat(3, HeatmapData.Naive.MedianDelta, HeatmapData.Continual.MedianDelta);
 end
+displayNames = iDisplayNames(HeatmapData, size(laneData, 3));
 sortedLaneData = nan(size(laneData));
 sortIndex = nan(size(laneData, 1), size(laneData, 3));
 sortKey = nan(size(laneData, 1), size(laneData, 3));
@@ -41,16 +47,17 @@ colorLimits = [-colorLimitLowAbs, colorLimitHighAbs];
 
 fig = figure('Color', 'w', 'Name', char(options.FigureName));
 fig.Units = 'centimeters';
-fig.Position(3:4) = [9, 8];
+figureWidth = 3 * floor(max(9, 4.5 * size(laneData, 3)) / 3);
+fig.Position(3:4) = [figureWidth, 8];
 fig.PaperUnits = 'centimeters';
 fig.PaperPositionMode = 'manual';
-fig.PaperPosition = [0, 0, 9, 8];
-fig.PaperSize = [9, 8];
+fig.PaperPosition = [0, 0, figureWidth, 8];
+fig.PaperSize = [figureWidth, 8];
 
-layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'none', 'Padding', 'tight');
+layout = tiledlayout(fig, 1, size(laneData, 3), 'TileSpacing', 'tight', 'Padding', 'tight');
 [~, axesList] = UniExp.LanearHeatmap( ...
 	laneData, ...
-	SubTitles=HeatmapData.DisplayNames, ...
+	SubTitles=displayNames, ...
 	Flags=[UniExp.Flags.HideYAxis, UniExp.Flags.SymmetricColormap], ...
 	CLim=colorLimits, ...
 	Layout=layout, ...
@@ -98,6 +105,18 @@ PlotData.CLim = colorLimits;
 PlotData.YLabel = string(yLabelText);
 PlotData.ColorbarLabel = string(options.ColorbarLabel);
 PlotData.Axes = axesList;
+end
+
+function displayNames = iDisplayNames(HeatmapData, numConditions)
+if isfield(HeatmapData, 'DisplayNames')
+	displayNames = string(HeatmapData.DisplayNames);
+else
+	displayNames = "Condition " + string(1:numConditions);
+end
+displayNames = reshape(displayNames, 1, []);
+if numel(displayNames) ~= numConditions
+	error('PlotModelFirstFormalUnitDecisionHeatmap:DisplayNameCountMismatch', 'Expected %d display names, got %d.', numConditions, numel(displayNames));
+end
 end
 
 function iSetCueTickLabel(ax)
