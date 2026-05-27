@@ -37,6 +37,8 @@ J.Group = string(J.Group);
 Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','Group','Phase'}, 'stable')));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
 Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
+nControlMice = numel(unique(string(Sess.Mouse(Sess.Group == "mCherry"))));
+nInhibitedMice = numel(unique(string(Sess.Mouse(Sess.Group == "hM4D(Gi)"))));
 
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
 sessionForSummary.Group = string(sessionForSummary.Group);
@@ -104,8 +106,8 @@ end
 svgPath = svgName;
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Learning curve overall p = %.4g\n', pCurve);
-fprintf('LearningSummarize p = %.4g\n', pSumm);
+fprintf('Fig334D mice: Control n = %d, hM4D(Gi) n = %d\n', nControlMice, nInhibitedMice);
+fprintf('Fig334D learning curve LME group-effect p = %.4g\n', pCurve);
 
 assignin('base', 'Fig334D_Sessions', Sess);
 assignin('base', 'Fig334D_LearningSummarizeP', pSumm);

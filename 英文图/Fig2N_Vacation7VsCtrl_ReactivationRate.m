@@ -21,10 +21,10 @@ CtrlDS = TransferLearning.AudioLightBaseline();
 V7DS   = TransferLearning.Vacation7();
 
 %% ===== 2) Compute P(T|L) per mouse (Reactivation — upper tile) =====
-RCtrl = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer( ...
-	'DataSet', CtrlDS, 'Source', "AudioLightBaseline");
-RV7 = TransferLearning.Fig37.iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer( ...
-	'DataSet', V7DS, 'Source', "Vacation7");
+RCtrl = iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer( ...
+	DataSet=CtrlDS, Source="AudioLightBaseline", RequireHitMiss=false);
+RV7 = iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer( ...
+	DataSet=V7DS, Source="Vacation7", RequireHitMiss=false);
 
 if isempty(RCtrl) || isempty(RV7)
 	error('English_Fig2M:EmptyBuild', 'Empty rows from P(T|L) builder.');
@@ -50,14 +50,16 @@ nTotal = n23 + n5;
 R.PTgivenL = (w23 + w5) ./ nTotal;
 R.PTgivenL(nTotal == 0) = NaN;
 
-xReactCtrl = R.PTgivenL(R.Group == "Control");
-xReactV7   = R.PTgivenL(R.Group == "Vacation7");
-xReactCtrl = xReactCtrl(isfinite(xReactCtrl));
-xReactV7   = xReactV7(isfinite(xReactV7));
+reactCtrlMask = R.Group == "Control" & isfinite(R.PTgivenL);
+reactV7Mask = R.Group == "Vacation7" & isfinite(R.PTgivenL);
+xReactCtrl = R.PTgivenL(reactCtrlMask);
+xReactV7   = R.PTgivenL(reactV7Mask);
+nReactCellsCtrl = sum(nTotal(reactCtrlMask), 'omitnan');
+nReactCellsV7 = sum(nTotal(reactV7Mask), 'omitnan');
 
 fprintf('\n=== Upper tile: Reactivation P(T|L) ===\n');
-fprintf('  Control:   n=%d, mean=%.4f\n', numel(xReactCtrl), mean(xReactCtrl));
-fprintf('  Vacation7: n=%d, mean=%.4f\n', numel(xReactV7),   mean(xReactV7));
+fprintf('  Control:   mice n=%d, learned-active cells n=%d, mean=%.4f\n', numel(xReactCtrl), nReactCellsCtrl, mean(xReactCtrl));
+fprintf('  Vacation7: mice n=%d, learned-active cells n=%d, mean=%.4f\n', numel(xReactV7), nReactCellsV7, mean(xReactV7));
 pReact = ranksum(xReactCtrl, xReactV7);
 fprintf('  ranksum p=%.4g\n', pReact);
 
@@ -73,6 +75,7 @@ TctrlLW.DateTime.TimeZone = '';
 ctrlMice = unique(TctrlLW.Mouse);
 nCtrl = numel(ctrlMice);
 divCtrl = nan(nCtrl, 1);
+divCellCtrl = zeros(nCtrl, 1);
 
 for i = 1:nCtrl
 	m = ctrlMice(i);
@@ -87,9 +90,10 @@ for i = 1:nCtrl
 	if iscell(nts), nts = nts{1}; end
 	if isempty(nts), continue; end
 
-	[CTT, ~] = iLocalBuildCTT(nts, trialUIDs, sampleRate);
+	[CTT, divCellUIDs] = iLocalBuildCTT(nts, trialUIDs, sampleRate);
 	if isempty(CTT) || size(CTT, 1) < 3, continue; end
 	divCtrl(i) = iDivAtIdx(CTT, idx1s);
+	divCellCtrl(i) = numel(divCellUIDs);
 end
 
 % --- Vacation7 ---
@@ -102,6 +106,7 @@ Tv7LW.DateTime.TimeZone = '';
 v7Mice = unique(Tv7LW.Mouse);
 nV7 = numel(v7Mice);
 divV7 = nan(nV7, 1);
+divCellV7 = zeros(nV7, 1);
 
 for i = 1:nV7
 	m = v7Mice(i);
@@ -116,19 +121,22 @@ for i = 1:nV7
 	if iscell(nts), nts = nts{1}; end
 	if isempty(nts), continue; end
 
-	[CTT, ~] = iLocalBuildCTT(nts, trialUIDs, sampleRate);
+	[CTT, divCellUIDs] = iLocalBuildCTT(nts, trialUIDs, sampleRate);
 	if isempty(CTT) || size(CTT, 1) < 3, continue; end
 	divV7(i) = iDivAtIdx(CTT, idx1s);
+	divCellV7(i) = numel(divCellUIDs);
 end
 
 kC = isfinite(divCtrl);
 kV = isfinite(divV7);
 xDivCtrl = divCtrl(kC);
 xDivV7   = divV7(kV);
+nDivCellsCtrl = sum(divCellCtrl(kC));
+nDivCellsV7 = sum(divCellV7(kV));
 
 fprintf('\n=== Lower tile: Population Divergence ===\n');
-fprintf('  Control:   %.3f ± %.3f (n=%d)\n', mean(xDivCtrl), std(xDivCtrl)/sqrt(numel(xDivCtrl)), numel(xDivCtrl));
-fprintf('  Vacation7: %.3f ± %.3f (n=%d)\n', mean(xDivV7),   std(xDivV7)/sqrt(numel(xDivV7)),     numel(xDivV7));
+fprintf('  Control:   %.3f ± %.3f (mice n=%d, cells n=%d)\n', mean(xDivCtrl), std(xDivCtrl)/sqrt(numel(xDivCtrl)), numel(xDivCtrl), nDivCellsCtrl);
+fprintf('  Vacation7: %.3f ± %.3f (mice n=%d, cells n=%d)\n', mean(xDivV7), std(xDivV7)/sqrt(numel(xDivV7)), numel(xDivV7), nDivCellsV7);
 pDiv = ranksum(xDivCtrl, xDivV7);
 fprintf('  ranksum p=%.4g\n', pDiv);
 
@@ -141,7 +149,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 palette2 = TransferLearning.FigurePalette(2);
 colorA = palette2(1,:);
@@ -241,11 +249,17 @@ svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 %% ===== 6) Save to workspace =====
+reactSampleCounts = table(["Control"; "Vacation7"], [numel(xReactCtrl); numel(xReactV7)], [nReactCellsCtrl; nReactCellsV7], ...
+	'VariableNames', {'Group','NMouse','NLearnedActiveCell'});
+divSampleCounts = table(["Control"; "Vacation7"], [numel(xDivCtrl); numel(xDivV7)], [nDivCellsCtrl; nDivCellsV7], ...
+	'VariableNames', {'Group','NMouse','NCell'});
 assignin('base', 'English_Fig2N_R', R);
 assignin('base', 'English_Fig2N_pReact', pReact);
 assignin('base', 'English_Fig2N_DivCtrl', xDivCtrl);
 assignin('base', 'English_Fig2N_DivVac7', xDivV7);
 assignin('base', 'English_Fig2N_pDiv', pDiv);
+assignin('base', 'English_Fig2N_ReactivationSampleCounts', reactSampleCounts);
+assignin('base', 'English_Fig2N_DivergenceSampleCounts', divSampleCounts);
 
 %% ===== Local functions =====
 

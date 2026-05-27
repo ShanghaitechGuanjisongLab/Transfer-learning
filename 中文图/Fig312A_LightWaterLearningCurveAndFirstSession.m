@@ -114,20 +114,20 @@ naiveFirst = double(firstSess.Performance(string(firstSess.Group) == "Naive"));
 tranFirst  = double(firstSess.Performance(string(firstSess.Group) == "Transfer"));
 naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
+firstBarPValue = ranksum(naiveFirst, tranFirst);
 
 f2 = figure('Color','none', 'Name', 'Fig312A LightWater first-session performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
 f2.Position = pos2;
-f2.InvertHardcopy = 'off';
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4,4];
 f2.PaperPositionMode = 'auto';
 
 tiledlayout(1,1,'TileSpacing','normal','Padding','normal');
 nexttile;
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
@@ -165,11 +165,16 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 end
 svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312A_LightWater_FirstSessionPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
+fprintf('\n=== Fig312A first-block bar ===\n');
+fprintf('Naive mice n = %d\n', numel(naiveFirst));
+fprintf('Continual mice n = %d\n', numel(tranFirst));
+fprintf('First-block bar ranksum p = %.6g\n', firstBarPValue);
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
 firstSessionTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
 firstSessionTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstSessionTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
+firstSessionTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
 assignin('base', 'Fig32A_LightWater_FirstSession', firstSessionTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
@@ -429,7 +434,7 @@ end
 end
 
 function iStyleBars(barsObj, colorNaive, colorTrans)
-if numel(barsObj) == 1
+if isscalar(barsObj)
 	barsObj.FaceColor = 'flat';
 	nBars = numel(barsObj.YData);
 	reps = ceil(nBars/2);

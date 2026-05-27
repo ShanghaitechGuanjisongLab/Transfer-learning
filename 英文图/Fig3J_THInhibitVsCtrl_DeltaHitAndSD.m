@@ -20,16 +20,20 @@ if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s, error('Fig3J:No1s', 'Cannot find sample close to 1s.'); end
 
-[dhC, sdC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");
-[dhT, sdT] = iCohortData(THDS, idx1s, "Transfer", "Final");
+[dhC, sdC, statsC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");
+[dhT, sdT, statsT] = iCohortData(THDS, idx1s, "Transfer", "Final");
 
-fprintf('Ctrl: %d pairs (ΔHit), %d mice (Response heterogeneity)\n', numel(dhC), numel(sdC));
-fprintf('TH:   %d pairs (ΔHit), %d mice (Response heterogeneity)\n', numel(dhT), numel(sdT));
+fprintf('\n=== English Fig3J / Chinese Fig343G ΔHit and Response heterogeneity ===\n');
+fprintf('Ctrl ΔHit: %d mice, %d adjacent block pairs\n', statsC.DeltaHitMouseN, statsC.DeltaHitPairN);
+fprintf('TH ΔHit:   %d mice, %d adjacent block pairs\n', statsT.DeltaHitMouseN, statsT.DeltaHitPairN);
+fprintf('Ctrl MOp5 response heterogeneity: %d mice, %d total cells, %d moderate-response cells in [-1, 1]\n', statsC.HeterogeneityMouseN, statsC.MOp5CellN, statsC.ModerateMOp5CellN);
+fprintf('TH MOp5 response heterogeneity:   %d mice, %d total cells, %d moderate-response cells in [-1, 1]\n', statsT.HeterogeneityMouseN, statsT.MOp5CellN, statsT.ModerateMOp5CellN);
 
 pDH = iRanksumSafe(dhC, dhT);
 pSD = iRanksumSafe(sdC, sdT);
 fprintf('ΔHit ranksum p=%.4g\n', pDH);
 fprintf('Response heterogeneity (MOp5) ranksum p=%.4g\n', pSD);
+fprintf('Bar-comparison panel: Spearman rho is not applicable.\n');
 
 svgName = "English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD.svg";
 %% 
@@ -41,7 +45,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 palette2 = [1, 0, 0; 0, 0, 1];
 colorA = palette2(1,:);
 colorB = palette2(2,:);
@@ -117,7 +121,13 @@ if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-function [dhVec, sdVec] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
+assignin('base', 'English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD_StatsCtrl', statsC);
+assignin('base', 'English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD_StatsTH', statsT);
+assignin('base', 'English_Fig3J_THInhibitVsCtrl_DeltaHitP', pDH);
+assignin('base', 'English_Fig3J_THInhibitVsCtrl_ResponseHeterogeneityP', pSD);
+
+function [dhVec, sdVec, stats] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
+stats = iEmptyCohortStats();
 Sess = iLightWaterSessions(DS);
 Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
@@ -133,6 +143,7 @@ nMice = numel(mice);
 dhVec = [];
 allUsedDTs = datetime.empty(0,1);
 sessPerMouse = cell(nMice, 1);
+hasDeltaHit = false(nMice, 1);
 for iM = 1:nMice
 	m = mice(iM);
 	R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
@@ -146,12 +157,18 @@ for iM = 1:nMice
 	if height(R) < 2, continue; end
 	perf = double(R.Performance);
 	dhVec = [dhVec; diff(perf)]; %#ok<AGROW>
+	hasDeltaHit(iM) = true;
 	allUsedDTs = [allUsedDTs; R.DateTime]; %#ok<AGROW>
 	sessPerMouse{iM} = R.DateTime;
 	end
 
+stats.DeltaHitMouseN = nnz(hasDeltaHit);
+stats.DeltaHitPairN = numel(dhVec);
+
 allUsedDTs = unique(allUsedDTs);
 sdVec = nan(nMice, 1);
+cellCountVec = nan(nMice, 1);
+moderateCellCountVec = nan(nMice, 1);
 if isempty(allUsedDTs), sdVec = []; return; end
 
 q = struct('Stimulus', 'LightWater', 'DateTime', allUsedDTs);
@@ -190,9 +207,24 @@ for iM = 1:nMice
 	[~, ~, cellID] = unique(mRows.CellUID);
 	meanPerCell = accumarray(cellID, mRows.Med1s, [], @mean);
 	vals = meanPerCell(isfinite(meanPerCell) & meanPerCell >= -1 & meanPerCell <= 1);
+	cellCountVec(iM) = numel(meanPerCell);
+	moderateCellCountVec(iM) = numel(vals);
 	if numel(vals) >= 3, sdVec(iM) = std(vals); end
 	end
-sdVec = sdVec(isfinite(sdVec));
+validSD = isfinite(sdVec);
+stats.HeterogeneityMouseN = nnz(validSD);
+stats.MOp5CellN = sum(cellCountVec(validSD), 'omitnan');
+stats.ModerateMOp5CellN = sum(moderateCellCountVec(validSD), 'omitnan');
+sdVec = sdVec(validSD);
+end
+
+function stats = iEmptyCohortStats()
+stats = struct;
+stats.DeltaHitMouseN = 0;
+stats.DeltaHitPairN = 0;
+stats.HeterogeneityMouseN = 0;
+stats.MOp5CellN = 0;
+stats.ModerateMOp5CellN = 0;
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)

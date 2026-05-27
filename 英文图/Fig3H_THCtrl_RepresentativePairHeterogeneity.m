@@ -35,15 +35,20 @@ globalTH = iPerSessionGlobalSD(rawTH, dtTHAll, xMask);
 [idxCtrl, idxTH] = iPickRepresentativeSessions(sdCtrl, globalCtrl, sdTH, globalTH);
 dtCtrl = dtCtrlAll(idxCtrl);
 dtTH = dtTHAll(idxTH);
+mouseCtrl = iMouseForDateTime(SessCtrl, dtCtrl);
+mouseTH = iMouseForDateTime(SessTH, dtTH);
 
 fprintf('Selected Ctrl: %s, Response heterogeneity=%.3f\n', datestr(dtCtrl), sdCtrl(idxCtrl));
 fprintf('Selected TH:   %s, Response heterogeneity=%.3f\n', datestr(dtTH), sdTH(idxTH));
 fprintf('Global SD constraint: Ctrl=%.3f < TH=%.3f\n', globalCtrl(idxCtrl), globalTH(idxTH));
 
-sessInfo = struct('label', {"Ctrl", "TH"}, 'dt', {dtCtrl, dtTH}, 'DS', {CtrlDS, THDS});
+sessInfo = struct('label', {"Ctrl", "TH"}, 'dt', {dtCtrl, dtTH}, 'mouse', {mouseCtrl, mouseTH}, 'DS', {CtrlDS, THDS});
 vals = cell(1, 2);
 sdVals = nan(1, 2);
 rawData = cell(1, 2);
+nCellsTotal = nan(1, 2);
+nCellsModerate = nan(1, 2);
+nTrials = nan(1, 2);
 
 for iS = 1:2
     [~, ntats, ntsRaw] = iSessionNTATS(sessInfo(iS).DS, sessInfo(iS).dt);
@@ -52,13 +57,24 @@ for iS = 1:2
     end
     v1s = double(ntats(:, idx1s));
     keepMask = isfinite(v1s) & v1s >= -1 & v1s <= 1;
+    nCellsTotal(iS) = numel(v1s);
+    nCellsModerate(iS) = nnz(keepMask);
+    nTrials(iS) = size(ntsRaw, 3);
     v1sFilt = v1s(keepMask);
     [~, sortIdx] = sort(v1sFilt, 'ascend');
     vals{iS} = v1sFilt(sortIdx);
     sdVals(iS) = std(vals{iS});
     rawFilt = ntsRaw(keepMask, :, :);
     rawData{iS} = rawFilt(sortIdx, xMask, :);
+
+    fprintf('\n=== English Fig3H / Chinese Fig343C representative %s ===\n', sessInfo(iS).label);
+    fprintf('Mouse: %s\n', sessInfo(iS).mouse);
+    fprintf('Block: %s\n', datestr(sessInfo(iS).dt));
+    fprintf('Cells: %d total, %d moderate-response cells in [-1, 1]\n', nCellsTotal(iS), nCellsModerate(iS));
+    fprintf('Trials: %d\n', nTrials(iS));
+    fprintf('Response heterogeneity: %.4f\n', sdVals(iS));
 end
+fprintf('Representative panel only: significance p and correlation rho are not applicable.\n');
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 
@@ -193,6 +209,16 @@ for iC = 1:numel(validCtrl)
     end
 end
 error('Fig3H:NoFeasibleRepresentativePair', 'Cannot find Ctrl/TH sessions satisfying globalSD(Ctrl) < globalSD(TH).');
+end
+
+function mouseName = iMouseForDateTime(Sess, dt)
+rows = Sess.DateTime == dt;
+if any(rows)
+    mouseList = unique(string(Sess.Mouse(rows)), 'stable');
+    mouseName = mouseList(1);
+else
+    mouseName = "";
+end
 end
 
 function rawTbl = iBatchQueryRawNTS(DS, dts)

@@ -54,6 +54,8 @@ vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','
 Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
 Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
+nControlMice = numel(unique(string(Sess.Mouse(Sess.Group == "Control"))));
+nV7Mice = numel(unique(string(Sess.Mouse(Sess.Group == "Vacation7"))));
 
 % --- 4) Learning curve summary
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
@@ -76,6 +78,19 @@ end
 
 meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', false);
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
+
+lmeTbl = table;
+lmeTbl.Performance = double(Sess.Performance);
+lmeTbl.Session = double(Sess.Session);
+lmeTbl.Group = categorical(string(Sess.Group));
+lmeTbl.Mouse = categorical(string(Sess.Mouse));
+lmeModel = fitlme(lmeTbl, 'Performance ~ Session + Group + (1|Mouse)');
+lmeAnova = anova(lmeModel);
+rowGrp = find(string(lmeAnova.Term) == "Group", 1);
+pCurve = NaN;
+if ~isempty(rowGrp)
+	pCurve = lmeAnova.pValue(rowGrp);
+end
 
 % --- 5) Plot learning curve (like English Fig2B)
 f = figure('Color','w', 'Name', 'English Fig2M Vacation7 Learning curve');
@@ -130,6 +145,8 @@ xV7   = perMouse.TransferFirstPerf(perMouse.Group=="Vacation7");
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xV7   = xV7(isfinite(xV7));
+nFirstControlMice = numel(xCtrl);
+nFirstV7Mice = numel(xV7);
 [pFS, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xV7);
 
 DataCell = {double(xCtrl(:)), double(xV7(:))};
@@ -201,7 +218,19 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
+sampleCounts = table(["Control"; "Vacation7"], [nControlMice; nV7Mice], [nFirstControlMice; nFirstV7Mice], ...
+	'VariableNames', {'Group','NLearningCurveMice','NFirstBlockMice'});
+
+fprintf('\n=== Fig335B / English Fig2M sample counts and statistics ===\n');
+fprintf('Learning curve mice: Control n = %d, Vacation7 n = %d\n', nControlMice, nV7Mice);
+fprintf('First-block mice: Control n = %d, Vacation7 n = %d\n', nFirstControlMice, nFirstV7Mice);
+fprintf('Cells n = N/A (behavior-only panel)\n');
+fprintf('Learning curve LME Group p = %.6g\n', pCurve);
+fprintf('First-block hit-rate ranksum p = %.6g\n', pFS);
+
 assignin('base', 'English_Fig2M_Sessions', Sess);
 assignin('base', 'English_Fig2M_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2M_LearningCurveP', pCurve);
 assignin('base', 'English_Fig2M_FirstSessionP', pFS);
+assignin('base', 'English_Fig2M_SampleCounts', sampleCounts);
 

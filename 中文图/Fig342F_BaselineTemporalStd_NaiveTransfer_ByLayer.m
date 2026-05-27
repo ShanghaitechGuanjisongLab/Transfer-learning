@@ -43,8 +43,8 @@ if isempty(T)
 	error('Fig342F:Empty', 'No valid mouse-level temporal-std rows were built.');
 end
 
-Stats = table(layerLabels, nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), ...
-	'VariableNames', {'Layer', 'NaiveMean', 'TransferMean', 'NaiveN', 'TransferN', 'PValue', 'DeltaMean'});
+Stats = table(layerLabels, nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), ...
+	'VariableNames', {'Layer', 'NaiveMean', 'TransferMean', 'NaiveN', 'TransferN', 'NaiveCells', 'TransferCells', 'PValue', 'DeltaMean'});
 
 f = figure('Color', 'w', 'Name', 'Fig342F baseline temporal std by layer');
 f.Units = 'centimeters';
@@ -61,6 +61,8 @@ for iL = 1:numel(layers)
 	layerName = layers(iL);
 	xNaive = double(T.MeanTemporalStd(T.Group == "Naive" & T.Layer == layerName));
 	xTran = double(T.MeanTemporalStd(T.Group == "Transfer" & T.Layer == layerName));
+	nCellsNaive = sum(T.NCells(T.Group == "Naive" & T.Layer == layerName), 'omitnan');
+	nCellsTran = sum(T.NCells(T.Group == "Transfer" & T.Layer == layerName), 'omitnan');
 	xNaive = xNaive(isfinite(xNaive));
 	xTran = xTran(isfinite(xTran));
 	if isempty(xNaive) || isempty(xTran)
@@ -71,12 +73,14 @@ for iL = 1:numel(layers)
 	Stats.TransferMean(iL) = mean(xTran, 'omitnan');
 	Stats.NaiveN(iL) = numel(xNaive);
 	Stats.TransferN(iL) = numel(xTran);
+	Stats.NaiveCells(iL) = nCellsNaive;
+	Stats.TransferCells(iL) = nCellsTran;
 	Stats.PValue(iL) = p;
 	Stats.DeltaMean(iL) = Stats.TransferMean(iL) - Stats.NaiveMean(iL);
 
 	fprintf('\n=== Fig342F %s ===\n', layerLabels(iL));
-	fprintf('Naive:    %.4f ± %.4f (n=%d)\n', mean(xNaive), std(xNaive) / sqrt(numel(xNaive)), numel(xNaive));
-	fprintf('Transfer: %.4f ± %.4f (n=%d)\n', mean(xTran), std(xTran) / sqrt(numel(xTran)), numel(xTran));
+	fprintf('Naive:    %.4f ± %.4f (n=%d mice, %d cells)\n', mean(xNaive), std(xNaive) / sqrt(numel(xNaive)), numel(xNaive), round(nCellsNaive));
+	fprintf('Transfer: %.4f ± %.4f (n=%d mice, %d cells)\n', mean(xTran), std(xTran) / sqrt(numel(xTran)), numel(xTran), round(nCellsTran));
 	fprintf('ranksum p = %.6g\n', p);
 
 	ax = nexttile(layout, iL);

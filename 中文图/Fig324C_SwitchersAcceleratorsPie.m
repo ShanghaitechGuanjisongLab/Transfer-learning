@@ -17,16 +17,17 @@ xsSec = seconds(xs);
 [idx0, ok0] = iFindTimeIndex(xsSec, 0, 0.25);
 [idx1, ok1] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~okNeg1 || ~ok0 || ~ok1
-	error('中文图324C:BadTimeIndex', 'Cannot find samples close to -1s, 0s and 1s.');
+	error('Fig324C:BadTimeIndex', 'Cannot find samples close to -1s, 0s and 1s.');
 end
 
 G = struct();
 G.Learned = DS.QueryNTATS(struct('Phase', 'Learned', 'Stimulus', 'AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 X = iGetNtats3D(G.Learned);
+cellUID = iGetCellUID(G.Learned);
 
 if size(X, 3) < 1
-	error('中文图324C:BadNTATS', 'Expected Learned AudioWater NTATS.');
+	error('Fig324C:BadNTATS', 'Expected Learned AudioWater NTATS.');
 end
 
 learnedNeg1 = X(:, idxNeg1, 1);
@@ -34,6 +35,7 @@ learned0 = X(:, idx0, 1);
 learned1 = X(:, idx1, 1);
 
 valid = isfinite(learnedNeg1) & isfinite(learned0) & isfinite(learned1);
+nStatMice = iCountMiceForCells(DS.Cells, cellUID(valid));
 
 dLearnedNeg1 = learnedNeg1 - learned0;
 dLearned1 = learned1 - learned0;
@@ -103,6 +105,9 @@ end
 
 svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig324C_SwitchersAcceleratorsOthersPie.svg');
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Fig324C mice included in statistics: %d\n', nStatMice);
+fprintf('Fig324C pie counts: Switchers = %d cells, Accelerators = %d cells, Others = %d cells, Total = %d cells\n', ...
+	nSwitchers, nAccelerators, nOthers, nTotal);
 
 counts = table;
 counts.Category = labels.';
@@ -136,13 +141,34 @@ if isnumeric(nt)
 		return;
 	end
 	if ndims(nt) ~= 3
-		error('中文图324C:BadNTATSContainer', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('Fig324C:BadNTATSContainer', 'Expected NTATS to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-	error('中文图324C:BadNTATSContainer', 'Unsupported NTATS container type: %s', class(nt));
+	error('Fig324C:BadNTATSContainer', 'Unsupported NTATS container type: %s', class(nt));
+end
+
+function cellUID = iGetCellUID(S)
+if istable(S) && ismember('CellUID', S.Properties.VariableNames)
+	cellUID = uint64(S.CellUID(:));
+else
+	cellUID = uint64.empty(0, 1);
+end
+end
+
+function nMice = iCountMiceForCells(cellTable, cellUID)
+nMice = 0;
+if isempty(cellUID) || isempty(cellTable) || ~all(ismember({'CellUID','Mouse'}, cellTable.Properties.VariableNames))
+	return;
+end
+cellMap = cellTable(:, {'CellUID','Mouse'});
+cellMap.CellUID = uint64(cellMap.CellUID);
+[hasCell, loc] = ismember(uint64(cellUID(:)), cellMap.CellUID);
+if any(hasCell)
+	nMice = numel(unique(string(cellMap.Mouse(loc(hasCell)))));
+end
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)

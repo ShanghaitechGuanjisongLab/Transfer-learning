@@ -119,6 +119,7 @@ naiveFirst = double(firstTrial.Behavior(firstTrial.Group == "Naive"));
 tranFirst  = double(firstTrial.Behavior(firstTrial.Group == "Transfer"));
 naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
+firstBarPValue = ranksum(naiveFirst, tranFirst);
 
 f2 = figure('Color','none', 'Name', 'Fig312D LightWater first-trial performance');
 f2.Units = 'centimeters';
@@ -168,11 +169,16 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 end
 svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312D_LightWater_FirstTrialPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
+fprintf('\n=== Fig312D first-trial bar ===\n');
+fprintf('Naive mice n = %d\n', numel(naiveFirst));
+fprintf('Continual mice n = %d\n', numel(tranFirst));
+fprintf('ranksum p = %.6g\n', firstBarPValue);
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
 firstTrialTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
 firstTrialTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstTrialTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
+firstTrialTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
 assignin('base', 'Fig312D_LightWater_FirstTrial', firstTrialTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)

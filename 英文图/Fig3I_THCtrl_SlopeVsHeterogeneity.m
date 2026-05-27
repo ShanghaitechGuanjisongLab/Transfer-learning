@@ -34,12 +34,14 @@ axAll = gobjects(numel(layers), 1);
 
 for iL = 1:numel(layers)
     layerName = layers(iL);
-    [slopeC, sdC, miceC] = iSingleDatasetCohortDataByLayer(CtrlDS, CtrlCell, idx1s, "Transfer", "Final", layerName);
-    [slopeT, sdT, miceT] = iSingleDatasetCohortDataByLayer(THDS, THCell, idx1s, "Transfer", "Final", layerName);
+    [slopeC, sdC, miceC, cellCountC, moderateCellCountC] = iSingleDatasetCohortDataByLayer(CtrlDS, CtrlCell, idx1s, "Transfer", "Final", layerName);
+    [slopeT, sdT, miceT, cellCountT, moderateCellCountT] = iSingleDatasetCohortDataByLayer(THDS, THCell, idx1s, "Transfer", "Final", layerName);
 
     slopeAll = [slopeC; slopeT];
     sdAll = [sdC; sdT];
     groupAll = [repmat("Ctrl", numel(miceC), 1); repmat("TH", numel(miceT), 1)];
+    cellCountAll = [cellCountC; cellCountT];
+    moderateCellCountAll = [moderateCellCountC; moderateCellCountT];
     use = isfinite(slopeAll) & isfinite(sdAll);
     if nnz(use) >= 3 && std(sdAll(use)) > 0 && std(slopeAll(use)) > 0
         [rho, p] = corr(sdAll(use), slopeAll(use), 'Type', 'Spearman');
@@ -86,6 +88,8 @@ for iL = 1:numel(layers)
     fprintf('\n=== Fig3I %s ===\n', layerLabels(iL));
     fprintf('Ctrl mice: %d\n', nnz(maskC));
     fprintf('TH mice: %d\n', nnz(maskT));
+    fprintf('Ctrl cells: %d total, %d moderate-response cells in [-1, 1]\n', sum(cellCountAll(maskC), 'omitnan'), sum(moderateCellCountAll(maskC), 'omitnan'));
+    fprintf('TH cells: %d total, %d moderate-response cells in [-1, 1]\n', sum(cellCountAll(maskT), 'omitnan'), sum(moderateCellCountAll(maskT), 'omitnan'));
     fprintf('Spearman rho=%.3f, p=%.4g\n', rho, p);
 end
 
@@ -99,7 +103,7 @@ svgPath = 'English_Fig3I_THCtrl_SlopeVsHeterogeneity.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-function [slopeVec, sdVec, miceKept] = iSingleDatasetCohortDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)
+function [slopeVec, sdVec, miceKept, cellCountVec, moderateCellCountVec] = iSingleDatasetCohortDataByLayer(DS, cellMap, idx1s, phaseStart, phaseEnd, layerName)
 Sess = iLightWaterSessions(DS);
 Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
@@ -108,22 +112,28 @@ if isempty(SessUsed)
     slopeVec = [];
     sdVec = [];
     miceKept = string.empty(0,1);
+    cellCountVec = [];
+    moderateCellCountVec = [];
     return;
 end
 
 rawTbl = iBatchQueryRawNTS(DS, unique(SessUsed.DateTime));
 if isempty(rawTbl)
     sdAll = nan(numel(miceAll), 1);
+    cellCountAll = nan(numel(miceAll), 1);
+    moderateCellCountAll = nan(numel(miceAll), 1);
 else
     rawTbl = iAttachLayer(rawTbl, cellMap);
     medTbl = iPerSessionCellMedianTable(rawTbl, idx1s, layerName);
-    sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll);
+    [sdAll, cellCountAll, moderateCellCountAll] = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll);
 end
 
 keep = isfinite(slopeAll) & isfinite(sdAll);
 slopeVec = slopeAll(keep);
 sdVec = sdAll(keep);
 miceKept = miceAll(keep);
+cellCountVec = cellCountAll(keep);
+moderateCellCountVec = moderateCellCountAll(keep);
 end
 
 function [SessUsed, mice, slopeVec] = iPerMouseSlopeSessions(Sess)
@@ -221,8 +231,10 @@ slope = p(1).^2;
 midpoint = p(2);
 end
 
-function sdVec = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll)
+function [sdVec, cellCountVec, moderateCellCountVec] = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll)
 sdVec = nan(numel(miceAll), 1);
+cellCountVec = nan(numel(miceAll), 1);
+moderateCellCountVec = nan(numel(miceAll), 1);
 if isempty(medTbl), return; end
 for iM = 1:numel(miceAll)
     rowsSess = SessUsed(string(SessUsed.Mouse) == miceAll(iM), :);
@@ -232,6 +244,8 @@ for iM = 1:numel(miceAll)
     [~, ~, ic] = unique(sub.CellUID);
     meanPerCell = accumarray(ic, sub.Med1s, [], @mean);
     vals = meanPerCell(isfinite(meanPerCell) & meanPerCell >= -1 & meanPerCell <= 1);
+    cellCountVec(iM) = numel(meanPerCell);
+    moderateCellCountVec(iM) = numel(vals);
     if numel(vals) >= 3
         sdVec(iM) = std(vals);
     end

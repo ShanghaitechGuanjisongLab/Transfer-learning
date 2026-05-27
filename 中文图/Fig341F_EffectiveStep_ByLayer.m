@@ -9,7 +9,10 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-Data = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.No_special_operation);
+Data = TransferLearning.Fig341.BuildStateSpaceSummary(false, UniExp.Flags.No_special_operation);
+Counts = TransferLearning.Fig341.StateSpaceUsageCounts(Data);
 [f, summaryTbl] = TransferLearning.Fig341.PlotMetricByLayer(Data, "EffectiveStep", "中文图341F Effective step", "Effective step", "中文图Fig341F_EffectiveStep_ByLayer.svg");
+TransferLearning.Fig341.PrintStateSpaceUsageCounts("Fig341F", Counts, "Layer");
 assignin('base', 'Fig341F_Summary', summaryTbl);
 assignin('base', 'Fig341F_Metrics', Data.Metrics(:, {'Mouse','Group','Source','ZLayer','NSession','EffectiveStep'}));
+assignin('base', 'Fig341F_Counts', Counts.Layer);

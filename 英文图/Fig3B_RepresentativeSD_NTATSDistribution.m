@@ -167,6 +167,10 @@ sessTags = ["SessionK", "SessionK1"];
 repDt = dtVals(repPairIdx, repSessIdx);
 fprintf('\nRepresentative session: %s %s, DateTime=%s, Response heterogeneity=%.3f\n', ...
 	pairTags(repPairIdx), sessTags(repSessIdx), datestr(repDt, 'yyyy-mm-dd HH:MM'), repSD);
+repMouse = string(SessSpeed.Mouse(pairsIdx(repPairIdx)));
+repNCells = numel(vals{repPairIdx, repSessIdx});
+fprintf('Fig342A stats: representative n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; correlation/significance test not applicable.\n', ...
+	repMouse, repNCells, repSD);
 
 %% ===== 5) Export representative volshow PNG =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end

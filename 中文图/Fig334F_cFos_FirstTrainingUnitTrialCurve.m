@@ -21,6 +21,8 @@ if isempty(trialRows)
 	error('Fig334F:EmptyTrials', 'No first training-unit LightWater trials found.');
 end
 trialRows = sortrows(trialRows, ["Group", "Mouse", "DateTime", "Trial"]);
+nControlMice = numel(unique(string(trialRows.Mouse(trialRows.Group == groupOrder(1)))));
+nCFosMice = numel(unique(string(trialRows.Mouse(trialRows.Group == groupOrder(2)))));
 
 [meanMat, semMat, trialNumbers, nMat] = iSummarizeTrialCurve(trialRows, groupOrder);
 curveP = iLearningCurvePValue(trialRows, groupOrder);
@@ -66,6 +68,7 @@ end
 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, '中文图Fig334F_cFos_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Fig334F mice: Control n = %d, cFos n = %d\n', nControlMice, nCFosMice);
 fprintf('Fig334F trial curve mixed-effect p = %.4g\n', curveP);
 
 summaryCurve = table;

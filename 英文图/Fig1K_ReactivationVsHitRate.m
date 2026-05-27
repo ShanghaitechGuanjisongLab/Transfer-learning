@@ -36,6 +36,8 @@ x5 = R.Prob5;
 x = nanmean([x23, x5], 2);
 y = R.TransferHitRate;
 mask = isfinite(x) & isfinite(y);
+learnedActiveCells = R.NLearnedActive23 + R.NLearnedActive5;
+nCells = sum(learnedActiveCells(mask), 'omitnan');
 %% 
 
 
@@ -111,3 +113,8 @@ try
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
+
+fprintf('\n=== English Fig1K Reactivation vs Hit rate ===\n');
+fprintf('mice n = %d\n', nnz(mask));
+fprintf('participating learned-active cells n = %d\n', nCells);
+fprintf('Spearman rho = %.6g, p = %.6g\n', rho, p);

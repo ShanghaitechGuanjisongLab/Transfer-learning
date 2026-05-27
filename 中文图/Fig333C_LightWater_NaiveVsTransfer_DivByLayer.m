@@ -41,17 +41,24 @@ end
 [G, mouseU, groupU] = findgroups(string(T.Mouse), string(T.Group));
 aggL23 = splitapply(@(x) mean(x, 'omitnan'), T.DivL23, G);
 aggL5  = splitapply(@(x) mean(x, 'omitnan'), T.DivL5, G);
-S = table(mouseU, groupU, aggL23, aggL5, 'VariableNames', {'Mouse','Group','DivL23','DivL5'});
+aggCellL23 = splitapply(@iSumFinite, T.NCellL23, G);
+aggCellL5 = splitapply(@iSumFinite, T.NCellL5, G);
+S = table(mouseU, groupU, aggL23, aggL5, aggCellL23, aggCellL5, 'VariableNames', {'Mouse','Group','DivL23','DivL5','NCellL23','NCellL5'});
 
-naiveL23 = S.DivL23(S.Group == "Naive");
-tranL23  = S.DivL23(S.Group == "Transfer");
-naiveL5  = S.DivL5(S.Group == "Naive");
-tranL5   = S.DivL5(S.Group == "Transfer");
+maskNaiveL23 = S.Group == "Naive" & isfinite(S.DivL23);
+maskTranL23 = S.Group == "Transfer" & isfinite(S.DivL23);
+maskNaiveL5 = S.Group == "Naive" & isfinite(S.DivL5);
+maskTranL5 = S.Group == "Transfer" & isfinite(S.DivL5);
 
-naiveL23 = naiveL23(isfinite(naiveL23));
-tranL23  = tranL23(isfinite(tranL23));
-naiveL5  = naiveL5(isfinite(naiveL5));
-tranL5   = tranL5(isfinite(tranL5));
+naiveL23 = S.DivL23(maskNaiveL23);
+tranL23 = S.DivL23(maskTranL23);
+naiveL5 = S.DivL5(maskNaiveL5);
+tranL5 = S.DivL5(maskTranL5);
+
+nCellNaiveL23 = iSumFinite(S.NCellL23(maskNaiveL23));
+nCellTranL23 = iSumFinite(S.NCellL23(maskTranL23));
+nCellNaiveL5 = iSumFinite(S.NCellL5(maskNaiveL5));
+nCellTranL5 = iSumFinite(S.NCellL5(maskTranL5));
 
 if isempty(naiveL23) || isempty(tranL23) || isempty(naiveL5) || isempty(tranL5)
 	error('English_Fig2H:InsufficientData', 'At least one LightWater layer comparison is empty.');
@@ -60,11 +67,15 @@ end
 pL23 = ranksum(naiveL23, tranL23);
 pL5 = ranksum(naiveL5, tranL5);
 
-fprintf('\n=== Panel H: NaiveLW vs TransferLW Div by layer (ranksum) ===\n');
-fprintf('  L2/3: Naive %.3f ± %.3f (n=%d) vs Transfer %.3f ± %.3f (n=%d), p=%.4g\n', ...
+fprintf('\n=== Fig333C: NaiveLW vs ContinualLW Div by layer (ranksum) ===\n');
+fprintf('  L2/3 counts: Naive %d mice, %d cells; Continual %d mice, %d cells\n', ...
+	nnz(maskNaiveL23), nCellNaiveL23, nnz(maskTranL23), nCellTranL23);
+fprintf('  L2/3: Naive %.3f ± %.3f (n=%d) vs Continual %.3f ± %.3f (n=%d), p=%.4g\n', ...
 	mean(naiveL23), std(naiveL23)/sqrt(numel(naiveL23)), numel(naiveL23), ...
 	mean(tranL23), std(tranL23)/sqrt(numel(tranL23)), numel(tranL23), pL23);
-fprintf('  L5:   Naive %.3f ± %.3f (n=%d) vs Transfer %.3f ± %.3f (n=%d), p=%.4g\n', ...
+fprintf('  L5 counts: Naive %d mice, %d cells; Continual %d mice, %d cells\n', ...
+	nnz(maskNaiveL5), nCellNaiveL5, nnz(maskTranL5), nCellTranL5);
+fprintf('  L5:   Naive %.3f ± %.3f (n=%d) vs Continual %.3f ± %.3f (n=%d), p=%.4g\n', ...
 	mean(naiveL5), std(naiveL5)/sqrt(numel(naiveL5)), numel(naiveL5), ...
 	mean(tranL5), std(tranL5)/sqrt(numel(tranL5)), numel(tranL5), pL5);
 
@@ -107,6 +118,7 @@ iStyleBars(Bars2, RED, BLUE);
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgPath = '中文图Fig333C_LightWater_NaiveVsTransfer_DivByLayer.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
+fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'English_Fig2H_Table', T);
 assignin('base', 'English_Fig2H_Summary', S);
@@ -182,6 +194,8 @@ ntsRaw.TrialUID = uint64(ntsRaw.TrialUID);
 nSess = numel(selMouse);
 divL23 = nan(nSess, 1);
 divL5 = nan(nSess, 1);
+nCellL23 = zeros(nSess, 1);
+nCellL5 = zeros(nSess, 1);
 for i = 1:nSess
 	m = selMouse(i);
 	dt = selDT(i);
@@ -201,15 +215,22 @@ for i = 1:nSess
 	mask23 = layers == "MOp2/3";
 	mask5 = layers == "MOp5";
 	if sum(mask23) >= 3
+		nCellL23(i) = sum(mask23);
 		divL23(i) = iDivFromX(X(mask23, :));
 	end
 	if sum(mask5) >= 3
+		nCellL5(i) = sum(mask5);
 		divL5(i) = iDivFromX(X(mask5, :));
 	end
 	end
 
-out = table(selMouse, repmat(groupName, nSess, 1), selDT, divL23, divL5, ...
-	'VariableNames', {'Mouse','Group','DateTime','DivL23','DivL5'});
+out = table(selMouse, repmat(groupName, nSess, 1), selDT, divL23, divL5, nCellL23, nCellL5, ...
+	'VariableNames', {'Mouse','Group','DateTime','DivL23','DivL5','NCellL23','NCellL5'});
+end
+
+function total = iSumFinite(values)
+values = values(isfinite(values));
+total = sum(values);
 end
 
 function ntsRaw = iQueryBatchNts(DS, Q)

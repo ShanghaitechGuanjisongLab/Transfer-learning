@@ -141,6 +141,9 @@ for iS = 1:2
 	fprintf('  %s: n=%d cells, Response heterogeneity=%.3f\n', sessInfo(iS).label, numel(vals{iS}), sdVals(iS));
 end
 
+fprintf('Fig342C stats: representative Naive n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; representative Continual n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; correlation/significance test not applicable.\n', ...
+	sessInfo(2).mouse, numel(vals{2}), sdVals(2), sessInfo(1).mouse, numel(vals{1}), sdVals(1));
+
 %% ===== 5) Export 2 volshow PNGs =====
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 

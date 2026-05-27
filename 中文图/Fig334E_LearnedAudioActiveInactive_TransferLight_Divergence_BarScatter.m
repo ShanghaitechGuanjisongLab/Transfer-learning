@@ -42,6 +42,8 @@ mice = intersect(unique(TTransfer.Mouse), unique(TLearned.Mouse));
 nMice = numel(mice);
 DivActive = nan(nMice, numel(layers));
 DivInactive = nan(nMice, numel(layers));
+NCellActive = zeros(nMice, numel(layers));
+NCellInactive = zeros(nMice, numel(layers));
 
 for iM = 1:nMice
 	m = mice(iM);
@@ -95,9 +97,11 @@ for iM = 1:nMice
 		maskActive = isLayer & isActiveTransferCell;
 		maskInactive = isLayer & ~isActiveTransferCell;
 		if nnz(maskActive) >= 3
+			NCellActive(iM, iL) = nnz(maskActive);
 			DivActive(iM, iL) = iRelativeDivergence(transferAt1(maskActive, :));
 		end
 		if nnz(maskInactive) >= 3
+			NCellInactive(iM, iL) = nnz(maskInactive);
 			DivInactive(iM, iL) = iRelativeDivergence(transferAt1(maskInactive, :));
 		end
 	end
@@ -120,8 +124,8 @@ yl.FontName = 'Arial';
 yl.FontSize = 6;
 
 palette2 = [1, 0, 0; 0, 0, 1];
-Stats = table(layerLabels, nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), ...
-	'VariableNames', {'Layer','MeanActive','MeanInactive','PValue','N'});
+Stats = table(layerLabels, nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), ...
+	'VariableNames', {'Layer','MeanActive','MeanInactive','PValue','NMouse','NCellActive','NCellInactive'});
 Options = cell(numel(layers), 1);
 
 for iL = 1:numel(layers)
@@ -134,10 +138,15 @@ for iL = 1:numel(layers)
 		error('Fig334E:TooFewPairs', 'Too few paired mice for %s.', layerLabels(iL));
 	end
 	p = signrank(vA, vI);
+	nMouseLayer = numel(vA);
+	nCellActive = sum(NCellActive(use, iL));
+	nCellInactive = sum(NCellInactive(use, iL));
 	Stats.MeanActive(iL) = mean(vA, 'omitnan');
 	Stats.MeanInactive(iL) = mean(vI, 'omitnan');
 	Stats.PValue(iL) = p;
-	Stats.N(iL) = numel(vA);
+	Stats.NMouse(iL) = nMouseLayer;
+	Stats.NCellActive(iL) = nCellActive;
+	Stats.NCellInactive(iL) = nCellInactive;
 
 	ax = nexttile(Layout, iL);
 	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
@@ -161,8 +170,10 @@ for iL = 1:numel(layers)
 	iStyleBars(Bars, palette2(1, :), palette2(2, :));
 
 	fprintf('\n=== Fig334E %s ===\n', layerLabels(iL));
-	fprintf('Active:   %.3f ± %.3f (n=%d)\n', mean(vA), std(vA)/sqrt(numel(vA)), numel(vA));
-	fprintf('Inactive: %.3f ± %.3f (n=%d)\n', mean(vI), std(vI)/sqrt(numel(vI)), numel(vI));
+	fprintf('Mouse count: n = %d paired mice\n', nMouseLayer);
+	fprintf('Cell count: Active %d cells; Inactive %d cells\n', nCellActive, nCellInactive);
+	fprintf('Active:   %.3f ± %.3f (n=%d mice)\n', mean(vA), std(vA)/sqrt(numel(vA)), numel(vA));
+	fprintf('Inactive: %.3f ± %.3f (n=%d mice)\n', mean(vI), std(vI)/sqrt(numel(vI)), numel(vI));
 	fprintf('signrank p = %.6g\n', p);
 end
 
@@ -179,7 +190,7 @@ svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig334E_LearnedA
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig334E_Stats', Stats);
-assignin('base', 'Fig334E_Data', struct('Mouse', mice, 'DivActive', DivActive, 'DivInactive', DivInactive, 'Layers', layers));
+assignin('base', 'Fig334E_Data', struct('Mouse', mice, 'DivActive', DivActive, 'DivInactive', DivInactive, 'NCellActive', NCellActive, 'NCellInactive', NCellInactive, 'Layers', layers));
 
 function CellMap = iCellMap(DS)
 CellMap = DS.Cells(:, {'CellUID', 'ZLayer'});

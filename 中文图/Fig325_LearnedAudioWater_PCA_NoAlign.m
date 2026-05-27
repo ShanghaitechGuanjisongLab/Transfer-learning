@@ -1,4 +1,4 @@
-% 中文图36：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
+% 中文图325：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -17,8 +17,10 @@ DSList = {
 G = iNtsSuperMouse(DSList, "Learned", "AudioWater", 30);
 GPlot = iAverageAdjacentTrials(G, 3);
 PlotData = iComputePcaPlotData(GPlot);
+nCellsUsed = height(GPlot);
+nMiceUsed = numel(unique(string(GPlot.Mouse)));
 
-f = figure('Color', 'w', 'Name', '中文图36 Learned AudioWater PCA No Align');
+f = figure('Color', 'w', 'Name', '中文图325 Learned AudioWater PCA No Align');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
@@ -60,15 +62,22 @@ end
 svgPath = '中文图Fig325_LearnedAudioWater_PCA_NoAlign.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Fig325 cells used: %d\n', nCellsUsed);
+fprintf('Fig325 mice used: %d\n', nMiceUsed);
 
 assignin('base', 'Fig36_GroupNtats', GPlot);
 
 function GroupNtats = iNtsSuperMouse(DSList, phaseName, stimulusName, minTrials)
 cellTraces = {};
+cellUIDList = zeros(0, 1, 'uint64');
+mouseList = strings(0, 1);
 nTime = [];
 
 for iDS = 1:numel(DSList)
 	DS = DSList{iDS};
+	cellMeta = DS.Cells(:, ["CellUID", "Mouse"]);
+	cellMeta.CellUID = uint64(cellMeta.CellUID);
+	cellMeta.Mouse = string(cellMeta.Mouse);
 	ntsCell = DS.QueryNTS(struct('Stimulus', string(stimulusName), 'Phase', string(phaseName)), UniExp.Flags.No_special_operation, 1:24);
 	nts = ntsCell{1};
 	cellUIDs = unique(uint64(nts.CellUID));
@@ -87,6 +96,9 @@ for iDS = 1:numel(DSList)
 			continue;
 		end
 		cellTraces{end+1, 1} = sig; %#ok<AGROW>
+		cellUIDList(end+1, 1) = cid; %#ok<AGROW>
+		cellMetaIndex = find(cellMeta.CellUID == cid, 1, 'first');
+		mouseList(end+1, 1) = cellMeta.Mouse(cellMetaIndex); %#ok<AGROW>
 		if isempty(nTime)
 			nTime = size(sig, 2);
 		end
@@ -94,7 +106,7 @@ for iDS = 1:numel(DSList)
 end
 
 if isempty(cellTraces)
-	error('中文图36:EmptySuperMouse', 'No cells found after pooling for requested trials.');
+	error('Fig325:EmptySuperMouse', 'No cells found after pooling for requested trials.');
 end
 
 nCells = numel(cellTraces);
@@ -105,7 +117,7 @@ end
 
 ntatsData = permute(CellTrialTimes, [1, 3, 2]);
 ntats = MATLAB.DataTypes.NDTable(ntatsData);
-GroupNtats = table(ntats, 'VariableNames', "NTATS");
+GroupNtats = table(ntats, cellUIDList, mouseList, 'VariableNames', ["NTATS", "CellUID", "Mouse"]);
 end
 
 function GroupNtatsOut = iAverageAdjacentTrials(GroupNtatsIn, groupSize)
@@ -118,7 +130,7 @@ Xr = reshape(X, size(X, 1), size(X, 2), groupSize, nGroup);
 Xg = mean(Xr, 3, 'omitnan');
 Xg = reshape(Xg, size(X, 1), size(X, 2), nGroup);
 ntats = MATLAB.DataTypes.NDTable(Xg);
-GroupNtatsOut = table(ntats, 'VariableNames', "NTATS");
+GroupNtatsOut = table(ntats, GroupNtatsIn.CellUID, GroupNtatsIn.Mouse, 'VariableNames', ["NTATS", "CellUID", "Mouse"]);
 end
 
 function PlotData = iComputePcaPlotData(GroupNtats)

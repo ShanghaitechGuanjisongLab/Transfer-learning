@@ -9,7 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-Data = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.ZScore);
+Data = TransferLearning.Fig341.BuildStateSpaceSummary(false, UniExp.Flags.ZScore);
 Naive = Data.Representative.NaiveCell;
 Transfer = Data.Representative.TransferCell;
 xsSec = Data.XsSec;
@@ -27,7 +27,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, figWidthCm, figHeightCm];
 f.PaperSize = [figWidthCm, figHeightCm];
 
-tlo = tiledlayout(f, 2, nCol, 'TileSpacing', 'compact', 'Padding', 'compact');
+tlo = tiledlayout(f, 2, nCol, 'TileSpacing', 'tight', 'Padding', 'tight');
 palette2 = TransferLearning.FigurePalette(2);
 naiveSignals = Naive.Signals(:, plotMask);
 transferSignals = Transfer.Signals(:, plotMask);

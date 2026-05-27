@@ -2,6 +2,7 @@ function R = iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer(options)
 arguments
 	options.DataSet = TransferLearning.AudioLightBaseline()
 	options.Source string = "AudioLightBaseline"
+	options.RequireHitMiss (1, 1) logical = true
 end
 
 DS = options.DataSet;
@@ -61,48 +62,71 @@ for iRow = 1:height(Sess)
 	GTran = DS.QueryNTATS(struct('Mouse', mouseName, 'DateTime', dtTransfer, ...
 		'Phase', 'Transfer', 'Stimulus', 'LightWater', 'Design', 'LightWater'), ...
 		UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-
-	QHM = table(["Hit"; "Miss"], repmat(categorical("Transfer"), 2, 1), ...
-		repmat(categorical("LightWater"), 2, 1), repmat(categorical("LightWater"), 2, 1), ...
-		[1; 0], repmat(mouseName, 2, 1), repmat(dtTransfer, 2, 1), ...
-		'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior','Mouse','DateTime'});
-	GTranHM = DS.QueryNTATS(QHM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	beh = double(TTran.Behavior(TTran.Mouse == mouseName & TTran.DateTime == dtTransfer));
+	if options.RequireHitMiss
+		if ~any(beh == 1) || ~any(beh == 0)
+			continue;
+		end
+		QHM = table(["Hit"; "Miss"], repmat(categorical("Transfer"), 2, 1), ...
+			repmat(categorical("LightWater"), 2, 1), repmat(categorical("LightWater"), 2, 1), ...
+			[1; 0], repmat(mouseName, 2, 1), repmat(dtTransfer, 2, 1), ...
+			'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior','Mouse','DateTime'});
+		GTranHM = DS.QueryNTATS(QHM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	end
 
 	[XLearn, cellLearn] = iExtractNtats2D(GLearn);
 	[XTran, cellTran] = iExtractNtats2D(GTran);
-	[XHM, cellHM] = iExtractNtats3D(GTranHM);
-	if isempty(XLearn) || isempty(XTran) || isempty(XHM)
-		continue;
-	end
+	if options.RequireHitMiss
+		[XHM, cellHM] = iExtractNtats3D(GTranHM);
+		if isempty(XLearn) || isempty(XTran) || isempty(XHM)
+			continue;
+		end
 
-	[commonLT, idxL, idxT] = intersect(cellLearn, cellTran, 'stable');
-	[commonCells, idxLT, idxHM] = intersect(commonLT, cellHM, 'stable');
-	if isempty(commonCells)
-		continue;
-	end
+		[commonLT, idxL, idxT] = intersect(cellLearn, cellTran, 'stable');
+		[commonCells, idxLT, idxHM] = intersect(commonLT, cellHM, 'stable');
+		if isempty(commonCells)
+			continue;
+		end
 
-	XLearn = XLearn(idxL(idxLT), :);
-	XTran = XTran(idxT(idxLT), :);
-	XHit = XHM(idxHM, :, 1);
-	XMiss = XHM(idxHM, :, 2);
+		XLearn = XLearn(idxL(idxLT), :);
+		XTran = XTran(idxT(idxLT), :);
+		XHit = XHM(idxHM, :, 1);
+		XMiss = XHM(idxHM, :, 2);
+	else
+		if isempty(XLearn) || isempty(XTran)
+			continue;
+		end
+		[commonCells, idxL, idxT] = intersect(cellLearn, cellTran, 'stable');
+		if isempty(commonCells)
+			continue;
+		end
+		XLearn = XLearn(idxL, :);
+		XTran = XTran(idxT, :);
+	end
 	cellLayers = iMapLayer(CellMeta, commonCells);
 
 	learnedActive = iIsActiveAt1s(XLearn, baseMask, idx1s, kSigma);
 	transferActive = iIsActiveAt1s(XTran, baseMask, idx1s, kSigma);
-	transferActiveHit = iIsActiveAt1s(XHit, baseMask, idx1s, kSigma);
-	transferActiveMiss = iIsActiveAt1s(XMiss, baseMask, idx1s, kSigma);
 
 	mask23 = iIsLayer23(cellLayers);
 	mask5 = iIsLayer5(cellLayers);
 
 	[n23, prob23] = iConditionalProb(learnedActive, transferActive, mask23);
 	[n5, prob5] = iConditionalProb(learnedActive, transferActive, mask5);
-	[~, probHit23] = iConditionalProb(learnedActive, transferActiveHit, mask23);
-	[~, probHit5] = iConditionalProb(learnedActive, transferActiveHit, mask5);
-	[~, probMiss23] = iConditionalProb(learnedActive, transferActiveMiss, mask23);
-	[~, probMiss5] = iConditionalProb(learnedActive, transferActiveMiss, mask5);
+	if options.RequireHitMiss
+		transferActiveHit = iIsActiveAt1s(XHit, baseMask, idx1s, kSigma);
+		transferActiveMiss = iIsActiveAt1s(XMiss, baseMask, idx1s, kSigma);
+		[~, probHit23] = iConditionalProb(learnedActive, transferActiveHit, mask23);
+		[~, probHit5] = iConditionalProb(learnedActive, transferActiveHit, mask5);
+		[~, probMiss23] = iConditionalProb(learnedActive, transferActiveMiss, mask23);
+		[~, probMiss5] = iConditionalProb(learnedActive, transferActiveMiss, mask5);
+	else
+		probHit23 = NaN;
+		probHit5 = NaN;
+		probMiss23 = NaN;
+		probMiss5 = NaN;
+	end
 
-	beh = double(TTran.Behavior(TTran.Mouse == mouseName & TTran.DateTime == dtTransfer));
 	transferHitRate = mean(beh, 'omitnan');
 
 	Rows = [Rows; table(mouseName, dtLearned, dtTransfer, transferHitRate, ...

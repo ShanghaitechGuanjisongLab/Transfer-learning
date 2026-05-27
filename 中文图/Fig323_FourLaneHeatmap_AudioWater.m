@@ -30,6 +30,7 @@ G.NaiveAudioWater = DS.QueryNTATS(struct('Phase', 'Naive', 'Stimulus', 'AudioWat
 G.LearnedAudioWater = DS.QueryNTATS(struct('Phase', 'Learned', 'Stimulus', 'AudioWater'), UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 
 S = UniExp.NtatsCellStrip(G);
+cellMouse = iGetCellMouse(DS, S.CellUID);
 X = iGetNtats3D(S);
 
 nLanes = size(X, 3);
@@ -42,6 +43,8 @@ for iL = 1:nLanes
 	activeByLane(:, iL) = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
 end
 activeMask = any(activeByLane, 2);
+allMouseNames = iUniqueMouseNames(cellMouse);
+activeMouseNames = iUniqueMouseNames(cellMouse(activeMask));
 
 X = X(activeMask, :, :);
 
@@ -135,10 +138,29 @@ end
 svgPath = '中文图Fig323_FourLaneHeatmap_AudioWater.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Fig323 mice recorded: %d\n', numel(allMouseNames));
+fprintf('Fig323 mice plotted after active-cell filter: %d\n', numel(activeMouseNames));
 
 assignin('base', 'Fig322_ActiveMask', activeMask);
 assignin('base', 'Fig322_SortIdx', sortIdx);
 assignin('base', 'Fig322_SortKey_Min1s', sortKey);
+
+function cellMouse = iGetCellMouse(DS, cellUID)
+cellMeta = DS.Cells(:, ["CellUID", "Mouse"]);
+cellMeta.Mouse = string(cellMeta.Mouse);
+[matched, loc] = ismember(uint64(cellUID), uint64(cellMeta.CellUID));
+if any(~matched)
+	error("Cannot map " + string(nnz(~matched)) + " cells to mice.");
+end
+cellMouse = strings(size(cellUID));
+cellMouse(matched) = cellMeta.Mouse(loc(matched));
+end
+
+function mouseNames = iUniqueMouseNames(cellMouse)
+cellMouse = string(cellMouse(:));
+validMouse = ~ismissing(cellMouse) & strlength(cellMouse) > 0;
+mouseNames = unique(cellMouse(validMouse), 'stable');
+end
 
 function X = iGetNtats3D(S)
 if istable(S)

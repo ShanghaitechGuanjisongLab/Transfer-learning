@@ -88,6 +88,8 @@ vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Performance','
 Sess = TransferLearning.BehaviorSessions.iSessionizeByDateTime(J(:, vars));
 Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
 Sess = TransferLearning.BehaviorSessions.iAddSessionIndex(Sess);
+nControlMice = numel(unique(string(Sess.Mouse(Sess.Group == "Control"))));
+nInhibitedMice = numel(unique(string(Sess.Mouse(Sess.Group == "MOp"))));
 
 % --- 5) Learning curve summary (UniExp.LearningSummarize)
 sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group'});
@@ -164,7 +166,8 @@ if isfinite(pCurve)
 		'HandleVisibility', 'off');
 	ht.AffectAutoLimits = 'on';
 end
-fprintf('Learning curve overall p = %.4g\n', pCurve);
+fprintf('Fig334C mice: Control n = %d, cFos n = %d\n', nControlMice, nInhibitedMice);
+fprintf('Fig334C learning curve LME group-effect p = %.4g\n', pCurve);
 
 labels = {char(grpLabels(1)), char(grpLabels(2))};
 try
@@ -292,10 +295,11 @@ svgFS = 'English_Fig2K_cFos_FirstSessionHitRate.svg';
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 	svgFS = TransferLearning.ExportStandardFigure(f2, 2, svgFS);
-	fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
+	fprintf('Wrote: %s (first-block p=%.4g)\n', svgFS, pFS);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
+fprintf('Fig334C first-block hit-rate ranksum p = %.4g\n', pFS);
 
 assignin('base', 'English_Fig2K_Sessions', Sess);
 assignin('base', 'English_Fig2K_LearningSummarizeP', PValueLS);

@@ -40,6 +40,7 @@ baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
 baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
 v1sLearned = XLearned(:, idx1);
 activeMask = isfinite(v1sLearned) & isfinite(baseMu) & isfinite(baseSd) & (v1sLearned > (baseMu + kSigma * baseSd));
+activeRowIndex = find(activeMask);
 
 X = X(activeMask, :, :);
 vHit = X(:, idx1, 2);
@@ -47,6 +48,10 @@ vMiss = X(:, idx1, 3);
 maskPair = isfinite(vHit) & isfinite(vMiss);
 vHit = vHit(maskPair);
 vMiss = vMiss(maskPair);
+pairedRowMask = false(size(activeMask));
+pairedRowMask(activeRowIndex(maskPair)) = true;
+sampleCounts = TransferLearning.PanelSampleCountTable(S, ["Hit"; "Miss"], [pairedRowMask, pairedRowMask], DS.Cells);
+hitMissPValue = signrank(vHit, vMiss);
 
 f = figure('Color', 'w', 'Name', '中文图331D Learned-active Hit Miss 1s');
 f.Units = 'centimeters';
@@ -142,8 +147,11 @@ end
 svgPath = '中文图Fig331D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('\n=== Fig331D sample counts ===\n');
+disp(sampleCounts);
+fprintf('Hit vs Miss signrank p = %.6g\n', hitMissPValue);
 
-assignin('base', 'Fig331D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair));
+assignin('base', 'Fig331D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'SignrankPValue', hitMissPValue));
 
 function X = iGetNtats3D(S)
 if istable(S)

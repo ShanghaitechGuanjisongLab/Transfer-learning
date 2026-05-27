@@ -40,6 +40,8 @@ miss5 = R.ProbMiss5;
 hit = nanmean([hit23, hit5], 2);
 miss = nanmean([miss23, miss5], 2);
 mask = isfinite(hit) & isfinite(miss);
+learnedActiveCells = R.NLearnedActive23 + R.NLearnedActive5;
+nCells = sum(learnedActiveCells(mask), 'omitnan');
 %% 
 
 f = figure('Color','w', 'Name','English Fig1J Reactivation Hit vs Miss');
@@ -136,3 +138,8 @@ try
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
+
+fprintf('\n=== English Fig1J Reactivation Hit vs Miss ===\n');
+fprintf('paired mice n = %d\n', nnz(mask));
+fprintf('participating learned-active cells n = %d\n', nCells);
+fprintf('signrank right-tail p = %.6g\n', p);

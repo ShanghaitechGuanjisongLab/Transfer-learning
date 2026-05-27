@@ -112,8 +112,8 @@ f.PaperPosition = [0, 0, 4.5, 4.0];
 f.PaperSize = [4.5, 4.0];
 
 tl = tiledlayout(f, 1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-Stats = table(nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), ...
-	'VariableNames', {'Rho', 'PValue', 'NAll', 'NNaive', 'NTransfer'});
+Stats = table(nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), ...
+	'VariableNames', {'Rho', 'PValue', 'NAll', 'NNaive', 'NTransfer', 'NCellsAll', 'NCellsNaive', 'NCellsTransfer'});
 
 use = isfinite(Data.PathOverDirect) & isfinite(Data.ResponseHeterogeneity);
 if nnz(use) < 3
@@ -125,6 +125,9 @@ y = double(R.ResponseHeterogeneity);
 maskNaive = string(R.Group) == "Naive";
 maskTran = string(R.Group) == "Transfer";
 [rho, p] = corr(x, y, 'Type', 'Spearman');
+nCellsNaive = sum(R.NCells(maskNaive), 'omitnan');
+nCellsTran = sum(R.NCells(maskTran), 'omitnan');
+nCellsAll = sum(R.NCells, 'omitnan');
 
 ax = nexttile(tl, 1);
 hold(ax, 'on');
@@ -162,10 +165,14 @@ Stats.PValue(1) = p;
 Stats.NAll(1) = height(R);
 Stats.NNaive(1) = nnz(maskNaive);
 Stats.NTransfer(1) = nnz(maskTran);
+Stats.NCellsAll(1) = nCellsAll;
+Stats.NCellsNaive(1) = nCellsNaive;
+Stats.NCellsTransfer(1) = nCellsTran;
 
 fprintf('\n=== Fig342G All cells ===\n');
-fprintf('Naive mice: %d\n', nnz(maskNaive));
-fprintf('Continual mice: %d\n', nnz(maskTran));
+fprintf('Naive mice: %d, cells: %d\n', nnz(maskNaive), round(nCellsNaive));
+fprintf('Continual mice: %d, cells: %d\n', nnz(maskTran), round(nCellsTran));
+fprintf('Total cells: %d\n', round(nCellsAll));
 fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
 if ~isfolder(outDirUNC)

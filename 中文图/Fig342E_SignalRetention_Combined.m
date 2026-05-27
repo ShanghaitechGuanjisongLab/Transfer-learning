@@ -41,6 +41,12 @@ allLW = MATLAB.DataTypes.ArrayBuilder;
 
 meanLW_AWpos = nan(nMice, 1); meanLW_AWneg = nan(nMice, 1);
 meanAW_LWpos = nan(nMice, 1); meanAW_LWneg = nan(nMice, 1);
+miceUsed = false(nMice, 1);
+nCellsPerMouse = zeros(nMice, 1);
+nOldPosCellsPerMouse = zeros(nMice, 1);
+nOldNegCellsPerMouse = zeros(nMice, 1);
+nNewPosCellsPerMouse = zeros(nMice, 1);
+nNewNegCellsPerMouse = zeros(nMice, 1);
 
 for mi = 1:nMice
 	m = mice(mi);
@@ -94,12 +100,16 @@ for mi = 1:nMice
 		& awMatched >= -1 & awMatched <= 1 ...
 		& lwMatched >= -1 & lwMatched <= 1;
 	if sum(modMask) < 3, continue; end
+	miceUsed(mi) = true;
+	nCellsPerMouse(mi) = sum(modMask);
 
 	allAW.Append(awMatched(modMask));
 	allLW.Append(lwMatched(modMask));
 
 	awPos = modMask & awMatched > 0;
 	awNeg = modMask & awMatched < 0;
+	nOldPosCellsPerMouse(mi) = sum(awPos);
+	nOldNegCellsPerMouse(mi) = sum(awNeg);
 	if sum(awPos) >= 3 && sum(awNeg) >= 3
 		meanLW_AWpos(mi) = mean(lwMatched(awPos));
 		meanLW_AWneg(mi) = mean(lwMatched(awNeg));
@@ -107,6 +117,8 @@ for mi = 1:nMice
 
 	lwPos = modMask & lwMatched > 0;
 	lwNeg = modMask & lwMatched < 0;
+	nNewPosCellsPerMouse(mi) = sum(lwPos);
+	nNewNegCellsPerMouse(mi) = sum(lwNeg);
 	if sum(lwPos) >= 3 && sum(lwNeg) >= 3
 		meanAW_LWpos(mi) = mean(awMatched(lwPos));
 		meanAW_LWneg(mi) = mean(awMatched(lwNeg));
@@ -116,12 +128,17 @@ end
 awAll = allAW.Harvest;
 lwAll = allLW.Harvest;
 [rho, pCorr] = corr(awAll, lwAll, 'Type', 'Spearman');
-fprintf('Signal retention: rho=%.3f, p=%.4g, n=%d cells\n', rho, pCorr, numel(awAll));
+pCorrText = iPValueForPrint(pCorr);
+fprintf('Fig342E Signal retention: n=%d mice, %d cells, Spearman ρ=%.3f, %s\n', nnz(miceUsed), numel(awAll), rho, pCorrText);
 
 vPN1 = isfinite(meanLW_AWpos) & isfinite(meanLW_AWneg);
 pPN1 = signrank(meanLW_AWpos(vPN1), meanLW_AWneg(vPN1));
 vPN2 = isfinite(meanAW_LWpos) & isfinite(meanAW_LWneg);
 pPN2 = signrank(meanAW_LWpos(vPN2), meanAW_LWneg(vPN2));
+fprintf('Fig342E old-task sign groups: n=%d mice, %d cells (positive=%d, negative=%d), signrank p=%.4g\n', ...
+	nnz(vPN1), sum(nCellsPerMouse(vPN1)), sum(nOldPosCellsPerMouse(vPN1)), sum(nOldNegCellsPerMouse(vPN1)), pPN1);
+fprintf('Fig342E new-task sign groups: n=%d mice, %d cells (positive=%d, negative=%d), signrank p=%.4g\n', ...
+	nnz(vPN2), sum(nCellsPerMouse(vPN2)), sum(nNewPosCellsPerMouse(vPN2)), sum(nNewNegCellsPerMouse(vPN2)), pPN2);
 
 palette3 = TransferLearning.FigurePalette(3);
 colorPos = palette3(1,:);
@@ -223,9 +240,16 @@ axR.YAxisLocation = 'left';
 box(axR, 'off');
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = fullfile(outDirUNC, svgName);
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
+
+function s = iPValueForPrint(p)
+	if p == 0
+		s = 'p<1e-300';
+	else
+		s = sprintf('p=%.4g', p);
+	end
+end
 
 function s = iAsterisk(p)
 	if p < 0.001

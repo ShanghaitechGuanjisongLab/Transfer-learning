@@ -19,7 +19,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 summaryTbl = table();
 axList = gobjects(2, 1);
 pLineAll = gobjects(0, 1);
@@ -42,7 +42,7 @@ for iLayer = 1:2
 
 	ax = nexttile(Layout, iLayer);
 	axList(iLayer) = ax;
-	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, tranVals}, false, table([1 2], 'VariableNames', {'GroupPair'}));
+	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, tranVals}, table([1 2], 'VariableNames', {'GroupPair'}));
 	ax.FontSize = 6;
 	ax.LineWidth = 1;
 	ax.FontName = 'Arial';
@@ -80,12 +80,7 @@ if ~isempty(pLineAll) || ~isempty(pTextAll)
 	MATLAB.Graphics.PLineRetune(pLineAll, pTextAll);
 end
 
-outDirUNC = "\\Data-Server-2\个人数据\张天夫\202602";
-if ~isfolder(outDirUNC)
-	mkdir(outDirUNC);
-end
-svgPath = fullfile(outDirUNC, char(svgName));
-TransferLearning.PrintFigure(f, svgPath);
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
 end
 
@@ -104,9 +99,8 @@ if isscalar(Bars)
 	Bars.CData = Bars.CData(1:nBar, :);
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
-	try
+	if isprop(Bars, 'FaceAlpha')
 		Bars.FaceAlpha = 1/3;
-	catch
 	end
 else
 	if numel(Bars) >= 2
@@ -114,10 +108,9 @@ else
 		Bars(2).FaceColor = colorTransfer;
 		Bars(1).LineWidth = 1;
 		Bars(2).LineWidth = 1;
-		try
+		if isprop(Bars(1), 'FaceAlpha')
 			Bars(1).FaceAlpha = 1/3;
 			Bars(2).FaceAlpha = 1/3;
-		catch
 		end
 	end
 	end
@@ -145,14 +138,14 @@ if ismember('PLine', mc.Properties.VariableNames)
 	pLine = mc.PLine;
 	pLine = pLine(isgraphics(pLine));
 	if ~isempty(pLine)
-		pLineAll(end+1:end+numel(pLine), 1) = pLine(:); %#ok<AGROW>
+		pLineAll(end+1:end+numel(pLine), 1) = pLine(:);
 	end
 end
 if ismember('PText', mc.Properties.VariableNames)
 	pText = mc.PText;
 	pText = pText(isgraphics(pText));
 	if ~isempty(pText)
-		pTextAll(end+1:end+numel(pText), 1) = pText(:); %#ok<AGROW>
+		pTextAll(end+1:end+numel(pText), 1) = pText(:);
 	end
 end
 end

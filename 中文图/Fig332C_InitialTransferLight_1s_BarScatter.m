@@ -25,8 +25,8 @@ end
 baseMask = (xsSec >= -3) & (xsSec < 0);
 kSigma = 3;
 
-GInitial = iQueryInitialLightAll();
-GTransfer = iQueryTransferLightAll();
+[GInitial, initialStats] = iQueryInitialLightAll();
+[GTransfer, transferStats] = iQueryTransferLightAll();
 XInitial = iGetNtats2D(GInitial);
 XTransfer = iGetNtats2D(GTransfer);
 XInitial = iZeroAnchorZScore(XInitial, idx0s);
@@ -55,7 +55,8 @@ f.PaperSize = [3, 4];
 
 TL = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 axTop = nexttile(TL, 1);
-[~, ~, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, false, compareGroup);
+[~, optTop, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, false, compareGroup);
+pZScore = iExtractFirstPValue(optTop);
 delete(findobj(axTop, 'Type', 'Scatter'));
 ax = axTop;
 ax.FontSize = 6;
@@ -169,10 +170,14 @@ end
 svgPath = '中文图Fig332C_InitialTransferLight_1s_BarScatter.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Fig332C Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
+fprintf('Fig332C Continual: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
+fprintf('Fig332C 1s z-score BarScatterCompare p = %.6g\n', pZScore);
+fprintf('Fig332C active fraction Fisher exact p = %.6g\n', pActive);
 
-assignin('base', 'Fig332C_NTATS1s', struct('Initial', vInitial, 'Transfer', vTransfer, 'Idx0', idx0s, 'Idx1', idx1s, 'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveTransfer', activeTransfer, 'PActive', pActive));
+assignin('base', 'Fig332C_NTATS1s', struct('Initial', vInitial, 'Transfer', vTransfer, 'Idx0', idx0s, 'Idx1', idx1s, 'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveTransfer', activeTransfer, 'PZScore', pZScore, 'PActive', pActive, 'InitialStats', initialStats, 'TransferStats', transferStats));
 
-function G = iQueryInitialLightAll()
+function [G, stats] = iQueryInitialLightAll()
 LAB = TransferLearning.LightAudioBaseline();
 LAI = TransferLearning.LAInterspersed();
 qNaiveLW = struct('Phase', 'Naive', 'Stimulus', 'LightWater');
@@ -182,12 +187,14 @@ qNaiveLW_LAI.Mouse = iMiceInPhaseStimulus(LAI, "Naive", "LightWater", badNaive);
 G1 = LAB.QueryNTATS(qNaiveLW, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 G2 = LAI.QueryNTATS(qNaiveLW_LAI, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 G = iVcatNtatsTables(G1, G2);
+stats = iGroupStats({G1, G2}, {LAB, LAI});
 end
 
-function G = iQueryTransferLightAll()
+function [G, stats] = iQueryTransferLightAll()
 ALB = TransferLearning.AudioLightBaseline();
 qTransferLW = struct('Phase', 'Transfer', 'Stimulus', 'LightWater');
 G = ALB.QueryNTATS(qTransferLW, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+stats = iGroupStats({G}, {ALB});
 end
 
 function mice = iMiceInPhaseStimulus(DS, phaseName, stimulusName, excludeMice)
@@ -229,6 +236,24 @@ elseif isempty(G2)
 else
 	G = [G1; G2];
 end
+end
+
+function stats = iGroupStats(groupTables, dataSets)
+cellCount = 0;
+mouseNames = strings(0, 1);
+for iGroup = 1:numel(groupTables)
+	G = groupTables{iGroup};
+	if isempty(G)
+		continue;
+	end
+	cellCount = cellCount + height(G);
+	cellMeta = dataSets{iGroup}.Cells(:, ["CellUID", "Mouse"]);
+	cellMeta.Mouse = string(cellMeta.Mouse);
+	[matched, loc] = ismember(uint64(G.CellUID), uint64(cellMeta.CellUID));
+	mouseNames = [mouseNames; cellMeta.Mouse(loc(matched))]; %#ok<AGROW>
+end
+mouseNames = unique(mouseNames(~ismissing(mouseNames) & strlength(mouseNames) > 0), 'stable');
+stats = struct('MouseCount', numel(mouseNames), 'CellCount', cellCount, 'MouseNames', mouseNames);
 end
 
 function X = iGetNtats2D(G)
@@ -326,6 +351,13 @@ if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember
 	for pl = options.MultiCompare.PLine(:)'
 		pl.LineWidth = 1;
 	end
+end
+end
+
+function pValue = iExtractFirstPValue(options)
+pValue = NaN;
+if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PValue', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PValue)
+	pValue = options.MultiCompare.PValue(1);
 end
 end
 

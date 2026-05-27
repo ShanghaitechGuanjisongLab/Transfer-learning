@@ -41,18 +41,19 @@ dataParts = cell(numel(layers), 1);
 for iL = 1:numel(layers)
     layerName = layers(iL);
     layerLabel = layerLabels(iL);
-    sdNAll = iNaiveHeterogeneityByLayer(SessUsedN, miceNAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName);
-    sdTAll = iSingleDatasetHeterogeneityByLayer(SessUsedT, miceTAll, DS_T, CellT, idx1s, layerName);
-    [slopeN, sdN, miceN] = iKeepFiniteLayerData(miceNAll, slopeNAll, sdNAll);
-    [slopeT, sdT, miceT] = iKeepFiniteLayerData(miceTAll, slopeTAll, sdTAll);
+    [sdNAll, nCellNAll] = iNaiveHeterogeneityByLayer(SessUsedN, miceNAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName);
+    [sdTAll, nCellTAll] = iSingleDatasetHeterogeneityByLayer(SessUsedT, miceTAll, DS_T, CellT, idx1s, layerName);
+    [slopeN, sdN, miceN, nCellN] = iKeepFiniteLayerData(miceNAll, slopeNAll, sdNAll, nCellNAll);
+    [slopeT, sdT, miceT, nCellT] = iKeepFiniteLayerData(miceTAll, slopeTAll, sdTAll, nCellTAll);
 
     slopeAll = [slopeN; slopeT];
     sdAll = [sdN; sdT];
+    nCellAll = [nCellN; nCellT];
     mouseAll = [miceN; miceT];
     groupAll = [repmat("Naive", numel(miceN), 1); repmat("Transfer", numel(miceT), 1)];
     use = isfinite(slopeAll) & isfinite(sdAll);
-    dataParts{iL} = table(repmat(layerLabel, nnz(use), 1), groupAll(use), mouseAll(use), sdAll(use), slopeAll(use), ...
-        'VariableNames', {'Layer','Group','Mouse','Heterogeneity','Slope'});
+    dataParts{iL} = table(repmat(layerLabel, nnz(use), 1), groupAll(use), mouseAll(use), nCellAll(use), sdAll(use), slopeAll(use), ...
+        'VariableNames', {'Layer','Group','Mouse','NCells','Heterogeneity','Slope'});
     if nnz(use) >= 3 && std(sdAll(use)) > 0 && std(slopeAll(use)) > 0
         [rho, p] = corr(sdAll(use), slopeAll(use), 'Type', 'Spearman');
     else
@@ -96,9 +97,9 @@ for iL = 1:numel(layers)
     text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
     axAll(iL) = ax;
 
-    fprintf('\n=== Fig3C %s ===\n', layerLabel);
-    fprintf('Naive n = %d mice\n', nnz(maskN));
-    fprintf('Continual n = %d mice\n', nnz(maskT));
+    fprintf('\n=== Fig342B / English Fig3C %s ===\n', layerLabel);
+    fprintf('Naive n = %d mice, %d cells\n', nnz(maskN), round(sum(nCellAll(maskN), 'omitnan')));
+    fprintf('Continual n = %d mice, %d cells\n', nnz(maskT), round(sum(nCellAll(maskT), 'omitnan')));
     fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 end
 
@@ -130,9 +131,10 @@ Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
 [SessUsed, miceAll, slopeAll] = iPerMouseSlopeSessions(Sess);
 end
 
-function sdAll = iNaiveHeterogeneityByLayer(SessUsed, miceAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName)
+function [sdAll, nCellAll] = iNaiveHeterogeneityByLayer(SessUsed, miceAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName)
 if isempty(SessUsed)
     sdAll = nan(numel(miceAll), 1);
+    nCellAll = nan(numel(miceAll), 1);
     return;
 end
 
@@ -151,32 +153,36 @@ for i = 1:2
 end
 if isempty(rawParts)
     sdAll = nan(numel(miceAll), 1);
+    nCellAll = nan(numel(miceAll), 1);
 else
     medTbl = iPerSessionCellMedianTable(vertcat(rawParts{:}), idx1s, layerName, true);
-    sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, true);
+    [sdAll, nCellAll] = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, true);
 end
 end
 
-function sdAll = iSingleDatasetHeterogeneityByLayer(SessUsed, miceAll, DS, cellMap, idx1s, layerName)
+function [sdAll, nCellAll] = iSingleDatasetHeterogeneityByLayer(SessUsed, miceAll, DS, cellMap, idx1s, layerName)
 if isempty(SessUsed)
     sdAll = nan(numel(miceAll), 1);
+    nCellAll = nan(numel(miceAll), 1);
     return;
 end
 rawTbl = iBatchQueryRawNTS(DS, unique(SessUsed.DateTime));
 if isempty(rawTbl)
     sdAll = nan(numel(miceAll), 1);
+    nCellAll = nan(numel(miceAll), 1);
 else
     rawTbl = iAttachLayer(rawTbl, cellMap);
     medTbl = iPerSessionCellMedianTable(rawTbl, idx1s, layerName, false);
-    sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, false);
+    [sdAll, nCellAll] = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, false);
 end
 end
 
-function [slopeVec, sdVec, miceKept] = iKeepFiniteLayerData(miceAll, slopeAll, sdAll)
+function [slopeVec, sdVec, miceKept, nCellVec] = iKeepFiniteLayerData(miceAll, slopeAll, sdAll, nCellAll)
 keep = isfinite(slopeAll) & isfinite(sdAll);
 slopeVec = slopeAll(keep);
 sdVec = sdAll(keep);
 miceKept = miceAll(keep);
+nCellVec = nCellAll(keep);
 end
 
 function iAssertSharedMouseSlopesConsistent(dataTable)
@@ -309,8 +315,9 @@ slope = p(1).^2;
 midpoint = p(2);
 end
 
-function sdVec = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, hasSource)
+function [sdVec, nCellVec] = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, hasSource)
 sdVec = nan(numel(miceAll), 1);
+nCellVec = nan(numel(miceAll), 1);
 if isempty(medTbl), return; end
 for iM = 1:numel(miceAll)
     rowsSess = SessUsed(string(SessUsed.Mouse) == miceAll(iM), :);
@@ -327,6 +334,7 @@ for iM = 1:numel(miceAll)
     vals = meanPerCell(isfinite(meanPerCell) & meanPerCell >= -1 & meanPerCell <= 1);
     if numel(vals) >= 3
         sdVec(iM) = std(vals);
+        nCellVec(iM) = numel(vals);
     end
 end
 end

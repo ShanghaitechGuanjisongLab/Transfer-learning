@@ -88,6 +88,18 @@ try
 catch
 	SummaryL = UniExp.LearningSummarize(sessionForSummary);
 end
+pCurve = iScalarPValue(PValueLS);
+
+[groupIdForCurve, groupNameForCurve] = findgroups(string(sessionForSummary.Group));
+curveMouseN = splitapply(@(m) numel(unique(string(m))), sessionForSummary.Mouse, groupIdForCurve);
+curveBlockN = splitapply(@numel, sessionForSummary.Performance, groupIdForCurve);
+
+fprintf('\n=== English Fig3G / Chinese Fig343D learning curve ===\n');
+for iGroup = 1:numel(groupNameForCurve)
+	fprintf('%s: %d mice, %d blocks\n', groupNameForCurve(iGroup), curveMouseN(iGroup), curveBlockN(iGroup));
+end
+fprintf('Learning curve p = %.4g\n', pCurve);
+fprintf('Learning curve panel: cell count and Spearman rho are not applicable.\n');
 
 grpOrder = ["Ctrl","TH"];
 grpLabels = ["Control","TH inhibited"];
@@ -164,6 +176,7 @@ fprintf('First Transfer session hit rate:\n');
 fprintf('  Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl), std(xCtrl)/sqrt(numel(xCtrl)), numel(xCtrl));
 fprintf('  TH:   %.3f ± %.3f (n=%d)\n', mean(xTH),   std(xTH)/sqrt(numel(xTH)),     numel(xTH));
 fprintf('  ranksum p = %.4g\n', pFS);
+fprintf('First-block panel: cell count and Spearman rho are not applicable.\n');
 
 DataCell = {double(xCtrl(:)), double(xTH(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
@@ -229,13 +242,13 @@ end
 if isfield(Opt2, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt2.MultiCompare.Properties.VariableNames))
 	MATLAB.Graphics.PLineRetune(Opt2.MultiCompare.PLine, Opt2.MultiCompare.PText);
 end
-f2.InvertHardcopy = 'off';
 svgPathFS = TransferLearning.ExportStandardFigure(f2, 2, svgNameFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
 
 assignin('base', 'English_Fig3G_Sessions', Sess);
 assignin('base', 'English_Fig3G_BarSessions', barSess);
 assignin('base', 'English_Fig3G_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig3G_LearningCurveP', pCurve);
 assignin('base', 'English_Fig3G_FirstSessionP', pFS);
 
 function T = iQueryLightWaterBlocks(DS)
@@ -317,4 +330,41 @@ if isempty(x) || isempty(y)
 	return;
 end
 [p, h] = ranksum(x, y);
+end
+
+function p = iScalarPValue(pIn)
+p = NaN;
+if isnumeric(pIn) || islogical(pIn)
+	pVec = double(pIn(:));
+	pVec = pVec(isfinite(pVec));
+	if ~isempty(pVec), p = pVec(1); end
+	return;
+end
+if istable(pIn)
+	for iVar = 1:numel(pIn.Properties.VariableNames)
+		v = pIn.(pIn.Properties.VariableNames{iVar});
+		if isnumeric(v) || islogical(v)
+			pVec = double(v(:));
+			pVec = pVec(isfinite(pVec));
+			if ~isempty(pVec)
+				p = pVec(1);
+				return;
+			end
+		end
+	end
+end
+if isstruct(pIn)
+	fieldList = fieldnames(pIn);
+	for iField = 1:numel(fieldList)
+		v = pIn.(fieldList{iField});
+		if isnumeric(v) || islogical(v)
+			pVec = double(v(:));
+			pVec = pVec(isfinite(pVec));
+			if ~isempty(pVec)
+				p = pVec(1);
+				return;
+			end
+		end
+	end
+end
 end

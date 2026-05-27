@@ -21,8 +21,8 @@ end
 xMask = (xsSec >= 0) & (xsSec <= 2);
 xsPlot = xsSec(xMask);
 
-GInitial = iQueryInitialLightAll();
-GTransfer = iQueryTransferLightAll();
+[GInitial, initialStats] = iQueryInitialLightAll();
+[GTransfer, transferStats] = iQueryTransferLightAll();
 XInitial = iGetNtats2D(GInitial);
 XTransfer = iGetNtats2D(GTransfer);
 
@@ -87,11 +87,13 @@ end
 svgPath = '中文图Fig332B_InitialTransferLight_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Fig332B Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
+fprintf('Fig332B Continual: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
 
 assignin('base', 'Fig332B_InitialTransfer_Mean', Y);
 assignin('base', 'Fig332B_InitialTransfer_SEM', E);
 
-function G = iQueryInitialLightAll()
+function [G, stats] = iQueryInitialLightAll()
 LAB = TransferLearning.LightAudioBaseline();
 LAI = TransferLearning.LAInterspersed();
 qNaiveLW = struct('Phase', 'Naive', 'Stimulus', 'LightWater');
@@ -101,12 +103,14 @@ qNaiveLW_LAI.Mouse = iMiceInPhaseStimulus(LAI, "Naive", "LightWater", badNaive);
 G1 = LAB.QueryNTATS(qNaiveLW, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 G2 = LAI.QueryNTATS(qNaiveLW_LAI, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 G = iVcatNtatsTables(G1, G2);
+stats = iGroupStats({G1, G2}, {LAB, LAI});
 end
 
-function G = iQueryTransferLightAll()
+function [G, stats] = iQueryTransferLightAll()
 ALB = TransferLearning.AudioLightBaseline();
 qTransferLW = struct('Phase', 'Transfer', 'Stimulus', 'LightWater');
 G = ALB.QueryNTATS(qTransferLW, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+stats = iGroupStats({G}, {ALB});
 end
 
 function mice = iMiceInPhaseStimulus(DS, phaseName, stimulusName, excludeMice)
@@ -148,6 +152,24 @@ elseif isempty(G2)
 else
 	G = [G1; G2];
 end
+end
+
+function stats = iGroupStats(groupTables, dataSets)
+cellCount = 0;
+mouseNames = strings(0, 1);
+for iGroup = 1:numel(groupTables)
+	G = groupTables{iGroup};
+	if isempty(G)
+		continue;
+	end
+	cellCount = cellCount + height(G);
+	cellMeta = dataSets{iGroup}.Cells(:, ["CellUID", "Mouse"]);
+	cellMeta.Mouse = string(cellMeta.Mouse);
+	[matched, loc] = ismember(uint64(G.CellUID), uint64(cellMeta.CellUID));
+	mouseNames = [mouseNames; cellMeta.Mouse(loc(matched))]; %#ok<AGROW>
+end
+mouseNames = unique(mouseNames(~ismissing(mouseNames) & strlength(mouseNames) > 0), 'stable');
+stats = struct('MouseCount', numel(mouseNames), 'CellCount', cellCount, 'MouseNames', mouseNames);
 end
 
 function X = iZeroAnchorZScore(X, idx0s)

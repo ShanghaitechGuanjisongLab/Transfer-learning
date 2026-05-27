@@ -47,6 +47,13 @@ for iL = 1:size(X, 3)
 	activeByLane(:, iL) = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
 end
 activeMask = any(activeByLane, 2);
+panelNames = ["Learned"; "Hit"; "Miss"];
+sampleMasks = false(size(X, 1), numel(panelNames));
+for panelIndex = 1:numel(panelNames)
+	panelData = squeeze(X(:, :, panelIndex));
+	sampleMasks(:, panelIndex) = activeMask & any(isfinite(panelData(:, xMask)), 2);
+end
+sampleCounts = TransferLearning.PanelSampleCountTable(S, panelNames, sampleMasks, DS.Cells);
 
 if istable(S) && any(strcmp(S.Properties.VariableNames, 'CellUID'))
 	activeCellUID = uint64(S.CellUID(activeMask));
@@ -138,11 +145,14 @@ end
 svgPath = '中文图Fig331A_Learned_TransferHitMiss_Heatmap.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('\n=== Fig331A sample counts ===\n');
+disp(sampleCounts);
 
 assignin('base', 'Fig331A_ActiveMask', activeMask);
 assignin('base', 'Fig331A_ActiveCellUID', activeCellUID);
 assignin('base', 'Fig331A_SortIdx', sortIdx);
 assignin('base', 'Fig331A_SortKey_Min1s', sortKey);
+assignin('base', 'Fig331A_SampleCounts', sampleCounts);
 
 function X = iGetNtats3D(S)
 if istable(S)

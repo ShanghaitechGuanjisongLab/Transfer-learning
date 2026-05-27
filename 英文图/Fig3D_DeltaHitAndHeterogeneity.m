@@ -75,13 +75,16 @@ for iL = 1:numel(layers)
 	valsN = naiveTbl.SD(naiveTbl.Layer == layerName);
 	valsL = learnedTbl.SD(learnedTbl.Layer == layerName);
 	valsT = transferTbl.SD(transferTbl.Layer == layerName);
+	nCellsN = sum(naiveTbl.NCells(naiveTbl.Layer == layerName), 'omitnan');
+	nCellsL = sum(learnedTbl.NCells(learnedTbl.Layer == layerName), 'omitnan');
+	nCellsT = sum(transferTbl.NCells(transferTbl.Layer == layerName), 'omitnan');
 	pValNT = iRanksumSafe(valsN, valsT);
 	pValLT = iRanksumSafe(valsL, valsT);
 
-	fprintf('\n=== %s ===\n', layerLabel);
-	fprintf('Naive:    %.4f +- %.4f (n=%d mice)\n', mean(valsN), std(valsN)/sqrt(numel(valsN)), numel(valsN));
-	fprintf('Learned:  %.4f +- %.4f (n=%d mice)\n', mean(valsL), std(valsL)/sqrt(numel(valsL)), numel(valsL));
-	fprintf('Transfer: %.4f +- %.4f (n=%d mice)\n', mean(valsT), std(valsT)/sqrt(numel(valsT)), numel(valsT));
+	fprintf('\n=== Fig342D / English Fig3D %s ===\n', layerLabel);
+	fprintf('Naive:    %.4f +- %.4f (n=%d mice, %d cells)\n', mean(valsN), std(valsN)/sqrt(numel(valsN)), numel(valsN), round(nCellsN));
+	fprintf('Learned:  %.4f +- %.4f (n=%d mice, %d cells)\n', mean(valsL), std(valsL)/sqrt(numel(valsL)), numel(valsL), round(nCellsL));
+	fprintf('Transfer: %.4f +- %.4f (n=%d mice, %d cells)\n', mean(valsT), std(valsT)/sqrt(numel(valsT)), numel(valsT), round(nCellsT));
 	fprintf('Naive vs Transfer ranksum p = %.6g\n', pValNT);
 	fprintf('Learned AW vs Transfer ranksum p = %.6g\n', pValLT);
 
@@ -401,7 +404,7 @@ mice = miceAll(keepMice);
 end
 
 function [outTbl, miceOut] = iDMouseAvgByLayerSingleSource(DS, CellMap, SessUsed, miceIn, idx1s, layers, stimulusName)
-outTbl = table(strings(0,1), strings(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD'});
+outTbl = table(strings(0,1), strings(0,1), nan(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD','NCells'});
 miceOut = string.empty(0,1);
 if isempty(SessUsed) || isempty(miceIn), return; end
 
@@ -440,21 +443,22 @@ for iM = 1:numel(miceIn)
 		meanPerCell = accumarray(cellID, R.Med1s, [], @mean);
 		vals = meanPerCell(isfinite(meanPerCell) & meanPerCell >= -1 & meanPerCell <= 1);
 		if numel(vals) >= 3
-			rows = [rows; {miceIn(iM), layerName, std(vals)}]; %#ok<AGROW>
+			rows = [rows; {miceIn(iM), layerName, std(vals), numel(vals)}]; %#ok<AGROW>
 		end
 	end
 	end
 
 if isempty(rows), return; end
-outTbl = cell2table(rows, 'VariableNames', {'Mouse','Layer','SD'});
+outTbl = cell2table(rows, 'VariableNames', {'Mouse','Layer','SD','NCells'});
 outTbl.Mouse = string(outTbl.Mouse);
 outTbl.Layer = string(outTbl.Layer);
 outTbl.SD = double(outTbl.SD);
+outTbl.NCells = double(outTbl.NCells);
 miceOut = unique(outTbl.Mouse);
 end
 
 function [outTbl, miceOut] = iDMouseAvgByLayerMergedSources(DS_LAB, DS_LAI, CellLAB, CellLAI, SessUsed, miceIn, idx1s, layers)
-outTbl = table(strings(0,1), strings(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD'});
+outTbl = table(strings(0,1), strings(0,1), nan(0,1), nan(0,1), 'VariableNames', {'Mouse','Layer','SD','NCells'});
 miceOut = string.empty(0,1);
 if isempty(SessUsed) || isempty(miceIn), return; end
 
@@ -513,16 +517,17 @@ for iM = 1:numel(miceIn)
 		meanPerCell = accumarray(cellID, R.Med1s, [], @mean);
 		vals = meanPerCell(isfinite(meanPerCell) & meanPerCell >= -1 & meanPerCell <= 1);
 		if numel(vals) >= 3
-			rows = [rows; {miceIn(iM), layerName, std(vals)}]; %#ok<AGROW>
+			rows = [rows; {miceIn(iM), layerName, std(vals), numel(vals)}]; %#ok<AGROW>
 		end
 	end
 	end
 
 if isempty(rows), return; end
-outTbl = cell2table(rows, 'VariableNames', {'Mouse','Layer','SD'});
+outTbl = cell2table(rows, 'VariableNames', {'Mouse','Layer','SD','NCells'});
 outTbl.Mouse = string(outTbl.Mouse);
 outTbl.Layer = string(outTbl.Layer);
 outTbl.SD = double(outTbl.SD);
+outTbl.NCells = double(outTbl.NCells);
 miceOut = unique(outTbl.Mouse);
 end
 

@@ -131,6 +131,7 @@ fprintf('Ctrl sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.
 fprintf('TH sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTH.Lower, fitTH.Upper, fitTH.Slope, fitTH.Midpoint, fitTH.RSquared);
 fprintf('Permutation slope difference (TH - Ctrl): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
+fprintf('Sigmoid slope panel: cell count and Spearman rho are not applicable.\n');
 
 assignin('base', 'Fig343E_Sigmoid_AllSessions', allSessions);
 assignin('base', 'Fig343E_Sigmoid_FitTable', fitTable);

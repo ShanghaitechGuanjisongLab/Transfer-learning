@@ -40,16 +40,23 @@ end
 
 p23 = ranksum(xCtrl23, xTH23);
 p5 = ranksum(xCtrl5, xTH5);
+ctrlCells23 = sum(double(RCtrl.NLearnedActive23), 'omitnan');
+thCells23 = sum(double(RTH.NLearnedActive23), 'omitnan');
+ctrlCells5 = sum(double(RCtrl.NLearnedActive5), 'omitnan');
+thCells5 = sum(double(RTH.NLearnedActive5), 'omitnan');
 
 fprintf('\n=== Fig343I MOp2/3 reactivation ===\n');
 fprintf('Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl23), std(xCtrl23) / sqrt(numel(xCtrl23)), numel(xCtrl23));
 fprintf('TH:   %.3f ± %.3f (n=%d)\n', mean(xTH23), std(xTH23) / sqrt(numel(xTH23)), numel(xTH23));
+fprintf('Learned-audio active cells: Ctrl=%d, TH=%d\n', ctrlCells23, thCells23);
 fprintf('ranksum p = %.4g\n', p23);
 
 fprintf('\n=== Fig343I MOp5 reactivation ===\n');
 fprintf('Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl5), std(xCtrl5) / sqrt(numel(xCtrl5)), numel(xCtrl5));
 fprintf('TH:   %.3f ± %.3f (n=%d)\n', mean(xTH5), std(xTH5) / sqrt(numel(xTH5)), numel(xTH5));
+fprintf('Learned-audio active cells: Ctrl=%d, TH=%d\n', ctrlCells5, thCells5);
 fprintf('ranksum p = %.4g\n', p5);
+fprintf('Reactivation comparison: Spearman rho is not applicable.\n');
 
 f = figure('Color', 'w', 'Name', 'Fig343I TH first-session reactivation');
 f.Units = 'centimeters';
@@ -59,7 +66,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 ylabel(layout, 'Reactivation', 'FontSize', 6);
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
@@ -82,6 +89,8 @@ fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'Fig343I_ReactivationTable', R);
 assignin('base', 'Fig343I_ReactivationP23', p23);
 assignin('base', 'Fig343I_ReactivationP5', p5);
+assignin('base', 'Fig343I_ReactivationCells23', [ctrlCells23, thCells23]);
+assignin('base', 'Fig343I_ReactivationCells5', [ctrlCells5, thCells5]);
 
 function iStyleTile(ax, bars, errorBars, showXTick, titleText)
 ax.FontSize = 6;

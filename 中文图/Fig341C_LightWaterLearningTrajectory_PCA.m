@@ -9,7 +9,8 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-Data = TransferLearning.Fig341.BuildStateSpaceSummary(UniExp.Flags.No_special_operation);
+Data = TransferLearning.Fig341.BuildStateSpaceSummary(false, UniExp.Flags.No_special_operation);
+Counts = TransferLearning.Fig341.StateSpaceUsageCounts(Data);
 Naive = Data.Representative.NaiveCell;
 Transfer = Data.Representative.TransferCell;
 
@@ -21,7 +22,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 12, 8];
 f.PaperSize = [12, 8];
 
-tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 palette2 = TransferLearning.FigurePalette(2);
 
 ax1 = nexttile(tlo, 1);
@@ -46,9 +47,11 @@ end
 svgPath = '中文图Fig341C_LightWaterLearningTrajectory_PCA.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+TransferLearning.Fig341.PrintStateSpaceUsageCounts("Fig341C", Counts, "Representative");
 
 assignin('base', 'Fig341C_NaiveTrajectory', Naive);
 assignin('base', 'Fig341C_TransferTrajectory', Transfer);
+assignin('base', 'Fig341C_Counts', Counts.Representative);
 
 function iPlotMouseTrajectory(ax, points, explained, baseColor, titleText)
 hold(ax, 'on');

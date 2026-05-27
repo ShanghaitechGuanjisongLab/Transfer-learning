@@ -44,6 +44,13 @@ baseMu = mean(XLearned(:, baseMask), 2, 'omitnan');
 baseSd = std(XLearned(:, baseMask), 0, 2, 'omitnan');
 v1 = XLearned(:, idx1s);
 activeMask = isfinite(v1) & isfinite(baseMu) & isfinite(baseSd) & (v1 > (baseMu + kSigma * baseSd));
+panelNames = ["Learned"; "Hit"; "Miss"];
+sampleMasks = false(size(X, 1), numel(panelNames));
+for panelIndex = 1:numel(panelNames)
+	panelData = squeeze(X(:, :, panelIndex));
+	sampleMasks(:, panelIndex) = activeMask & any(isfinite(panelData(:, xMask)), 2);
+end
+sampleCounts = TransferLearning.PanelSampleCountTable(S, panelNames, sampleMasks, DS.Cells);
 X = X(activeMask, xMask, :);
 
 nCells = size(X, 1);
@@ -105,10 +112,13 @@ end
 svgPath = '中文图Fig331B_Learned_TransferHitMiss_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+fprintf('\n=== Fig331B sample counts ===\n');
+disp(sampleCounts);
 
 assignin('base', 'Fig331B_MeanLines_Y', Y);
 assignin('base', 'Fig331B_MeanLines_SEM', E);
 assignin('base', 'Fig331B_nCells', nCells);
+assignin('base', 'Fig331B_SampleCounts', sampleCounts);
 
 
 function X = iGetNtats3D(S)
