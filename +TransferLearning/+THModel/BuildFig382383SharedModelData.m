@@ -162,7 +162,7 @@ end
 function Sigmoid = iComputeSigmoidStats(Performance, nPermutation, permutationSeed)
 Sigmoid = struct();
 Sigmoid.Fig382C = TransferLearning.THModel.CompareSigmoidSlope(Performance.Naive, Performance.Transfer, "Naive", "Transfer", nPermutation, permutationSeed);
-Sigmoid.Fig383B = TransferLearning.THModel.CompareSigmoidSlope(Performance.Transfer, Performance.THOff, "Transfer", "THOff", nPermutation, permutationSeed + 1);
+Sigmoid.Fig383D = TransferLearning.THModel.CompareSigmoidSlope(Performance.Transfer, Performance.THOff, "Transfer", "THOff", nPermutation, permutationSeed + 1);
 end
 
 function iValidateAcceptance(Performance, RunInfo, Heterogeneity, Sigmoid, Params, Cond)
@@ -265,7 +265,7 @@ end
 
 function iCheckSigmoidSlopeSignificantlyHighest(Sigmoid, alpha)
 iAssertSigmoidComparison(Sigmoid.Fig382C, alpha, true, 'Naive');
-iAssertSigmoidComparison(Sigmoid.Fig383B, alpha, false, 'THOff');
+iAssertSigmoidComparison(Sigmoid.Fig383D, alpha, false, 'THOff');
 end
 
 function iAssertSigmoidComparison(stats, alpha, expectPositiveDifference, otherName)

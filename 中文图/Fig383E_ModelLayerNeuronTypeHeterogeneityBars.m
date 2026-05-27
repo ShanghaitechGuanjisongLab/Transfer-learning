@@ -1,6 +1,6 @@
-% Fig383C model learning-process heterogeneity by layer and neuron type.
+% Fig383E model learning-process heterogeneity by layer and neuron type.
 
-svgName = '中文图Fig383C_ModelLayerNeuronTypeHeterogeneityBars.svg';
+svgName = '中文图Fig383E_ModelLayerNeuronTypeHeterogeneityBars.svg';
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
@@ -14,10 +14,10 @@ Heterogeneity.THInhibited = Fig382383Data.Heterogeneity.THOff;
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig383C_ModelLayerNeuronTypeHeterogeneity', Heterogeneity);
-assignin('base', 'Fig383C_ModelLayerNeuronTypeRunInfo', RunInfo);
-assignin('base', 'Fig383C_ModelLayerNeuronTypeSummary', SummaryTable);
-assignin('base', 'Fig383C_ModelLayerNeuronTypeSvgPath', svgPath);
+assignin('base', 'Fig383E_ModelLayerNeuronTypeHeterogeneity', Heterogeneity);
+assignin('base', 'Fig383E_ModelLayerNeuronTypeRunInfo', RunInfo);
+assignin('base', 'Fig383E_ModelLayerNeuronTypeSummary', SummaryTable);
+assignin('base', 'Fig383E_ModelLayerNeuronTypeSvgPath', svgPath);
 
 function iEnsureTransferLearningProject()
 if ~exist('TransferLearning', 'class')
@@ -38,7 +38,7 @@ groupFields = ["Continual", "THInhibited"];
 groupLabels = ["Normal", "TH inhibited"];
 groupConditionNames = ["Transfer", "THOff"];
 
-fig = figure('Color', 'w', 'Name', 'Fig383C layer and neuron type heterogeneity bars');
+fig = figure('Color', 'w', 'Name', 'Fig383E layer and neuron type heterogeneity bars');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 fig.PaperUnits = 'centimeters';

@@ -1,6 +1,6 @@
-% Fig383B model-simulated Continual/TH inhibited learning curve with sigmoid fits.
+% Fig383D model-simulated Continual/TH inhibited learning curve with sigmoid fits.
 
-svgName = '中文图Fig383B_ModelContinualTHInhibitedLearningCurve.svg';
+svgName = '中文图Fig383D_ModelContinualTHInhibitedLearningCurve.svg';
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
@@ -12,22 +12,22 @@ thInhibitedPerformance = Fig382383Data.Performance.THOff;
 [fig, ~] = TransferLearning.PlotSigmoidLearningCurvePanels( ...
 	continualPerformance, thInhibitedPerformance, ...
 	"Transfer", "THOff", "Normal", "TH inhibited", ...
-	FigureName="Fig383B model Continual TH inhibited sigmoid", ...
+	FigureName="Fig383D model Continual TH inhibited sigmoid", ...
 	FigureSizeCm=[9, 8], ...
 	Scale=2, ...
 	LegendPanel="A", ...
 	NPermutation=0);
-SigmoidStats = Fig382383Data.Sigmoid.Fig383B;
-iPrintPermutationResult('Fig383B', SigmoidStats);
+SigmoidStats = Fig382383Data.Sigmoid.Fig383D;
+iPrintPermutationResult('Fig383D', SigmoidStats);
 
 svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(fig, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig383B_ModelContinualTHInhibitedPerformance', struct('Continual', continualPerformance, 'THInhibited', thInhibitedPerformance));
-assignin('base', 'Fig383B_ModelContinualTHInhibitedRunInfo', RunInfo);
-assignin('base', 'Fig383B_ModelContinualTHInhibitedSigmoidStats', SigmoidStats);
-assignin('base', 'Fig383B_ModelContinualTHInhibitedSvgPath', svgPath);
+assignin('base', 'Fig383D_ModelContinualTHInhibitedPerformance', struct('Continual', continualPerformance, 'THInhibited', thInhibitedPerformance));
+assignin('base', 'Fig383D_ModelContinualTHInhibitedRunInfo', RunInfo);
+assignin('base', 'Fig383D_ModelContinualTHInhibitedSigmoidStats', SigmoidStats);
+assignin('base', 'Fig383D_ModelContinualTHInhibitedSvgPath', svgPath);
 
 function iPrintPermutationResult(figureLabel, SigmoidStats)
 comparison = SigmoidStats.ComparisonTable;

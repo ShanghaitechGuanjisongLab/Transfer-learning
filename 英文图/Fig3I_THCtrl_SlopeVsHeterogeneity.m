@@ -1,4 +1,4 @@
-﻿% English Fig3I: TH/Ctrl per-mouse learning slope vs Response heterogeneity
+﻿% English Fig3I: TH/Ctrl per-mouse sigmoid slope vs Response heterogeneity
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -21,13 +21,13 @@ colorC = palette3(1,:);
 colorT = palette3(2,:);
 colorFit = palette3(3,:);
 
-f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl slope vs Response heterogeneity');
+f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl sigmoid slope vs Response heterogeneity');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
 f.PaperSize = [12, 8];
 
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
 hLegend = gobjects(2, 1);
 axAll = gobjects(numel(layers), 1);
@@ -61,22 +61,23 @@ for iL = 1:numel(layers)
     ax = nexttile(tl, iL);
     hold(ax, 'on');
     ax.FontSize = 12;
+    ax.LineWidth = 2;
     box(ax, 'off');
 
     maskC = use & (groupAll == "Ctrl");
     maskT = use & (groupAll == "TH");
-    hC = scatter(ax, sdAll(maskC), slopeAll(maskC), 5, colorC, 'o', 'filled', 'LineWidth', 0.2);
-    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 5, colorT, 's', 'filled', 'LineWidth', 0.2);
+    hC = scatter(ax, sdAll(maskC), slopeAll(maskC), 10, colorC, 'o', 'filled', 'LineWidth', 0.2);
+    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 's', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hC; hT];
-        ylabel(ax, 'Learning slope', 'FontSize', 12);
+        ylabel(ax, 'Sigmoid slope', 'FontSize', 12);
     else
         ax.YAxis.Visible = 'off';
     end
     if nnz(use) >= 2 && std(sdAll(use)) > 0
         fitP = polyfit(sdAll(use), slopeAll(use), 1);
         xFit = [min(sdAll(use)), max(sdAll(use))];
-        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', colorFit, 'LineWidth', 1);
+        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', colorFit, 'LineWidth', 2);
     end
     title(ax, layerLabels(iL), 'FontSize', 12);
     text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
@@ -102,7 +103,6 @@ function [slopeVec, sdVec, miceKept] = iSingleDatasetCohortDataByLayer(DS, cellM
 Sess = iLightWaterSessions(DS);
 Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);
-Sess = iExcludeCeilingSessions(Sess);
 [SessUsed, miceAll, slopeAll] = iPerMouseSlopeSessions(Sess);
 if isempty(SessUsed)
     slopeVec = [];
@@ -142,21 +142,83 @@ for iM = 1:numel(mice)
     m = mice(iM);
     R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
     if height(R) < 2, continue; end
-    first100 = find(double(R.Performance) >= 1 - 1e-12, 1, 'first');
-    if ~isempty(first100)
-        if first100 == 1, continue; end
-        R = R(1:first100-1, :);
-    end
+    perf = double(R.Performance);
+    finiteRows = isfinite(perf);
+    R = R(finiteRows, :);
+    perf = perf(finiteRows);
     if height(R) < 2, continue; end
-    xi = (1:height(R))';
-    yi = double(R.Performance);
-    ok = isfinite(yi);
-    if nnz(ok) < 2, continue; end
-    fitP = polyfit(xi(ok), yi(ok), 1);
-    slopeVec(iM) = fitP(1);
-    keepRows = keepRows | (string(Sess.Mouse) == m & ismember(Sess.DateTime, R.DateTime));
+    if numel(unique(perf)) < 2, continue; end
+    usedDateTimes = R.DateTime;
+    fitTable = R(:, {'Mouse','DateTime','Performance'});
+    fitTable.Group = repmat("Fit", height(fitTable), 1);
+    fitTable = movevars(fitTable, 'Group', 'Before', 'Mouse');
+    fitTable.Session = (1:height(fitTable))';
+    fitOut = iFitSigmoidCurve(fitTable, m);
+    slopeVec(iM) = fitOut.Slope;
+    keepRows = keepRows | (string(Sess.Mouse) == m & ismember(Sess.DateTime, usedDateTimes));
 end
 SessUsed = Sess(keepRows, :);
+end
+
+function fitOut = iFitSigmoidCurve(T, groupName)
+T = sortrows(T, {'Mouse','DateTime'});
+xObs = double(T.Session(:));
+yObs = double(T.Performance(:));
+use = isfinite(xObs) & isfinite(yObs);
+xObs = xObs(use);
+yObs = yObs(use);
+if isempty(xObs)
+    error('Fig3I:NoDataForGroup', 'No valid session data for group %s.', char(groupName));
+end
+slopeStarts = [0, 0.2, 0.8, 2, 5, 20];
+midpointStarts = unique([median(xObs), min(xObs), max(xObs), min(xObs) - numel(xObs), max(xObs) + numel(xObs)]);
+opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
+obj = @(p) sum((yObs - iSigmoidFromFixedLowerParams(p, xObs)).^2, 'omitnan');
+bestSse = inf;
+p = [sqrt(0.8); median(xObs)];
+for iSlope = 1:numel(slopeStarts)
+    for iMidpoint = 1:numel(midpointStarts)
+        p0 = [sqrt(slopeStarts(iSlope)); midpointStarts(iMidpoint)];
+        pTry = fminsearch(obj, p0, opt);
+        sseTry = obj(pTry);
+        if sseTry < bestSse
+            bestSse = sseTry;
+            p = pTry;
+        end
+    end
+end
+yHat = iSigmoidFromFixedLowerParams(p, xObs);
+[lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p);
+sse = sum((yObs - yHat).^2, 'omitnan');
+sst = sum((yObs - mean(yObs, 'omitnan')).^2, 'omitnan');
+if sst == 0
+    rSquared = NaN;
+else
+    rSquared = 1 - sse / sst;
+end
+fitOut = struct;
+fitOut.Group = string(groupName);
+fitOut.ParamRaw = p;
+fitOut.Lower = lower;
+fitOut.Upper = upper;
+fitOut.Slope = slope;
+fitOut.Midpoint = midpoint;
+fitOut.SSE = sse;
+fitOut.RSquared = rSquared;
+fitOut.XObserved = xObs;
+fitOut.YObserved = yObs;
+end
+
+function y = iSigmoidFromFixedLowerParams(p, x)
+[lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p);
+y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
+end
+
+function [lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p)
+lower = 0;
+upper = 1;
+slope = p(1).^2;
+midpoint = p(2);
 end
 
 function sdVec = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll)
@@ -193,7 +255,7 @@ end
 function rawTbl = iBatchQueryRawNTS(DS, dts)
 q = struct('Stimulus', 'LightWater', 'DateTime', dts);
 try
-    ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', ["DateTime"]);
+    ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', "DateTime");
 catch
     rawTbl = table();
     return;
@@ -303,20 +365,6 @@ for m = unique(string(SessOut.Mouse))'
     keep = keep | rows;
 end
 SessOut = SessOut(keep, :);
-end
-
-function SessOut = iExcludeCeilingSessions(SessIn)
-SessOut = sortrows(SessIn, {'Mouse','DateTime'});
-remove = false(height(SessOut), 1);
-for m = unique(SessOut.Mouse)'
-    rows = find(SessOut.Mouse == m);
-    p = double(SessOut.Performance(rows));
-    i100 = find(p >= 1 - 1e-12, 1, 'first');
-    if ~isempty(i100), remove(rows(i100:end)) = true; end
-end
-SessOut(remove, :) = [];
-perf = double(SessOut.Performance);
-SessOut = SessOut(isfinite(perf) & perf >= -1e-12 & perf < 1 - 1e-12, :);
 end
 
 function dt = iNormDT(dt)

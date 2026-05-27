@@ -9,7 +9,12 @@ permutationSeed = 1;
 useCachedData = false;
 if evalin('base', sprintf('exist(''%s'', ''var'')', cacheName)) == 1
 	Fig382383Data = evalin('base', cacheName);
+	Fig382383Data = iNormalizeFig383PanelNames(Fig382383Data);
 	useCachedData = iIsReusableFig382383Data(Fig382383Data, cacheVersion, seedBase, permutationCount, permutationSeed);
+end
+
+if useCachedData
+	assignin('base', cacheName, Fig382383Data);
 end
 
 if ~useCachedData
@@ -30,6 +35,12 @@ tf = isstruct(data) ...
 	&& isfield(data, 'Performance') && isfield(data.Performance, 'Naive') && isfield(data.Performance, 'Transfer') && isfield(data.Performance, 'THOff') ...
 	&& isfield(data, 'PreFormalWeightValues') ...
 	&& isfield(data, 'Heterogeneity') ...
-	&& isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig382C') && isfield(data.Sigmoid, 'Fig383B') ...
+	&& isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig382C') && isfield(data.Sigmoid, 'Fig383D') ...
 	&& isfield(data, 'HeatmapData');
+end
+
+function data = iNormalizeFig383PanelNames(data)
+if isstruct(data) && isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig383B') && ~isfield(data.Sigmoid, 'Fig383D')
+	data.Sigmoid.Fig383D = data.Sigmoid.Fig383B;
+end
 end
