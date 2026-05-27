@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="90mm"
+   width="92mm"
    height="120mm"
-   viewBox="0 0 90 120"
+   viewBox="0 0 92 120"
    version="1.1"
    id="svg1"
    xml:space="preserve"
@@ -29,7 +29,7 @@
      inkscape:document-units="mm"
      inkscape:zoom="2.0334082"
      inkscape:cx="180.48516"
-     inkscape:cy="282.53058"
+     inkscape:cy="156.14179"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -548,7 +548,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g51"
-       transform="matrix(0.1754386,0,0,0.1754386,30,80.000001)"><g
+       transform="matrix(0.1754386,0,0,0.1754386,31,80.000001)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -1211,7 +1211,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g33-4"
-       transform="matrix(0.34782609,0,0,0.34858388,60.000001,80.000001)"><g
+       transform="matrix(0.34782609,0,0,0.34858388,62.000003,80.000001)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -3668,21 +3668,21 @@
          y="82.311485">C</tspan></text><text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.175px;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777"
-       x="29.770557"
+       x="30.770557"
        y="82.272728"
        id="text12"><tspan
          sodipodi:role="line"
          id="tspan4"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';stroke-width:0.352778"
-         x="29.770557"
+         x="30.770557"
          y="82.272728">D</tspan></text><text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.175px;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352777"
-       x="59.769005"
+       x="61.769005"
        y="82.272728"
        id="text13"><tspan
          sodipodi:role="line"
          id="tspan12"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';stroke-width:0.352778"
-         x="59.769005"
+         x="61.769005"
          y="82.272728">E</tspan></text></g></svg>

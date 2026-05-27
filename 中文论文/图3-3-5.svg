@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="135mm"
+   width="137mm"
    height="40mm"
-   viewBox="0 0 135 40"
+   viewBox="0 0 137 40"
    version="1.1"
    id="svg1"
    xml:space="preserve"
@@ -27,9 +27,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="2.0334082"
-     inkscape:cx="288.18611"
-     inkscape:cy="65.161535"
+     inkscape:zoom="1.4378367"
+     inkscape:cx="246.89869"
+     inkscape:cy="7.9981265"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -130,7 +130,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g43-5"
-       transform="matrix(0.1754386,0,0,0.1754386,60,0)"><g
+       transform="matrix(0.1754386,0,0,0.1754386,61,0)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -716,7 +716,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g38-4"
-       transform="matrix(0.34782609,0,0,0.34858388,105,2.85e-7)"><g
+       transform="matrix(0.34782609,0,0,0.34858388,107,2.85e-7)"><g
          fill="#ffffff"
          fill-opacity="1"
          stroke="none"
@@ -1622,23 +1622,23 @@
          y="2.2727294">A</tspan></text><text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.175px;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.352777"
-       x="59.767456"
+       x="60.767456"
        y="2.2727294"
        id="text3"><tspan
          sodipodi:role="line"
          id="tspan2"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';stroke-width:0.352778"
-         x="59.767456"
+         x="60.767456"
          y="2.2727294">B</tspan></text><text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.175px;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.352777"
-       x="104.84962"
+       x="106.84962"
        y="2.3114867"
        id="text4"><tspan
          sodipodi:role="line"
          id="tspan3"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';stroke-width:0.352778"
-         x="104.84962"
+         x="106.84962"
          y="2.3114867">C</tspan></text><g
        fill="none"
        stroke="#000000"
@@ -1647,7 +1647,7 @@
        stroke-linecap="square"
        stroke-linejoin="bevel"
        id="g20"
-       transform="matrix(0.17627819,0,0,0.17627819,83.405382,7.917542)"><g
+       transform="matrix(0.17627819,0,0,0.17627819,84.405382,7.917542)"><g
          fill="#212121"
          fill-opacity="1"
          stroke="#212121"

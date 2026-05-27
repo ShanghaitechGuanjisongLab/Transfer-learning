@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="135mm"
-   height="80mm"
+   width="137mm"
+   height="81mm"
    xml:space="preserve"
    overflow="hidden"
    version="1.1"
@@ -27,7 +27,7 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.3405316"
      inkscape:cx="221.5539"
-     inkscape:cy="66.018585"
+     inkscape:cy="115.25278"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -81,10 +81,10 @@
      height="602"
      id="rect248" /></clipPath><inkscape:perspective
    sodipodi:type="inkscape:persp3d"
-   inkscape:vp_x="0 : 88.888603 : 1"
+   inkscape:vp_x="0 : 92.668131 : 1"
    inkscape:vp_y="0 : 999.99999 : 0"
-   inkscape:vp_z="204.20326 : 88.888603 : 1"
-   inkscape:persp3d-origin="102.10162 : 66.077563 : 1"
+   inkscape:vp_z="204.20326 : 92.668131 : 1"
+   inkscape:persp3d-origin="102.10162 : 69.857091 : 1"
    id="perspective8" /><g
    id="lend2">
 			<path
@@ -684,7 +684,7 @@
      stroke-linecap="square"
      stroke-linejoin="bevel"
      id="g43-15"
-     transform="matrix(1.3146183,0,0,1.3174824,396.85039,0)"><g
+     transform="matrix(1.3146183,0,0,1.3174824,404.40945,0)"><g
        fill="#ffffff"
        fill-opacity="1"
        stroke="none"
@@ -1286,7 +1286,7 @@
      stroke-linecap="square"
      stroke-linejoin="bevel"
      id="g74"
-     transform="matrix(0.66453232,0,0,0.66307501,170.07874,1.56e-6)"><g
+     transform="matrix(0.66453232,0,0,0.66307501,173.85827,1.56e-6)"><g
        fill="#ffffff"
        fill-opacity="1"
        stroke="none"
@@ -1872,7 +1872,7 @@
      stroke-linecap="square"
      stroke-linejoin="bevel"
      id="g62"
-     transform="matrix(0.66307501,0,0,0.66307501,170.07874,151.1811)"><g
+     transform="matrix(0.66307501,0,0,0.66307501,173.85827,154.96063)"><g
        fill="#ffffff"
        fill-opacity="1"
        stroke="none"
@@ -2840,7 +2840,7 @@
      stroke-linecap="square"
      stroke-linejoin="bevel"
      id="g132-9"
-     transform="matrix(0.66307501,0,0,0.66307501,0,151.1811)"><g
+     transform="matrix(0.66307501,0,0,0.66307501,0,154.96063)"><g
        fill="#ffffff"
        fill-opacity="1"
        stroke="none"
@@ -4440,12 +4440,12 @@
      transform="translate(207.25497,68.681287)" /><text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.666667"
-     x="169.19983"
+     x="172.97935"
      y="8.5898438"
      id="text990"><tspan
        sodipodi:role="line"
        id="tspan990"
-       x="169.19983"
+       x="172.97935"
        y="8.5898438">B</tspan></text><style
      type="text/css"
      id="style1-32">
@@ -4625,12 +4625,12 @@
        y="35.962776">Post-hoc teaching</tspan></text><text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.666667"
-     x="396.28204"
+     x="403.84113"
      y="8.7363281"
      id="text993"><tspan
        sodipodi:role="line"
        id="tspan993"
-       x="396.28204"
+       x="403.84113"
        y="8.7363281">C</tspan></text><path
      style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.666667;stroke-dasharray:none;stroke-opacity:1"
      d="M 91.254449,43.781037 V 122.90339"
@@ -4639,18 +4639,18 @@
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.666667"
      x="-0.86718744"
-     y="159.77095"
+     y="163.55048"
      id="text1"><tspan
        sodipodi:role="line"
        id="tspan1"
        x="-0.86718744"
-       y="159.77095">D</tspan></text><text
+       y="163.55048">D</tspan></text><text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif Bold';writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.666667"
-     x="169.20569"
-     y="159.77095"
+     x="172.98521"
+     y="163.55048"
      id="text13"><tspan
        sodipodi:role="line"
        id="tspan6"
-       x="169.20569"
-       y="159.77095">E</tspan></text></svg>
+       x="172.98521"
+       y="163.55048">E</tspan></text></svg>

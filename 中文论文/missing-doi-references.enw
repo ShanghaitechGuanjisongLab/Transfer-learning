@@ -1,0 +1,267 @@
+%0 Journal Article
+%A Barnett, Susan M.
+%A Ceci, Stephen J.
+%D 2002
+%T When and where do we apply what we learn?: A taxonomy for far transfer
+%J Psychological Bulletin
+%V 128
+%N 4
+%P 612-637
+%R 10.1037/0033-2909.128.4.612
+%U https://doi.org/10.1037/0033-2909.128.4.612
+
+%0 Journal Article
+%A Bransford, John D.
+%A Schwartz, Daniel L.
+%D 1999
+%T Rethinking transfer: A simple proposal with multiple implications
+%J Review of Research in Education
+%V 24
+%P 61-100
+%I American Educational Research Association
+%R 10.2307/1167267
+%U https://doi.org/10.2307/1167267
+
+%0 Journal Article
+%A Chen, Tsai-Wen
+%A Wardill, Trevor J.
+%A Sun, Yi
+%A Pulver, Stefan R.
+%A Renninger, Sabine L.
+%A Baohan, Amy
+%A Schreiter, Eric R.
+%A Kerr, Rex A.
+%A Orger, Michael B.
+%A Jayaraman, Vivek
+%A Looger, Loren L.
+%A Svoboda, Karel
+%A Kim, Douglas S.
+%D 2013
+%T Ultrasensitive fluorescent proteins for imaging neuronal activity
+%J Nature
+%V 499
+%N 7458
+%P 295-300
+%R 10.1038/nature12354
+%U https://doi.org/10.1038/nature12354
+
+%0 Book
+%A Ellis, Henry C.
+%D 1965
+%T The transfer of learning
+%I Macmillan
+
+%0 Journal Article
+%A Gallego, Juan A.
+%A Perich, Matthew G.
+%A Miller, Lee E.
+%A Solla, Sara A.
+%D 2017
+%T Neural manifolds for the control of movement
+%J Neuron
+%V 94
+%N 5
+%P 978-984
+%R 10.1016/j.neuron.2017.05.025
+%U https://doi.org/10.1016/j.neuron.2017.05.025
+
+%0 Journal Article
+%A Gallego, Juan A.
+%A Perich, Matthew G.
+%A Naufel, Stephanie N.
+%A Ethier, Christian
+%A Solla, Sara A.
+%A Miller, Lee E.
+%D 2018
+%T Cortical population activity within a preserved neural manifold underlies multiple motor behaviors
+%J Nature Communications
+%V 9
+%N 1
+%P 4233
+%R 10.1038/s41467-018-06560-z
+%U https://doi.org/10.1038/s41467-018-06560-z
+
+%0 Conference Paper
+%A Glorot, Xavier
+%A Bengio, Yoshua
+%D 2010
+%T Understanding the difficulty of training deep feedforward neural networks
+%B Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics
+%V 9
+%P 249-256
+%I JMLR Workshop and Conference Proceedings
+%U http://proceedings.mlr.press/v9/glorot10a.html
+
+%0 Journal Article
+%A Guenthner, Casey J.
+%A Miyamichi, Kazunari
+%A Yang, Helen H.
+%A Heller, H. Craig
+%A Luo, Liqun
+%D 2013
+%T Permanent genetic access to transiently active neurons via TRAP: Targeted recombination in active populations
+%J Neuron
+%V 78
+%N 5
+%P 773-784
+%R 10.1016/j.neuron.2013.03.025
+%U https://doi.org/10.1016/j.neuron.2013.03.025
+
+%0 Journal Article
+%A Harlow, Harry F.
+%D 1949
+%T The formation of learning sets
+%J Psychological Review
+%V 56
+%N 1
+%P 51-65
+%R 10.1037/h0062474
+%U https://doi.org/10.1037/h0062474
+
+%0 Conference Paper
+%A Ioffe, Sergey
+%A Szegedy, Christian
+%D 2015
+%T Batch normalization: Accelerating deep network training by reducing internal covariate shift
+%B Proceedings of the 32nd International Conference on Machine Learning
+%V 37
+%P 448-456
+%I PMLR
+%U https://proceedings.mlr.press/v37/ioffe15.html
+
+%0 Journal Article
+%A Packard, Mark G.
+%A McGaugh, James L.
+%D 1996
+%T Inactivation of hippocampus or caudate nucleus with lidocaine differentially affects expression of place and response learning
+%J Neurobiology of Learning and Memory
+%V 65
+%N 1
+%P 65-72
+%R 10.1006/nlme.1996.0007
+%U https://doi.org/10.1006/nlme.1996.0007
+
+%0 Book
+%A Pavlov, Ivan P.
+%D 1927
+%T Conditioned reflexes: An investigation of the physiological activity of the cerebral cortex
+%I Oxford University Press
+
+%0 Book
+%A Paxinos, George
+%A Franklin, Keith B. J.
+%D 2019
+%T The Mouse Brain in Stereotaxic Coordinates
+%7 5th ed.
+%I Academic Press
+
+%0 Journal Article
+%A Perich, Matthew G.
+%A Gallego, Juan A.
+%A Miller, Lee E.
+%D 2018
+%T A neural population mechanism for rapid learning
+%J Neuron
+%V 100
+%N 4
+%P 964-976.e7
+%R 10.1016/j.neuron.2018.09.030
+%U https://doi.org/10.1016/j.neuron.2018.09.030
+
+%0 Book Section
+%A Perkins, David N.
+%A Salomon, Gavriel
+%E Husen, Torsten
+%E Postlethwaite, T. Neville
+%D 1992
+%T Transfer of learning
+%B International Encyclopedia of Education
+%I Pergamon Press
+
+%0 Book Section
+%A Perkins, David N.
+%A Salomon, Gavriel
+%E Husen, Torsten
+%E Postlethwaite, T. Neville
+%D 1994
+%T Transfer of learning
+%B International Encyclopedia of Education (Second Edition)
+%I Pergamon Press
+
+%0 Journal Article
+%A Roth, Bryan L.
+%D 2016
+%T DREADDs for neuroscientists
+%J Neuron
+%V 89
+%N 4
+%P 683-694
+%R 10.1016/j.neuron.2016.01.040
+%U https://doi.org/10.1016/j.neuron.2016.01.040
+
+%0 Journal Article
+%A Sadtler, Patrick T.
+%A Quick, Kristin M.
+%A Golub, Matthew D.
+%A Chase, Steven M.
+%A Ryu, Stephen I.
+%A Tyler-Kabara, Elizabeth C.
+%A Yu, Byron M.
+%A Batista, Aaron P.
+%D 2014
+%T Neural constraints on learning
+%J Nature
+%V 512
+%N 7515
+%P 423-426
+%R 10.1038/nature13665
+%U https://doi.org/10.1038/nature13665
+
+%0 Journal Article
+%A Squire, Larry R.
+%D 2004
+%T Memory systems of the brain: A brief history and current perspective
+%J Neurobiology of Learning and Memory
+%V 82
+%N 3
+%P 171-177
+%R 10.1016/j.nlm.2004.06.005
+%U https://doi.org/10.1016/j.nlm.2004.06.005
+
+%0 Book
+%A Sutherland, N. S.
+%A Mackintosh, Nicholas J.
+%D 1971
+%T Mechanisms of Animal Discrimination Learning
+%I Academic Press
+
+%0 Journal Article
+%A Thorndike, Edward L.
+%D 1898
+%T Animal intelligence: An experimental study of the associative processes in animals
+%J The Psychological Review: Monograph Supplements
+%V 2
+%N 4
+%P i-109
+%R 10.1037/h0092987
+%U https://doi.org/10.1037/h0092987
+
+%0 Journal Article
+%A Woodworth, R. S.
+%A Thorndike, Edward L.
+%D 1901
+%T The influence of improvement in one mental function upon the efficiency of other functions. (I)
+%J Psychological Review
+%V 8
+%N 3
+%P 247-261
+%R 10.1037/h0074898
+%U https://doi.org/10.1037/h0074898
+
+%0 Thesis
+%A Wylie, H. H.
+%D 1917
+%T An experimental study of transfer of response in white rats
+%I The University of Chicago
+%9 Doctoral dissertation
+%U https://archive.org/details/experimentalstud0000harr
