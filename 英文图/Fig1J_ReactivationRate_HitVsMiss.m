@@ -1,4 +1,4 @@
-﻿% 英文图1J: Hit vs Miss Reactivation (per mouse, layers merged)
+% 英文图1J: Hit vs Miss Reactivation (per mouse, layers merged)
 %
 % Reactivation = P(Transfer active | Learned active) at 1s
 %   L = Learned AudioWater active at 1s
@@ -103,12 +103,14 @@ if isfinite(p)
 	Descriptors = table(S, 0, 0, pText, 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
 	try
-		[pLines, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+		[pLines, pTexts] = ComputerVision.PLine(Descriptors);
 		for pl = pLines(:)'
 			pl.LineWidth = 1;
+			pl.Tag = 'PLine';
 		end
 		for pt = pTexts(:)'
 			pt.FontSize = 6;
+			pt.Tag = 'PText';
 		end
 	catch ME
 		warning('Fig1K:PLineFailed', 'MATLAB.Graphics.PLine failed:\n%s', getReport(ME, 'extended', 'hyperlinks','off'));
@@ -118,9 +120,6 @@ if isfinite(p)
 	catch
 	end
 end
-
-text(ax, 0.02, 0.98, sprintf('n=%d', nnz(mask)), 'Units','normalized', ...
-	'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
 
 % Export
 try

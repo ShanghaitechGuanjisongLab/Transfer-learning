@@ -51,6 +51,19 @@ classdef(Abstract)TransferLearning
 			end
 			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
 			ScatterAxPadding(Fig);
+			
+			% Auto-retune P-value lines if tagged
+			pLines = findobj(Fig, 'Tag', 'PLine');
+			pTexts = findobj(Fig, 'Tag', 'PText');
+			if ~isempty(pLines) && ~isempty(pTexts)
+				try
+					ComputerVision.PLineRetune(pLines, pTexts);
+				catch ME
+					warning('TransferLearning:ExportStandardFigure:PLineRetuneFailed', ...
+						'Failed to retune P-value lines: %s', ME.message);
+				end
+			end
+			
 			SvgPath=TransferLearning.StandardFigureSvgPath(FileName);
 			print(Fig, SvgPath, '-dsvg');
 		end
@@ -115,14 +128,14 @@ for Ax=findall(Fig,Type='axes').'
 	end
 	XLim=xlim(Ax);
 	YLim=ylim(Ax);
-	XData=[S.XData];
+	XData=unique([S.XData]);
 	[MinX,MaxX]=bounds(XData);
-	Padding=std(XData);
+	Padding=std(XData)/sqrt(numel(XData));
 	MinX=MinX-Padding;
 	MaxX=MaxX+Padding;
-	YData=[S.YData];
+	YData=unique([S.YData]);
 	[MinY,MaxY]=bounds(YData);
-	Padding=std(YData);
+	Padding=std(YData)/sqrt(numel(unique(YData)));
 	MinY=MinY-Padding;
 	MaxY=MaxY+Padding;
 	if MinX<XLim(1) || MaxX>XLim(2)|| MinY<YLim(1) || MaxY>YLim(2)

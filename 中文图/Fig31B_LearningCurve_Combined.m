@@ -2,7 +2,7 @@
 %
 % Output: SVG through the standard figure output path.
 
-svgName = '中文图Fig313_LearningCurve_Sigmoid.svg';
+svgName = '中文图Fig314B_LearningCurve_Combined.svg';
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -144,7 +144,7 @@ summaryTable.NaiveSigmoid = naiveFitCurve(:);
 summaryTable.TransferSigmoid = transferFitCurve(:);
 
 fprintf('Wrote: %s\n', svgPath);
-fprintf('\n=== 中文图31B / Fig313 ===\n');
+fprintf('\n=== 中文图314B Learning Curve Combined ===\n');
 fprintf('Naive mice: %d\n', naiveMouseN);
 fprintf('Continual mice: %d\n', transferMouseN);
 fprintf('Cells: Not applicable (behavior only)\n');

@@ -46,52 +46,104 @@ if isempty(Sess)
 	return;
 end
 
-CellMeta = DS.Cells(:, ["CellUID","ZLayer"]);
+CellMeta = DS.Cells(:, ["CellUID","ZLayer","Mouse"]);
 CellMeta.CellUID = uint64(CellMeta.CellUID);
 CellMeta.ZLayer = string(CellMeta.ZLayer);
+CellMeta.Mouse = categorical(string(CellMeta.Mouse));
+
+QLearnAll = table(repmat(categorical("Learned"), height(Sess), 1), ...
+	repmat(categorical("AudioWater"), height(Sess), 1), repmat(categorical("AudioWater"), height(Sess), 1), ...
+	categorical(string(Sess.Mouse)), Sess.DateTimeLearned, ...
+	repmat("Learned", height(Sess), 1), ...
+	'VariableNames', {'Phase','Stimulus','Design','Mouse','DateTime','GroupName'});
+QTranAll = table(repmat(categorical("Transfer"), height(Sess), 1), ...
+	repmat(categorical("LightWater"), height(Sess), 1), repmat(categorical("LightWater"), height(Sess), 1), ...
+	categorical(string(Sess.Mouse)), Sess.DateTimeTransfer, ...
+	repmat("Transfer", height(Sess), 1), ...
+	'VariableNames', {'Phase','Stimulus','Design','Mouse','DateTime','GroupName'});
+
+QTranHMAll = table();
+if options.RequireHitMiss
+	for iRow = 1:height(Sess)
+		mouseName = string(Sess.Mouse(iRow));
+		dtTransfer = Sess.DateTimeTransfer(iRow);
+		beh = double(TTran.Behavior(TTran.Mouse == mouseName & TTran.DateTime == dtTransfer));
+		if any(beh == 1) && any(beh == 0)
+			t = table(["Hit"; "Miss"], repmat(categorical("Transfer"), 2, 1), ...
+				repmat(categorical("LightWater"), 2, 1), repmat(categorical("LightWater"), 2, 1), ...
+				[1; 0], repmat(categorical(mouseName), 2, 1), repmat(dtTransfer, 2, 1), ...
+				'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior','Mouse','DateTime'});
+			QTranHMAll = [QTranHMAll; t]; %#ok<AGROW>
+		end
+	end
+end
+
+GLearnStruct = DS.QueryNTATS(QLearnAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+GTranStruct = DS.QueryNTATS(QTranAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+if options.RequireHitMiss && ~isempty(QTranHMAll)
+	GTranHMStruct = DS.QueryNTATS(QTranHMAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+else
+	GTranHMStruct = struct();
+end
+
+[XLearnAll, cellLearnAll] = iExtractNtats2D(GLearnStruct);
+[XTranAll, cellTranAll] = iExtractNtats2D(GTranStruct);
+if options.RequireHitMiss
+	[XHitAll, cellHitAll] = iExtractNtats3D_Index(GTranHMStruct, 1);
+	[XMissAll, cellMissAll] = iExtractNtats3D_Index(GTranHMStruct, 2);
+end
 
 Rows = repmat(iEmptyResult(), 0, 1);
+
 for iRow = 1:height(Sess)
 	mouseName = string(Sess.Mouse(iRow));
 	dtLearned = Sess.DateTimeLearned(iRow);
 	dtTransfer = Sess.DateTimeTransfer(iRow);
 
-	GLearn = DS.QueryNTATS(struct('Mouse', mouseName, 'DateTime', dtLearned, ...
-		'Phase', 'Learned', 'Stimulus', 'AudioWater', 'Design', 'AudioWater'), ...
-		UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-	GTran = DS.QueryNTATS(struct('Mouse', mouseName, 'DateTime', dtTransfer, ...
-		'Phase', 'Transfer', 'Stimulus', 'LightWater', 'Design', 'LightWater'), ...
-		UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 	beh = double(TTran.Behavior(TTran.Mouse == mouseName & TTran.DateTime == dtTransfer));
-	if options.RequireHitMiss
-		if ~any(beh == 1) || ~any(beh == 0)
-			continue;
-		end
-		QHM = table(["Hit"; "Miss"], repmat(categorical("Transfer"), 2, 1), ...
-			repmat(categorical("LightWater"), 2, 1), repmat(categorical("LightWater"), 2, 1), ...
-			[1; 0], repmat(mouseName, 2, 1), repmat(dtTransfer, 2, 1), ...
-			'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior','Mouse','DateTime'});
-		GTranHM = DS.QueryNTATS(QHM, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	
+	mouseCells = CellMeta.CellUID(string(CellMeta.Mouse) == mouseName);
+	if isempty(mouseCells)
+		continue;
 	end
 
-	[XLearn, cellLearn] = iExtractNtats2D(GLearn);
-	[XTran, cellTran] = iExtractNtats2D(GTran);
+	[~, idxL_mouse] = intersect(cellLearnAll, mouseCells, 'stable');
+	XLearn = XLearnAll(idxL_mouse, :);
+	cellLearn = cellLearnAll(idxL_mouse);
+
+	[~, idxT_mouse] = intersect(cellTranAll, mouseCells, 'stable');
+	XTran = XTranAll(idxT_mouse, :);
+	cellTran = cellTranAll(idxT_mouse);
+
 	if options.RequireHitMiss
-		[XHM, cellHM] = iExtractNtats3D(GTranHM);
-		if isempty(XLearn) || isempty(XTran) || isempty(XHM)
+		hasHitMiss = any(beh == 1) && any(beh == 0);
+		if ~hasHitMiss
+			continue;
+		end
+
+		[~, idxHit_mouse] = intersect(cellHitAll, mouseCells, 'stable');
+		XHitData = XHitAll(idxHit_mouse, :);
+		cellHit = cellHitAll(idxHit_mouse);
+
+		[~, idxMiss_mouse] = intersect(cellMissAll, mouseCells, 'stable');
+		XMissData = XMissAll(idxMiss_mouse, :);
+		cellMiss = cellMissAll(idxMiss_mouse);
+
+		if isempty(XLearn) || isempty(XTran) || isempty(XHitData) || isempty(XMissData)
 			continue;
 		end
 
 		[commonLT, idxL, idxT] = intersect(cellLearn, cellTran, 'stable');
-		[commonCells, idxLT, idxHM] = intersect(commonLT, cellHM, 'stable');
+		[commonLT_Hit, idxLT1, idxHit] = intersect(commonLT, cellHit, 'stable');
+		[commonCells, idxLT2, idxMiss] = intersect(commonLT_Hit, cellMiss, 'stable');
 		if isempty(commonCells)
 			continue;
 		end
 
-		XLearn = XLearn(idxL(idxLT), :);
-		XTran = XTran(idxT(idxLT), :);
-		XHit = XHM(idxHM, :, 1);
-		XMiss = XHM(idxHM, :, 2);
+		XLearn = XLearn(idxL(idxLT1(idxLT2)), :);
+		XTran = XTran(idxT(idxLT1(idxLT2)), :);
+		XHit = XHitData(idxHit(idxLT2), :);
+		XMiss = XMissData(idxMiss, :);
 	else
 		if isempty(XLearn) || isempty(XTran)
 			continue;
@@ -162,7 +214,6 @@ if ndims(X) == 3
 	X = squeeze(X(:, :, 1));
 end
 end
-
 function [X, cellUID] = iExtractNtats3D(G)
 cellUID = uint64([]);
 X = [];
@@ -182,6 +233,13 @@ if ndims(X) ~= 3
 end
 end
 
+function [X, cellUID] = iExtractNtats3D_Index(G, dim3Index)
+[X3, cellUID] = iExtractNtats3D(G);
+X = [];
+if ~isempty(X3)
+	X = X3(:, :, dim3Index);
+end
+end
 function active = iIsActiveAt1s(X, baseMask, idx1s, kSigma)
 baseMu = mean(X(:, baseMask), 2, 'omitnan');
 baseSd = std(X(:, baseMask), 0, 2, 'omitnan');
