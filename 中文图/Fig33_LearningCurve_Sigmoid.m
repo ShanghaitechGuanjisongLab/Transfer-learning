@@ -2,7 +2,7 @@
 %
 % Output: SVG through the standard figure output path.
 
-svgName = '中文图Fig313_LearningCurve_Sigmoid.svg';
+svgName = '中文图Fig33_LearningCurve_Sigmoid.svg';
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -74,24 +74,22 @@ nMatOut = nan(numel(xFit), size(nMat, 2));
 meanMatOut(1:size(meanMat, 1), :) = meanMat;
 semMatOut(1:size(semMat, 1), :) = semMat;
 nMatOut(1:size(nMat, 1), :) = nMat;
+%% 
 
 f = figure('Color', 'w', 'Name', 'Fig1B Learning curve sigmoid');
 f.Units = 'centimeters';
-f.Position(3:4) = [8, 8];
-t = tiledlayout(f, 1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+f.Position(3:4) = [9, 8];
 
 palette2 = TransferLearning.FigurePalette(2);
 curveColorNaive = palette2(1, :);
 curveColorTransfer = palette2(2, :);
-ax = nexttile(t, 1);
+ax = gca;
 hold(ax, 'on');
 hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanMatOut(:,1), semMatOut(:,1), naiveFitCurve, curveColorNaive);
 hTransfer = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanMatOut(:,2), semMatOut(:,2), transferFitCurve, curveColorTransfer);
 
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(t, 'Block', 'FontSize', 12);
-ylim(ax, [0 1]);
-xlim(ax, [1, max(xFit)]);
 
 lgd = legend(ax, [hNaive(1), hNaive(2), hTransfer(1), hTransfer(2)], ...
 	{'Naive (Observed)', 'Naive (Sigmoid fit)', 'Continual (Observed)', 'Continual (Sigmoid fit)'}, ...
@@ -144,7 +142,7 @@ summaryTable.NaiveSigmoid = naiveFitCurve(:);
 summaryTable.TransferSigmoid = transferFitCurve(:);
 
 fprintf('Wrote: %s\n', svgPath);
-fprintf('\n=== 中文图31B / Fig313 ===\n');
+fprintf('\n=== 中文图33 ===\n');
 fprintf('Naive mice: %d\n', naiveMouseN);
 fprintf('Continual mice: %d\n', transferMouseN);
 fprintf('Cells: Not applicable (behavior only)\n');

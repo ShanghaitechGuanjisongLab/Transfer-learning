@@ -1,6 +1,6 @@
 % Fig382E model mechanism summary for Naive vs Continual CueB training.
 
-svgName = '中文图Fig382E_ModelMechanismSummary.svg';
+svgName = '中文图Fig56ABCD_ModelMechanismSummary.svg';
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
@@ -165,11 +165,11 @@ unitTable = Data.UnitTable;
 
 fig = figure('Color', 'w', 'Name', 'Fig382E model mechanism summary');
 fig.Units = 'centimeters';
-fig.Position(3:4) = [5, 20];
+fig.Position(3:4) = [5, 22.2];
 fig.PaperUnits = 'centimeters';
 fig.PaperPositionMode = 'manual';
-fig.PaperPosition = [0, 0, 5, 20];
-fig.PaperSize = [5, 20];
+fig.PaperPosition = [0, 0, 5, 22.2];
+fig.PaperSize = [5, 22.2];
 
 layout = tiledlayout(fig, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
