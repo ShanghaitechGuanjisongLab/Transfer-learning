@@ -152,32 +152,29 @@ f.PaperSize = [3, 4];
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 barColors = TransferLearning.GroupColors(["Control", "Gap"]);
+barColors(1, :) = TransferLearning.ContinualColor;
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 Options = cell(2, 1);
 
 % --- Tile 1: Reactivation ---
 ax1 = nexttile(Layout, 1);
 [~, Options{1}, Bars1, EB1] = UniExp.BarScatterCompare( ...
-	{double(xReactCtrl(:)), double(xReactV7(:))}, UniExp.Flags.empty, compareGroup, 'AsteriskThreshold', 0.05);
+	{double(xReactCtrl(:)), double(xReactV7(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 delete(findobj(ax1, 'Type', 'Scatter'));
-for eb = EB1.Object(:)'
-	eb.LineWidth = 1;
-end
 iStyleAxes(ax1, false);
 ylabel(ax1, 'Reactivation', 'FontSize', 6);
 iStyleBars(Bars1, barColors(1, :), barColors(2, :));
+iStyleErrorBars(EB1, barColors);
 
 % --- Tile 2: Divergence ---
 ax2 = nexttile(Layout, 2);
 [~, Options{2}, Bars2, EB2] = UniExp.BarScatterCompare( ...
-	{double(xDivCtrl(:)), double(xDivV7(:))}, UniExp.Flags.empty, compareGroup, 'AsteriskThreshold', 0.05);
+	{double(xDivCtrl(:)), double(xDivV7(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 delete(findobj(ax2, 'Type', 'Scatter'));
-for eb = EB2.Object(:)'
-	eb.LineWidth = 1;
-end
 iStyleAxes(ax2, true);
 ylabel(ax2, 'Divergence', 'FontSize', 6);
 iStyleBars(Bars2, barColors(1, :), barColors(2, :));
+iStyleErrorBars(EB2, barColors);
 
 for iOpt = 1:numel(Options)
 	Opt = Options{iOpt};
@@ -242,7 +239,7 @@ if isscalar(Bars)
 	Bars.CData = repmat([colorControl; colorGap], ceil(nBar/2), 1);
 	Bars.CData = Bars.CData(1:nBar, :);
 	Bars.BarWidth = 0.5;
-	Bars.FaceAlpha = 1/3;
+	Bars.FaceAlpha = 1;
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
 	Bars.EdgeColor = 'none';
@@ -253,14 +250,24 @@ if numel(Bars) >= 2
 	Bars(2).FaceColor = colorGap;
 	Bars(1).BarWidth = 0.5;
 	Bars(2).BarWidth = 0.5;
-	Bars(1).FaceAlpha = 1/3;
-	Bars(2).FaceAlpha = 1/3;
+	Bars(1).FaceAlpha = 1;
+	Bars(2).FaceAlpha = 1;
 	Bars(1).LineWidth = 1;
 	Bars(1).BaseLine.LineWidth = 1;
 	Bars(2).LineWidth = 1;
 	Bars(2).BaseLine.LineWidth = 1;
 	Bars(1).EdgeColor = 'none';
 	Bars(2).EdgeColor = 'none';
+end
+end
+
+function iStyleErrorBars(errorBars, colors)
+for iE = 1:height(errorBars)
+	errorBar = errorBars.Object(iE);
+	errorBar.LineWidth = 1;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
 end
 end
 

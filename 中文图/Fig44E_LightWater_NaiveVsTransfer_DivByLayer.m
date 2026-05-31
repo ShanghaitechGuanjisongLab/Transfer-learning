@@ -93,8 +93,9 @@ yl.FontName = 'Arial';
 yl.FontSize = 6;
 
 ax1 = nexttile(Layout, 1);
-[~, ~, Bars1, EB1] = UniExp.BarScatterCompare({double(naiveL23(:)), double(tranL23(:))}, UniExp.Flags.empty, ...
-	table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optL23, Bars1, EB1] = UniExp.BarScatterCompare({double(naiveL23(:)), double(tranL23(:))}, UniExp.Flags.empty, ...
+	table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+iTagPValueObjects(optL23);
 delete(findobj(ax1, 'Type', 'Scatter'));
 iStyleErrorBars(EB1, [colorNaive; colorContinual]);
 iStylePValue(ax1);
@@ -102,8 +103,9 @@ iStyleAxes(ax1, 'L2/3');
 iStyleBars(Bars1, colorNaive, colorContinual);
 
 ax2 = nexttile(Layout, 2);
-[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({double(naiveL5(:)), double(tranL5(:))}, UniExp.Flags.empty, ...
-	table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optL5, Bars2, EB2] = UniExp.BarScatterCompare({double(naiveL5(:)), double(tranL5(:))}, UniExp.Flags.empty, ...
+	table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+iTagPValueObjects(optL5);
 delete(findobj(ax2, 'Type', 'Scatter'));
 iStyleErrorBars(EB2, [colorNaive; colorContinual]);
 iStylePValue(ax2);
@@ -120,6 +122,27 @@ assignin('base', 'English_Fig2H_Table', T);
 assignin('base', 'English_Fig2H_Summary', S);
 assignin('base', 'English_Fig2H_pL23', pL23);
 assignin('base', 'English_Fig2H_pL5', pL5);
+
+function iTagPValueObjects(optional)
+if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+multiCompare = optional.MultiCompare;
+if ismember('PLine', multiCompare.Properties.VariableNames)
+	for pLine = multiCompare.PLine(:)'
+		if isgraphics(pLine)
+			pLine.Tag = 'PLine';
+		end
+	end
+end
+if ismember('PText', multiCompare.Properties.VariableNames)
+	for pText = multiCompare.PText(:)'
+		if isgraphics(pText)
+			pText.Tag = 'PText';
+		end
+	end
+end
+end
 
 function out = iBuildStartSessionDivergenceRows(spec, idx1s, sampleRate)
 DS = spec.DS;
@@ -364,15 +387,15 @@ if isscalar(Bars)
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
 	Bars.EdgeColor = 'none';
-	Bars.FaceAlpha = 1/3;
+	Bars.FaceAlpha = 1;
 else
 	if numel(Bars) >= 2
 		Bars(1).FaceColor = colorA;
 		Bars(2).FaceColor = colorB;
 		Bars(1).BarWidth = 0.5;
 		Bars(2).BarWidth = 0.5;
-		Bars(1).FaceAlpha = 1/3;
-		Bars(2).FaceAlpha = 1/3;
+		Bars(1).FaceAlpha = 1;
+		Bars(2).FaceAlpha = 1;
 		Bars(1).LineWidth = 1;
 		Bars(2).LineWidth = 1;
 		Bars(1).BaseLine.LineWidth = 1;

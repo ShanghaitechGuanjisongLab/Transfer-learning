@@ -1,4 +1,4 @@
-﻿% 中文图331D：声水学会阶段活跃细胞的光水迁移命中/错失回合1s z-score比较
+﻿% 中文图43D：声水学会阶段活跃细胞的光水迁移命中/错失回合1s z-score比较
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -20,7 +20,7 @@ baseMask = (xsSec >= -3) & (xsSec < 0);
 kSigma = 3;
 [~, idx1] = min(abs(xsSec - 1));
 if abs(xsSec(idx1) - 1) > 0.25
-	error('中文图331D:No1s', 'Cannot find sample close to 1s.');
+	error('Fig43D:No1s', 'Cannot find sample close to 1s.');
 end
 
 qLearnedAudio = struct('Phase', 'Learned', 'Stimulus', 'AudioWater');
@@ -53,7 +53,7 @@ pairedRowMask(activeRowIndex(maskPair)) = true;
 sampleCounts = TransferLearning.PanelSampleCountTable(S, ["Hit"; "Miss"], [pairedRowMask, pairedRowMask], DS.Cells);
 hitMissPValue = signrank(vHit, vMiss);
 
-f = figure('Color', 'w', 'Name', '中文图331D Learned-active Hit Miss 1s');
+f = figure('Color', 'w', 'Name', '中文图43D Learned-active Hit Miss 1s');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -66,7 +66,8 @@ nexttile;
 
 Data = array2table([double(vHit(:)), double(vMiss(:))], 'VariableNames', {'Hit', 'Miss'});
 CompareGroup = table(["Hit", "Miss"], 'VariableNames', {'GroupPair'});
-[~, ~, Bars, EB] = UniExp.BarScatterCompare(Data, UniExp.Flags.empty, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, optional, Bars, EB] = UniExp.BarScatterCompare(Data, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+iTagPValueObjects(optional);
 ax = gca;
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
@@ -157,6 +158,27 @@ fprintf('Hit vs Miss signrank p = %.6g\n', hitMissPValue);
 
 assignin('base', 'Fig43D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'SignrankPValue', hitMissPValue));
 
+function iTagPValueObjects(optional)
+if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+multiCompare = optional.MultiCompare;
+if ismember('PLine', multiCompare.Properties.VariableNames)
+	for pLine = multiCompare.PLine(:)'
+		if isgraphics(pLine)
+			pLine.Tag = 'PLine';
+		end
+	end
+end
+if ismember('PText', multiCompare.Properties.VariableNames)
+	for pText = multiCompare.PText(:)'
+		if isgraphics(pText)
+			pText.Tag = 'PText';
+		end
+	end
+end
+end
+
 function iStyleErrorBars(errorBars, colors)
 for iE = 1:height(errorBars)
 	errorBar = errorBars.Object(iE);
@@ -187,12 +209,12 @@ end
 
 if isnumeric(nt)
 	if ndims(nt) ~= 3
-		error('中文图331D:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
+		error('Fig43D:BadNTATS', 'Expected NTATS to be 3D numeric or NDTable.');
 	end
 	X = nt;
 	return;
 end
 
-	error('中文图331D:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+	error('Fig43D:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
 

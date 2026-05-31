@@ -123,7 +123,7 @@ yl = ylabel(Layout, '💡💧 Divergence');
 yl.FontName = 'Arial';
 yl.FontSize = 6;
 
-palette2 = [1, 0, 0; 0, 0, 1];
+palette2 = TransferLearning.GroupColors(["Active", "Inactive"]);
 Stats = table(layerLabels, nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), ...
 	'VariableNames', {'Layer','MeanActive','MeanInactive','PValue','NMouse','NCellActive','NCellInactive'});
 Options = cell(numel(layers), 1);
@@ -149,14 +149,9 @@ for iL = 1:numel(layers)
 	Stats.NCellInactive(iL) = nCellInactive;
 
 	ax = nexttile(Layout, iL);
-	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+	iTagPValueObjects(Options{iL});
 	delete(findobj(ax, 'Type', 'Scatter'));
-	for b = Bars(:)'
-		b.EdgeColor = 'none';
-	end
-	for eb = EB.Object(:)'
-		eb.LineWidth = 1;
-	end
 	iStyleAxes(ax, layerLabels(iL), iL == 2);
 	if iL == 2
 		ax.XTickLabel = {'Active', 'Inactive'};
@@ -168,6 +163,7 @@ for iL = 1:numel(layers)
 	end
 
 	iStyleBars(Bars, palette2(1, :), palette2(2, :));
+	iStyleErrorBars(EB, palette2);
 
 	fprintf('\n=== Fig334E %s ===\n', layerLabels(iL));
 	fprintf('Mouse count: n = %d paired mice\n', nMouseLayer);
@@ -179,12 +175,6 @@ end
 
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
-end
-for iOpt = 1:numel(Options)
-	Opt = Options{iOpt};
-	if isfield(Opt, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt.MultiCompare.Properties.VariableNames))
-		MATLAB.Graphics.PLineRetune(Opt.MultiCompare.PLine, Opt.MultiCompare.PText);
-	end
 end
 svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig45E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
 fprintf('Wrote: %s\n', svgPath);
@@ -301,9 +291,10 @@ if isscalar(Bars)
 	Bars.CData = repmat([colorA; colorB], ceil(nB/2), 1);
 	Bars.CData = Bars.CData(1:nB, :);
 	Bars.BarWidth = 0.5;
-	Bars.FaceAlpha = 1/3;
+	Bars.FaceAlpha = 1;
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
 	return;
 end
 if numel(Bars) >= 2
@@ -311,11 +302,44 @@ if numel(Bars) >= 2
 	Bars(2).FaceColor = colorB;
 	Bars(1).BarWidth = 0.5;
 	Bars(2).BarWidth = 0.5;
-	Bars(1).FaceAlpha = 1/3;
-	Bars(2).FaceAlpha = 1/3;
+	Bars(1).FaceAlpha = 1;
+	Bars(2).FaceAlpha = 1;
 	Bars(1).LineWidth = 1;
 	Bars(1).BaseLine.LineWidth = 1;
 	Bars(2).LineWidth = 1;
 	Bars(2).BaseLine.LineWidth = 1;
+	Bars(1).EdgeColor = 'none';
+	Bars(2).EdgeColor = 'none';
+end
+end
+
+function iStyleErrorBars(ErrorBars, colors)
+for iE = 1:height(ErrorBars)
+	errorBar = ErrorBars.Object(iE);
+	errorBar.LineWidth = 1;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
+end
+end
+
+function iTagPValueObjects(optional)
+if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+multiCompare = optional.MultiCompare;
+if ismember('PLine', multiCompare.Properties.VariableNames)
+	for pLine = multiCompare.PLine(:)'
+		if isgraphics(pLine)
+			pLine.Tag = 'PLine';
+		end
+	end
+end
+if ismember('PText', multiCompare.Properties.VariableNames)
+	for pText = multiCompare.PText(:)'
+		if isgraphics(pText)
+			pText.Tag = 'PText';
+		end
+	end
 end
 end

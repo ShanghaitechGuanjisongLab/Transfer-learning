@@ -1,4 +1,4 @@
-﻿% 中文图332A：初始光水与迁移光水双泳道热图（全细胞，不做对齐、不做筛选）
+﻿% 中文图44A：初始光水与迁移光水双泳道热图（全细胞，不做对齐、不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -25,7 +25,7 @@ XTransfer = iGetNtats2D(GTransfer);
 
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('中文图332A:No1s', 'Cannot find sample close to 1s.');
+	error('Fig44A:No1s', 'Cannot find sample close to 1s.');
 end
 
 vInit1s = XInitial(:, idx1s);
@@ -50,7 +50,7 @@ climHighAbs = sqrt(abs(max(posV, 0)));
 CLim = [-climLowAbs, climHighAbs];
 %% 
 
-f = figure('Color', 'w', 'Name', '中文图332A 初始/迁移光水热图');
+f = figure('Color', 'w', 'Name', '中文图44A 初始/迁移光水热图');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
@@ -104,11 +104,11 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig332A_InitialTransferLight_Heatmap.svg';
+svgPath = '中文图Fig44A_InitialTransferLight_Heatmap.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Fig332A Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
-fprintf('Fig332A Continual: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
+fprintf('Fig44A Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
+fprintf('Fig44A Continual: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
 
 assignin('base', 'Fig332A_Initial1s', vInit1s);
 assignin('base', 'Fig332A_Transfer1s', vTran1s);
@@ -206,31 +206,12 @@ if isnumeric(nt) && ismatrix(nt)
 	X = double(nt);
 	return;
 end
-	error('中文图332A:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
+	error('Fig44A:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
-end
-
-function y = iNiceLimit(x)
-if ~isfinite(x) || x <= 0
-	y = 1;
-	return;
-end
-e = floor(log10(x));
-f = x / 10^e;
-if f <= 1
-	f2 = 1;
-elseif f <= 2
-	f2 = 2;
-elseif f <= 5
-	f2 = 5;
-else
-	f2 = 10;
-end
-y = f2 * 10^e;
 end
 
 

@@ -9,20 +9,13 @@
 %   TransferLearning.英文图1.K_ReactivationRate_HitVsMiss
 
 
-% --- ensure project loaded
-try
-	if ~exist('UniExp.DataSet','class')
-		thisFile = mfilename('fullpath');
-		thisDir = fileparts(thisFile);
-		prjFile = fullfile(thisDir, '..', '..', 'Transferlearning.prj');
-		if exist(prjFile,'file')
-			try
-				matlab.project.loadProject(prjFile);
-			catch
-			end
-		end
+if ~exist('UniExp.DataSet','class')
+	thisFile = mfilename('fullpath');
+	thisDir = fileparts(thisFile);
+	prjFile = fullfile(thisDir, '..', '..', 'Transferlearning.prj');
+	if exist(prjFile,'file')
+		matlab.project.loadProject(prjFile);
 	end
-catch
 end
 
 R = iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer();
@@ -54,11 +47,8 @@ f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax,'on');
-try
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-		ax.Toolbar.Visible = 'off';
-	end
-catch
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
 end
 ax.LineWidth = 1;
 
@@ -68,10 +58,11 @@ if nnz(mask) >= 4
 end
 
 Y = [hit(mask), miss(mask)];
-palette3 = [1, 0, 0; 0, 0, 1; 0, 0, 0];
-plot(ax, Y', '-', 'LineWidth', 1, 'Color', palette3(3,:));
-scatter(ax, ones(nnz(mask),1), hit(mask), 15, palette3(1,:), 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', palette3(1,:));
-scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, palette3(2,:), 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', palette3(2,:));
+hitColor = TransferLearning.ColorA;
+missColor = TransferLearning.ColorB;
+plot(ax, Y', '-', 'LineWidth', 1, 'Color', [0, 0, 0]);
+scatter(ax, ones(nnz(mask),1), hit(mask), 15, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', hitColor);
+scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, missColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', missColor);
 set(ax, 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 grid(ax,'off');
 box(ax,'off');
@@ -84,59 +75,32 @@ title(ax, '💡💧', 'FontSize', 6, 'FontWeight', 'normal');
 if isfinite(p)
 	S = scatter(ax, [ones(nnz(mask),1); 2*ones(nnz(mask),1)], [hit(mask); miss(mask)], ...
 		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-	try
-		if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-		if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-		if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-	catch
-	end
+	if isprop(S, 'HitTest'); S.HitTest = 'off'; end
+	if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
+	if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
 	% Convert p to asterisk
-	if p < 0.001
-		pText = "***";
-	elseif p < 0.01
-		pText = "**";
-	elseif p < 0.05
-		pText = "*";
+	if p < 0.05
+		pText = "＊";
 	else
 		pText = "n.s.";
 	end
 	Descriptors = table(S, 0, 0, pText, 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-	try
-		[pLines, pTexts] = ComputerVision.PLine(Descriptors);
-		for pl = pLines(:)'
-			pl.LineWidth = 1;
-			pl.Tag = 'PLine';
-		end
-		for pt = pTexts(:)'
-			pt.FontSize = 6;
-			pt.Tag = 'PText';
-		end
-	catch ME
-		warning('Fig1K:PLineFailed', 'MATLAB.Graphics.PLine failed:\n%s', getReport(ME, 'extended', 'hyperlinks','off'));
+	[pLines, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+	for pl = pLines(:)'
+		pl.LineWidth = 1;
+		pl.Tag = 'PLine';
 	end
-	try
-		delete(S);
-	catch
+	for pt = pTexts(:)'
+		pt.FontSize = 6;
+		pt.Tag = 'PText';
 	end
-end
-
-% Export
-try
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-	if ~isfolder(outDirUNC)
-		mkdir(outDirUNC);
-	end
-catch
+	delete(S);
 end
 
 svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
-try
-	svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
-	fprintf('Wrote: %s\n', svgPath);
-catch ME
-	warning(ME.identifier, 'Export failed: %s', ME.message);
-end
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
+fprintf('Wrote: %s\n', svgPath);
 
 fprintf('\n=== English Fig1J Reactivation Hit vs Miss ===\n');
 fprintf('paired mice n = %d\n', nnz(mask));

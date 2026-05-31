@@ -65,17 +65,7 @@ classdef(Abstract)TransferLearning
 			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
 			ScatterAxPadding(Fig);
 			
-			% Auto-retune P-value lines if tagged
-			pLines = findobj(Fig, 'Tag', 'PLine');
-			pTexts = findobj(Fig, 'Tag', 'PText');
-			if ~isempty(pLines) && ~isempty(pTexts)
-				try
-					ComputerVision.PLineRetune(pLines, pTexts);
-				catch ME
-					warning('TransferLearning:ExportStandardFigure:PLineRetuneFailed', ...
-						'Failed to retune P-value lines: %s', ME.message);
-				end
-			end
+			RetuneTaggedPLines(Fig);
 			
 			SvgPath=TransferLearning.StandardFigureSvgPath(FileName);
 			print(Fig, SvgPath, '-dsvg');
@@ -89,16 +79,7 @@ classdef(Abstract)TransferLearning
 			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
 			ScatterAxPadding(Fig);
 			
-			pLines = findobj(Fig, 'Tag', 'PLine');
-			pTexts = findobj(Fig, 'Tag', 'PText');
-			if ~isempty(pLines) && ~isempty(pTexts)
-				try
-					ComputerVision.PLineRetune(pLines, pTexts);
-				catch ME
-					warning('TransferLearning:ExportStandardFigureTransparent:PLineRetuneFailed', ...
-						'Failed to retune P-value lines: %s', ME.message);
-				end
-			end
+			RetuneTaggedPLines(Fig);
 			
 			Fig.Color='none';
 			for Ax=findall(Fig,Type='axes').'
@@ -191,6 +172,15 @@ for Ax=findall(Fig,Type='axes').'
 		Ax.XLimMode='manual';
 		Ax.YLimMode='manual';
 		delete(TempScatter);
+	end
+end
+end
+function RetuneTaggedPLines(Fig)
+for Ax=findall(Fig,Type='axes').'
+	pLines=findobj(Ax,'Tag','PLine');
+	pTexts=findobj(Ax,'Tag','PText');
+	if ~isempty(pLines)&&~isempty(pTexts)
+		MATLAB.Graphics.PLineRetune(pLines,pTexts);
 	end
 end
 end

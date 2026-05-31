@@ -55,8 +55,9 @@ f.PaperSize = [3, 4];
 
 TL = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 axTop = nexttile(TL, 1);
-[~, optTop, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, UniExp.Flags.empty, compareGroup, 'AsteriskThreshold', 0.05);
+[~, optTop, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 pZScore = iExtractFirstPValue(optTop);
+iTagPValueObjects(optTop);
 delete(findobj(axTop, 'Type', 'Scatter'));
 ax = axTop;
 ax.FontSize = 6;
@@ -82,7 +83,7 @@ if isscalar(Bars)
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
 	Bars.EdgeColor = 'none';
-	Bars.FaceAlpha = 1/3;
+	Bars.FaceAlpha = 1;
 else
 	for ib = 1:numel(Bars)
 		if ib == 1
@@ -91,22 +92,14 @@ else
 			Bars(ib).FaceColor = colorTransfer;
 		end
 		Bars(ib).BarWidth = 0.5;
-		Bars(ib).FaceAlpha = 1/3;
+		Bars(ib).FaceAlpha = 1;
 		Bars(ib).LineWidth = 1;
 		Bars(ib).BaseLine.LineWidth = 1;
 		Bars(ib).EdgeColor = 'none';
 	end
 end
 
-for eb = EB.Object(:)'
-	eb.LineWidth = 1;
-	if isprop(eb, 'Color')
-		eb.Color = [0 0 0];
-	end
-	if isprop(eb, 'LineStyle')
-		eb.LineStyle = 'none';
-	end
-end
+iStyleIndividualErrorbars(EB, colorInitial, colorTransfer);
 
 for ln = findobj(ax, 'Type', 'Line')'
 	ln.LineWidth = 1;
@@ -134,7 +127,8 @@ for ia = 1:numel(allAxes)
 end
 
 axBottom = nexttile(TL, 2);
-[~, ~, bars2, ebBottom] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+[~, optBottom, bars2, ebBottom] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+iTagPValueObjects(optBottom);
 delete(findobj(axBottom, 'Type', 'Scatter'));
 axBottom.FontSize = 6;
 axBottom.FontName = 'Segoe UI Emoji';
@@ -301,7 +295,7 @@ if isscalar(Bars)
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
 	Bars.EdgeColor = 'none';
-	Bars.FaceAlpha = 1/3;
+	Bars.FaceAlpha = 1;
 	return;
 end
 for ib = 1:numel(Bars)
@@ -314,7 +308,7 @@ for ib = 1:numel(Bars)
 	Bars(ib).BarWidth = 0.5;
 	Bars(ib).BaseLine.LineWidth = 1;
 	Bars(ib).EdgeColor = 'none';
-	Bars(ib).FaceAlpha = 1/3;
+	Bars(ib).FaceAlpha = 1;
 end
 end
 
@@ -331,7 +325,9 @@ for iObj = 1:numel(errorObjects)
 	eb = errorObjects(iObj);
 	eb.LineWidth = 1;
 	if isprop(eb, 'Color')
-		eb.Color = barColors(min(iObj, 2), :);
+		x = double(eb.XData(:));
+		[~, colorIndex] = min(abs((1:size(barColors, 1)).' - x(1)));
+		eb.Color = barColors(colorIndex, :);
 	end
 	if isprop(eb, 'LineStyle')
 		eb.LineStyle = 'none';
@@ -346,6 +342,27 @@ function pValue = iExtractFirstPValue(options)
 pValue = NaN;
 if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PValue', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PValue)
 	pValue = options.MultiCompare.PValue(1);
+end
+end
+
+function iTagPValueObjects(optional)
+if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+multiCompare = optional.MultiCompare;
+if ismember('PLine', multiCompare.Properties.VariableNames)
+	for pLine = multiCompare.PLine(:)'
+		if isgraphics(pLine)
+			pLine.Tag = 'PLine';
+		end
+	end
+end
+if ismember('PText', multiCompare.Properties.VariableNames)
+	for pText = multiCompare.PText(:)'
+		if isgraphics(pText)
+			pText.Tag = 'PText';
+		end
+	end
 end
 end
 

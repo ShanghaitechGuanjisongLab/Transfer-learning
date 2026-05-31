@@ -1,4 +1,4 @@
-﻿% 中文图332B：初始光水与迁移光水两条均值线（全细胞，不做筛选）
+% 中文图332B：初始光水与迁移光水两条均值线（全细胞，不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -38,11 +38,11 @@ E = [std(XInitial, 0, 1, 'omitnan')' std(XTransfer, 0, 1, 'omitnan')'] ./ sqrt(m
 
 f = figure('Color', 'w', 'Name', '中文图332B 初始/迁移光水均值线');
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 8];
+f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 9, 8];
-f.PaperSize = [9, 8];
+f.PaperPosition = [0, 0, 12, 8];
+f.PaperSize = [12, 8];
 
 ax = axes(f);
 hold(ax, 'on');

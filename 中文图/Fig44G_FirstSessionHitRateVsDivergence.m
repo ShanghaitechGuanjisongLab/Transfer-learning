@@ -72,8 +72,10 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-hN = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), 5, colorNaive, 'o', 'filled', 'LineWidth', 0.2);
-hT = scatter(ax, Data.Divergence(maskTran), Data.HitRate(maskTran), 8, colorTransfer, '^', 'filled', 'LineWidth', 0.2);
+scatterMarker = 'o';
+scatterSize = 5;
+hN = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), scatterSize, colorNaive, scatterMarker, 'filled', 'LineWidth', 0.2);
+hT = scatter(ax, Data.Divergence(maskTran), Data.HitRate(maskTran), scatterSize, colorTransfer, scatterMarker, 'filled', 'LineWidth', 0.2);
 ylabel(ax, 'First block hit rate', 'FontSize', 12);
 
 fitP = polyfit(xAll, yAll, 1);

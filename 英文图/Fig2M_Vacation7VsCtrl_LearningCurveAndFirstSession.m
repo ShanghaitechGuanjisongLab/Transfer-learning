@@ -102,6 +102,7 @@ hold(ax,'on');
 
 displayGroups = ["Control", "Gap"];
 edgeColors = TransferLearning.GroupColors(displayGroups);
+edgeColors(1, :) = TransferLearning.ContinualColor;
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 for p = Patches(:)'
@@ -175,7 +176,7 @@ try, f2.InvertHardcopy = 'off'; catch, end
 
 tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 nexttile;
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;

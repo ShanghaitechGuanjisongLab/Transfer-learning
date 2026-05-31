@@ -40,9 +40,13 @@ fitControl = iFitSigmoidCurve(displayedControl, displayGroup(1));
 fitCFos = iFitSigmoidCurve(displayedCFos, displayGroup(2));
 permResult = iPermutationTestSigmoidSlope(displayedControl, displayedCFos, displayGroup(1), displayGroup(2), 10000, 1);
 
-xFit = (1:max([max(fitControl.XObserved), max(fitCFos.XObserved), max(blockNumbers)])).';
+xMax = max([max(fitControl.XObserved), max(fitCFos.XObserved), max(blockNumbers)]);
+xFit = (1:xMax).';
+xFitCurve = linspace(1, xMax, 200).';
 controlFitCurve = iSigmoidFromParams(fitControl.ParamRaw, xFit);
 cfosFitCurve = iSigmoidFromParams(fitCFos.ParamRaw, xFit);
+controlFitCurvePlot = iSigmoidFromParams(fitControl.ParamRaw, xFitCurve);
+cfosFitCurvePlot = iSigmoidFromParams(fitCFos.ParamRaw, xFitCurve);
 
 meanMatOut = nan(numel(xFit), size(meanMat, 2));
 semMatOut = nan(numel(xFit), size(semMat, 2));
@@ -53,21 +57,31 @@ nMatOut(1:size(nMat, 1), :) = nMat;
 
 fig = figure('Color', 'w', 'Name', 'Fig45G cFos block learning sigmoid');
 fig.Units = 'centimeters';
-fig.Position(3:4) = [9, 8];
+fig.Position(3:4) = [12, 8];
+fig.PaperUnits = 'centimeters';
+fig.PaperSize = [12, 8];
+fig.PaperPositionMode = 'auto';
 
 curveColors = TransferLearning.GroupColors(displayGroup);
+curveColors(1,:) = TransferLearning.ContinualColor;
 axisHandle = axes(fig);
 hold(axisHandle, 'on');
-hControl = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFit, meanMatOut(:,1), semMatOut(:,1), controlFitCurve, curveColors(1, :));
-hCFos = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFit, meanMatOut(:,2), semMatOut(:,2), cfosFitCurve, curveColors(2, :));
+hControl = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFitCurve, meanMatOut(:,1), semMatOut(:,1), controlFitCurvePlot, curveColors(1, :));
+hCFos = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFitCurve, meanMatOut(:,2), semMatOut(:,2), cfosFitCurvePlot, curveColors(2, :));
 
 ylabel(axisHandle, 'Hit rate', 'FontSize', 12);
 xlabel(axisHandle, 'Block', 'FontSize', 12);
-ylim(axisHandle, [0 1]);
+ylim(axisHandle, [0 1.02]);
+xlim(axisHandle, [0.5, xMax + 0.5]);
+axisHandle.FontSize = 12;
+axisHandle.LineWidth = 2;
+axisHandle.Color = 'none';
+axisHandle.YTick = 0:0.5:1;
+axisHandle.XTick = unique([1, 5:5:ceil(xMax)]);
 legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
-	{'Control (Observed)', 'Control (Sigmoid fit)', 'cFos inhibited (Observed)', 'cFos inhibited (Sigmoid fit)'}, ...
-	'FontSize', 8, 'Location', 'best', 'Box', 'off');
-title(axisHandle, 'Learning Curve (Sigmoid Fit)', 'FontSize', 12, 'FontWeight', 'normal');
+	{'Control Mean ± SEM', 'Control Sigmoid', 'cFos inhibited Mean ± SEM', 'cFos inhibited Sigmoid'}, ...
+	'FontSize', 10, 'Location', 'southoutside', 'NumColumns', 2, 'Box', 'off');
+title(axisHandle, '');
 box(axisHandle, 'off');
 grid(axisHandle, 'off');
 
@@ -265,8 +279,8 @@ xObserved = find(isfinite(meanCurve));
 meanObserved = meanCurve(xObserved);
 semObserved = semCurve(xObserved);
 semObserved(~isfinite(semObserved)) = 0;
-hError = errorbar(axisHandle, xObserved, meanObserved, semObserved, 'o', 'Color', lineColor, 'MarkerFaceColor', lineColor, 'MarkerEdgeColor', 'none', 'LineWidth', 1, 'MarkerSize', 4);
-hFit = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2);
+hError = errorbar(axisHandle, xObserved, meanObserved, semObserved, 'o-', 'Color', lineColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', lineColor, 'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4);
+hFit = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.2);
 hOut = [hError, hFit];
 end
 
