@@ -82,7 +82,7 @@ subTitles = ["", "", "Naive", "Learned"];
 	CLim=CLim, ...
 	Layout=Layout, ...
 	ImagescStyle={'XData', [xsPlot(1), xsPlot(end)]}, ...
-	LMHColor=[0,0,1; 1,1,1; 1,0,0]);
+	LMHColor=[TransferLearning.HeatmapNegative; 1,1,1; TransferLearning.HeatmapPositive]);
 
 xlabel(Layout, 'Time', 'FontSize', 12);
 ylabel(Layout, sprintf('%d cells', size(laneData, 1)), 'FontSize', 12);
@@ -100,9 +100,9 @@ for iA = 1:numel(Axes)
 	A.FontName = 'Segoe UI Emoji';
 	A.TickDir = 'in';
 	box(A, 'on');
-	xline(A, 0, ':k', 'LineWidth', 2);
+	xline(A, 0, '--', 'LineWidth', 2);
 	if iA >= 3
-		xline(A, 1, '-k', 'LineWidth', 2);
+		xline(A, 1, '--', 'LineWidth', 2);
 	end
 	if iA == 2
 		xlim(A, [-2 1]);
@@ -135,11 +135,11 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = '中文图Fig323_FourLaneHeatmap_AudioWater.svg';
+svgPath = '中文图Fig42A_FourLaneHeatmap_AudioWater.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Fig323 mice recorded: %d\n', numel(allMouseNames));
-fprintf('Fig323 mice plotted after active-cell filter: %d\n', numel(activeMouseNames));
+fprintf('Fig42A mice recorded: %d\n', numel(allMouseNames));
+fprintf('Fig42A mice plotted after active-cell filter: %d\n', numel(activeMouseNames));
 
 assignin('base', 'Fig322_ActiveMask', activeMask);
 assignin('base', 'Fig322_SortIdx', sortIdx);

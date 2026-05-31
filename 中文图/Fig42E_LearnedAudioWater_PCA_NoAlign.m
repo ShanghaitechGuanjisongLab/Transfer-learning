@@ -19,6 +19,8 @@ GPlot = iAverageAdjacentTrials(G, 3);
 PlotData = iComputePcaPlotData(GPlot);
 nCellsUsed = height(GPlot);
 nMiceUsed = numel(unique(string(GPlot.Mouse)));
+trialColor = TransferLearning.LearnedColor;
+driftColor = TransferLearning.ColorA;
 
 f = figure('Color', 'w', 'Name', '中文图325 Learned AudioWater PCA No Align');
 f.Units = 'centimeters';
@@ -28,7 +30,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 12, 8];
 f.PaperSize = [12, 8];
 
-tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 ax1 = nexttile(tlo, 1);
 [hMarker, hDrift] = iPlotRestingDriftOnAxes(ax1, PlotData);
 title(ax1, 'Resting state drift', 'FontSize', 12);
@@ -43,9 +45,9 @@ xlabel(tlo, sprintf('PC1 (%.1f%%)', PlotData.PcaTable.Explained(1)), 'FontSize',
 ylabel(tlo, sprintf('PC2 (%.1f%%)', PlotData.PcaTable.Explained(2)), 'FontSize', 12);
 
 hMarkerLegend = plot(ax1, nan, nan, 'o', 'LineStyle', 'none', ...
-	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', [0 0 1], 'LineWidth', 1.2);
-hTrialLegend = plot(ax1, nan, nan, '-', 'LineWidth', 2, 'Color', [1 0 0]);
-hDriftLegend = plot(ax1, nan, nan, '--', 'LineWidth', 1.5, 'Color', [0 0 1]);
+	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', driftColor, 'LineWidth', 1.2);
+hTrialLegend = plot(ax1, nan, nan, '-', 'LineWidth', 2, 'Color', trialColor);
+hDriftLegend = plot(ax1, nan, nan, '--', 'LineWidth', 1.5, 'Color', driftColor);
 
 lgd = legend(ax1, [hMarkerLegend, hTrialLegend, hDriftLegend], ["Trial #", "Trial", "Resting drift"], ...
 	'Orientation', 'horizontal', 'NumColumns', 3);
@@ -59,13 +61,13 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig325_LearnedAudioWater_PCA_NoAlign.svg';
+svgPath = '中文图Fig42E_LearnedAudioWater_PCA_NoAlign.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Fig325 cells used: %d\n', nCellsUsed);
-fprintf('Fig325 mice used: %d\n', nMiceUsed);
+fprintf('Fig42E cells used: %d\n', nCellsUsed);
+fprintf('Fig42E mice used: %d\n', nMiceUsed);
 
-assignin('base', 'Fig36_GroupNtats', GPlot);
+assignin('base', 'Fig42E_GroupNtats', GPlot);
 
 function GroupNtats = iNtsSuperMouse(DSList, phaseName, stimulusName, minTrials)
 cellTraces = {};
@@ -153,7 +155,7 @@ PlotData.PcaData = PcaData;
 PlotData.cuePts = squeeze(PcaData(:, 1, :)).';
 PlotData.waterPts = squeeze(PcaData(:, end, :)).';
 PlotData.nLines = size(PcaData, 3);
-PlotData.lineColors = iAlphaRamp([1 0 0], PlotData.nLines);
+PlotData.lineColors = iAlphaRamp(TransferLearning.LearnedColor, PlotData.nLines);
 
 xAll = reshape(PcaData(1, :, :), [], 1);
 yAll = reshape(PcaData(2, :, :), [], 1);
@@ -171,9 +173,9 @@ function [hMarker, hDrift] = iPlotRestingDriftOnAxes(ax, PlotData)
 iFormatAxes(ax);
 
 cuePts = PlotData.cuePts;
-hDrift = plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', [0 0 1]);
+hDrift = plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', TransferLearning.ColorA);
 hMarker = plot(ax, cuePts(:, 1), cuePts(:, 2), 'o', 'LineStyle', 'none', ...
-	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', [0 0 1], 'LineWidth', 1.2);
+	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', TransferLearning.ColorA, 'LineWidth', 1.2);
 
 xOffset = 0.025 * PlotData.xSpan;
 yOffset = 0.02 * PlotData.ySpan;
@@ -209,9 +211,9 @@ waterPts = PlotData.waterPts;
 	end
 
 % Connect 0s points (cue onset) across trials with blue dashed line
-plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', [0 0 1], 'HandleVisibility', 'off');
+plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', TransferLearning.ColorA, 'HandleVisibility', 'off');
 
-hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', [1 0 0]);
+hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.LearnedColor);
 
 for iLine = 1:PlotData.nLines
 	text(ax, cuePts(iLine, 1), cuePts(iLine, 2), '🔊', ...

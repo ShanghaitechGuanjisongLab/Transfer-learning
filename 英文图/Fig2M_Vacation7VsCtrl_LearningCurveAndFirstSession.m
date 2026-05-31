@@ -93,18 +93,23 @@ if ~isempty(rowGrp)
 end
 
 % --- 5) Plot learning curve (like English Fig2B)
-f = figure('Color','w', 'Name', 'English Fig2M Vacation7 Learning curve');
+f = figure('Color','w', 'Name', 'English Fig2M Gap Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 try, f.PaperPositionMode = 'auto'; catch, end
 ax = axes(f);
 hold(ax,'on');
 
-% Reference palette from 范例 SVGs: Control=#e60012, Experimental=#0070c0
-edgeColors = TransferLearning.FigurePalette(2);
+displayGroups = ["Control", "Gap"];
+edgeColors = TransferLearning.GroupColors(displayGroups);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
-labels = {char(grpOrder(1)), char(grpOrder(2))};
+for p = Patches(:)'
+	if isprop(p, 'LineWidth')
+		p.LineWidth = 2;
+	end
+end
+labels = cellstr(displayGroups);
 try
 	if numel(Patches) >= 2
 		lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2)));
@@ -112,10 +117,18 @@ try
 		lg = legend(ax, labels, 'Location', 'best');
 	end
 	lg.FontSize = 12;
+	lg.Title.String = '💡💧';
+	lg.Title.FontSize = 12;
+	lg.Box = 'off';
 catch
 end
 
 ax.FontSize = 12;
+ax.LineWidth = 2;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 2;
+	ax.YAxis.LineWidth = 2;
+end
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
@@ -153,50 +166,32 @@ DataCell = {double(xCtrl(:)), double(xV7(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 %%
 
-f2 = figure('Color','none', 'Name', 'English Fig2M Vacation7 First transfer session');
+f2 = figure('Color','none', 'Name', 'English Fig2M Gap First transfer session');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
 try, f2.PaperPositionMode = 'auto'; catch, end
 try, f2.PaperUnits = 'centimeters'; f2.PaperSize = [4, 4]; catch, end
 try, f2.InvertHardcopy = 'off'; catch, end
 
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
+tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+nexttile;
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, 'AsteriskThreshold', 0.05);
 ax2 = gca;
+delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
 ax2.LineWidth = 2;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 2;
+	ax2.YAxis.LineWidth = 2;
+end
 ax2.Color = 'none';
 ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
-
-% Bar styling – reference palette from 范例 SVGs
-palette2 = TransferLearning.FigurePalette(2);
-colorA = palette2(1,:);
-colorB = palette2(2,:);
-if isscalar(Bars2)
-	Bars2.FaceColor = 'flat';
-	nBars = numel(Bars2.YData);
-	reps = ceil(nBars/2);
-	Bars2.CData = repmat([colorA; colorB], reps, 1);
-	Bars2.CData = Bars2.CData(1:nBars, :);
-	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 2;
-	try, Bars2.EdgeColor = 'none'; catch, end
-	try, Bars2.FaceAlpha = 1/3; catch, end
-else
-	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA;
-		Bars2(2).FaceColor = colorB;
-		Bars2(1).LineWidth = 2;
-		Bars2(2).LineWidth = 2;
-		try, Bars2(1).EdgeColor = 'none'; catch, end
-		try, Bars2(2).EdgeColor = 'none'; catch, end
-		try, Bars2(1).FaceAlpha = 1/3; catch, end
-		try, Bars2(2).FaceAlpha = 1/3; catch, end
+if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
+	for pt = Opt2.MultiCompare.PText(:)'
+		pt.FontSize = 12;
 	end
-end
-for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 2;
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
 	for pl = Opt2.MultiCompare.PLine(:)'
@@ -205,6 +200,9 @@ if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properti
 end
 ax2.XLim = [0.5, 2.5];
 
+iStyleBars(Bars2, edgeColors(1,:), edgeColors(2,:));
+iStyleErrorBars(ErrorBars2, edgeColors);
+
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
@@ -212,18 +210,18 @@ box(ax2, 'off');
 svgFS = 'English_Fig2M_Vacation7_FirstSessionHitRate.svg';
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
-	svgFS = TransferLearning.ExportStandardFigure(f2, 2, svgFS);
+	svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
 	fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-sampleCounts = table(["Control"; "Vacation7"], [nControlMice; nV7Mice], [nFirstControlMice; nFirstV7Mice], ...
+sampleCounts = table(["Control"; "Gap"], [nControlMice; nV7Mice], [nFirstControlMice; nFirstV7Mice], ...
 	'VariableNames', {'Group','NLearningCurveMice','NFirstBlockMice'});
 
 fprintf('\n=== Fig335B / English Fig2M sample counts and statistics ===\n');
-fprintf('Learning curve mice: Control n = %d, Vacation7 n = %d\n', nControlMice, nV7Mice);
-fprintf('First-block mice: Control n = %d, Vacation7 n = %d\n', nFirstControlMice, nFirstV7Mice);
+fprintf('Learning curve mice: Control n = %d, Gap n = %d\n', nControlMice, nV7Mice);
+fprintf('First-block mice: Control n = %d, Gap n = %d\n', nFirstControlMice, nFirstV7Mice);
 fprintf('Cells n = N/A (behavior-only panel)\n');
 fprintf('Learning curve LME Group p = %.6g\n', pCurve);
 fprintf('First-block hit-rate ranksum p = %.6g\n', pFS);
@@ -233,4 +231,41 @@ assignin('base', 'English_Fig2M_LearningSummarizeP', PValueLS);
 assignin('base', 'English_Fig2M_LearningCurveP', pCurve);
 assignin('base', 'English_Fig2M_FirstSessionP', pFS);
 assignin('base', 'English_Fig2M_SampleCounts', sampleCounts);
+
+function iStyleBars(barsObj, colorControl, colorGap)
+if isscalar(barsObj)
+	barsObj.FaceColor = 'flat';
+	nBars = numel(barsObj.YData);
+	barsObj.CData = repmat([colorControl; colorGap], ceil(nBars/2), 1);
+	barsObj.CData = barsObj.CData(1:nBars, :);
+	barsObj.BarWidth = 0.5;
+	barsObj.LineWidth = 2;
+	barsObj.BaseLine.LineWidth = 2;
+	barsObj.EdgeColor = 'none';
+	barsObj.FaceAlpha = 1;
+	return;
+end
+barsObj(1).FaceColor = colorControl;
+barsObj(2).FaceColor = colorGap;
+barsObj(1).BarWidth = 0.5;
+barsObj(2).BarWidth = 0.5;
+barsObj(1).LineWidth = 2;
+barsObj(2).LineWidth = 2;
+barsObj(1).BaseLine.LineWidth = 2;
+barsObj(2).BaseLine.LineWidth = 2;
+barsObj(1).EdgeColor = 'none';
+barsObj(2).EdgeColor = 'none';
+barsObj(1).FaceAlpha = 1;
+barsObj(2).FaceAlpha = 1;
+end
+
+function iStyleErrorBars(errorBars, colors)
+for iE = 1:height(errorBars)
+	errorBar = errorBars.Object(iE);
+	errorBar.LineWidth = 2;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
+end
+end
 

@@ -61,12 +61,12 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-tiledlayout(f, 1, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+tiledlayout(f, 1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 nexttile;
 
 Data = array2table([double(vHit(:)), double(vMiss(:))], 'VariableNames', {'Hit', 'Miss'});
 CompareGroup = table(["Hit", "Miss"], 'VariableNames', {'GroupPair'});
-[~, ~, Bars, EB] = UniExp.BarScatterCompare(Data, false, CompareGroup);
+[~, ~, Bars, EB] = UniExp.BarScatterCompare(Data, UniExp.Flags.empty, CompareGroup, 'AsteriskThreshold', 0.05);
 ax = gca;
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
@@ -80,9 +80,9 @@ ax.XTickLabel = {'Hit', 'Miss'};
 box(ax, 'off');
 grid(ax, 'off');
 
-palette2 = TransferLearning.FigurePalette(2);
-colorHit = palette2(2, :);
-colorMiss = palette2(2, :) * 0.75;
+hitMissColors = TransferLearning.GroupColors(["Hit", "Miss"]);
+colorHit = hitMissColors(1, :);
+colorMiss = hitMissColors(2, :);
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorHit; colorMiss];
@@ -90,7 +90,7 @@ if isscalar(Bars)
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
 	Bars.EdgeColor = 'none';
-	Bars.FaceAlpha = 1/3;
+	Bars.FaceAlpha = 1;
 else
 	for ib = 1:numel(Bars)
 		if ib == 1
@@ -98,18 +98,17 @@ else
 		else
 			Bars(ib).FaceColor = colorMiss;
 		end
-		Bars(ib).FaceAlpha = 1/3;
+		Bars(ib).FaceAlpha = 1;
+		Bars(ib).BarWidth = 0.5;
 		Bars(ib).LineWidth = 1;
 		Bars(ib).BaseLine.LineWidth = 1;
 		Bars(ib).EdgeColor = 'none';
 	end
 	end
-for eb = EB.Object(:)'
-	eb.LineWidth = 1;
-	end
-	for ln = findobj(ax, 'Type', 'Line')'
-		ln.LineWidth = 1;
-	end
+iStyleErrorBars(EB, hitMissColors);
+for ln = findobj(ax, 'Type', 'Line')'
+	ln.LineWidth = 1;
+end
 
 scatters = findobj(ax, 'Type', 'Scatter');
 for is = 1:numel(scatters)
@@ -120,14 +119,19 @@ for is = 1:numel(scatters)
 	if isprop(scatters(is), 'MarkerFaceAlpha')
 		scatters(is).MarkerFaceAlpha = 0.6;
 	end
+	xMean = mean(double(scatters(is).XData), 'omitnan');
+	if xMean < 1.5
+		scatters(is).MarkerFaceColor = colorHit;
+		scatters(is).MarkerEdgeColor = colorHit;
+	else
+		scatters(is).MarkerFaceColor = colorMiss;
+		scatters(is).MarkerEdgeColor = colorMiss;
+	end
 end
 
 allText = findall(f, 'Type', 'Text');
 for it = 1:numel(allText)
 	allText(it).FontSize = 6;
-	if isprop(allText(it), 'String')
-		allText(it).String = iPTextToStars(allText(it).String);
-	end
 end
 
 allAxes = findall(f, 'Type', 'Axes');
@@ -144,14 +148,24 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = '中文图Fig331D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
+svgPath = '中文图Fig43D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('\n=== Fig331D sample counts ===\n');
+fprintf('\n=== Fig43D sample counts ===\n');
 disp(sampleCounts);
 fprintf('Hit vs Miss signrank p = %.6g\n', hitMissPValue);
 
-assignin('base', 'Fig331D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'SignrankPValue', hitMissPValue));
+assignin('base', 'Fig43D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'SignrankPValue', hitMissPValue));
+
+function iStyleErrorBars(errorBars, colors)
+for iE = 1:height(errorBars)
+	errorBar = errorBars.Object(iE);
+	errorBar.LineWidth = 1;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
+end
+end
 
 function X = iGetNtats3D(S)
 if istable(S)
@@ -181,54 +195,4 @@ end
 
 	error('中文图331D:BadNTATS', 'Unsupported NTATS container type: %s', class(nt));
 end
-
-	function out = iPTextToStars(in)
-	out = in;
-	if isstring(in)
-		if isscalar(in)
-			out = string(iPTextToStars(char(in)));
-		else
-			out = arrayfun(@(s) string(iPTextToStars(char(s))), in);
-		end
-		return;
-	end
-
-	if iscell(in)
-		out = cell(size(in));
-		for ii = 1:numel(in)
-			out{ii} = iPTextToStars(in{ii});
-		end
-		return;
-	end
-
-	if ~(ischar(in) || (isnumeric(in) && isscalar(in)))
-		return;
-	end
-
-	if isnumeric(in)
-		in = char(string(in));
-	end
-
-	token = regexp(in, 'p\s*=\s*([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)', 'tokens', 'once');
-	if isempty(token)
-		return;
-	end
-
-	p = str2double(token{1});
-	if ~isfinite(p)
-		return;
-	end
-
-	if p < 1e-4
-		out = '****';
-	elseif p < 1e-3
-		out = '***';
-	elseif p < 1e-2
-		out = '**';
-	elseif p < 0.05
-		out = '*';
-	else
-		out = 'ns';
-	end
-	end
 

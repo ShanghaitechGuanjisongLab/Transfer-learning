@@ -1,4 +1,4 @@
-% Fig312C: 代表性训练日的舔水原始记录（Naive vs Transfer）
+% Fig32C: 代表性训练日的舔水原始记录（Naive vs Transfer）
 %
 % 横轴为时间[-1, 2]s，纵轴为试次序号，颜色为二值化舔水（0/1）。
 % 二值化方法：以[-3,0]s基线均值+2倍标准差为阈值，超过即判定为舔水。
@@ -38,7 +38,7 @@ blMask = xsSec >= -3 & xsSec < 0;
 [tranMat, tranBehav]   = iExtractSessionCD2(ALB, "yqn0020", datetime(2024,4,24,5,57,0), winMask, blMask);
 
 %% 作图
-f = figure('Color', 'w', 'Name', 'Fig312C LickRaster');
+f = figure('Color', 'w', 'Name', 'Fig32C LickRaster');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];  % 90mm x 80mm (高度40mm倍数 x2)
 f.PaperUnits = 'centimeters';
@@ -51,13 +51,15 @@ tl = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 % 💡 at t=0, 💧 at t=1
 tLight = 0;
 tWater = 1;
+behaviorColors = TransferLearning.GroupColors(["Miss","Hit"]);
+lickColor = TransferLearning.ColorB;
 
 % --- Naive ---
 ax1 = nexttile(tl, 1);
 imagesc(ax1, xsWin, 1:size(naiveMat,1), naiveMat);
 hold(ax1, 'on');
-xline(ax1, tLight, '--', 'Color', [0 0 1], 'LineWidth', 2);
-xline(ax1, tWater, '-', 'Color', [0 0 1], 'LineWidth', 2);
+xline(ax1, tLight, '--', 'LineWidth', 2);
+xline(ax1, tWater, '--', 'LineWidth', 2);
 ax1.YDir = 'reverse';
 ax1.FontSize = 12;
 ax1.LineWidth = 2;
@@ -66,14 +68,14 @@ iReplaceTickWithEmoji(ax1, tLight, '💡', tWater, '💧');
 box(ax1, 'off');
 
 % 在右侧标注Hit/Miss色带
-iDrawBehaviorStrip(ax1, naiveBehav, xsWin);
+iDrawBehaviorStrip(ax1, naiveBehav, xsWin, behaviorColors);
 
 % --- Transfer ---
 ax2 = nexttile(tl, 2);
 imagesc(ax2, xsWin, 1:size(tranMat,1), tranMat);
 hold(ax2, 'on');
-xline(ax2, tLight, '--', 'Color', [0 0 1], 'LineWidth', 2);
-xline(ax2, tWater, '-', 'Color', [0 0 1], 'LineWidth', 2);
+xline(ax2, tLight, '--', 'LineWidth', 2);
+xline(ax2, tWater, '--', 'LineWidth', 2);
 ax2.YDir = 'reverse';
 ax2.FontSize = 12;
 ax2.LineWidth = 2;
@@ -83,23 +85,23 @@ title(ax2, 'Continual', 'FontSize', 12, 'FontWeight', 'normal');
 iReplaceTickWithEmoji(ax2, tLight, '💡', tWater, '💧');
 box(ax2, 'off');
 
-iDrawBehaviorStrip(ax2, tranBehav, xsWin);
+iDrawBehaviorStrip(ax2, tranBehav, xsWin, behaviorColors);
 
-% 使用二值colormap: 白=0(无舔), 蓝=1(舔水)
-cmap2 = [1 1 1; 0.8 0.15 0.15];
+% 使用二值colormap: 白=0(无舔), 有色=1(舔水)
+cmap2 = [1 1 1; lickColor];
 colormap(ax1, cmap2);
 colormap(ax2, cmap2);
 clim(ax1, [0 1]);
 clim(ax2, [0 1]);
 
 % 图例：用一个隐藏的patch在ax1上标注
-pLick = patch(ax1, NaN, NaN, cmap2(2,:), 'EdgeColor', 'none', 'DisplayName', 'Licking');
+pLick = patch(ax1, NaN, NaN, cmap2(2,:), 'EdgeColor', 'none', 'DisplayName', 'Lick');
 lg = legend(ax1, pLick, 'Location', 'northwest');
 lg.FontSize = 12;
 lg.Box = 'off';
 
 %% 导出
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312C_LickRaster.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32C_LickRaster.svg');
 fprintf('Saved SVG: %s\n', svgPath);
 
 %% === 辅助函数 ===
@@ -167,15 +169,15 @@ end
 ax.XTickLabel = labels;
 end
 
-function iDrawBehaviorStrip(ax, behav, xsWin)
+function iDrawBehaviorStrip(ax, behav, xsWin, behaviorColors)
 % 在热图右侧画一条细的Hit/Miss色带
 stripX = xsWin(end) + diff(xsWin(1:2)) * 1.5;
 stripW = diff(xsWin(1:2)) * 2;
 for i = 1:numel(behav)
 	if behav(i) == 1
-		clr = [0.2 0.7 0.2];  % green = hit
+		clr = behaviorColors(2,:);
 	else
-		clr = [0.7 0.2 0.2];  % red = miss
+		clr = behaviorColors(1,:);
 	end
 	rectangle(ax, 'Position', [stripX, i-0.5, stripW, 1], 'FaceColor', clr, 'EdgeColor', 'none');
 end

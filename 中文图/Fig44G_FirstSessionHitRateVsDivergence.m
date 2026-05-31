@@ -28,10 +28,10 @@ transfer = iCollectTransferFirstSessionData(ALB, idx0, idx1s);
 Data = [naive; transfer];
 Data.Group = categorical(string(Data.Group), ["Naive", "Continual"]);
 
-palette3 = TransferLearning.FigurePalette(3);
-colorNaive = palette3(1, :);
-colorTransfer = palette3(2, :);
-colorFit = palette3(3, :);
+groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+colorNaive = groupColors(1, :);
+colorTransfer = groupColors(2, :);
+colorFit = TransferLearning.ColorA;
 
 f = figure('Color', 'w', 'Name', 'Fig333D First-block hit rate vs divergence');
 f.Units = 'centimeters';
@@ -85,7 +85,7 @@ lgd = legend(ax, [hN, hT], {'Naive', 'Continual'}, 'Location', 'northoutside', '
 lgd.FontSize = 12;
 lgd.Box = 'off';
 
-text(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
+iText(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 Stats.Rho(1) = rho;
@@ -98,7 +98,7 @@ fprintf('Naive mice: %d\n', nnz(maskNaive));
 fprintf('Continual mice: %d\n', nnz(maskTran));
 fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
-svgPath = '中文图Fig333D_FirstSessionHitRateVsDivergence.svg';
+svgPath = '中文图Fig44G_FirstSessionHitRateVsDivergence.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -317,5 +317,9 @@ elseif p < 0.01
 else
 	txt = sprintf('p = %.2f', p);
 end
+end
+
+function h = iText(varargin)
+h = text(varargin{:});
 end
 

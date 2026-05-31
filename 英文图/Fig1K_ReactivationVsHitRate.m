@@ -67,15 +67,16 @@ end
 fprintf('Spearman ρ = %.4f (n = %d)\n', rho, nnz(mask));
 
 % 散点：空心圆，边框0.2
-palette2 = [1, 0, 0; 0, 0, 1];
-scatter(ax, x(mask), y(mask), 5, palette2(2,:), 'LineWidth', 0.2);
+scatterColor = TransferLearning.ColorA;
+fitColor = TransferLearning.ColorB;
+scatter(ax, x(mask), y(mask), 5, scatterColor, 'LineWidth', 0.2);
 
 % 拟合线：实线
 if nnz(mask) >= 2 && std(x(mask)) > 0
 	pFit = polyfit(x(mask), y(mask), 1);
 	xFit = [min(x(mask)) max(x(mask))];
 	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', palette2(1,:));
+	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', fitColor);
 end
 grid(ax,'off');
 box(ax,'off');

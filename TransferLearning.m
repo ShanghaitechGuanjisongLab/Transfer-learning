@@ -1,7 +1,7 @@
 classdef(Abstract)TransferLearning
 	%全局常量
 	properties(Constant)
-		FullCalcium=iFullCalcium
+		FullCalcium=memoize(@iFullCalcium);
 		QueryNTATS=memoize(@iQueryNTATS);
 		PcaTable=memoize(@iPcaTable);
 		Xs=seconds(linspace(-3,3,48)).';
@@ -16,6 +16,13 @@ classdef(Abstract)TransferLearning
 		scFLARE=memoize(@iscFLARE);
 		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
 		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
+		NaiveColor=[1.0000    0.4294    0.0000];
+		LearnedColor=[ 1.0000    0.0000    1.0000];
+		ContinualColor=[0.0000    0.0000    0.0000];
+		ColorA=[0.0000    0.4810    1.0000];
+		ColorB=[0.0000    1.0000    0.0000];
+		HeatmapPositive=[1.0000    0.0000    0.0000];
+		HeatmapNegative=[0.0000    0.0000    1.0000];
 	end
 	methods(Static)
 		function Clear()
@@ -26,22 +33,28 @@ classdef(Abstract)TransferLearning
 			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,ReduceDimension);
 			MS=cat(ConcatDimension,Mean,Sem);
 		end
+		function Colors=GroupColors(GroupNames)
+			GroupNames=string(GroupNames(:));
+			Colors=zeros(numel(GroupNames),3);
+			FallbackColors=[TransferLearning.ColorA;TransferLearning.ColorB];
+			FallbackIndex=0;
+			for GroupIndex=1:numel(GroupNames)
+				switch GroupNames(GroupIndex)
+					case "Naive"
+						Colors(GroupIndex,:)=TransferLearning.NaiveColor;
+					case "Learned"
+						Colors(GroupIndex,:)=TransferLearning.LearnedColor;
+					case "Continual"
+						Colors(GroupIndex,:)=TransferLearning.ContinualColor;
+					otherwise
+						FallbackIndex=FallbackIndex+1;
+						Colors(GroupIndex,:)=FallbackColors(1+mod(FallbackIndex-1,size(FallbackColors,1)),:);
+				end
+			end
+		end
 		function P=ProjectPath(varargin)
 			Root=fileparts(mfilename('fullpath'));
 			P=fullfile(Root,varargin{:});
-		end
-		function C=FigurePalette(N)
-			arguments
-				N (1,1) double {mustBeInteger,mustBePositive}
-			end
-			Base=[1,0,0;0,0,1;0,0,0;0,0.6809,0];
-			if N<=size(Base,1)
-				C=Base(1:N,:);
-				return;
-			end
-			RepeatCount=ceil(N/size(Base,1));
-			C=repmat(Base,RepeatCount,1);
-			C=C(1:N,:);
 		end
 		function SvgPath=ExportStandardFigure(Fig, Scale, FileName)
 			arguments
@@ -66,6 +79,33 @@ classdef(Abstract)TransferLearning
 			
 			SvgPath=TransferLearning.StandardFigureSvgPath(FileName);
 			print(Fig, SvgPath, '-dsvg');
+		end
+		function SvgPath=ExportStandardFigureTransparent(Fig, Scale, FileName)
+			arguments
+				Fig (1,1) matlab.ui.Figure
+				Scale (1,1) double {mustBePositive}
+				FileName {mustBeTextScalar}
+			end
+			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
+			ScatterAxPadding(Fig);
+			
+			pLines = findobj(Fig, 'Tag', 'PLine');
+			pTexts = findobj(Fig, 'Tag', 'PText');
+			if ~isempty(pLines) && ~isempty(pTexts)
+				try
+					ComputerVision.PLineRetune(pLines, pTexts);
+				catch ME
+					warning('TransferLearning:ExportStandardFigureTransparent:PLineRetuneFailed', ...
+						'Failed to retune P-value lines: %s', ME.message);
+				end
+			end
+			
+			Fig.Color='none';
+			for Ax=findall(Fig,Type='axes').'
+				Ax.Color='none';
+			end
+			SvgPath=TransferLearning.StandardFigureSvgPath(FileName);
+			exportgraphics(Fig, SvgPath, 'ContentType', 'vector', 'BackgroundColor', 'none');
 		end
 		function SvgPath=StandardFigureSvgPath(FileName)
 			arguments

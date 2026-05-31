@@ -45,10 +45,10 @@ lightSessions = allSessions(allSessions.Group == "Light", :);
 fitAudio = iFitSigmoidCurve(audioSessions, "Audio");
 fitLight = iFitSigmoidCurve(lightSessions, "Light");
 permResult = iPermutationTestSigmoidSlope(audioSessions, lightSessions, 10000, 1);
-
-audioColor = [0.82 0.22 0.20];
-lightColor = [0.18 0.36 0.80];
 %% 
+
+audioColor = TransferLearning.ColorA;
+lightColor = TransferLearning.ColorB;
 
 f = figure('Color', 'w', 'Name', 'Chinese Fig31B naive Audio vs Light learning curve');
 f.Units = 'centimeters';

@@ -84,8 +84,9 @@ if negIdx == posIdx
 	end
 end
 
-colorNaive = [1, 0, 0];
-colorLearned = [0, 0, 1];
+groupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
+colorNaive = groupColors(1, :);
+colorLearned = groupColors(2, :);
 
 % Precompute shared Learned baseline for Y-axis label alignment
 gap = 1.2;
@@ -122,7 +123,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig324B_NaiveLearnedRepresentativeCells.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig42C_NaiveTransferRepresentativeCells.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 picked = table;
@@ -135,7 +136,7 @@ picked.NaiveAt1 = [naive1(posIdx); naive1(negIdx)];
 picked.LearnedAtMinus1 = [learnedNeg1(posIdx); learnedNeg1(negIdx)];
 picked.LearnedAt0 = [learned0(posIdx); learned0(negIdx)];
 picked.LearnedAt1 = [learned1(posIdx); learned1(negIdx)];
-assignin('base', 'Fig324B_PickedCells', picked);
+assignin('base', 'Fig42C_PickedCells', picked);
 
 function [hLower, hUpper] = iPlotOneCell(ax, xsPlot, yLower, yUpper, colorLower, colorUpper, cellUID, lowerLabel, upperLabel, fixedLearnBase)
 hold(ax, 'on');
@@ -157,10 +158,10 @@ baseUpperShift = baseUpper + offsetUpper;
 
 hLower = plot(ax, xsPlot, yLowerShift, 'Color', colorLower, 'LineWidth', 1);
 hUpper = plot(ax, xsPlot, yUpperShift, 'Color', colorUpper, 'LineWidth', 1);
-xline(ax, 0, ':k', 'LineWidth', 1);
-xline(ax, 1, '-k', 'LineWidth', 1);
+xline(ax, 0, '--', 'LineWidth', 1);
+xline(ax, 1, '--', 'LineWidth', 1);
 [anchorX, anchorY] = iAnchorTriplet(xsPlot, yUpperShift);
-plot(ax, anchorX, anchorY, '--', 'Color', [0, 0.6809, 0], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+plot(ax, anchorX, anchorY, '--', 'Color', TransferLearning.ColorB, 'LineWidth', 0.5, 'HandleVisibility', 'off');
 xlim(ax, [-1 2]);
 ax.FontSize = 6;
 ax.LineWidth = 1;

@@ -1,4 +1,4 @@
-﻿% English Fig2K: cFos activity-dependent inhibition vs Control
+% English Fig2K: cFos activity-dependent inhibition vs Control
 %
 % v6 Panel K: cFos-MOp 精准抑制（学习曲线 + 首会话命中率）
 % Shared behavior-session helpers: TransferLearning.BehaviorSessions
@@ -103,7 +103,7 @@ catch
 end
 
 grpOrder = ["Control","MOp"]; % data group keys
-grpLabels = ["Control","Inhibited"]; % figure labels
+grpLabels = ["Control","cFos"]; % figure labels
 
 SummaryPlot = SummaryL;
 try
@@ -126,8 +126,7 @@ ax = axes(f);
 hold(ax,'on');
 title(ax, 'cFos-specific inhibition', 'FontSize', 12, 'FontWeight', 'normal');
 
-% Reference palette from 范例 SVGs: Control=#e60012, Experimental=#0070c0
-edgeColors = TransferLearning.FigurePalette(2);
+edgeColors = TransferLearning.GroupColors(grpLabels);
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -161,7 +160,7 @@ if isfinite(pCurve)
 	else
 		astStr = 'n.s.';
 	end
-	ht = text(ax, sessIdx + 0.1, yMid, astStr, 'FontSize', 12, ...
+	ht = iText(ax, sessIdx + 0.1, yMid, astStr, 'FontSize', 12, ...
 		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
 		'HandleVisibility', 'off');
 	ht.AffectAutoLimits = 'on';
@@ -172,16 +171,19 @@ fprintf('Fig334C learning curve LME group-effect p = %.4g\n', pCurve);
 labels = {char(grpLabels(1)), char(grpLabels(2))};
 try
 	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', 'best');
+		lg = legend(ax, Patches(1:2), labels, 'Location', 'southeastoutside');
 	else
-		lg = legend(ax, labels, 'Location', 'best');
+		lg = legend(ax, labels, 'Location', 'southeastoutside');
 	end
 	lg.FontSize = 12;
+	lg.Box = 'off';
+	lg.Title.String = '💡💧';
+	lg.Title.FontSize = 12;
 catch
 end
 
 ax.FontSize = 12;
-xlabel(ax, 'Session', 'FontSize', 12);
+xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
@@ -229,7 +231,7 @@ end
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xInh  = xInh(isfinite(xInh));
-[pFS, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xInh);
+[pFSRanksum, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xInh);
 
 DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
@@ -238,11 +240,12 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 f2 = figure('Color','none', 'Name', 'English Fig2K cFos First transfer session');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
-try, f2.PaperPositionMode = 'auto'; catch, end
-try, f2.PaperUnits = 'centimeters'; f2.PaperSize = [4, 4]; catch, end
-try, f2.InvertHardcopy = 'off'; catch, end
+f2.PaperPositionMode = 'auto';
+f2.PaperUnits = 'centimeters';
+f2.PaperSize = [4, 4];
 
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, 'AsteriskThreshold', 0.05);
+pFS = iBarScatterPValue(Opt2, pFSRanksum);
 ax2 = gca;
 ax2.FontSize = 12;
 ax2.LineWidth = 2;
@@ -251,10 +254,8 @@ ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
 
-	% Bar styling – reference palette from 范例 SVGs
-	palette2 = TransferLearning.FigurePalette(2);
-	colorA = palette2(1,:);
-	colorB = palette2(2,:);
+colorA = edgeColors(1,:);
+colorB = edgeColors(2,:);
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	nBars = numel(Bars2.YData);
@@ -263,22 +264,27 @@ if isscalar(Bars2)
 	Bars2.CData = Bars2.CData(1:nBars, :);
 	Bars2.BarWidth = 0.5;
 	Bars2.LineWidth = 2;
-	try, Bars2.EdgeColor = 'none'; catch, end
-	try, Bars2.FaceAlpha = 1/3; catch, end
+	Bars2.EdgeColor = 'none';
+	Bars2.FaceAlpha = 1/3;
 else
 	if numel(Bars2) >= 2
 		Bars2(1).FaceColor = colorA;
 		Bars2(2).FaceColor = colorB;
+		Bars2(1).BarWidth = 0.5;
+		Bars2(2).BarWidth = 0.5;
 		Bars2(1).LineWidth = 2;
 		Bars2(2).LineWidth = 2;
-		try, Bars2(1).EdgeColor = 'none'; catch, end
-		try, Bars2(2).EdgeColor = 'none'; catch, end
-		try, Bars2(1).FaceAlpha = 1/3; catch, end
-		try, Bars2(2).FaceAlpha = 1/3; catch, end
+		Bars2(1).EdgeColor = 'none';
+		Bars2(2).EdgeColor = 'none';
+		Bars2(1).FaceAlpha = 1/3;
+		Bars2(2).FaceAlpha = 1/3;
 	end
 end
 for eb = ErrorBars2.Object(:)'
 	eb.LineWidth = 2;
+	x = double(eb.XData(:));
+	[~, colorIndex] = min(abs((1:2).' - x(1)));
+	eb.Color = edgeColors(colorIndex, :);
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
 	for pl = Opt2.MultiCompare.PLine(:)'
@@ -299,9 +305,24 @@ try
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
-fprintf('Fig334C first-block hit-rate ranksum p = %.4g\n', pFS);
+fprintf('Fig334C first-block hit-rate BarScatterCompare p = %.4g\n', pFS);
+fprintf('Fig334C first-block hit-rate ranksum p = %.4g\n', pFSRanksum);
 
 assignin('base', 'English_Fig2K_Sessions', Sess);
 assignin('base', 'English_Fig2K_LearningSummarizeP', PValueLS);
 assignin('base', 'English_Fig2K_FirstSessionP', pFS);
+
+function h = iText(varargin)
+h = text(varargin{:});
+end
+
+function pValue = iBarScatterPValue(options, fallbackPValue)
+pValue = fallbackPValue;
+if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PValue', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PValue)
+	pCandidate = options.MultiCompare.PValue(1);
+	if isnumeric(pCandidate) && isfinite(pCandidate)
+		pValue = double(pCandidate);
+	end
+end
+end
 

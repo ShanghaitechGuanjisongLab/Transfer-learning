@@ -1,4 +1,4 @@
-% Fig1B sigmoid fit: Naive vs Transfer LightWater learning curve
+% Fig33 sigmoid fit: Naive vs Transfer LightWater learning curve
 %
 % Output: SVG through the standard figure output path.
 
@@ -42,7 +42,7 @@ iAssertNoCrossSourceDuplicateMice(tran, "Transfer");
 allSessions = [naive; tran];
 iAssertNoMouseAppearsInMultipleGroups(allSessions);
 if isempty(allSessions)
-	error('Fig1B_Sigmoid:EmptyData', 'No LightWater sessions found for Fig1B sigmoid fit.');
+	error('Fig33:EmptyData', 'No LightWater sessions found for Fig33 sigmoid fit.');
 end
 
 allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
@@ -76,20 +76,21 @@ semMatOut(1:size(semMat, 1), :) = semMat;
 nMatOut(1:size(nMat, 1), :) = nMat;
 %% 
 
-f = figure('Color', 'w', 'Name', 'Fig1B Learning curve sigmoid');
+f = figure('Color', 'w', 'Name', 'Fig33 Learning curve sigmoid');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 
-palette2 = TransferLearning.FigurePalette(2);
-curveColorNaive = palette2(1, :);
-curveColorTransfer = palette2(2, :);
+displayGroups = ["Naive","Continual"];
+curveColors = TransferLearning.GroupColors(displayGroups);
+curveColorNaive = curveColors(1, :);
+curveColorTransfer = curveColors(2, :);
 ax = gca;
 hold(ax, 'on');
 hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanMatOut(:,1), semMatOut(:,1), naiveFitCurve, curveColorNaive);
 hTransfer = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanMatOut(:,2), semMatOut(:,2), transferFitCurve, curveColorTransfer);
 
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-xlabel(t, 'Block', 'FontSize', 12);
+xlabel(ax, 'Block', 'FontSize', 12);
 
 lgd = legend(ax, [hNaive(1), hNaive(2), hTransfer(1), hTransfer(2)], ...
 	{'Naive (Observed)', 'Naive (Sigmoid fit)', 'Continual (Observed)', 'Continual (Sigmoid fit)'}, ...
@@ -105,9 +106,7 @@ for ax = reshape(allAxes, 1, [])
 	end
 end
 
-TransferLearning.Style.ApplyStandardFigureStyle(f, 2);
-svgPath = TransferLearning.StandardFigureSvgPath(svgName);
-print(f, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 
 fitTable = table;
 fitTable.Group = ["Naive"; "Transfer"];
@@ -151,10 +150,10 @@ fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^
 fprintf('Permutation slope difference (Transfer - Naive): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
 
-assignin('base', 'Fig1B_Sigmoid_AllSessions', allSessions);
-assignin('base', 'Fig1B_Sigmoid_FitTable', fitTable);
-assignin('base', 'Fig1B_Sigmoid_Summary', summaryTable);
-assignin('base', 'Fig1B_Sigmoid_Permutation', permResult);
+assignin('base', 'Fig33_AllSessions', allSessions);
+assignin('base', 'Fig33_FitTable', fitTable);
+assignin('base', 'Fig33_Summary', summaryTable);
+assignin('base', 'Fig33_Permutation', permResult);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 	T = iQueryLightWaterBehaviorAll(DS);
@@ -307,7 +306,7 @@ function iAssertNoCrossSourceDuplicateMice(T, groupName)
 			srcs = unique(T.Source(T.Mouse == m));
 			msgLines(i) = m + ": " + strjoin(srcs, ",");
 		end
-		error('Fig1B_Sigmoid:DuplicateMouseAcrossSources', ...
+		error('Fig33:DuplicateMouseAcrossSources', ...
 			'Group %s has duplicated mice across sources.\n%s', char(string(groupName)), char(strjoin(msgLines, newline)));
 	end
 end
@@ -328,7 +327,7 @@ function iAssertNoMouseAppearsInMultipleGroups(T)
 			gs = unique(T.Group(T.Mouse == m));
 			msgLines(i) = m + ": " + strjoin(gs, ",");
 		end
-		error('Fig1B_Sigmoid:MouseInMultipleGroups', 'Some mice appear in multiple groups.\n%s', char(strjoin(msgLines, newline)));
+		error('Fig33:MouseInMultipleGroups', 'Some mice appear in multiple groups.\n%s', char(strjoin(msgLines, newline)));
 	end
 end
 
@@ -346,7 +345,7 @@ function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 		if isstruct(SummaryL)
 			SummaryL = struct2table(SummaryL);
 		else
-			error('Fig1B_Sigmoid:InvalidLearningSummarizeOutput', 'LearningSummarize output must be table or struct.');
+			error('Fig33:InvalidLearningSummarizeOutput', 'LearningSummarize output must be table or struct.');
 		end
 	end
 
@@ -466,7 +465,7 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 	xObs = xObs(use);
 	yObs = yObs(use);
 	if isempty(xObs)
-		error('Fig1B_Sigmoid:NoDataForGroup', 'No valid session data for group %s.', char(groupName));
+		error('Fig33:NoDataForGroup', 'No valid session data for group %s.', char(groupName));
 	end
 
 	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); log(max(median(xObs), 1))];

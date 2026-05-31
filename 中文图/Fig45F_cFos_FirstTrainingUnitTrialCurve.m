@@ -14,7 +14,7 @@ dataset = UniExp.DataSet(datasetPath);
 
 groupOrder = ["Control", "MOp"];
 groupLabels = ["Control", "cFos"];
-edgeColors = TransferLearning.FigurePalette(2);
+edgeColors = TransferLearning.GroupColors(groupLabels);
 
 trialRows = iBuildFirstTrainingUnitTrials(dataset, groupOrder);
 if isempty(trialRows)
@@ -66,7 +66,7 @@ if isprop(axisHandle, 'Toolbar') && ~isempty(axisHandle.Toolbar)
 	axisHandle.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(fig, 2, '中文图Fig334F_cFos_FirstTrainingUnitTrialCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(fig, 2, '中文图Fig45F_cFos_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Fig334F mice: Control n = %d, cFos n = %d\n', nControlMice, nCFosMice);
 fprintf('Fig334F trial curve mixed-effect p = %.4g\n', curveP);

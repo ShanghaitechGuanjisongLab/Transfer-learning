@@ -86,8 +86,9 @@ if negIdx == posIdx
 	end
 end
 
-colorNaive = [1, 0, 0];
-colorLearn = [0, 0, 1];
+groupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
+colorNaive = groupColors(1, :);
+colorLearn = groupColors(2, :);
 
 % Precompute shared Learned baseline for Y-axis label alignment
 gap = 1.2;
@@ -124,7 +125,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig324A_AudioWaterRepresentativeCells.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig42B_AudioWaterRepresentativeCells.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 picked = table;
@@ -137,8 +138,8 @@ picked.NaiveAt0 = [naive0(posIdx); naive0(negIdx)];
 picked.LearnedAt0 = [learn0(posIdx); learn0(negIdx)];
 picked.NaiveAt1 = [naive1(posIdx); naive1(negIdx)];
 picked.LearnedAt1 = [learn1(posIdx); learn1(negIdx)];
-assignin('base', 'Fig324A_PickedCells', picked);
-assignin('base', 'Fig324A_CellStrip', S);
+assignin('base', 'Fig42B_PickedCells', picked);
+assignin('base', 'Fig42B_CellStrip', S);
 
 function [hNaive, hLearn] = iPlotOneCell(ax, xsPlot, yNaive, yLearn, colorNaive, colorLearn, cellUID, fixedLearnBase)
 hold(ax, 'on');
@@ -160,10 +161,10 @@ baseLearnShift = baseLearn + offsetLearn;
 
 hNaive = plot(ax, xsPlot, yNaiveShift, 'Color', colorNaive, 'LineWidth', 1, 'DisplayName', 'Naive');
 hLearn = plot(ax, xsPlot, yLearnShift, 'Color', colorLearn, 'LineWidth', 1, 'DisplayName', 'Learned');
-xline(ax, 0, ':k', 'LineWidth', 1);
-xline(ax, 1, '-k', 'LineWidth', 1);
+xline(ax, 0, '--', 'LineWidth', 1);
+xline(ax, 1, '--', 'LineWidth', 1);
 [anchorX, anchorY] = iAnchorTriplet(xsPlot, yLearnShift);
-plot(ax, anchorX, anchorY, '--', 'Color', [0, 0.6809, 0], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+plot(ax, anchorX, anchorY, '--', 'Color', TransferLearning.ColorB, 'LineWidth', 0.5, 'HandleVisibility', 'off');
 xlim(ax, [-1 2]);
 ax.FontSize = 6;
 ax.LineWidth = 1;

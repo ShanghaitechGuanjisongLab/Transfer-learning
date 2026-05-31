@@ -23,9 +23,8 @@ end
 Div = iBuildTransferDivergenceTable(ALB, string(R.Mouse), R.DateTimeTransfer, idx0, idx1s);
 M = outerjoin(R(:, {'Mouse','DateTimeTransfer','Reactivation'}), Div, 'Keys', 'Mouse', 'MergeKeys', true, 'Type', 'left');
 
-palette3 = TransferLearning.FigurePalette(3);
-dotColor = palette3(2, :);
-fitColor = palette3(3, :);
+dotColor = TransferLearning.ContinualColor;
+fitColor = TransferLearning.ColorA;
 
 f = figure('Color', 'w', 'Name', 'Fig333E Transfer divergence vs reactivation');
 f.Units = 'centimeters';
@@ -70,7 +69,7 @@ else
 	rho = NaN;
 	p = NaN;
 end
-text(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
+iText(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
 
 Stats.Rho(1) = rho;
 Stats.PValue(1) = p;
@@ -79,7 +78,7 @@ Stats.N(1) = nnz(use);
 fprintf('\n=== Fig333E All ===\n');
 fprintf('n=%d, ρ=%.3f, p=%.4g\n', nnz(use), rho, p);
 
-svgPath = '中文图Fig333E_TransferDivergenceVsReactivation_ByLayer.svg';
+svgPath = '中文图Fig44H_TransferDivergenceVsReactivation_ByLayer.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -318,5 +317,9 @@ elseif p < 0.01
 else
 	txt = sprintf('p = %.2f', p);
 end
+end
+
+function h = iText(varargin)
+h = text(varargin{:});
 end
 

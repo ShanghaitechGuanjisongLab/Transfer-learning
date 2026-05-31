@@ -1,4 +1,4 @@
-﻿% 中文图333A：模仿英文图2A，只画2个代表性细胞
+﻿% 中文图44D：模仿英文图2A，只画2个代表性细胞
 % - 一个取自声光迁移组：Learned AudioWater + Transfer LightWater，各3个活跃回合
 % - 一个取自Naive LightWater：同一会话3个回合，至少1个活跃且至少1个1s z-score为负
 
@@ -24,7 +24,7 @@ baseMask = (xsSec >= -3) & (xsSec < 0);
 kSigma = 3;
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('中文图333A:No1s', 'Cannot find sample close to 1s.');
+	error('Fig44D:No1s', 'Cannot find sample close to 1s.');
 end
 
 ALB = TransferLearning.AudioLightBaseline();
@@ -32,12 +32,12 @@ LAB = TransferLearning.LightAudioBaseline();
 LAI = TransferLearning.LAInterspersed();
 [naiveRep, transferRep] = iPickRepresentatives(LAB, LAI, ALB, baseMask, idx1s, kSigma);
 
-palette = TransferLearning.FigurePalette(3);
-colorNaive = palette(1, :);
-colorLearned = palette(2, :);
-colorTransfer = palette(3, :);
+traceColors = TransferLearning.GroupColors(["Naive", "Learned", "Continual"]);
+colorNaive = traceColors(1, :);
+colorLearned = traceColors(2, :);
+colorTransfer = traceColors(3, :);
 
-f = figure('Color', 'w', 'Name', '中文图333A 两个代表性细胞回合曲线');
+f = figure('Color', 'w', 'Name', '中文图44D 两个代表性细胞回合曲线');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 4];
 f.PaperUnits = 'centimeters';
@@ -71,8 +71,8 @@ for ax = allAxes
 	box(ax, 'off');
 	grid(ax, 'off');
 	xlim(ax, [xsPlot(1), xsPlot(end)]);
-	xline(ax, 0, ':k', 'LineWidth', 1, 'HandleVisibility', 'off');
-	xline(ax, 1, '-k', 'LineWidth', 1, 'HandleVisibility', 'off');
+	xline(ax, 0, '--k', 'LineWidth', 1, 'HandleVisibility', 'off');
+	xline(ax, 1, '--k', 'LineWidth', 1, 'HandleVisibility', 'off');
 	ax.XTick = [0 1];
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';
@@ -91,12 +91,12 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig333A_TwoRepresentativeCellTraces.svg';
+svgPath = '中文图Fig44D_TwoRepresentativeCellTraces.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig333A_NaiveRepresentative', naiveRep);
-assignin('base', 'Fig333A_TransferRepresentative', transferRep);
+assignin('base', 'Fig44D_NaiveRepresentative', naiveRep);
+assignin('base', 'Fig44D_TransferRepresentative', transferRep);
 
 function [naiveRep, transferRep] = iPickRepresentatives(LAB, LAI, ALB, baseMask, idx1s, kSigma)
 naiveCandidates = iListNaiveCandidates(LAB, LAI, baseMask, idx1s, kSigma);
@@ -127,7 +127,7 @@ for iT = 1:numel(transferCandidates)
 	end
 
 	if ~isfield(naiveRep, 'CellUID') || ~isfield(transferRep, 'CellUID')
-		error('中文图333A:NoOrderedRepresentatives', 'Cannot find representatives satisfying Naive 1 s mean < Transfer 1 s mean < Learned 1 s mean.');
+		error('Fig44D:NoOrderedRepresentatives', 'Cannot find representatives satisfying Naive 1 s mean < Transfer 1 s mean < Learned 1 s mean.');
 	end
 end
 
@@ -137,7 +137,7 @@ Tran = iRepresentativeSessionNTS(DS, struct('Phase', 'Transfer', 'Stimulus', 'Li
 
 commonCells = intersect(unique(uint64(Learn.CellUID)), unique(uint64(Tran.CellUID)));
 if isempty(commonCells)
-	error('中文图333A:NoTransferCommonCells', 'No common cells across Learned AudioWater and Transfer LightWater sessions.');
+	error('Fig44D:NoTransferCommonCells', 'No common cells across Learned AudioWater and Transfer LightWater sessions.');
 end
 
 	candidates = repmat(iEmptyTransferCandidate(), 0, 1);
@@ -183,7 +183,7 @@ end
 	end
 
 	if isempty(candidates)
-		error('中文图333A:NoTransferRepresentative', 'Cannot find a transfer-group cell whose Learned 1 s mean exceeds its Transfer 1 s mean while keeping 3 active trials in both sessions.');
+		error('Fig44D:NoTransferRepresentative', 'Cannot find a transfer-group cell whose Learned 1 s mean exceeds its Transfer 1 s mean while keeping 3 active trials in both sessions.');
 	end
 end
 
@@ -200,7 +200,7 @@ function candidates = iListNaiveCandidates(LAB, LAI, baseMask, idx1s, kSigma)
 	joined = [joinedLAB; joinedLAI];
 	allCells = unique(uint64(joined.CellUID));
 	if isempty(allCells)
-		error('中文图333A:NoNaiveCells', 'No Naive LightWater cells found.');
+		error('Fig44D:NoNaiveCells', 'No Naive LightWater cells found.');
 	end
 
 	candidates = repmat(iEmptyNaiveCandidate(), 0, 1);
@@ -239,7 +239,7 @@ function candidates = iListNaiveCandidates(LAB, LAI, baseMask, idx1s, kSigma)
 	end
 
 	if isempty(candidates)
-		error('中文图333A:NoNaiveRepresentative', 'Cannot find a Naive LightWater cell with at least one active and one negative-1s trial in the same session.');
+		error('Fig44D:NoNaiveRepresentative', 'Cannot find a Naive LightWater cell with at least one active and one negative-1s trial in the same session.');
 	end
 end
 

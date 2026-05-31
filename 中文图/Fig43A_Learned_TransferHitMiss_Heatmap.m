@@ -97,7 +97,7 @@ subTitles = ["Learned", "Hit", "Miss"];
 	CLim=CLim, ...
 	Layout=Layout, ...
 	ImagescStyle={'XData', [xsPlot(1), xsPlot(end)]}, ...
-	LMHColor=[0,0,1; 1,1,1; 1,0,0]);
+	LMHColor=[TransferLearning.HeatmapNegative; 1,1,1; TransferLearning.HeatmapPositive]);
 
 xlabel(Layout, 'Time', 'FontSize', 12);
 ylabel(Layout, sprintf('%d cells', size(laneData, 1)), 'FontSize', 12);
@@ -116,8 +116,8 @@ for iA = 1:numel(Axes)
 	end
 	A.FontSize = 12;
 	A.FontName = 'Segoe UI Emoji';
-	xline(A, 0, '--k', 'LineWidth', 2);
-	xline(A, 1, '-k', 'LineWidth', 2);
+	xline(A, 0, '--', 'LineWidth', 2);
+	xline(A, 1, '--', 'LineWidth', 2);
 	if iA == 1
 		A.XTick = [0 1];
 		A.XTickLabel = {"🔊", "💧"};
@@ -142,17 +142,17 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = '中文图Fig331A_Learned_TransferHitMiss_Heatmap.svg';
+svgPath = '中文图Fig43A_Learned_TransferHitMiss_Heatmap.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('\n=== Fig331A sample counts ===\n');
+fprintf('\n=== Fig43A sample counts ===\n');
 disp(sampleCounts);
 
-assignin('base', 'Fig331A_ActiveMask', activeMask);
-assignin('base', 'Fig331A_ActiveCellUID', activeCellUID);
-assignin('base', 'Fig331A_SortIdx', sortIdx);
-assignin('base', 'Fig331A_SortKey_Min1s', sortKey);
-assignin('base', 'Fig331A_SampleCounts', sampleCounts);
+assignin('base', 'Fig43A_ActiveMask', activeMask);
+assignin('base', 'Fig43A_ActiveCellUID', activeCellUID);
+assignin('base', 'Fig43A_SortIdx', sortIdx);
+assignin('base', 'Fig43A_SortKey_Min1s', sortKey);
+assignin('base', 'Fig43A_SampleCounts', sampleCounts);
 
 function X = iGetNtats3D(S)
 if istable(S)

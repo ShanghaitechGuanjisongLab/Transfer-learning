@@ -66,7 +66,7 @@ laneData = {XInitialPlot, XTransferPlot};
 	CLim=CLim, ...
 	Layout=L, ...
 	ImagescStyle={'XData', [xsPlot(1), xsPlot(end)]}, ...
-	LMHColor=[0,0,1; 1,1,1; 1,0,0]);
+	LMHColor=[TransferLearning.HeatmapNegative; 1,1,1; TransferLearning.HeatmapPositive]);
 
 ax1 = Axes(1);
 ax2 = Axes(2);
@@ -82,7 +82,7 @@ for ax = axesAll
 	ax.XTick = [0 1];
 	ax.XTickLabel = {"💡", "💧"};
 	xline(ax, 0, '--k', 'LineWidth', 2);
-	xline(ax, 1, '-k', 'LineWidth', 2);
+	xline(ax, 1, '--k', 'LineWidth', 2);
 	box(ax, 'on');
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 		ax.Toolbar.Visible = 'off';

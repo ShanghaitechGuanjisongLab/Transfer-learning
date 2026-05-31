@@ -1,4 +1,4 @@
-% Fig312D：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
+% Fig32D：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -36,7 +36,7 @@ iAssertNoCrossSourceDuplicateMice(tran,  "Transfer");
 allSessions = [naive; tran];
 iAssertNoMouseAppearsInMultipleGroups(allSessions);
 if isempty(allSessions)
-	error('Fig312D:EmptyData', 'No LightWater sessions found.');
+	error('Fig32D:EmptyData', 'No LightWater sessions found.');
 end
 
 allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
@@ -50,13 +50,13 @@ trialRows = [
 	iLightWaterTrialsForSessions(ALB,  "AudioLightBaseline", firstSessions);
 	iLightWaterTrialsForSessions(ALPB, "ALPureBehavior",     firstSessions)];
 if isempty(trialRows)
-	error('Fig312D:EmptyTrials', 'No first training-unit LightWater trials found.');
+	error('Fig32D:EmptyTrials', 'No first training-unit LightWater trials found.');
 end
 trialRows = sortrows(trialRows, ["Group","Mouse","DateTime","Trial"]);
 
 [meanMat, semMat, x, nMat] = iSummarizeTrialCurve(trialRows, ["Naive","Transfer"]);
 
-f = figure('Color','w', 'Name', 'Fig312D LightWater first training-unit trial curve');
+f = figure('Color','w', 'Name', 'Fig32D LightWater first training-unit trial curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
@@ -68,7 +68,8 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 hold(ax,'on');
 
-edgeColors = TransferLearning.FigurePalette(2);
+displayGroups = ["Naive","Continual"];
+edgeColors = TransferLearning.GroupColors(displayGroups);
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -79,7 +80,7 @@ end
 
 curveP = iLearningCurvePValue(trialRows);
 
-labels = {'Naive', 'Continual'};
+labels = cellstr(displayGroups);
 if numel(patches) >= 2
 	lg = legend(ax, patches(1:2), labels, 'Location', 'southeastoutside');
 else
@@ -92,14 +93,13 @@ lg.Title.FontSize = 12;
 
 xlabel(ax, 'Trial', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312D_LightWater_FirstTrainingUnitTrialCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32D_LightWater_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -111,8 +111,8 @@ summaryCurve.TransferSem = semMat(:,2);
 summaryCurve.NaiveN = nMat(:,1);
 summaryCurve.TransferN = nMat(:,2);
 summaryCurve.PMixedEffect(:) = curveP;
-assignin('base', 'Fig312D_LightWaterFirstTrainingUnitTrial_Raw', trialRows);
-assignin('base', 'Fig312D_LightWaterFirstTrainingUnitTrial_Summary', summaryCurve);
+assignin('base', 'Fig32D_LightWaterFirstTrainingUnitTrial_Raw', trialRows);
+assignin('base', 'Fig32D_LightWaterFirstTrainingUnitTrial_Summary', summaryCurve);
 
 firstTrial = trialRows(trialRows.Trial == 1, :);
 naiveFirst = double(firstTrial.Behavior(firstTrial.Group == "Naive"));
@@ -121,19 +121,18 @@ naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
 firstBarPValue = ranksum(naiveFirst, tranFirst);
 
-f2 = figure('Color','none', 'Name', 'Fig312D LightWater first-trial performance');
+f2 = figure('Color','none', 'Name', 'Fig32D LightWater first-trial performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
 f2.Position = pos2;
-f2.InvertHardcopy = 'off';
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4,4];
 f2.PaperPositionMode = 'auto';
 
-tiledlayout(1,1,'TileSpacing','normal','Padding','normal');
+tiledlayout(1,1,'TileSpacing','tight','Padding','tight');
 nexttile;
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
@@ -159,7 +158,6 @@ end
 
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
 iKeepUpperErrorBarOnly(ax2, errorBars2, bars2, edgeColors(1,:), edgeColors(2,:));
-ax2.XLim = [0.5, 2.5];
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First trial', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
@@ -167,9 +165,9 @@ grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312D_LightWater_FirstTrialPerformance.svg');
+svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32D_LightWater_FirstTrialPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
-fprintf('\n=== Fig312D first-trial bar ===\n');
+fprintf('\n=== Fig32D first-trial bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
 fprintf('Continual mice n = %d\n', numel(tranFirst));
 fprintf('ranksum p = %.6g\n', firstBarPValue);
@@ -179,7 +177,7 @@ firstTrialTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFi
 firstTrialTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstTrialTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
 firstTrialTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
-assignin('base', 'Fig312D_LightWater_FirstTrial', firstTrialTable);
+assignin('base', 'Fig32D_LightWater_FirstTrial', firstTrialTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 T = iQueryLightWaterTrialsAll(DS);
@@ -323,7 +321,7 @@ T.Source = string(T.Source);
 nSrc = splitapply(@(x) numel(unique(string(x))), T.Source, G);
 dup = mice(nSrc > 1);
 if ~isempty(dup)
-	error('Fig312D:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
+	error('Fig32D:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
 end
 end
 
@@ -334,7 +332,7 @@ T.Group = string(T.Group);
 nG = splitapply(@(x) numel(unique(string(x))), T.Group, G);
 dup = mice(nG > 1);
 if ~isempty(dup)
-	error('Fig312D:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
+	error('Fig32D:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
 end
 end
 
@@ -415,7 +413,7 @@ end
 end
 
 function iStyleBars(barsObj, colorNaive, colorTrans)
-if numel(barsObj) == 1
+if isscalar(barsObj)
 	barsObj.FaceColor = 'flat';
 	nBars = numel(barsObj.YData);
 	reps = ceil(nBars/2);
@@ -425,7 +423,7 @@ if numel(barsObj) == 1
 	barsObj.LineWidth = 2;
 	barsObj.BaseLine.LineWidth = 2;
 	barsObj.EdgeColor = 'none';
-	barsObj.FaceAlpha = 1/3;
+	barsObj.FaceAlpha = 1;
 else
 	barsObj(1).FaceColor = colorNaive;
 	barsObj(2).FaceColor = colorTrans;
@@ -435,8 +433,8 @@ else
 	barsObj(2).BaseLine.LineWidth = 2;
 	barsObj(1).EdgeColor = 'none';
 	barsObj(2).EdgeColor = 'none';
-	barsObj(1).FaceAlpha = 1/3;
-	barsObj(2).FaceAlpha = 1/3;
+	barsObj(1).FaceAlpha = 1;
+	barsObj(2).FaceAlpha = 1;
 end
 end
 

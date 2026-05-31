@@ -52,8 +52,7 @@ ax.LineWidth = 2;
 ax.XAxis.LineWidth = 2;
 ax.YAxis.LineWidth = 2;
 
-palette2 = TransferLearning.FigurePalette(2);
-lineColors = [palette2(1, :); palette2(2, :)];
+lineColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Y, E, 0.2, ...
 	X=repmat(xsPlot(:), 1, 2), ...
@@ -65,7 +64,7 @@ for p = Patches(:)'
 end
 
 xline(ax, 0, '--k', 'LineWidth', 2);
-xline(ax, 1, '-k', 'LineWidth', 2);
+xline(ax, 1, '--k', 'LineWidth', 2);
 box(ax, 'off');
 grid(ax, 'off');
 xlabel(ax, 'Time', 'FontSize', 12);
@@ -84,7 +83,7 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig332B_InitialTransferLight_MeanLines.svg';
+svgPath = '中文图Fig44B_InitialTransferLight_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Fig332B Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);

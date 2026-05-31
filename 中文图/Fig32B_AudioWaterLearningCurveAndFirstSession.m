@@ -1,4 +1,4 @@
-﻿% Fig312B：声水初始/迁移学习曲线 + 首会话条形图
+﻿% Fig32B：声水初始/迁移学习曲线 + 首会话条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -48,7 +48,7 @@ PValueLS = nan;
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["Naive","Transfer"]);
 nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
-f = figure('Color','w', 'Name', 'Fig312B AudioWater learning curve');
+f = figure('Color','w', 'Name', 'Fig32B AudioWater learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
@@ -60,7 +60,8 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 hold(ax,'on');
 
-edgeColors = TransferLearning.FigurePalette(2);
+displayGroups = ["Naive","Continual"];
+edgeColors = TransferLearning.GroupColors(displayGroups);
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -71,7 +72,7 @@ end
 
 curveP = iLearningCurvePValue(allSessions, PValueLS);
 
-labels = {'Naive', 'Continual'};
+labels = cellstr(displayGroups);
 if numel(patches) >= 2
 	lg = legend(ax, patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(patches(1:2)));
 else
@@ -91,7 +92,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig312B_AudioWater_LearningCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32B_AudioWater_LearningCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -113,7 +114,7 @@ naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
 firstBarPValue = ranksum(naiveFirst, tranFirst);
 
-f2 = figure('Color','none', 'Name', 'Fig312B AudioWater first-session performance');
+f2 = figure('Color','none', 'Name', 'Fig32B AudioWater first-session performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
@@ -122,7 +123,7 @@ f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4,4];
 f2.PaperPositionMode = 'auto';
 
-tiledlayout(1,1,'TileSpacing','normal','Padding','normal');
+tiledlayout(1,1,'TileSpacing','tight','Padding','tight');
 nexttile;
 [~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
@@ -147,12 +148,8 @@ if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompar
 		pl.LineWidth = 2;
 	end
 end
-for eb = errorBars2.Object(:)'
-	eb.LineWidth = 2;
-end
-
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
-ax2.XLim = [0.5, 2.5];
+iStyleErrorBars(errorBars2, edgeColors);
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
@@ -160,9 +157,9 @@ grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, '中文图Fig312B_AudioWater_FirstSessionPerformance.svg');
+svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32B_AudioWater_FirstSessionPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
-fprintf('\n=== Fig312B first-block bar ===\n');
+fprintf('\n=== Fig32B first-block bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
 fprintf('Continual mice n = %d\n', numel(tranFirst));
 fprintf('First-block bar ranksum p = %.6g\n', firstBarPValue);
@@ -412,17 +409,29 @@ if isscalar(barsObj)
 	barsObj.LineWidth = 2;
 	barsObj.BaseLine.LineWidth = 2;
 	barsObj.EdgeColor = 'none';
-	barsObj.FaceAlpha = 1/3;
+	barsObj.FaceAlpha = 1;
 else
 	barsObj(1).FaceColor = colorNaive;
 	barsObj(2).FaceColor = colorTrans;
+	barsObj(1).BarWidth = 0.5;
+	barsObj(2).BarWidth = 0.5;
 	barsObj(1).LineWidth = 2;
 	barsObj(2).LineWidth = 2;
 	barsObj(1).BaseLine.LineWidth = 2;
 	barsObj(2).BaseLine.LineWidth = 2;
 	barsObj(1).EdgeColor = 'none';
 	barsObj(2).EdgeColor = 'none';
-	barsObj(1).FaceAlpha = 1/3;
-	barsObj(2).FaceAlpha = 1/3;
+	barsObj(1).FaceAlpha = 1;
+	barsObj(2).FaceAlpha = 1;
+end
+end
+
+function iStyleErrorBars(errorBars, colors)
+for iE = 1:height(errorBars)
+	errorBar = errorBars.Object(iE);
+	errorBar.LineWidth = 2;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
 end
 end

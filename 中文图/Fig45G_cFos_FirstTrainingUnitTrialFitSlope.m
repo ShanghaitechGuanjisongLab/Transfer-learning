@@ -1,6 +1,6 @@
 % 中文图334G：cFos 与对照组 LightWater block learning curve sigmoid 拟合斜率
 
-svgName = '中文图Fig334G_cFos_LightWaterBlockSigmoid.svg';
+svgName = '中文图Fig45G_cFos_FirstTrainingUnitTrialFitSlope.svg';
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -51,24 +51,25 @@ meanMatOut(1:size(meanMat, 1), :) = meanMat;
 semMatOut(1:size(semMat, 1), :) = semMat;
 nMatOut(1:size(nMat, 1), :) = nMat;
 
-fig = figure('Color', 'w', 'Name', 'Fig334G cFos block learning sigmoid');
+fig = figure('Color', 'w', 'Name', 'Fig45G cFos block learning sigmoid');
 fig.Units = 'centimeters';
-fig.Position(3:4) = [12, 8];
-layout = tiledlayout(fig, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
+fig.Position(3:4) = [9, 8];
 
-curveColor = [0 0 0];
-axisControl = nexttile(layout, 1);
-iPlotGroupMeanErrorbars(axisControl, xFit, meanMatOut(:,1), semMatOut(:,1), controlFitCurve, curveColor, displayGroup(1), fitControl, true);
+curveColors = TransferLearning.GroupColors(displayGroup);
+axisHandle = axes(fig);
+hold(axisHandle, 'on');
+hControl = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFit, meanMatOut(:,1), semMatOut(:,1), controlFitCurve, curveColors(1, :));
+hCFos = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFit, meanMatOut(:,2), semMatOut(:,2), cfosFitCurve, curveColors(2, :));
 
-axisCFos = nexttile(layout, 2);
-iPlotGroupMeanErrorbars(axisCFos, xFit, meanMatOut(:,2), semMatOut(:,2), cfosFitCurve, curveColor, displayGroup(2), fitCFos, false);
-
-ylabel(axisControl, 'Hit rate', 'FontSize', 12);
-xlabel(layout, 'Block', 'FontSize', 12);
-ylabel(axisCFos, '');
-ylim(axisControl, [0 1]);
-ylim(axisCFos, [0 1]);
-axisCFos.YAxis.Visible = 'off';
+ylabel(axisHandle, 'Hit rate', 'FontSize', 12);
+xlabel(axisHandle, 'Block', 'FontSize', 12);
+ylim(axisHandle, [0 1]);
+legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
+	{'Control (Observed)', 'Control (Sigmoid fit)', 'cFos inhibited (Observed)', 'cFos inhibited (Sigmoid fit)'}, ...
+	'FontSize', 8, 'Location', 'best', 'Box', 'off');
+title(axisHandle, 'Learning Curve (Sigmoid Fit)', 'FontSize', 12, 'FontWeight', 'normal');
+box(axisHandle, 'off');
+grid(axisHandle, 'off');
 
 allAxes = findall(fig, 'Type', 'axes');
 for axisItem = reshape(allAxes, 1, [])
@@ -77,12 +78,7 @@ for axisItem = reshape(allAxes, 1, [])
 	end
 end
 
-TransferLearning.Style.ApplyStandardFigureStyle(fig, 2);
-ylim(axisControl, [0 1]);
-ylim(axisCFos, [0 1]);
-axisCFos.YAxis.Visible = 'off';
-svgPath = TransferLearning.StandardFigureSvgPath(svgName);
-print(fig, svgPath, '-dsvg');
+svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 
 fitTable = table;
 fitTable.Group = displayGroup(:);
@@ -262,34 +258,16 @@ shownMice = unique(string(sessionTable.Mouse(rows)), 'stable');
 sessionTable = sessionTable(ismember(string(sessionTable.Mouse), shownMice), :);
 end
 
-function iPlotGroupMeanErrorbars(axisHandle, blockX, meanCurve, semCurve, yFit, lineColor, groupName, fitStruct, showLegend)
-hold(axisHandle, 'on');
-axisHandle.FontSize = 12;
-blockX = double(blockX(:));
-meanCurve = double(meanCurve(:));
-semCurve = double(semCurve(:));
-rows = isfinite(blockX) & isfinite(meanCurve);
-semCurve(~isfinite(semCurve)) = 0;
-dataHandle = errorbar(axisHandle, blockX(rows), meanCurve(rows), semCurve(rows), semCurve(rows), 'o', ...
-	'LineStyle', 'none', ...
-	'Color', lineColor, ...
-	'MarkerEdgeColor', lineColor, ...
-	'MarkerFaceColor', 'w', ...
-	'MarkerSize', 3, ...
-	'LineWidth', 0.5, ...
-	'CapSize', 5);
-fitHandle = plot(axisHandle, blockX, yFit, '-', 'Color', lineColor, 'LineWidth', 2.8);
-if showLegend && isgraphics(dataHandle)
-	legendHandle = legend(axisHandle, [dataHandle, fitHandle], {'Mean ± SEM', 'Sigmoid fit'}, 'Location', 'southeast');
-	legendHandle.FontSize = 9;
-	legendHandle.Box = 'off';
-	legendHandle.NumColumns = 1;
-else
-	legend(axisHandle, 'off');
-end
-box(axisHandle, 'off');
-grid(axisHandle, 'off');
-title(axisHandle, {char(groupName), sprintf('slope=%.3f', fitStruct.Slope)}, 'FontSize', 10, 'FontWeight', 'normal');
+function hOut = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFit, meanCurve, semCurve, yFit, lineColor)
+meanCurve = double(meanCurve);
+semCurve = double(semCurve);
+xObserved = find(isfinite(meanCurve));
+meanObserved = meanCurve(xObserved);
+semObserved = semCurve(xObserved);
+semObserved(~isfinite(semObserved)) = 0;
+hError = errorbar(axisHandle, xObserved, meanObserved, semObserved, 'o', 'Color', lineColor, 'MarkerFaceColor', lineColor, 'MarkerEdgeColor', 'none', 'LineWidth', 1, 'MarkerSize', 4);
+hFit = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2);
+hOut = [hError, hFit];
 end
 
 function fitOut = iFitSigmoidCurve(sessionTable, groupName)

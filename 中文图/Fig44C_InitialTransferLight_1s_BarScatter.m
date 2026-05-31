@@ -55,7 +55,7 @@ f.PaperSize = [3, 4];
 
 TL = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 axTop = nexttile(TL, 1);
-[~, optTop, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, false, compareGroup);
+[~, optTop, Bars, EB] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, UniExp.Flags.empty, compareGroup, 'AsteriskThreshold', 0.05);
 pZScore = iExtractFirstPValue(optTop);
 delete(findobj(axTop, 'Type', 'Scatter'));
 ax = axTop;
@@ -72,9 +72,9 @@ ax.XTickLabel = {};
 box(ax, 'off');
 grid(ax, 'off');
 
-palette2 = TransferLearning.FigurePalette(2);
-colorInitial = palette2(1, :);
-colorTransfer = palette2(2, :);
+groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+colorInitial = groupColors(1, :);
+colorTransfer = groupColors(2, :);
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorInitial; colorTransfer];
@@ -90,6 +90,7 @@ else
 		else
 			Bars(ib).FaceColor = colorTransfer;
 		end
+		Bars(ib).BarWidth = 0.5;
 		Bars(ib).FaceAlpha = 1/3;
 		Bars(ib).LineWidth = 1;
 		Bars(ib).BaseLine.LineWidth = 1;
@@ -125,9 +126,6 @@ end
 allText = findall(f, 'Type', 'Text');
 for it = 1:numel(allText)
 	allText(it).FontSize = 6;
-	if isprop(allText(it), 'String')
-		allText(it).String = iPTextToStars(allText(it).String);
-	end
 end
 
 allAxes = findall(f, 'Type', 'Axes');
@@ -136,7 +134,7 @@ for ia = 1:numel(allAxes)
 end
 
 axBottom = nexttile(TL, 2);
-[~, optBottom, bars2, ebBottom] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeTransfer(:))}, false, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, ~, bars2, ebBottom] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 delete(findobj(axBottom, 'Type', 'Scatter'));
 axBottom.FontSize = 6;
 axBottom.FontName = 'Segoe UI Emoji';
@@ -153,8 +151,12 @@ grid(axBottom, 'off');
 
 iStyleBars(bars2, colorInitial, colorTransfer);
 iStyleIndividualErrorbars(ebBottom, colorInitial, colorTransfer);
-iApplyPText(optBottom, pActive);
 ylim(axBottom, [0, max(0.1, axBottom.YLim(2))]);
+
+allText = findall(f, 'Type', 'Text');
+for it = 1:numel(allText)
+	allText(it).FontSize = 6;
+end
 
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -167,7 +169,7 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig332C_InitialTransferLight_1s_BarScatter.svg';
+svgPath = '中文图Fig44C_InitialTransferLight_1s_BarScatter.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Fig332C Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
@@ -309,6 +311,7 @@ for ib = 1:numel(Bars)
 		Bars(ib).FaceColor = colorTransfer;
 	end
 	Bars(ib).LineWidth = 1;
+	Bars(ib).BarWidth = 0.5;
 	Bars(ib).BaseLine.LineWidth = 1;
 	Bars(ib).EdgeColor = 'none';
 	Bars(ib).FaceAlpha = 1/3;
@@ -339,79 +342,10 @@ for iObj = 1:numel(errorObjects)
 end
 end
 
-function iApplyPText(options, pValue)
-if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PText', options.MultiCompare.Properties.VariableNames)
-	for pt = options.MultiCompare.PText(:)'
-		pt.FontSize = 6;
-		pt.FontName = 'Segoe UI Emoji';
-		pt.String = iPValueToStars(pValue);
-	end
-end
-if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PLine', options.MultiCompare.Properties.VariableNames)
-	for pl = options.MultiCompare.PLine(:)'
-		pl.LineWidth = 1;
-	end
-end
-end
-
 function pValue = iExtractFirstPValue(options)
 pValue = NaN;
 if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PValue', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PValue)
 	pValue = options.MultiCompare.PValue(1);
-end
-end
-
-function out = iPTextToStars(in)
-out = in;
-if isstring(in)
-	if isscalar(in)
-		out = string(iPTextToStars(char(in)));
-	else
-		out = arrayfun(@(s) string(iPTextToStars(char(s))), in);
-	end
-	return;
-end
-if iscell(in)
-	out = cell(size(in));
-	for ii = 1:numel(in)
-		out{ii} = iPTextToStars(in{ii});
-	end
-	return;
-end
-if ~ischar(in)
-	return;
-end
-token = regexp(in, 'p\s*=\s*([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)', 'tokens', 'once');
-if isempty(token)
-	return;
-end
-p = str2double(token{1});
-if p < 1e-4
-	out = '****';
-elseif p < 1e-3
-	out = '***';
-elseif p < 1e-2
-	out = '**';
-elseif p < 0.05
-	out = '*';
-else
-	out = 'ns';
-end
-end
-
-function out = iPValueToStars(p)
-if ~isfinite(p)
-	out = 'ns';
-elseif p < 1e-4
-	out = '****';
-elseif p < 1e-3
-	out = '***';
-elseif p < 1e-2
-	out = '**';
-elseif p < 0.05
-	out = '*';
-else
-	out = 'ns';
 end
 end
 

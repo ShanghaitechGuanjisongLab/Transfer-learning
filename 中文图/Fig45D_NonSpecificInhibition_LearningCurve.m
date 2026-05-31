@@ -3,7 +3,7 @@
 % 样式：模仿英文图2K（颜色、线宽、ylabel、整体布局）
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgName = "中文图Fig334D_NonSpecificInhibition_LearningCurve.svg";
+svgName = "中文图Fig45D_NonSpecificInhibition_LearningCurve.svg";
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -73,7 +73,7 @@ f.PaperSize = [9, 8];
 
 ax = axes(f);
 hold(ax, 'on');
-edgeColors = TransferLearning.FigurePalette(2);
+edgeColors = TransferLearning.GroupColors(["Control", "Inhibited"]);
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 for p = Patches(:)'
 	if isprop(p, 'LineWidth')

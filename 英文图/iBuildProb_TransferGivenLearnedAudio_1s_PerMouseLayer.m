@@ -51,46 +51,30 @@ CellMeta.CellUID = uint64(CellMeta.CellUID);
 CellMeta.ZLayer = string(CellMeta.ZLayer);
 CellMeta.Mouse = categorical(string(CellMeta.Mouse));
 
-QLearnAll = table(repmat(categorical("Learned"), height(Sess), 1), ...
-	repmat(categorical("AudioWater"), height(Sess), 1), repmat(categorical("AudioWater"), height(Sess), 1), ...
-	categorical(string(Sess.Mouse)), Sess.DateTimeLearned, ...
-	repmat("Learned", height(Sess), 1), ...
-	'VariableNames', {'Phase','Stimulus','Design','Mouse','DateTime','GroupName'});
-QTranAll = table(repmat(categorical("Transfer"), height(Sess), 1), ...
-	repmat(categorical("LightWater"), height(Sess), 1), repmat(categorical("LightWater"), height(Sess), 1), ...
-	categorical(string(Sess.Mouse)), Sess.DateTimeTransfer, ...
-	repmat("Transfer", height(Sess), 1), ...
-	'VariableNames', {'Phase','Stimulus','Design','Mouse','DateTime','GroupName'});
-
-QTranHMAll = table();
 if options.RequireHitMiss
-	for iRow = 1:height(Sess)
-		mouseName = string(Sess.Mouse(iRow));
-		dtTransfer = Sess.DateTimeTransfer(iRow);
-		beh = double(TTran.Behavior(TTran.Mouse == mouseName & TTran.DateTime == dtTransfer));
-		if any(beh == 1) && any(beh == 0)
-			t = table(["Hit"; "Miss"], repmat(categorical("Transfer"), 2, 1), ...
-				repmat(categorical("LightWater"), 2, 1), repmat(categorical("LightWater"), 2, 1), ...
-				[1; 0], repmat(categorical(mouseName), 2, 1), repmat(dtTransfer, 2, 1), ...
-				'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior','Mouse','DateTime'});
-			QTranHMAll = [QTranHMAll; t]; %#ok<AGROW>
-		end
-	end
-end
-
-GLearnStruct = DS.QueryNTATS(QLearnAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-GTranStruct = DS.QueryNTATS(QTranAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-if options.RequireHitMiss && ~isempty(QTranHMAll)
-	GTranHMStruct = DS.QueryNTATS(QTranHMAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	QAll = table(categorical(["Learned"; "TransferHit"; "TransferMiss"]), ...
+		categorical(["Learned"; "Transfer"; "Transfer"]), ...
+		categorical(["AudioWater"; "LightWater"; "LightWater"]), ...
+		categorical(["AudioWater"; "LightWater"; "LightWater"]), ...
+		{[]; 1; 0}, ...
+		'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior'});
 else
-	GTranHMStruct = struct();
+	QAll = table(categorical(["Learned"; "Transfer"]), ...
+		categorical(["Learned"; "Transfer"]), ...
+		categorical(["AudioWater"; "LightWater"]), ...
+		categorical(["AudioWater"; "LightWater"]), ...
+		{[]; []}, ...
+		'VariableNames', {'GroupName','Phase','Design','Stimulus','Behavior'});
 end
 
-[XLearnAll, cellLearnAll] = iExtractNtats2D(GLearnStruct);
-[XTranAll, cellTranAll] = iExtractNtats2D(GTranStruct);
+GAllStruct = DS.QueryNTATS(QAll, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 if options.RequireHitMiss
-	[XHitAll, cellHitAll] = iExtractNtats3D_Index(GTranHMStruct, 1);
-	[XMissAll, cellMissAll] = iExtractNtats3D_Index(GTranHMStruct, 2);
+	[XLearnAll, cellLearnAll] = iExtractGroupNtats(GAllStruct, "Learned", 1);
+	[XHitAll, cellHitAll] = iExtractGroupNtats(GAllStruct, "TransferHit", 2);
+	[XMissAll, cellMissAll] = iExtractGroupNtats(GAllStruct, "TransferMiss", 3);
+else
+	[XLearnAll, cellLearnAll] = iExtractGroupNtats(GAllStruct, "Learned", 1);
+	[XTranAll, cellTranAll] = iExtractGroupNtats(GAllStruct, "Transfer", 2);
 end
 
 Rows = repmat(iEmptyResult(), 0, 1);
@@ -107,13 +91,9 @@ for iRow = 1:height(Sess)
 		continue;
 	end
 
-	[~, idxL_mouse] = intersect(cellLearnAll, mouseCells, 'stable');
-	XLearn = XLearnAll(idxL_mouse, :);
-	cellLearn = cellLearnAll(idxL_mouse);
-
-	[~, idxT_mouse] = intersect(cellTranAll, mouseCells, 'stable');
-	XTran = XTranAll(idxT_mouse, :);
-	cellTran = cellTranAll(idxT_mouse);
+	[~, idxLMouse] = intersect(cellLearnAll, mouseCells, 'stable');
+	XLearn = XLearnAll(idxLMouse, :);
+	cellLearn = cellLearnAll(idxLMouse);
 
 	if options.RequireHitMiss
 		hasHitMiss = any(beh == 1) && any(beh == 0);
@@ -121,30 +101,30 @@ for iRow = 1:height(Sess)
 			continue;
 		end
 
-		[~, idxHit_mouse] = intersect(cellHitAll, mouseCells, 'stable');
-		XHitData = XHitAll(idxHit_mouse, :);
-		cellHit = cellHitAll(idxHit_mouse);
+		[~, idxHitMouse] = intersect(cellHitAll, mouseCells, 'stable');
+		XHitMouse = XHitAll(idxHitMouse, :);
+		cellHit = cellHitAll(idxHitMouse);
 
-		[~, idxMiss_mouse] = intersect(cellMissAll, mouseCells, 'stable');
-		XMissData = XMissAll(idxMiss_mouse, :);
-		cellMiss = cellMissAll(idxMiss_mouse);
+		[~, idxMissMouse] = intersect(cellMissAll, mouseCells, 'stable');
+		XMissMouse = XMissAll(idxMissMouse, :);
+		cellMiss = cellMissAll(idxMissMouse);
 
-		if isempty(XLearn) || isempty(XTran) || isempty(XHitData) || isempty(XMissData)
+		if isempty(XLearn) || isempty(XHitMouse) || isempty(XMissMouse)
 			continue;
 		end
 
-		[commonLT, idxL, idxT] = intersect(cellLearn, cellTran, 'stable');
-		[commonLT_Hit, idxLT1, idxHit] = intersect(commonLT, cellHit, 'stable');
-		[commonCells, idxLT2, idxMiss] = intersect(commonLT_Hit, cellMiss, 'stable');
+		[commonLearnHit, idxLearnHit, idxHit] = intersect(cellLearn, cellHit, 'stable');
+		[commonCells, idxLearnHitMiss, idxMiss] = intersect(commonLearnHit, cellMiss, 'stable');
 		if isempty(commonCells)
 			continue;
 		end
-
-		XLearn = XLearn(idxL(idxLT1(idxLT2)), :);
-		XTran = XTran(idxT(idxLT1(idxLT2)), :);
-		XHit = XHitData(idxHit(idxLT2), :);
-		XMiss = XMissData(idxMiss, :);
+		XLearn = XLearn(idxLearnHit(idxLearnHitMiss), :);
+		XHit = XHitMouse(idxHit(idxLearnHitMiss), :);
+		XMiss = XMissMouse(idxMiss, :);
 	else
+		[~, idxTMouse] = intersect(cellTranAll, mouseCells, 'stable');
+		XTran = XTranAll(idxTMouse, :);
+		cellTran = cellTranAll(idxTMouse);
 		if isempty(XLearn) || isempty(XTran)
 			continue;
 		end
@@ -158,7 +138,13 @@ for iRow = 1:height(Sess)
 	cellLayers = iMapLayer(CellMeta, commonCells);
 
 	learnedActive = iIsActiveAt1s(XLearn, baseMask, idx1s, kSigma);
-	transferActive = iIsActiveAt1s(XTran, baseMask, idx1s, kSigma);
+	if options.RequireHitMiss
+		transferActiveHit = iIsActiveAt1s(XHit, baseMask, idx1s, kSigma);
+		transferActiveMiss = iIsActiveAt1s(XMiss, baseMask, idx1s, kSigma);
+		transferActive = transferActiveHit | transferActiveMiss;
+	else
+		transferActive = iIsActiveAt1s(XTran, baseMask, idx1s, kSigma);
+	end
 
 	mask23 = iIsLayer23(cellLayers);
 	mask5 = iIsLayer5(cellLayers);
@@ -166,8 +152,6 @@ for iRow = 1:height(Sess)
 	[n23, prob23] = iConditionalProb(learnedActive, transferActive, mask23);
 	[n5, prob5] = iConditionalProb(learnedActive, transferActive, mask5);
 	if options.RequireHitMiss
-		transferActiveHit = iIsActiveAt1s(XHit, baseMask, idx1s, kSigma);
-		transferActiveMiss = iIsActiveAt1s(XMiss, baseMask, idx1s, kSigma);
 		[~, probHit23] = iConditionalProb(learnedActive, transferActiveHit, mask23);
 		[~, probHit5] = iConditionalProb(learnedActive, transferActiveHit, mask5);
 		[~, probMiss23] = iConditionalProb(learnedActive, transferActiveMiss, mask23);
@@ -196,49 +180,45 @@ T = table(strings(0, 1), NaT(0, 1), NaT(0, 1), nan(0, 1), nan(0, 1), nan(0, 1), 
 	'NLearnedActive23','NLearnedActive5','Prob23','Prob5','ProbHit23','ProbHit5','ProbMiss23','ProbMiss5','Source'});
 end
 
-function [X, cellUID] = iExtractNtats2D(G)
-cellUID = uint64([]);
-X = [];
-if isempty(G)
+function [X, cellUID] = iExtractGroupNtats(G, groupName, groupIndex)
+fieldName = char(groupName);
+if isstruct(G) && isfield(G, fieldName)
+	[X, cellUID] = iExtractNtats2D(G.(fieldName));
 	return;
 end
-nt = G.NTATS;
-cellUID = uint64(G.CellUID);
-if isa(nt, 'MATLAB.DataTypes.NDTable')
-		X = nt.Data;
+
+[XAll, cellUID] = iExtractNtatsArray(G);
+if ndims(XAll) == 3
+	X = XAll(:, :, groupIndex);
 else
-	X = nt;
-end
-X = double(X);
-if ndims(X) == 3
-	X = squeeze(X(:, :, 1));
-end
-end
-function [X, cellUID] = iExtractNtats3D(G)
-cellUID = uint64([]);
-X = [];
-if isempty(G)
-	return;
-end
-nt = G.NTATS;
-cellUID = uint64(G.CellUID);
-if isa(nt, 'MATLAB.DataTypes.NDTable')
-		X = nt.Data;
-else
-	X = nt;
-end
-X = double(X);
-if ndims(X) ~= 3
-	error('iBuildProb:BadHMShape', 'Expected hit/miss NTATS to be 3-D.');
+	X = XAll;
 end
 end
 
-function [X, cellUID] = iExtractNtats3D_Index(G, dim3Index)
-[X3, cellUID] = iExtractNtats3D(G);
-X = [];
-if ~isempty(X3)
-	X = X3(:, :, dim3Index);
+function [X, cellUID] = iExtractNtats2D(G)
+[X, cellUID] = iExtractNtatsArray(G);
+if ndims(X) == 3
+	if size(X, 3) ~= 1
+		error('iBuildProb:BadGroupShape', 'Expected a single group NTATS array.');
+	end
+	X = X(:, :, 1);
 end
+end
+
+function [X, cellUID] = iExtractNtatsArray(G)
+cellUID = uint64([]);
+X = [];
+if isempty(G)
+	return;
+end
+nt = G.NTATS;
+cellUID = uint64(G.CellUID);
+if isa(nt, 'MATLAB.DataTypes.NDTable')
+		X = nt.Data;
+else
+	X = nt;
+end
+X = double(X);
 end
 function active = iIsActiveAt1s(X, baseMask, idx1s, kSigma)
 baseMu = mean(X(:, baseMask), 2, 'omitnan');

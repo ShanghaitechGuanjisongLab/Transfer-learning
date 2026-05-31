@@ -17,9 +17,9 @@
 sampleRate = 8;
 idx1s = 4 * sampleRate;
 
-palette2 = TransferLearning.FigurePalette(2);
-RED = palette2(1,:);
-BLUE = palette2(2,:);
+groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+colorNaive = groupColors(1, :);
+colorContinual = groupColors(2, :);
 
 Sources = {
 	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline(), 'Group', "Naive", 'StartPhase', "Naive")
@@ -93,30 +93,26 @@ yl.FontName = 'Arial';
 yl.FontSize = 6;
 
 ax1 = nexttile(Layout, 1);
-[~, ~, Bars1, EB1] = UniExp.BarScatterCompare({double(naiveL23(:)), double(tranL23(:))}, false, ...
-	table([1 2], 'VariableNames', {'GroupPair'}));
+[~, ~, Bars1, EB1] = UniExp.BarScatterCompare({double(naiveL23(:)), double(tranL23(:))}, UniExp.Flags.empty, ...
+	table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 delete(findobj(ax1, 'Type', 'Scatter'));
-for eb = EB1.Object(:)'
-	eb.LineWidth = 1;
-end
+iStyleErrorBars(EB1, [colorNaive; colorContinual]);
 iStylePValue(ax1);
 iStyleAxes(ax1, 'L2/3');
-iStyleBars(Bars1, RED, BLUE);
+iStyleBars(Bars1, colorNaive, colorContinual);
 
 ax2 = nexttile(Layout, 2);
-[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({double(naiveL5(:)), double(tranL5(:))}, false, ...
-	table([1 2], 'VariableNames', {'GroupPair'}));
+[~, ~, Bars2, EB2] = UniExp.BarScatterCompare({double(naiveL5(:)), double(tranL5(:))}, UniExp.Flags.empty, ...
+	table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 delete(findobj(ax2, 'Type', 'Scatter'));
-for eb = EB2.Object(:)'
-	eb.LineWidth = 1;
-end
+iStyleErrorBars(EB2, [colorNaive; colorContinual]);
 iStylePValue(ax2);
 iStyleAxes(ax2, 'L5');
 xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
-iStyleBars(Bars2, RED, BLUE);
+iStyleBars(Bars2, colorNaive, colorContinual);
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = '中文图Fig333C_LightWater_NaiveVsTransfer_DivByLayer.svg';
+svgPath = '中文图Fig44E_LightWater_NaiveVsTransfer_DivByLayer.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -373,6 +369,8 @@ else
 	if numel(Bars) >= 2
 		Bars(1).FaceColor = colorA;
 		Bars(2).FaceColor = colorB;
+		Bars(1).BarWidth = 0.5;
+		Bars(2).BarWidth = 0.5;
 		Bars(1).FaceAlpha = 1/3;
 		Bars(2).FaceAlpha = 1/3;
 		Bars(1).LineWidth = 1;
@@ -388,6 +386,16 @@ end
 function iStylePValue(ax)
 for h = findobj(ax, 'Type', 'Line')'
 	h.LineWidth = 1;
+end
+end
+
+function iStyleErrorBars(ErrorBars, colors)
+for iE = 1:height(ErrorBars)
+	errorBar = ErrorBars.Object(iE);
+	errorBar.LineWidth = 1;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
 end
 end
 

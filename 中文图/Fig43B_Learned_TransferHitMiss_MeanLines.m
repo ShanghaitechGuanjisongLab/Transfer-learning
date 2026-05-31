@@ -76,8 +76,7 @@ hold(ax, 'on');
 ax.FontSize = 12;
 ax.FontName = 'Segoe UI Emoji';
 
-palette2 = TransferLearning.FigurePalette(2);
-lineColors = [palette2(1, :); palette2(2, :); palette2(2, :)];
+lineColors = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
 lineStyles = ["-"; "-"; "--"];
 
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
@@ -87,8 +86,8 @@ Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Ax=ax, ...
 	LineStyles=lineStyles);
 
-xline(ax, 0, '--k', 'LineWidth', 2);
-xline(ax, 1, '-k', 'LineWidth', 2);
+xline(ax, 0, '--', 'LineWidth', 2);
+xline(ax, 1, '--', 'LineWidth', 2);
 
 box(ax, 'off');
 grid(ax, 'off');
@@ -109,16 +108,16 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = '中文图Fig331B_Learned_TransferHitMiss_MeanLines.svg';
+svgPath = '中文图Fig43B_Learned_TransferHitMiss_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-fprintf('\n=== Fig331B sample counts ===\n');
+fprintf('\n=== Fig43B sample counts ===\n');
 disp(sampleCounts);
 
-assignin('base', 'Fig331B_MeanLines_Y', Y);
-assignin('base', 'Fig331B_MeanLines_SEM', E);
-assignin('base', 'Fig331B_nCells', nCells);
-assignin('base', 'Fig331B_SampleCounts', sampleCounts);
+assignin('base', 'Fig43B_MeanLines_Y', Y);
+assignin('base', 'Fig43B_MeanLines_SEM', E);
+assignin('base', 'Fig43B_nCells', nCells);
+assignin('base', 'Fig43B_SampleCounts', sampleCounts);
 
 
 function X = iGetNtats3D(S)

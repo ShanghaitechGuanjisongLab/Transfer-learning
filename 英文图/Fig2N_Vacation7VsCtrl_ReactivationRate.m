@@ -59,7 +59,7 @@ nReactCellsV7 = sum(nTotal(reactV7Mask), 'omitnan');
 
 fprintf('\n=== Upper tile: Reactivation P(T|L) ===\n');
 fprintf('  Control:   mice n=%d, learned-active cells n=%d, mean=%.4f\n', numel(xReactCtrl), nReactCellsCtrl, mean(xReactCtrl));
-fprintf('  Vacation7: mice n=%d, learned-active cells n=%d, mean=%.4f\n', numel(xReactV7), nReactCellsV7, mean(xReactV7));
+fprintf('  Gap:       mice n=%d, learned-active cells n=%d, mean=%.4f\n', numel(xReactV7), nReactCellsV7, mean(xReactV7));
 pReact = ranksum(xReactCtrl, xReactV7);
 fprintf('  ranksum p=%.4g\n', pReact);
 
@@ -136,12 +136,12 @@ nDivCellsV7 = sum(divCellV7(kV));
 
 fprintf('\n=== Lower tile: Population Divergence ===\n');
 fprintf('  Control:   %.3f ± %.3f (mice n=%d, cells n=%d)\n', mean(xDivCtrl), std(xDivCtrl)/sqrt(numel(xDivCtrl)), numel(xDivCtrl), nDivCellsCtrl);
-fprintf('  Vacation7: %.3f ± %.3f (mice n=%d, cells n=%d)\n', mean(xDivV7), std(xDivV7)/sqrt(numel(xDivV7)), numel(xDivV7), nDivCellsV7);
+fprintf('  Gap:       %.3f ± %.3f (mice n=%d, cells n=%d)\n', mean(xDivV7), std(xDivV7)/sqrt(numel(xDivV7)), numel(xDivV7), nDivCellsV7);
 pDiv = ranksum(xDivCtrl, xDivV7);
 fprintf('  ranksum p=%.4g\n', pDiv);
 
 %% ===== 4) Plot (tiledlayout 2×1) =====
-f = figure('Color', 'w', 'Name', 'English Fig2N Vacation7 Reactivation + Divergence');
+f = figure('Color', 'w', 'Name', 'English Fig2N Gap Reactivation + Divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -151,94 +151,40 @@ f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
-palette2 = TransferLearning.FigurePalette(2);
-colorA = palette2(1,:);
-colorB = palette2(2,:);
+barColors = TransferLearning.GroupColors(["Control", "Gap"]);
+compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+Options = cell(2, 1);
 
 % --- Tile 1: Reactivation ---
-nexttile(Layout, 1);
-[~, ~, Bars1, EB1] = UniExp.BarScatterCompare( ...
-	{double(xReactCtrl(:)), double(xReactV7(:))}, false);
-delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB1.Object(:)', eb.LineWidth = 1; end
-
-ax1 = gca;
-ax1.FontSize = 6;
-ax1.LineWidth = 1;
-if isprop(ax1.XAxis, 'LineWidth')
-	ax1.XAxis.LineWidth = 1;
-	ax1.YAxis.LineWidth = 1;
+ax1 = nexttile(Layout, 1);
+[~, Options{1}, Bars1, EB1] = UniExp.BarScatterCompare( ...
+	{double(xReactCtrl(:)), double(xReactV7(:))}, UniExp.Flags.empty, compareGroup, 'AsteriskThreshold', 0.05);
+delete(findobj(ax1, 'Type', 'Scatter'));
+for eb = EB1.Object(:)'
+	eb.LineWidth = 1;
 end
-ax1.XTick = [1 2];
-ax1.XTickLabel = {'Ctrl', 'Vac7'};
-ax1.XAxis.Visible = 'off';
-legend(ax1, 'off');
-box(ax1, 'off');
-grid(ax1, 'off');
-ax1.Toolbar.Visible = 'off';
+iStyleAxes(ax1, false);
 ylabel(ax1, 'Reactivation', 'FontSize', 6);
-
-if isscalar(Bars1)
-	Bars1.FaceColor = 'flat';
-	nB = numel(Bars1.YData);
-	Bars1.CData = repmat([colorA; colorB], ceil(nB/2), 1);
-	Bars1.CData = Bars1.CData(1:nB, :);
-	Bars1.BarWidth = 0.5; Bars1.LineWidth = 1; Bars1.BaseLine.LineWidth = 1; Bars1.EdgeColor = 'none'; Bars1.FaceAlpha = 1/3;
-else
-	if numel(Bars1) >= 2
-		Bars1(1).FaceColor = colorA; Bars1(1).FaceAlpha = 1/3; Bars1(1).LineWidth = 1; Bars1(1).BaseLine.LineWidth = 1; Bars1(1).EdgeColor = 'none';
-		Bars1(2).FaceColor = colorB; Bars1(2).FaceAlpha = 1/3; Bars1(2).LineWidth = 1; Bars1(2).BaseLine.LineWidth = 1; Bars1(2).EdgeColor = 'none';
-	end
-end
-
-star1 = iAsterisk(pReact);
-Desc1 = table(EB1.Object(1), EB1.Object(2), EB1.Index(1), EB1.Index(2), star1, 0, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[PL1, PT1] = MATLAB.Graphics.PLine(Desc1);
-for t = PT1(:)', t.FontSize = 6; end
-for pl = PL1(:)', pl.LineWidth = 1; end
+iStyleBars(Bars1, barColors(1, :), barColors(2, :));
 
 % --- Tile 2: Divergence ---
-nexttile(Layout, 2);
-[~, ~, Bars2, EB2] = UniExp.BarScatterCompare( ...
-	{double(xDivCtrl(:)), double(xDivV7(:))}, false);
-delete(findobj(gca, 'Type', 'Scatter'));
-for eb = EB2.Object(:)', eb.LineWidth = 1; end
-
-ax2 = gca;
-ax2.FontSize = 6;
-ax2.LineWidth = 1;
-if isprop(ax2.XAxis, 'LineWidth')
-	ax2.XAxis.LineWidth = 1;
-	ax2.YAxis.LineWidth = 1;
+ax2 = nexttile(Layout, 2);
+[~, Options{2}, Bars2, EB2] = UniExp.BarScatterCompare( ...
+	{double(xDivCtrl(:)), double(xDivV7(:))}, UniExp.Flags.empty, compareGroup, 'AsteriskThreshold', 0.05);
+delete(findobj(ax2, 'Type', 'Scatter'));
+for eb = EB2.Object(:)'
+	eb.LineWidth = 1;
 end
-ax2.XTick = [1 2];
-ax2.XTickLabel = {'Ctrl', 'Vac7'};
-legend(ax2, 'off');
-box(ax2, 'off');
-grid(ax2, 'off');
-ax2.Toolbar.Visible = 'off';
+iStyleAxes(ax2, true);
 ylabel(ax2, 'Divergence', 'FontSize', 6);
+iStyleBars(Bars2, barColors(1, :), barColors(2, :));
 
-if isscalar(Bars2)
-	Bars2.FaceColor = 'flat';
-	nB2 = numel(Bars2.YData);
-	Bars2.CData = repmat([colorA; colorB], ceil(nB2/2), 1);
-	Bars2.CData = Bars2.CData(1:nB2, :);
-	Bars2.BarWidth = 0.5; Bars2.LineWidth = 1; Bars2.BaseLine.LineWidth = 1; Bars2.EdgeColor = 'none'; Bars2.FaceAlpha = 1/3;
-else
-	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA; Bars2(1).FaceAlpha = 1/3; Bars2(1).LineWidth = 1; Bars2(1).BaseLine.LineWidth = 1; Bars2(1).EdgeColor = 'none';
-		Bars2(2).FaceColor = colorB; Bars2(2).FaceAlpha = 1/3; Bars2(2).LineWidth = 1; Bars2(2).BaseLine.LineWidth = 1; Bars2(2).EdgeColor = 'none';
+for iOpt = 1:numel(Options)
+	Opt = Options{iOpt};
+	if isfield(Opt, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt.MultiCompare.Properties.VariableNames))
+		MATLAB.Graphics.PLineRetune(Opt.MultiCompare.PLine, Opt.MultiCompare.PText);
 	end
 end
-
-star2 = iAsterisk(pDiv);
-Desc2 = table(EB2.Object(1), EB2.Object(2), EB2.Index(1), EB2.Index(2), star2, 0, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[PL2, PT2] = MATLAB.Graphics.PLine(Desc2);
-for t = PT2(:)', t.FontSize = 6; end
-for pl = PL2(:)', pl.LineWidth = 1; end
 
 %% ===== 5) Export =====
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
@@ -249,9 +195,9 @@ svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
 %% ===== 6) Save to workspace =====
-reactSampleCounts = table(["Control"; "Vacation7"], [numel(xReactCtrl); numel(xReactV7)], [nReactCellsCtrl; nReactCellsV7], ...
+reactSampleCounts = table(["Control"; "Gap"], [numel(xReactCtrl); numel(xReactV7)], [nReactCellsCtrl; nReactCellsV7], ...
 	'VariableNames', {'Group','NMouse','NLearnedActiveCell'});
-divSampleCounts = table(["Control"; "Vacation7"], [numel(xDivCtrl); numel(xDivV7)], [nDivCellsCtrl; nDivCellsV7], ...
+divSampleCounts = table(["Control"; "Gap"], [numel(xDivCtrl); numel(xDivV7)], [nDivCellsCtrl; nDivCellsV7], ...
 	'VariableNames', {'Group','NMouse','NCell'});
 assignin('base', 'English_Fig2N_R', R);
 assignin('base', 'English_Fig2N_pReact', pReact);
@@ -262,6 +208,61 @@ assignin('base', 'English_Fig2N_ReactivationSampleCounts', reactSampleCounts);
 assignin('base', 'English_Fig2N_DivergenceSampleCounts', divSampleCounts);
 
 %% ===== Local functions =====
+
+function iStyleAxes(ax, showX)
+ax.FontName = 'Arial';
+ax.FontSize = 6;
+ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
+ax.XTick = [1 2];
+if showX
+	ax.XTickLabel = {'Ctrl', 'Gap'};
+else
+	ax.XTickLabel = {};
+end
+legend(ax, 'off');
+box(ax, 'off');
+grid(ax, 'off');
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
+end
+for textItem = findobj(ax, 'Type', 'Text')'
+	textItem.FontName = 'Arial';
+	textItem.FontSize = 6;
+end
+end
+
+function iStyleBars(Bars, colorControl, colorGap)
+if isscalar(Bars)
+	Bars.FaceColor = 'flat';
+	nBar = numel(Bars.YData);
+	Bars.CData = repmat([colorControl; colorGap], ceil(nBar/2), 1);
+	Bars.CData = Bars.CData(1:nBar, :);
+	Bars.BarWidth = 0.5;
+	Bars.FaceAlpha = 1/3;
+	Bars.LineWidth = 1;
+	Bars.BaseLine.LineWidth = 1;
+	Bars.EdgeColor = 'none';
+	return;
+end
+if numel(Bars) >= 2
+	Bars(1).FaceColor = colorControl;
+	Bars(2).FaceColor = colorGap;
+	Bars(1).BarWidth = 0.5;
+	Bars(2).BarWidth = 0.5;
+	Bars(1).FaceAlpha = 1/3;
+	Bars(2).FaceAlpha = 1/3;
+	Bars(1).LineWidth = 1;
+	Bars(1).BaseLine.LineWidth = 1;
+	Bars(2).LineWidth = 1;
+	Bars(2).BaseLine.LineWidth = 1;
+	Bars(1).EdgeColor = 'none';
+	Bars(2).EdgeColor = 'none';
+end
+end
 
 function div = iDivAtIdx(CTT, timeIdx)
 X = CTT(:, :, timeIdx);
@@ -315,17 +316,5 @@ end
 idx0 = 3 * sampleRate;
 CTT = CTT - CTT(:, :, idx0);
 cellUIDs = keepU;
-end
-
-function s = iAsterisk(p)
-if p < 0.001
-	s = "***";
-elseif p < 0.01
-	s = "**";
-elseif p < 0.05
-	s = "*";
-else
-	s = "n.s.";
-end
 end
 

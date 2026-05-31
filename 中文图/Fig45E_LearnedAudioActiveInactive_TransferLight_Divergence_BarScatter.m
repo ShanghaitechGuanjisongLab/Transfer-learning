@@ -149,7 +149,7 @@ for iL = 1:numel(layers)
 	Stats.NCellInactive(iL) = nCellInactive;
 
 	ax = nexttile(Layout, iL);
-	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, false, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 	delete(findobj(ax, 'Type', 'Scatter'));
 	for b = Bars(:)'
 		b.EdgeColor = 'none';
@@ -186,7 +186,7 @@ for iOpt = 1:numel(Options)
 		MATLAB.Graphics.PLineRetune(Opt.MultiCompare.PLine, Opt.MultiCompare.PText);
 	end
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig334E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig45E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig334E_Stats', Stats);
@@ -309,6 +309,8 @@ end
 if numel(Bars) >= 2
 	Bars(1).FaceColor = colorA;
 	Bars(2).FaceColor = colorB;
+	Bars(1).BarWidth = 0.5;
+	Bars(2).BarWidth = 0.5;
 	Bars(1).FaceAlpha = 1/3;
 	Bars(2).FaceAlpha = 1/3;
 	Bars(1).LineWidth = 1;
