@@ -25,6 +25,7 @@ M = outerjoin(R(:, {'Mouse','DateTimeTransfer','Reactivation'}), Div, 'Keys', 'M
 
 dotColor = TransferLearning.ContinualColor;
 fitColor = TransferLearning.ColorA;
+%% 
 
 f = figure('Color', 'w', 'Name', 'Fig333E Transfer divergence vs reactivation');
 f.Units = 'centimeters';

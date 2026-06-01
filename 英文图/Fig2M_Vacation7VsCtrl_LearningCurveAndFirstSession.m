@@ -1,4 +1,4 @@
-﻿% English Fig2M: 7-day homecage interval (Vacation7 vs Control)
+% English Fig2M: 7-day homecage interval (Vacation7 vs Control)
 %
 % v6 Panel M: Vacation7 时间对照（学习曲线 + 首会话命中率）
 % Shared behavior-session helpers: TransferLearning.BehaviorSessions
@@ -91,6 +91,7 @@ pCurve = NaN;
 if ~isempty(rowGrp)
 	pCurve = lmeAnova.pValue(rowGrp);
 end
+%% 
 
 % --- 5) Plot learning curve (like English Fig2B)
 f = figure('Color','w', 'Name', 'English Fig2M Gap Learning curve');

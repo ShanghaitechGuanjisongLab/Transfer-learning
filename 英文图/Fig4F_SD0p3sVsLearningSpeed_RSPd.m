@@ -3,6 +3,8 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 
 RSP = TransferLearning.RSPd();
 xsSec = seconds(TransferLearning.Xs);
+xMask = (xsSec >= -1) & (xsSec <= 2);
+xsPlot = xsSec(xMask);
 
 kSigma = 3;
 baseMask = (xsSec >= -3) & (xsSec < 0);
@@ -35,12 +37,13 @@ val1 = XL(:, idx1);
 keep = isfinite(val1) & (val1 > (baseMu + kSigma .* baseSd));
 X = X(keep, :, :);
 
-meanL = mean(X(:,:,1), 1, 'omitnan');
-meanH = mean(X(:,:,2), 1, 'omitnan');
-meanM = mean(X(:,:,3), 1, 'omitnan');
-semL = std(X(:,:,1), 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(X(:,:,1)), 1)));
-semH = std(X(:,:,2), 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(X(:,:,2)), 1)));
-semM = std(X(:,:,3), 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(X(:,:,3)), 1)));
+XPlot = X(:, xMask, :);
+meanL = mean(XPlot(:,:,1), 1, 'omitnan');
+meanH = mean(XPlot(:,:,2), 1, 'omitnan');
+meanM = mean(XPlot(:,:,3), 1, 'omitnan');
+semL = std(XPlot(:,:,1), 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XPlot(:,:,1)), 1)));
+semH = std(XPlot(:,:,2), 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XPlot(:,:,2)), 1)));
+semM = std(XPlot(:,:,3), 0, 1, 'omitnan') ./ sqrt(max(1, sum(isfinite(XPlot(:,:,3)), 1)));
 
 f = figure('Color','w', 'Name','English Fig4F Learned-active curves');
 f.Units = 'centimeters';
@@ -49,6 +52,7 @@ f.Position(3:4) = [9, 8];
 ax = axes(f);
 hold(ax,'on');
 ax.FontSize = 12;
+ax.FontName = 'Segoe UI Emoji';
 ax.LineWidth = 2;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -58,34 +62,30 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 2;
 end
 
-cols = [0, 0, 1; ...
-	1, 0, 0; ...
-	0, 0.6809, 0];
+cols = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
+lineStyles = ["-"; "-"; "--"];
 meanCells = {meanL(:), meanH(:), meanM(:)};
 semCells  = {semL(:),  semH(:),  semM(:)};
 
-Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 0.2, X=xsSec(:), EdgeColors=cols);
+Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 0.2, X=xsPlot(:), EdgeColors=cols, LineStyles=lineStyles);
 for iPatch = 1:numel(Patches)
 	if isprop(Patches(iPatch), 'LineWidth')
 		Patches(iPatch).LineWidth = 2;
 	end
+	setappdata(Patches(iPatch), 'TransferLearningPreserveLineWidth', true);
 	if isprop(Patches(iPatch), 'FaceAlpha')
 		Patches(iPatch).FaceAlpha = 1/3;
 	end
 end
 
-xline(ax, 0, ':k', 'LineWidth', 2);
-xline(ax, 1, '-k', 'LineWidth', 2);
+xline(ax, 0, '--', 'LineWidth', 2);
+xline(ax, 1, '--', 'LineWidth', 2);
 
 box(ax,'off');
 grid(ax,'off');
 ax.TickLabelInterpreter = 'none';
-tickValues = unique([ax.XTick(:); 1]).';
-ax.XTick = tickValues;
-tickLabels = arrayfun(@(value) sprintf('%g', value), tickValues, 'UniformOutput', false);
-isOneTick = abs(tickValues - 1) < 1e-9;
-tickLabels(isOneTick) = {'💧'};
-ax.XTickLabel = tickLabels;
+ax.XTick = [0 1];
+ax.XTickLabel = {"🔊/💡", "💧"};
 if isprop(ax.XAxis, 'FontName')
 	ax.XAxis.FontName = 'Segoe UI Emoji';
 end

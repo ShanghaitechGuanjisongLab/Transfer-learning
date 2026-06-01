@@ -39,6 +39,7 @@ f.PaperSize = [3, 4];
 ax = axes(f);
 hold(ax,'on');
 ax.FontSize = 6;
+ax.LineWidth = 1;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
@@ -48,11 +49,12 @@ if numel(hit) >= 4
 	p = signrank(hit, miss, 'tail','right');
 end
 
-palette3 = TransferLearning.FigurePalette(3);
 Y = [hit(:), miss(:)];
-plot(ax, Y', '-', 'LineWidth', 0.75, 'Color', palette3(3,:));
-scatter(ax, ones(numel(hit),1), hit, 15, palette3(1,:), 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', palette3(1,:));
-scatter(ax, 2*ones(numel(miss),1), miss, 15, palette3(2,:), 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', palette3(2,:));
+hitColor = TransferLearning.ColorA;
+missColor = TransferLearning.ColorB;
+plot(ax, Y', '-', 'LineWidth', 1, 'Color', [0, 0, 0]);
+scatter(ax, ones(numel(hit),1), hit, 15, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', hitColor);
+scatter(ax, 2*ones(numel(miss),1), miss, 15, missColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', missColor);
 set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 ylim(ax, [0 1]);
 grid(ax,'off');
@@ -70,22 +72,24 @@ if isfinite(p)
 	if isprop(S, 'PickableParts'), S.PickableParts = 'none'; end
 	if isprop(S, 'AffectAutoLimits'), S.AffectAutoLimits = false; end
 
-	if p < 0.001, pText = "***";
-	elseif p < 0.01, pText = "**";
-	elseif p < 0.05, pText = "*";
-	else, pText = "n.s.";
+	if p < 0.05
+		pText = "＊";
+	else
+		pText = "n.s.";
 	end
 	Descriptors = table(S, 0, 0, pText, 0, ...
 		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-	[~, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+	[pLines, pTexts] = MATLAB.Graphics.PLine(Descriptors);
+	for pl = pLines(:)'
+		pl.LineWidth = 1;
+		pl.Tag = 'PLine';
+	end
 	for pt = pTexts(:)'
 		pt.FontSize = 6;
+		pt.Tag = 'PText';
 	end
 	delete(S);
 end
-
-text(ax, 0.02, 0.98, sprintf('n=%d', nnz(mask)), 'Units','normalized', ...
-	'HorizontalAlignment','left', 'VerticalAlignment','top', 'FontSize', 6);
 
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);

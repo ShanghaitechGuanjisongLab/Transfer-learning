@@ -245,67 +245,48 @@ f2.PaperPositionMode = 'auto';
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 4];
 
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, 'AsteriskThreshold', 0.05);
+tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+nexttile;
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 pFS = iBarScatterPValue(Opt2, pFSRanksum);
 ax2 = gca;
+delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
 ax2.LineWidth = 2;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 2;
+	ax2.YAxis.LineWidth = 2;
+end
 ax2.Color = 'none';
 ax2.XAxis.Visible = false;
 ax2.XTick = [];
 legend(ax2, 'off');
 
-colorA = edgeColors(1,:);
-colorB = edgeColors(2,:);
-if isscalar(Bars2)
-	Bars2.FaceColor = 'flat';
-	nBars = numel(Bars2.YData);
-	reps = ceil(nBars/2);
-	Bars2.CData = repmat([colorA; colorB], reps, 1);
-	Bars2.CData = Bars2.CData(1:nBars, :);
-	Bars2.BarWidth = 0.5;
-	Bars2.LineWidth = 2;
-	Bars2.EdgeColor = 'none';
-	Bars2.FaceAlpha = 1/3;
-else
-	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA;
-		Bars2(2).FaceColor = colorB;
-		Bars2(1).BarWidth = 0.5;
-		Bars2(2).BarWidth = 0.5;
-		Bars2(1).LineWidth = 2;
-		Bars2(2).LineWidth = 2;
-		Bars2(1).EdgeColor = 'none';
-		Bars2(2).EdgeColor = 'none';
-		Bars2(1).FaceAlpha = 1/3;
-		Bars2(2).FaceAlpha = 1/3;
+if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
+	for pt = Opt2.MultiCompare.PText(:)'
+		pt.FontSize = 12;
 	end
-end
-for eb = ErrorBars2.Object(:)'
-	eb.LineWidth = 2;
-	x = double(eb.XData(:));
-	[~, colorIndex] = min(abs((1:2).' - x(1)));
-	eb.Color = edgeColors(colorIndex, :);
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
 	for pl = Opt2.MultiCompare.PLine(:)'
 		pl.LineWidth = 2;
 	end
 end
+iStyleBars(Bars2, edgeColors(1,:), edgeColors(2,:));
+iStyleErrorBars(ErrorBars2, edgeColors);
 ax2.XLim = [0.5, 2.5];
 
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
+grid(ax2, 'off');
+if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
+	ax2.Toolbar.Visible = 'off';
+end
 
 svgFS = 'English_Fig2K_cFos_FirstSessionHitRate.svg';
-try
-	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
-	svgFS = TransferLearning.ExportStandardFigure(f2, 2, svgFS);
-	fprintf('Wrote: %s (first-block p=%.4g)\n', svgFS, pFS);
-catch ME
-	warning(ME.identifier, 'Export failed: %s', ME.message);
-end
+svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
+fprintf('Wrote: %s (first-block p=%.4g)\n', svgFS, pFS);
 fprintf('Fig334C first-block hit-rate BarScatterCompare p = %.4g\n', pFS);
 fprintf('Fig334C first-block hit-rate ranksum p = %.4g\n', pFSRanksum);
 
@@ -324,6 +305,43 @@ if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember
 	if isnumeric(pCandidate) && isfinite(pCandidate)
 		pValue = double(pCandidate);
 	end
+end
+end
+
+function iStyleBars(barsObj, colorControl, colorInhibited)
+if isscalar(barsObj)
+	barsObj.FaceColor = 'flat';
+	nBars = numel(barsObj.YData);
+	barsObj.CData = repmat([colorControl; colorInhibited], ceil(nBars/2), 1);
+	barsObj.CData = barsObj.CData(1:nBars, :);
+	barsObj.BarWidth = 0.5;
+	barsObj.LineWidth = 2;
+	barsObj.BaseLine.LineWidth = 2;
+	barsObj.EdgeColor = 'none';
+	barsObj.FaceAlpha = 1;
+	return;
+end
+barsObj(1).FaceColor = colorControl;
+barsObj(2).FaceColor = colorInhibited;
+barsObj(1).BarWidth = 0.5;
+barsObj(2).BarWidth = 0.5;
+barsObj(1).LineWidth = 2;
+barsObj(2).LineWidth = 2;
+barsObj(1).BaseLine.LineWidth = 2;
+barsObj(2).BaseLine.LineWidth = 2;
+barsObj(1).EdgeColor = 'none';
+barsObj(2).EdgeColor = 'none';
+barsObj(1).FaceAlpha = 1;
+barsObj(2).FaceAlpha = 1;
+end
+
+function iStyleErrorBars(errorBars, colors)
+for iE = 1:height(errorBars)
+	errorBar = errorBars.Object(iE);
+	errorBar.LineWidth = 2;
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
 end
 end
 

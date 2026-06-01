@@ -13,15 +13,14 @@ scatterSize = 4 * Scale*Scale;
 iSetAllFontSizes(Fig, fontSize);
 iSetLegendBoxesOff(Fig);
 if options.PreserveScatterStyle
-	iSetAllNonScatterLineWidths(Fig, otherLineWidth);
+	iSetAllNonScatterLineWidths(Fig, otherLineWidth, axisLineWidth);
 else
-	iSetAllLineWidths(Fig, otherLineWidth);
+	iSetAllLineWidths(Fig, otherLineWidth, axisLineWidth);
 	iSetScatterSizes(Fig, scatterSize);
 end
 iSetAxisLineWidths(Fig, axisLineWidth);
 iSetConstantLineWidths(Fig, axisLineWidth);
-iSetPValueLineWidths(Fig, axisLineWidth);
-iSetBarBaseLineWidths(Fig, axisLineWidth);
+iHideBarBaseLines(Fig);
 end
 
 function iSetAllFontSizes(Fig, fontSize)
@@ -65,24 +64,40 @@ for iL = 1:numel(legends)
 end
 end
 
-function iSetAllLineWidths(Fig, lineWidth)
+function iSetAllLineWidths(Fig, lineWidth, axisAlignedLineWidth)
 handles = findall(Fig, '-property', 'LineWidth');
 for iH = 1:numel(handles)
-	if iIsBidirectionalErrorBar(handles(iH))
+	if iShouldPreserveLineWidth(handles(iH)) || iIsBidirectionalErrorBar(handles(iH))
+		continue;
+	end
+	if iIsTwoPointAxisAlignedLine(handles(iH))
+		handles(iH).LineWidth = axisAlignedLineWidth;
 		continue;
 	end
 	handles(iH).LineWidth = lineWidth;
 end
 end
 
-function iSetAllNonScatterLineWidths(Fig, lineWidth)
+function iSetAllNonScatterLineWidths(Fig, lineWidth, axisAlignedLineWidth)
 handles = findall(Fig, '-property', 'LineWidth');
 for iH = 1:numel(handles)
-	if isa(handles(iH), 'matlab.graphics.chart.primitive.Scatter') || iIsBidirectionalErrorBar(handles(iH))
+	if iShouldPreserveLineWidth(handles(iH)) || isa(handles(iH), 'matlab.graphics.chart.primitive.Scatter') || iIsBidirectionalErrorBar(handles(iH))
+		continue;
+	end
+	if iIsTwoPointAxisAlignedLine(handles(iH))
+		handles(iH).LineWidth = axisAlignedLineWidth;
 		continue;
 	end
 	handles(iH).LineWidth = lineWidth;
 end
+end
+
+function tf = iShouldPreserveLineWidth(handleObj)
+if ~isgraphics(handleObj)
+	tf = false;
+	return;
+end
+tf = isappdata(handleObj, 'TransferLearningPreserveLineWidth') && isequal(getappdata(handleObj, 'TransferLearningPreserveLineWidth'), true);
 end
 
 function tf = iIsBidirectionalErrorBar(handleObj)
@@ -102,6 +117,36 @@ positiveDelta = double(handleObj.(positiveProp));
 hasNegativeDelta = any(isfinite(negativeDelta(:)) & abs(negativeDelta(:)) > 0);
 hasPositiveDelta = any(isfinite(positiveDelta(:)) & abs(positiveDelta(:)) > 0);
 tf = hasNegativeDelta && hasPositiveDelta;
+end
+
+function tf = iIsTwoPointAxisAlignedLine(handleObj)
+if ~isa(handleObj, 'matlab.graphics.chart.primitive.Line')
+	tf = false;
+	return;
+end
+xData = handleObj.XData;
+yData = handleObj.YData;
+tf = iIsFinitePair(xData) && iIsFinitePair(yData) && (iIsEqualPair(xData) || iIsEqualPair(yData));
+end
+
+function tf = iIsFinitePair(data)
+if numel(data) ~= 2
+	tf = false;
+	return;
+end
+if isdatetime(data)
+	tf = ~any(isnat(data(:)));
+elseif isduration(data)
+	tf = all(isfinite(seconds(data(:))));
+elseif isnumeric(data) || islogical(data)
+	tf = all(isfinite(double(data(:))));
+else
+	tf = false;
+end
+end
+
+function tf = iIsEqualPair(data)
+tf = data(1) == data(2);
 end
 
 function iSetAxisLineWidths(Fig, lineWidth)
@@ -133,23 +178,6 @@ for iH = 1:numel(handles)
 end
 end
 
-function iSetPValueLineWidths(Fig, lineWidth)
-handles = findall(Fig, 'Type', 'line');
-for iH = 1:numel(handles)
-	h = handles(iH);
-	if numel(h.XData) ~= 2 || numel(h.YData) ~= 2
-		continue;
-	end
-	if ~all(isfinite(h.YData)) || h.YData(1) ~= h.YData(2)
-		continue;
-	end
-	if string(h.Marker) ~= "none"
-		continue;
-	end
-	h.LineWidth = lineWidth;
-end
-end
-
 function iSetScatterSizes(Fig, scatterSize)
 handles = findall(Fig, '-isa', 'matlab.graphics.chart.primitive.Scatter');
 for iH = 1:numel(handles)
@@ -157,9 +185,12 @@ for iH = 1:numel(handles)
 end
 end
 
-function iSetBarBaseLineWidths(Fig, lineWidth)
-handles = findall(Fig, '-property', 'BaseLine');
-for iH = 1:numel(handles)
-	handles(iH).BaseLine.LineWidth = lineWidth;
+function iHideBarBaseLines(Fig)
+barHandles = findall(Fig, 'Type', 'Bar');
+for barIndex = 1:numel(barHandles)
+	barHandle = barHandles(barIndex);
+	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
+		barHandle.BaseLine.Visible = 'off';
+	end
 end
 end

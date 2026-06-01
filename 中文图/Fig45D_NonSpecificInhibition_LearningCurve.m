@@ -1,9 +1,8 @@
-﻿% 中文图334D：Non-specific inhibition 学习曲线
+% 中文图334D：Non-specific inhibition 学习曲线
 % 数据源与算法：hM4D(Gi) vs mCherry 的 LightWater learning curve
 % 样式：模仿英文图2K（颜色、线宽、ylabel、整体布局）
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgName = "中文图Fig45D_NonSpecificInhibition_LearningCurve.svg";
+
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -62,6 +61,7 @@ pCurve = NaN;
 if ~isempty(rowGrp)
 	pCurve = lmeAnova.pValue(rowGrp);
 end
+%% 
 
 f = figure('Color','w', 'Name', '中文图334D Non-specific inhibition learning curve');
 f.Units = 'centimeters';
@@ -92,7 +92,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.XAxis.LineWidth = 2;
 	ax.YAxis.LineWidth = 2;
 end
-xlabel(ax, 'Session', 'FontSize', 12);
+xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 ylim(ax, [0 1]);
 box(ax, 'off');
@@ -104,6 +104,7 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
+svgName = "中文图Fig45D_NonSpecificInhibition_LearningCurve.svg";
 svgPath = svgName;
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);

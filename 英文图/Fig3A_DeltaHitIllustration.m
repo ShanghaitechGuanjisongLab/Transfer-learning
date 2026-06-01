@@ -71,7 +71,7 @@ end
 %% 
 % --- 4) Plot
 svgName = "English_Fig3A_DeltaHitIllustration.svg";
-f = figure('Color', 'w', 'Name', 'English Fig3B ΔHit illustration');
+f = figure('Color', 'w', 'Name', 'English Fig3A ΔHit illustration');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4]; % 45mm x 35mm
 f.PaperUnits = 'centimeters';
@@ -86,14 +86,14 @@ grid(ax, 'off');
 ax.FontSize = 6;
 
 % Learning curve (no markers on line — annotation scatter provides them)
-palette3 = TransferLearning.FigurePalette(3);
+standardColors = TransferLearning.GroupColors(["Naive", "Continual", "Learned"]);
 plot(ax, xSess, yPerf, '-', ...
-	'Color', palette3(2,:), ...
+	'Color', standardColors(2,:), ...
 	'LineWidth', 1);
 
-colorPairA = palette3(1,:);
-colorPairB = palette3(2,:);
-colorGuide = palette3(3,:);
+colorPairA = standardColors(2,:);
+colorPairB = standardColors(1,:);
+colorGuide = standardColors(3,:);
 
 % Session-position markers: Previous block = square ('s' ■), Latter block = triangle ('^' ▲)
 % Both pairs share the same shapes; pair identity is indicated by color only.

@@ -1,4 +1,4 @@
-﻿% 中文图44D：模仿英文图2A，只画2个代表性细胞
+% 中文图44D：模仿英文图2A，只画2个代表性细胞
 % - 一个取自声光迁移组：Learned AudioWater + Transfer LightWater，各3个活跃回合
 % - 一个取自Naive LightWater：同一会话3个回合，至少1个活跃且至少1个1s z-score为负
 

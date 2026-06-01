@@ -233,7 +233,8 @@ end
 %% ===== 6) Export 2 histogram SVGs (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-pairColors = {[0 0.4470 0.7410]; [0.8500 0.3250 0.0980]};  % Transfer=blue, Naive=orange
+histColorArray = TransferLearning.GroupColors(["Continual", "Naive"]);
+pairColors = {histColorArray(1, :); histColorArray(2, :)};
 histTitles = ["Continual", "Naive"];
 
 histFigs = gobjects(1, 2);
@@ -265,7 +266,7 @@ for iS = 1:2
 	box(ax, 'off');
 	grid(ax, 'off');
 
-	text(ax, 0.97, 0.95, sprintf('Resp. heterogeneity\n=%.2f', sdVals(iS)), ...
+	text(ax, 0.97, 0.95, sprintf('RH=%.2f', sdVals(iS)), ...
 		'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 		'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
 	title(ax, histTitles(iS), 'FontSize', 6, 'FontWeight', 'normal');

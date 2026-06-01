@@ -1,7 +1,6 @@
-function [fig, SummaryTable] = PlotPreFormalConnectionWeightStdBars(WeightValues, Cond)
+function [fig, SummaryTable] = PlotPreFormalConnectionWeightStdBars(WeightValues)
 arguments
 	WeightValues (1, 1) struct
-	Cond table
 end
 
 classNames = ["EE", "EI", "IE", "II"];
@@ -9,14 +8,15 @@ classLabels = ["E→E", "E→I", "I→E", "I→I"];
 heterogeneityNames = ["L23E", "L23I", "L5E", "L5I"];
 heterogeneityLabels = ["L2/3 E", "L2/3 I", "L5 E", "L5 I"];
 groupFields = ["Naive", "AfterPretrain"];
-groupConditionNames = ["Naive", "Transfer"];
 topGroupLabels = ["Naive", "After pretrain"];
 bottomGroupLabels = ["Naive", "Continual"];
+topGroupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
+bottomGroupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 
-[weightMeanMat, weightSemMat, weightNMat, weightPValues] = iBuildMetricMatrices(WeightValues.MouseStd, classNames, groupFields);
-[heterogeneityMeanMat, heterogeneitySemMat, heterogeneityNMat, heterogeneityPValues] = iBuildMetricMatrices(WeightValues.Heterogeneity, heterogeneityNames, groupFields);
+[weightData, weightMeanMat, weightSemMat, weightNMat] = iBuildMetricDataTable(WeightValues.MouseStd, classNames, classLabels, groupFields, topGroupLabels, ["ConnectionType", "Group"]);
+[heterogeneityData, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityNMat] = iBuildMetricDataTable(WeightValues.Heterogeneity, heterogeneityNames, heterogeneityLabels, groupFields, bottomGroupLabels, ["CellType", "Group"]);
 
-fig = figure('Color', 'w', 'Name', 'Fig382B pre-formal connection weight SD and learning-process heterogeneity bars');
+fig = figure('Color', 'w', 'Name', 'Fig55B pre-formal connection weight SD and learning-process heterogeneity bars');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [12, 8];
 fig.PaperUnits = 'centimeters';
@@ -24,102 +24,120 @@ fig.PaperPositionMode = 'manual';
 fig.PaperPosition = [0, 0, 12, 8];
 fig.PaperSize = [12, 8];
 
-tileLayout = tiledlayout(fig, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+tileLayout = tiledlayout(fig, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 topAx = nexttile(tileLayout, 1);
-[topBars, topPLines, topPTexts] = iPlotGroupedBars(topAx, weightMeanMat, weightSemMat, weightPValues, classLabels, groupFields, topGroupLabels, groupConditionNames, Cond, 'Connection type', 'Weight SD');
-legend(topAx, topBars, cellstr(topGroupLabels), 'Location', 'eastoutside', 'Orientation', 'vertical', 'Box', 'off', 'FontSize', 12);
+[~, topOptional] = iPlotGroupedBars(topAx, weightData, iWithinItemCompareGroup(classLabels, topGroupLabels, weightData.Properties.DimensionNames), topGroupLabels, topGroupColors, 'Connection type', 'Weight SD');
 
 bottomAx = nexttile(tileLayout, 2);
-[bottomBars, bottomPLines, bottomPTexts] = iPlotGroupedBars(bottomAx, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityPValues, heterogeneityLabels, groupFields, bottomGroupLabels, groupConditionNames, Cond, 'Layer and cell type', 'Heterogeneity');
-legend(bottomAx, bottomBars, cellstr(bottomGroupLabels), 'Location', 'eastoutside', 'Orientation', 'vertical', 'Box', 'off', 'FontSize', 12);
+[~, bottomOptional] = iPlotGroupedBars(bottomAx, heterogeneityData, iWithinItemCompareGroup(heterogeneityLabels, bottomGroupLabels, heterogeneityData.Properties.DimensionNames), bottomGroupLabels, bottomGroupColors, 'Layer and cell type', 'Heterogeneity');
 iSetFigureTextFontSize(fig, 12);
-iRetunePValueLines(topPLines, topPTexts);
-iRetunePValueLines(bottomPLines, bottomPTexts);
+iRetunePValueLines(topOptional);
+iRetunePValueLines(bottomOptional);
 
 weightSummary = iSummaryTable("ConnectionWeightSD", classNames, topGroupLabels, weightMeanMat, weightSemMat, weightNMat);
 heterogeneitySummary = iSummaryTable("ProcessHeterogeneity", heterogeneityNames, bottomGroupLabels, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityNMat);
 SummaryTable = [weightSummary; heterogeneitySummary];
 end
 
-function [meanMat, semMat, nMat, pValues] = iBuildMetricMatrices(MetricValues, itemNames, groupFields)
+function [dataTable, meanMat, semMat, nMat] = iBuildMetricDataTable(MetricValues, itemNames, itemLabels, groupFields, groupLabels, dimensionNames)
 meanMat = nan(numel(itemNames), numel(groupFields));
 semMat = nan(numel(itemNames), numel(groupFields));
 nMat = nan(numel(itemNames), numel(groupFields));
-pValues = nan(numel(itemNames), 1);
+dataCell = cell(numel(itemNames), numel(groupFields));
 for itemIndex = 1:numel(itemNames)
 	itemName = itemNames(itemIndex);
 	for groupIndex = 1:numel(groupFields)
 		values = MetricValues.(groupFields(groupIndex)).(itemName);
+		values = values(:);
+		values = values(isfinite(values));
+		dataCell{itemIndex, groupIndex} = values;
 		[meanMat(itemIndex, groupIndex), semMat(itemIndex, groupIndex), nMat(itemIndex, groupIndex)] = iMeanSemFinite(values);
 	end
-	pValues(itemIndex) = iRanksumFinite(MetricValues.(groupFields(1)).(itemName), MetricValues.(groupFields(2)).(itemName));
 end
-end
-
-function [barHandles, pLines, pTexts] = iPlotGroupedBars(ax, meanMat, semMat, pValues, itemLabels, groupFields, groupLabels, groupConditionNames, Cond, xLabelText, yLabelText)
-hold(ax, 'on');
-barHandles = bar(ax, meanMat, 'grouped', 'LineStyle', 'none');
-errorbarHandles = gobjects(numel(groupFields), 1);
-for groupIndex = 1:numel(groupFields)
-	color = iConditionColor(Cond, groupConditionNames(groupIndex));
-	barHandles(groupIndex).FaceColor = color;
-	barHandles(groupIndex).EdgeColor = 'none';
-	barHandles(groupIndex).LineStyle = 'none';
-	barHandles(groupIndex).DisplayName = groupLabels(groupIndex);
-	xBar = barHandles(groupIndex).XEndPoints;
-	yBar = barHandles(groupIndex).YEndPoints;
-	upperError = semMat(:, groupIndex)';
-	upperError(~isfinite(upperError)) = 0;
-	errorbarHandles(groupIndex) = errorbar(ax, xBar, yBar, [], upperError, ...
-		'LineStyle', 'none', ...
-		'Color', color, ...
-		'LineWidth', 1, ...
-		'CapSize', 6);
+dataTable = cell2table(dataCell, 'VariableNames', cellstr(groupLabels), 'RowNames', cellstr(itemLabels));
+dataTable.Properties.DimensionNames = cellstr(dimensionNames);
 end
 
-ax.XLim = [0.5, numel(itemLabels) + 0.5];
-ax.XTick = 1:numel(itemLabels);
-ax.XTickLabel = cellstr(itemLabels);
+function [barHandles, optional] = iPlotGroupedBars(ax, dataTable, compareGroup, groupLabels, groupColors, xLabelText, yLabelText)
+[~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(dataTable, UniExp.Flags.empty, compareGroup, iColorTable(groupLabels, groupColors), ax, 'AsteriskThreshold', 0.05);
+for barHandle = barHandles(:)'
+	barHandle.BarWidth = 0.5;
+	barHandle.LineWidth = 1;
+	barHandle.EdgeColor = 'none';
+	barHandle.LineStyle = 'none';
+	barHandle.DisplayName = groupLabels(find(barHandles == barHandle, 1, 'first'));
+	if isprop(barHandle, 'FaceAlpha')
+		barHandle.FaceAlpha = 1;
+	end
+	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
+		barHandle.BaseLine.Visible = 'off';
+	end
+end
+for errorBar = findobj(ax, 'Type', 'ErrorBar')'
+	errorBar.LineWidth = 1;
+	errorBar.Color = [0, 0, 0];
+	errorBar.HandleVisibility = 'off';
+	setappdata(errorBar, 'TransferLearningPreserveLineWidth', true);
+end
+
+ax.XLim = [0.5, height(dataTable) + 0.5];
 ax.XTickLabelRotation = 0;
-yTop = max(meanMat + semMat, [], 'all', 'omitnan');
-if ~(isfinite(yTop) && yTop > 0)
-	yTop = 1;
-end
-ylim(ax, [0, yTop * 1.45]);
 xlabel(ax, xLabelText);
 ylabel(ax, yLabelText);
 box(ax, 'off');
 grid(ax, 'off');
-[pLines, pTexts] = iDrawPValueLines(errorbarHandles, pValues);
+legendHandle = optional.Legend;
+legendHandle.String = cellstr(groupLabels);
+legendHandle.Location = 'eastoutside';
+legendHandle.Orientation = 'vertical';
+legendHandle.Box = 'off';
+legendHandle.FontSize = 12;
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
+end
+if ~isempty(errorBars)
+	for rowIndex = 1:height(errorBars)
+		if isgraphics(errorBars.Object(rowIndex))
+			errorBars.Object(rowIndex).LineWidth = 1;
+			setappdata(errorBars.Object(rowIndex), 'TransferLearningPreserveLineWidth', true);
+		end
+	end
+end
 end
 
-function [pLines, pTexts] = iDrawPValueLines(errorbarHandles, pValues)
-pLines = gobjects(0, 1);
-pTexts = gobjects(0, 1);
-comparisonIndexValues = find(isfinite(pValues));
-comparisonCount = numel(comparisonIndexValues);
-if comparisonCount == 0
-	return;
-end
-objectA = repmat(errorbarHandles(1), comparisonCount, 1);
-objectB = repmat(errorbarHandles(2), comparisonCount, 1);
-indexA = comparisonIndexValues(:);
-indexB = indexA;
-pText = strings(comparisonCount, 1);
-for rowIndex = 1:comparisonCount
-	pText(rowIndex) = iFormatPValue(pValues(comparisonIndexValues(rowIndex)));
-end
-extraOffset = zeros(comparisonCount, 1);
-descriptors = table(objectA, objectB, indexA, indexB, pText, extraOffset, ...
-	'VariableNames', {'ObjectA','ObjectB','IndexA','IndexB','Text','ExtraOffset'});
-[pLines, pTexts] = MATLAB.Graphics.PLine(descriptors);
+function compareGroup = iWithinItemCompareGroup(itemLabels, groupLabels, dimensionNames)
+itemLabels = string(itemLabels(:));
+groupLabels = string(groupLabels(:)).';
+itemPair = [itemLabels, itemLabels];
+groupPair = repmat(groupLabels(1:2), numel(itemLabels), 1);
+GroupPair = table(itemPair, groupPair, 'VariableNames', cellstr(dimensionNames));
+compareGroup = table(GroupPair);
 end
 
-function iRetunePValueLines(pLines, pTexts)
-if isempty(pLines)
+function colors = iColorTable(groupLabels, groupColors)
+colors = array2table(groupColors, 'VariableNames', {'R','G','B'}, 'RowNames', cellstr(groupLabels));
+colors{'ErrorBar', {'R','G','B'}} = [0, 0, 0];
+end
+
+function iRetunePValueLines(optional)
+if ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
 	return;
 end
-MATLAB.Graphics.PLineRetune(pLines, pTexts);
+if ~all(ismember({'PLine','PText'}, optional.MultiCompare.Properties.VariableNames))
+	return;
+end
+MATLAB.Graphics.PLineRetune(optional.MultiCompare.PLine, optional.MultiCompare.PText);
+for pLine = optional.MultiCompare.PLine(:)'
+	if isgraphics(pLine)
+		pLine.LineWidth = 1;
+		pLine.Tag = 'PLine';
+	end
+end
+for pText = optional.MultiCompare.PText(:)'
+	if isgraphics(pText)
+		pText.Tag = 'PText';
+	end
+end
 end
 
 function iSetFigureTextFontSize(anchorObject, fontSize)
@@ -127,11 +145,6 @@ function iSetFigureTextFontSize(anchorObject, fontSize)
 	set(findall(fig, 'Type', 'axes'), 'FontSize', fontSize);
 	set(findall(fig, 'Type', 'legend'), 'FontSize', fontSize);
 	set(findall(fig, 'Type', 'text'), 'FontSize', fontSize);
-end
-
-function color = iConditionColor(Cond, conditionName)
-conditionIndex = find(Cond.Name == conditionName, 1, 'first');
-color = Cond.Color(conditionIndex, :);
 end
 
 function [meanValue, semValue, nValues] = iMeanSemFinite(values)
@@ -148,30 +161,6 @@ if nValues < 2
 	semValue = NaN;
 else
 	semValue = std(values, 0, 'omitnan') / sqrt(nValues);
-end
-end
-
-function pValue = iRanksumFinite(valuesA, valuesB)
-valuesA = valuesA(:);
-valuesB = valuesB(:);
-valuesA = valuesA(isfinite(valuesA));
-valuesB = valuesB(isfinite(valuesB));
-if numel(valuesA) < 2 || numel(valuesB) < 2
-	pValue = NaN;
-	return;
-end
-pValue = ranksum(valuesA, valuesB);
-end
-
-function textValue = iFormatPValue(pValue)
-if ~isfinite(pValue)
-	textValue = "p=NaN";
-	return;
-end
-if pValue < 0.05
-	textValue = "*";
-else
-	textValue = "p=" + MATLAB.SignificantFixedpoint(pValue, 2);
 end
 end
 

@@ -46,15 +46,22 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-palette2 = [1, 0, 0; 0, 0, 1];
+palette2 = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 colorA = palette2(1,:);
 colorB = palette2(2,:);
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 nexttile(Layout, 1);
-[~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({dhC, dhT}, CompareGroup, 'AsteriskThreshold', 0.05);
-for eb = EB1.Object(:)', eb.LineWidth = 1; end
+[~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({dhC, dhT}, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 ax1 = gca;
+delete(findobj(ax1, 'Type', 'Scatter'));
+for iE = 1:height(EB1)
+	eb = EB1.Object(iE);
+	eb.LineWidth = 1;
+	xData = double(eb.XData(:));
+	[~, colorIndex] = min(abs((1:size(palette2, 1)).' - xData(1)));
+	eb.Color = palette2(colorIndex, :);
+end
 ax1.FontSize = 6;
 ax1.LineWidth = 1;
 if isprop(ax1.XAxis, 'LineWidth')
@@ -75,19 +82,35 @@ if isscalar(Bars1)
 	Bars1.LineWidth = 1;
 	Bars1.BaseLine.LineWidth = 1;
 	Bars1.EdgeColor = 'none';
-	Bars1.FaceAlpha = 1/3;
+	Bars1.FaceAlpha = 1;
 end
 if isfield(Opt1, 'MultiCompare') && ismember('PText', Opt1.MultiCompare.Properties.VariableNames)
-	for pt = Opt1.MultiCompare.PText(:)', pt.FontSize = 6; end
+	for pt = Opt1.MultiCompare.PText(:)'
+		pt.FontSize = 6;
+		pt.Tag = 'PText';
+	end
+end
+if isfield(Opt1, 'MultiCompare') && ismember('PLine', Opt1.MultiCompare.Properties.VariableNames)
+	for pl = Opt1.MultiCompare.PLine(:)'
+		pl.LineWidth = 1;
+		pl.Tag = 'PLine';
+	end
 end
 for ln = findobj(ax1, 'Type', 'Line')'
 	ln.LineWidth = 1;
 end
 
 nexttile(Layout, 2);
-[~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdC, sdT}, CompareGroup, 'AsteriskThreshold', 0.05);
-for eb = EB2.Object(:)', eb.LineWidth = 1; end
+[~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdC, sdT}, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 ax2 = gca;
+delete(findobj(ax2, 'Type', 'Scatter'));
+for iE = 1:height(EB2)
+	eb = EB2.Object(iE);
+	eb.LineWidth = 1;
+	xData = double(eb.XData(:));
+	[~, colorIndex] = min(abs((1:size(palette2, 1)).' - xData(1)));
+	eb.Color = palette2(colorIndex, :);
+end
 ax2.FontSize = 6;
 ax2.LineWidth = 1;
 if isprop(ax2.XAxis, 'LineWidth')
@@ -95,7 +118,7 @@ if isprop(ax2.XAxis, 'LineWidth')
 	ax2.YAxis.LineWidth = 1;
 end
 ax2.XTick = [1 2];
-ax2.XTickLabel = {'Ctrl', 'TH'};
+ax2.XTickLabel = {'Control', 'TH'};
  ylabel(ax2, 'Respo. heter. L5', 'FontSize', 6);
 legend(ax2, 'off');
 box(ax2, 'off');
@@ -108,10 +131,19 @@ if isscalar(Bars2)
 	Bars2.LineWidth = 1;
 	Bars2.BaseLine.LineWidth = 1;
 	Bars2.EdgeColor = 'none';
-	Bars2.FaceAlpha = 1/3;
+	Bars2.FaceAlpha = 1;
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
-	for pt = Opt2.MultiCompare.PText(:)', pt.FontSize = 6; end
+	for pt = Opt2.MultiCompare.PText(:)'
+		pt.FontSize = 6;
+		pt.Tag = 'PText';
+	end
+end
+if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
+	for pl = Opt2.MultiCompare.PLine(:)'
+		pl.LineWidth = 1;
+		pl.Tag = 'PLine';
+	end
 end
 for ln = findobj(ax2, 'Type', 'Line')'
 	ln.LineWidth = 1;

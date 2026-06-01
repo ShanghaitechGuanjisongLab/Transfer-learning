@@ -42,8 +42,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 2;
 end
 
-cols = [230/255, 0,       18/255; ...
-	0,       112/255, 192/255];
+cols = TransferLearning.GroupColors(["RSPd", "MOp"]);
 meanCells = {meanRSP(:), meanMOp(:)};
 semCells  = {semRSP(:),  semMOp(:)};
 
@@ -57,8 +56,8 @@ for iPatch = 1:numel(Patches)
 	end
 end
 
-xline(ax, 0, ':k', 'LineWidth', 2);
-xline(ax, 1, '-k', 'LineWidth', 2);
+xline(ax, 0, '--k', 'LineWidth', 2);
+xline(ax, 1, '--k', 'LineWidth', 2);
 
 box(ax,'off');
 grid(ax,'off');

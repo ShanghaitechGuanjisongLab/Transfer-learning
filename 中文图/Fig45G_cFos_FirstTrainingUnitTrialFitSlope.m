@@ -79,7 +79,7 @@ axisHandle.Color = 'none';
 axisHandle.YTick = 0:0.5:1;
 axisHandle.XTick = unique([1, 5:5:ceil(xMax)]);
 legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
-	{'Control Mean ± SEM', 'Control Sigmoid', 'cFos inhibited Mean ± SEM', 'cFos inhibited Sigmoid'}, ...
+	{'Control Mean ± SEM', 'Control Sigmoid', 'cFos Mean ± SEM', 'cFos Sigmoid'}, ...
 	'FontSize', 10, 'Location', 'southoutside', 'NumColumns', 2, 'Box', 'off');
 title(axisHandle, '');
 box(axisHandle, 'off');
@@ -279,7 +279,7 @@ xObserved = find(isfinite(meanCurve));
 meanObserved = meanCurve(xObserved);
 semObserved = semCurve(xObserved);
 semObserved(~isfinite(semObserved)) = 0;
-hError = errorbar(axisHandle, xObserved, meanObserved, semObserved, 'o-', 'Color', lineColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', lineColor, 'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4);
+hError = errorbar(axisHandle, xObserved, meanObserved, semObserved, 'o', 'Color', lineColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', lineColor, 'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
 hFit = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.2);
 hOut = [hError, hFit];
 end

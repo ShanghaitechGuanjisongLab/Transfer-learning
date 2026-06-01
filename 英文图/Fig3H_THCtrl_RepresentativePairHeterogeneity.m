@@ -136,8 +136,8 @@ wZ = nTrials * sZ;
 end
 
 binEdges = linspace(-1, 1, 41);
-palette2 = TransferLearning.FigurePalette(2);
-histColors = {palette2(1,:), palette2(2,:)};
+histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+histColors = {histColorArray(1,:), histColorArray(2,:)};
 histTitles = ["Control", "TH inhibited"];
 histFigs = gobjects(1, 2);
 histAxes = gobjects(1, 2);
@@ -169,7 +169,7 @@ for iS = 1:2
         yMax = 0.1;
     end
     ylim(ax, [0, yMax * 1.55]);
-    text(ax, 0.97, 0.88, sprintf('Resp. heterogeneity\n=%.2f', sdVals(iS)), 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
+    text(ax, 0.97, 0.88, sprintf('RH=%.2f', sdVals(iS)), 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
     title(ax, histTitles(iS), 'FontSize', 6, 'FontWeight', 'normal');
     xlabel(ax, 'z-score', 'FontSize', 6);
     ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);

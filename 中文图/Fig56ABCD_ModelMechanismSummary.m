@@ -1,21 +1,21 @@
-% Fig382E model mechanism summary for Naive vs Continual CueB training.
+% Fig56ABCD model mechanism summary for Naive vs Continual CueB training.
 
 svgName = '中文图Fig56ABCD_ModelMechanismSummary.svg';
 iEnsureTransferLearningProject();
 
-run(fullfile(fileparts(mfilename('fullpath')), 'Fig382383_LoadSharedModelData.m'));
-Params = Fig382383Data.Params;
-Cond = Fig382383Data.Cond;
+run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'));
+Params = Fig5556Data.Params;
+Cond = Fig5556Data.Cond;
 
-MechanismData = iBuildMechanismData(Params, Cond, Fig382383Data.ConditionNames, Fig382383Data.ConditionSeedValues);
-[fig, Stats] = iPlotFig382E(MechanismData);
+MechanismData = iBuildMechanismData(Params, Cond, Fig5556Data.ConditionNames, Fig5556Data.ConditionSeedValues);
+[fig, Stats] = iPlotFig56ABCD(MechanismData);
 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig382E_ModelMechanismData', MechanismData);
-assignin('base', 'Fig382E_ModelMechanismStats', Stats);
-assignin('base', 'Fig382E_ModelMechanismSvgPath', svgPath);
+assignin('base', 'Fig56ABCD_ModelMechanismData', MechanismData);
+assignin('base', 'Fig56ABCD_ModelMechanismStats', Stats);
+assignin('base', 'Fig56ABCD_ModelMechanismSvgPath', svgPath);
 
 function Data = iBuildMechanismData(Params, Cond, conditionNames, conditionSeedValues)
 conditionNames = string(conditionNames);
@@ -24,7 +24,7 @@ continualSeedValues = conditionSeedValues(:, conditionNames == "Transfer");
 naiveCond = Cond(Cond.Name == "Naive", :);
 continualCond = Cond(Cond.Name == "Transfer", :);
 if height(naiveCond) ~= 1 || height(continualCond) ~= 1
-	error('Fig382E:MissingCondition', 'Expected one Naive and one Transfer condition row.');
+	error('Fig56ABCD:MissingCondition', 'Expected one Naive and one Transfer condition row.');
 end
 
 iPrepareParallelWorkers();
@@ -50,7 +50,7 @@ Mouse = TransferLearning.THModel.DrawMouse(Params);
 if doPretrain
 	[Mouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(Mouse, Params, condRow);
 	if ~pretrainResult.Reached
-		error('Fig382E:PretrainDidNotReach', 'Mouse %d did not reach pretraining ceiling.', mouseIndex);
+		error('Fig56ABCD:PretrainDidNotReach', 'Mouse %d did not reach pretraining ceiling.', mouseIndex);
 	end
 end
 
@@ -157,13 +157,13 @@ row.PositiveProjectionDeltaE = NaN;
 row.PositiveProjectionDeltaI = NaN;
 end
 
-function [fig, Stats] = iPlotFig382E(Data)
-palette = TransferLearning.FigurePalette(2);
+function [fig, Stats] = iPlotFig56ABCD(Data)
+palette = TransferLearning.GroupColors(["Naive", "Continual"]);
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 preFormalTable = Data.PreFormalTable;
 unitTable = Data.UnitTable;
 
-fig = figure('Color', 'w', 'Name', 'Fig382E model mechanism summary');
+fig = figure('Color', 'w', 'Name', 'Fig56ABCD model mechanism summary');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [5, 22.2];
 fig.PaperUnits = 'centimeters';
@@ -176,13 +176,13 @@ layout = tiledlayout(fig, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 axConnection = nexttile(layout, 1);
 connectionNaive = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Naive"));
 connectionContinual = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Continual"));
-[connectionPValue, connectionStats, connectionOptional] = iPlotBarComparison(axConnection, {connectionNaive, connectionContinual}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-RO"]);
+[connectionPValue, connectionStats, ~] = iPlotBarComparison(axConnection, {connectionNaive, connectionContinual}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-RO"]);
 
 axActivity = nexttile(layout, 2);
 firstUnitTable = unitTable(unitTable.Unit == 1 & unitTable.DidSimulate, :);
 activityNaive = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Naive"));
 activityContinual = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Continual"));
-[activityPValue, activityStats, activityOptional] = iPlotBarComparison(axActivity, {activityNaive, activityContinual}, compareGroup, palette, "Activity", ["L5E", "non-readout"]);
+[activityPValue, activityStats, ~] = iPlotBarComparison(axActivity, {activityNaive, activityContinual}, compareGroup, palette, "Activity", ["L5E", "non-readout"]);
 
 axNoise = nexttile(layout, 3);
 noiseLabelPosition = [0.96, 0.91; 0.96, 0.74];
@@ -205,8 +205,6 @@ iPrintBarStats('L5 excitatory non-readout activity', activityStats, activityPVal
 iPrintLineStats('Noise anti-Hebb frequency', noiseStats);
 iPrintLineStats('Excitatory cue neurons → L5 readout Δweight', projectionStats);
 iSetAllTextTo12Pt(fig);
-iRetunePLine(connectionOptional);
-iRetunePLine(activityOptional);
 end
 
 function [pValue, stats, optional] = iPlotBarComparison(ax, dataCell, compareGroup, palette, yLabelText, titleText)
@@ -282,7 +280,7 @@ grid(ax, 'off');
 legend(ax, 'off');
 iHideToolbar(ax);
 iStyleBars(bars, palette);
-iStyleErrorBars(errorBars);
+iStyleErrorBars(errorBars, palette);
 iStyleScatter(ax);
 iApplyPText(optional, pValue);
 end
@@ -340,13 +338,13 @@ if isscalar(bars)
 	bars.BarWidth = 0.5;
 	bars.LineWidth = 1;
 	bars.EdgeColor = 'none';
-	bars.FaceAlpha = 1/3;
+	bars.FaceAlpha = 1;
 else
 	for barIndex = 1:min(numel(bars), size(palette, 1))
 		bars(barIndex).FaceColor = palette(barIndex, :);
 		bars(barIndex).LineWidth = 1;
 		bars(barIndex).EdgeColor = 'none';
-		bars(barIndex).FaceAlpha = 1/3;
+		bars(barIndex).FaceAlpha = 1;
 	end
 end
 end
@@ -355,11 +353,15 @@ function iSetTitle(ax, titleText)
 title(ax, cellstr(titleText), 'FontWeight', 'normal', 'FontSize', 12);
 end
 
-function iStyleErrorBars(errorBars)
-if ~isstruct(errorBars) || ~isfield(errorBars, 'Object')
+function iStyleErrorBars(errorBars, palette)
+if istable(errorBars) && ismember('Object', errorBars.Properties.VariableNames)
+	errorBarObjects = errorBars.Object(:);
+elseif isstruct(errorBars) && isfield(errorBars, 'Object')
+	errorBarObjects = errorBars.Object(:);
+else
 	return;
 end
-for errorBarObject = errorBars.Object(:)'
+for errorBarObject = errorBarObjects'
 	if ~isgraphics(errorBarObject)
 		continue;
 	end
@@ -369,7 +371,9 @@ for errorBarObject = errorBars.Object(:)'
 	errorBarObject.LineWidth = 1;
 	errorBarObject.LineStyle = 'none';
 	errorBarObject.HandleVisibility = 'off';
-	errorBarObject.Color = [0, 0, 0];
+	xData = double(errorBarObject.XData(:));
+	[~, colorIndex] = min(abs((1:size(palette, 1)).' - xData(1)));
+	errorBarObject.Color = palette(colorIndex, :);
 end
 end
 
@@ -395,6 +399,7 @@ if ismember('PText', optional.MultiCompare.Properties.VariableNames)
 		if isgraphics(textObject)
 			textObject.FontSize = 12;
 			textObject.String = iFormatPValue(pValue);
+			textObject.Tag = 'PText';
 		end
 	end
 end
@@ -402,24 +407,10 @@ if ismember('PLine', optional.MultiCompare.Properties.VariableNames)
 	for lineObject = optional.MultiCompare.PLine(:)'
 		if isgraphics(lineObject)
 			lineObject.LineWidth = 0.5;
+			lineObject.Tag = 'PLine';
 		end
 	end
 end
-end
-
-function iRetunePLine(optional)
-multiCompare = optional.MultiCompare;
-if ~all(ismember(["PLine", "PText"], string(multiCompare.Properties.VariableNames)))
-	return;
-end
-pLines = multiCompare.PLine;
-pTexts = multiCompare.PText;
-pLines = pLines(isgraphics(pLines));
-pTexts = pTexts(isgraphics(pTexts));
-if isempty(pLines) && isempty(pTexts)
-	return;
-end
-MATLAB.Graphics.PLineRetune(pLines, pTexts);
 end
 
 function iSetAllTextTo12Pt(fig)
@@ -452,7 +443,7 @@ end
 end
 
 function iPrintBarStats(labelText, stats, pValue)
-fprintf('\n=== Fig382E %s ===\n', labelText);
+fprintf('\n=== Fig56ABCD %s ===\n', labelText);
 for rowIndex = 1:height(stats)
 	fprintf('%s: %.6g ± %.6g (n=%d)\n', stats.Condition(rowIndex), stats.Mean(rowIndex), stats.Sem(rowIndex), stats.N(rowIndex));
 end
@@ -460,7 +451,7 @@ fprintf('ranksum p = %.6g\n', pValue);
 end
 
 function iPrintLineStats(labelText, stats)
-fprintf('\n=== Fig382E %s ===\n', labelText);
+fprintf('\n=== Fig56ABCD %s ===\n', labelText);
 for rowIndex = 1:height(stats)
 	fprintf('unit %d: Naive %.6g ± %.6g (n=%d), Continual %.6g ± %.6g (n=%d), diff %.6g, p %.6g\n', ...
 		stats.Unit(rowIndex), stats.NaiveMean(rowIndex), stats.NaiveSem(rowIndex), stats.NaiveN(rowIndex), ...

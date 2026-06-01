@@ -45,15 +45,16 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-palette3 = TransferLearning.FigurePalette(3);
-scatter(ax, x(use), y(use), 8, palette3(1,:), 'filled', ...
-	'MarkerEdgeColor', palette3(1,:), 'LineWidth', 0.2);
+scatterColor = TransferLearning.ColorA;
+fitColor = [0, 0, 0];
+scatter(ax, x(use), y(use), 8, scatterColor, 'filled', ...
+	'MarkerEdgeColor', scatterColor, 'LineWidth', 0.2);
 
 if nnz(use) >= 2 && std(x(use), 'omitnan') > 0
 	b = polyfit(x(use), y(use), 1);
 	xFit = [min(x(use)), max(x(use))];
 	yFit = polyval(b, xFit);
-	plot(ax, xFit, yFit, '-', 'Color', palette3(2,:), 'LineWidth', 1, 'HandleVisibility','off');
+	plot(ax, xFit, yFit, '-', 'Color', fitColor, 'LineWidth', 1, 'HandleVisibility','off');
 end
 
 [rho, p] = iSpearman(x(use), y(use));
@@ -63,7 +64,7 @@ if isfinite(p)
 	elseif p < 0.05, sigLabel = '*';
 	else, sigLabel = 'n.s.';
 	end
-	text(ax, 0.95, 0.95, sigLabel, ...
+	iText(ax, 0.95, 0.95, sigLabel, ...
 		'Units','normalized', 'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6);
 end
 
@@ -197,5 +198,9 @@ dt = datetime(dt);
 if isdatetime(dt) && ~isempty(dt.TimeZone)
 	dt.TimeZone = '';
 end
+end
+
+function h = iText(varargin)
+h = text(varargin{:});
 end
 

@@ -129,7 +129,7 @@ ax = axes(f);
 hold(ax, 'on');
 ax.LineWidth = 2;
 
-edgeColors = [1, 0, 0; 0, 0, 1];
+edgeColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -189,12 +189,19 @@ f2.PaperPositionMode = 'auto';
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 4];
 
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 ax2 = gca;
+delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
 	ax2.LineWidth = 2;
+if isprop(ax2.XAxis, 'LineWidth')
+	ax2.XAxis.LineWidth = 2;
+	ax2.YAxis.LineWidth = 2;
+end
 ax2.Color = 'none';
-ax2.XTick = [];
+ax2.XAxis.Visible = 'on';
+ax2.XTick = [1 2];
+ax2.XTickLabel = {'Control', 'TH'};
 legend(ax2, 'off');
 
 % Bar styling (match English Fig2J)
@@ -208,41 +215,46 @@ if isscalar(Bars2)
 	Bars2.CData = Bars2.CData(1:nBars, :);
 	Bars2.BarWidth = 0.5;
 	Bars2.LineWidth = 2;
+	Bars2.BaseLine.Visible = 'off';
 	try, Bars2.EdgeColor = 'none'; catch, end
-	try, Bars2.FaceAlpha = 1/3; catch, end
+	try, Bars2.FaceAlpha = 1; catch, end
 else
 	if numel(Bars2) >= 2
-		Bars2(1).FaceColor = colorA; Bars2(1).LineWidth = 2; try, Bars2(1).EdgeColor = 'none'; catch, end; try, Bars2(1).FaceAlpha = 1/3; catch, end
-		Bars2(2).FaceColor = colorB; Bars2(2).LineWidth = 2; try, Bars2(2).EdgeColor = 'none'; catch, end; try, Bars2(2).FaceAlpha = 1/3; catch, end
+		Bars2(1).FaceColor = colorA; Bars2(1).BarWidth = 0.5; Bars2(1).LineWidth = 2; Bars2(1).BaseLine.Visible = 'off'; try, Bars2(1).EdgeColor = 'none'; catch, end; try, Bars2(1).FaceAlpha = 1; catch, end
+		Bars2(2).FaceColor = colorB; Bars2(2).BarWidth = 0.5; Bars2(2).LineWidth = 2; Bars2(2).BaseLine.Visible = 'off'; try, Bars2(2).EdgeColor = 'none'; catch, end; try, Bars2(2).FaceAlpha = 1; catch, end
 	end
 end
-for eb = ErrorBars2.Object(:)'
+for iE = 1:height(ErrorBars2)
+	eb = ErrorBars2.Object(iE);
 	eb.LineWidth = 2;
+	xData = double(eb.XData(:));
+	[~, colorIndex] = min(abs((1:size(edgeColors, 1)).' - xData(1)));
+	eb.Color = edgeColors(colorIndex, :);
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
 	for pt = Opt2.MultiCompare.PText(:)'
 		pt.FontSize = 12;
+		pt.Tag = 'PText';
 	end
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
 	for pl = Opt2.MultiCompare.PLine(:)'
-		pl.LineWidth = 2;
+		pl.LineWidth = 1;
+		pl.Tag = 'PLine';
 	end
 end
-ax2.XLim = [0.5, 2.5];
+ax2.XLim = [-0.05, 3.05];
 
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
+grid(ax2, 'off');
 
 try
 	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 catch
 end
-if isfield(Opt2, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt2.MultiCompare.Properties.VariableNames))
-	MATLAB.Graphics.PLineRetune(Opt2.MultiCompare.PLine, Opt2.MultiCompare.PText);
-end
-svgPathFS = TransferLearning.ExportStandardFigure(f2, 2, svgNameFS);
+svgPathFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgNameFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgPathFS, pFS);
 
 assignin('base', 'English_Fig3G_Sessions', Sess);

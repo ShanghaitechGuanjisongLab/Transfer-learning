@@ -63,10 +63,11 @@ axPositions = [
 	0.22, 0.185, 0.72, 0.25
 ];
 
-palette3 = [1, 0, 0; 0, 0, 1; 0, 0, 0];
-colorNaive    = palette3(1,:);
-colorTransfer = palette3(2,:);
-colorLearned  = palette3(3,:);
+groupColors = TransferLearning.GroupColors(["Naive", "Continual", "Learned"]);
+colorNaive    = groupColors(1,:);
+colorTransfer = groupColors(2,:);
+colorLearned  = groupColors(3,:);
+barColors = [colorNaive; colorTransfer; colorLearned];
 CompareGroup = table([1 2; 3 2], 'VariableNames', {'GroupPair'});
 
 for iL = 1:numel(layers)
@@ -94,6 +95,9 @@ for iL = 1:numel(layers)
 	delete(findobj(gca, 'Type', 'Scatter'));
 	for eb = EB.Object(:)'
 		eb.LineWidth = 1;
+		x = double(eb.XData(:));
+		[~, colorIndex] = min(abs((1:size(barColors, 1)).' - x(1)));
+		eb.Color = barColors(colorIndex, :);
 	end
 	ax.FontSize = 6;
 	ax.FontName = 'Segoe UI Emoji';
@@ -117,29 +121,36 @@ for iL = 1:numel(layers)
 	if isscalar(Bars)
 		Bars.FaceColor = 'flat';
 		nB = numel(Bars.YData);
-		Bars.CData = repmat([colorNaive; colorTransfer; colorLearned], ceil(nB/3), 1);
+		Bars.CData = repmat(barColors, ceil(nB/3), 1);
 		Bars.CData = Bars.CData(1:nB, :);
 		Bars.BarWidth = 0.5;
 		Bars.LineWidth = 1;
 		Bars.BaseLine.LineWidth = 1;
 		Bars.EdgeColor = 'none';
-		Bars.FaceAlpha = 1/3;
+		Bars.FaceAlpha = 1;
 	elseif numel(Bars) >= 3
 		Bars(1).FaceColor = colorNaive;
 		Bars(2).FaceColor = colorTransfer;
 		Bars(3).FaceColor = colorLearned;
 		for ib = 1:3
+			Bars(ib).BarWidth = 0.5;
 			Bars(ib).LineWidth = 1;
 			Bars(ib).BaseLine.LineWidth = 1;
 			Bars(ib).EdgeColor = 'none';
-			try, Bars(ib).FaceAlpha = 1/3; catch, end
+			try, Bars(ib).FaceAlpha = 1; catch, end
 		end
 	end
 	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
-		for pt = Opt.MultiCompare.PText(:)', pt.FontSize = 6; end
+		for pt = Opt.MultiCompare.PText(:)'
+			pt.FontSize = 6;
+			pt.Tag = 'PText';
+		end
 	end
 	if isfield(Opt, 'MultiCompare') && ismember('PLine', Opt.MultiCompare.Properties.VariableNames)
-		for pl = Opt.MultiCompare.PLine(:)', pl.LineWidth = 1; end
+		for pl = Opt.MultiCompare.PLine(:)'
+			pl.LineWidth = 1;
+			pl.Tag = 'PLine';
+		end
 	end
 end
 

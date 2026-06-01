@@ -16,10 +16,8 @@ end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-palette3 = TransferLearning.FigurePalette(3);
-colorC = palette3(1,:);
-colorT = palette3(2,:);
-colorFit = palette3(3,:);
+colorC = TransferLearning.ContinualColor;
+colorT = TransferLearning.ColorB;
 
 f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl sigmoid slope vs Response heterogeneity');
 f.Units = 'centimeters';
@@ -69,7 +67,7 @@ for iL = 1:numel(layers)
     maskC = use & (groupAll == "Ctrl");
     maskT = use & (groupAll == "TH");
     hC = scatter(ax, sdAll(maskC), slopeAll(maskC), 10, colorC, 'o', 'filled', 'LineWidth', 0.2);
-    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 's', 'filled', 'LineWidth', 0.2);
+    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 'o', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hC; hT];
         ylabel(ax, 'Sigmoid slope', 'FontSize', 12);
@@ -79,7 +77,7 @@ for iL = 1:numel(layers)
     if nnz(use) >= 2 && std(sdAll(use)) > 0
         fitP = polyfit(sdAll(use), slopeAll(use), 1);
         xFit = [min(sdAll(use)), max(sdAll(use))];
-        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', colorFit, 'LineWidth', 2);
+        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', 'k', 'LineWidth', 2);
     end
     title(ax, layerLabels(iL), 'FontSize', 12);
     text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);

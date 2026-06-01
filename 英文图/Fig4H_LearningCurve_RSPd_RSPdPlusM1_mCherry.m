@@ -22,7 +22,7 @@ try
 	Summary = Summary(groupOrder, :);
 catch
 end
-Colors = [0, 0, 1; 1, 0, 0; 0, 0.6809, 0];
+Colors = [TransferLearning.ColorA; TransferLearning.ColorB; TransferLearning.ContinualColor];
 
 f = figure('Color','w', 'Name','English Fig4H Learning Curve');
 f.Units = 'centimeters';
@@ -91,14 +91,12 @@ f2.Position(3:4) = [4, 4];
 f2.PaperUnits = 'centimeters';
 f2.PaperSize = [4, 4];
 f2.PaperPositionMode = 'auto';
-f2.InvertHardcopy = 'off';
-
-tiledlayout(1,1,'TileSpacing','normal','Padding','normal');
+tiledlayout(1,1,'TileSpacing','tight','Padding','tight');
 nexttile;
 
 DataCell = {rspFirst, mcherryFirst};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
-[~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, false, CompareGroup, 'AsteriskThreshold', 0.05);
+[~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 
 ax2 = gca;
 ax2.FontSize = 12;
@@ -124,7 +122,7 @@ if isfield(Optional2, 'MultiCompare') && ismember('PLine', Optional2.MultiCompar
 end
 
 barColorIdx = [rspColorIdx, mcherryColorIdx];
-if numel(Bars2) == 1
+if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	Bars2.CData = Colors(barColorIdx, :);
 	Bars2.BarWidth = 0.5;
@@ -173,7 +171,7 @@ end
 end
 
 function iApplyBarColors(Bars, ErrorBars, colors)
-if numel(Bars) == 1
+if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = colors;
 	Bars.BarWidth = 0.5;
@@ -186,8 +184,11 @@ else
 		Bars(iB).FaceAlpha = 1/3;
 	end
 end
-for iE = 1:min(numel(ErrorBars.Object), size(colors, 1))
-	ErrorBars.Object(iE).Color = colors(iE, :);
+for iE = 1:height(ErrorBars)
+	errorBar = ErrorBars.Object(iE);
+	x = double(errorBar.XData(:));
+	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
+	errorBar.Color = colors(colorIndex, :);
 end
 end
 

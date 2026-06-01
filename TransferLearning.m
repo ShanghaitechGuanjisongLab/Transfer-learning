@@ -16,11 +16,11 @@ classdef(Abstract)TransferLearning
 		scFLARE=memoize(@iscFLARE);
 		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
 		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
-		NaiveColor=[1.0000    0.4294    0.0000];
-		LearnedColor=[ 1.0000    0.0000    1.0000];
-		ContinualColor=[0.0000    0.0000    0.0000];
-		ColorA=[0.0000    0.4810    1.0000];
-		ColorB=[0.0000    1.0000    0.0000];
+		NaiveColor=[1.0000    0.4243    0.0000];
+		LearnedColor=[0.0000    0.6731    0.0000];
+		ContinualColor=[1.0000    0.0000    1.0000];
+		ColorA=[0.0000    1.0000    1.0000];
+		ColorB=[0.0000    0.3119    1.0000];
 		HeatmapPositive=[1.0000    0.0000    0.0000];
 		HeatmapNegative=[0.0000    0.0000    1.0000];
 	end

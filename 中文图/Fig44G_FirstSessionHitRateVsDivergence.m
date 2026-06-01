@@ -32,6 +32,7 @@ groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 colorNaive = groupColors(1, :);
 colorTransfer = groupColors(2, :);
 colorFit = TransferLearning.ColorA;
+%% 
 
 f = figure('Color', 'w', 'Name', 'Fig333D First-block hit rate vs divergence');
 f.Units = 'centimeters';

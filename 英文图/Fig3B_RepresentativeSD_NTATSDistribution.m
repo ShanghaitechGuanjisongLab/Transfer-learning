@@ -250,8 +250,8 @@ fprintf('Wrote: %s\n', pngName);
 %% ===== 6) Export representative histogram SVG (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-palette2 = TransferLearning.FigurePalette(2);
-pairColors = {palette2(1,:); palette2(2,:)};
+pairColorArray = TransferLearning.GroupColors(["HighRH", "LowRH"]);
+pairColors = {pairColorArray(1,:); pairColorArray(2,:)};
 v = vals{repPairIdx, repSessIdx};
 
 fh = figure('Color', 'w');
@@ -276,7 +276,7 @@ end
 box(ax, 'off');
 grid(ax, 'off');
 
-text(ax, 0.97, 0.95, sprintf('Resp. heterogeneity\n=%.2f', sdVals(repPairIdx, repSessIdx)), ...
+text(ax, 0.97, 0.95, sprintf('RH=%.2f', sdVals(repPairIdx, repSessIdx)), ...
 	'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 	'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
 

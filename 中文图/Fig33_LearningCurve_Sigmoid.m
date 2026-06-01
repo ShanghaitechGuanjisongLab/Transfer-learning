@@ -1,4 +1,4 @@
-% Fig33 sigmoid fit: Naive vs Transfer LightWater learning curve
+% Fig33 sigmoid fit: Naive vs Continual LightWater learning curve
 %
 % Output: SVG through the standard figure output path.
 
@@ -64,13 +64,15 @@ fitNaive = iFitSigmoidCurve(displayedNaive, "Naive");
 fitTransfer = iFitSigmoidCurve(displayedTransfer, "Transfer");
 permResult = iPermutationTestSigmoidSlope(displayedNaive, displayedTransfer, 10000, 1);
 
-xFit = (1:max([max(fitNaive.XObserved), max(fitTransfer.XObserved), max(x)])).';
+xMax = max([max(fitNaive.XObserved), max(fitTransfer.XObserved), max(x)]);
+xSummary = (1:xMax).';
+xFit = linspace(1, xMax, 200).';
 naiveFitCurve = iSigmoidFromParams(fitNaive.ParamRaw, xFit);
 transferFitCurve = iSigmoidFromParams(fitTransfer.ParamRaw, xFit);
 
-meanMatOut = nan(numel(xFit), size(meanMat, 2));
-semMatOut = nan(numel(xFit), size(semMat, 2));
-nMatOut = nan(numel(xFit), size(nMat, 2));
+meanMatOut = nan(numel(xSummary), size(meanMat, 2));
+semMatOut = nan(numel(xSummary), size(semMat, 2));
+nMatOut = nan(numel(xSummary), size(nMat, 2));
 meanMatOut(1:size(meanMat, 1), :) = meanMat;
 semMatOut(1:size(semMat, 1), :) = semMat;
 nMatOut(1:size(nMat, 1), :) = nMat;
@@ -78,26 +80,38 @@ nMatOut(1:size(nMat, 1), :) = nMat;
 
 f = figure('Color', 'w', 'Name', 'Fig33 Learning curve sigmoid');
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 8];
+f.Position(3:4) = [12, 8];
+f.PaperUnits = 'centimeters';
+f.PaperSize = [12, 8];
+f.PaperPositionMode = 'auto';
 
 displayGroups = ["Naive","Continual"];
 curveColors = TransferLearning.GroupColors(displayGroups);
 curveColorNaive = curveColors(1, :);
 curveColorTransfer = curveColors(2, :);
-ax = gca;
+ax = axes(f);
 hold(ax, 'on');
-hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanMatOut(:,1), semMatOut(:,1), naiveFitCurve, curveColorNaive);
-hTransfer = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanMatOut(:,2), semMatOut(:,2), transferFitCurve, curveColorTransfer);
+hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, naiveFitCurve, curveColorNaive);
+hTransfer = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFit, transferFitCurve, curveColorTransfer);
 
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
+xlim(ax, [0.5, xMax + 0.5]);
+ylim(ax, [0, 1.02]);
+ax.FontSize = 12;
+ax.LineWidth = 2;
+ax.Color = 'none';
+ax.YTick = 0:0.5:1;
+ax.XTick = unique([1, 5:5:ceil(xMax)]);
+box(ax, 'off');
+grid(ax, 'off');
+title(ax, '');
 
 lgd = legend(ax, [hNaive(1), hNaive(2), hTransfer(1), hTransfer(2)], ...
-	{'Naive (Observed)', 'Naive (Sigmoid fit)', 'Continual (Observed)', 'Continual (Sigmoid fit)'}, ...
-	'FontSize', 8, 'Location', 'best', 'Box', 'off');
-
-title(ax, 'Learning Curve (Sigmoid Fit)', 'FontSize', 12, 'FontWeight', 'normal');
-box(ax, 'off');
+	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
+	'Location', 'southoutside', 'NumColumns', 2);
+lgd.Box = 'off';
+lgd.FontSize = 10;
 
 allAxes = findall(f, 'Type', 'axes');
 for ax = reshape(allAxes, 1, [])
@@ -109,7 +123,7 @@ end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 
 fitTable = table;
-fitTable.Group = ["Naive"; "Transfer"];
+fitTable.Group = ["Naive"; "Continual"];
 fitTable.Lower = [fitNaive.Lower; fitTransfer.Lower];
 fitTable.Upper = [fitNaive.Upper; fitTransfer.Upper];
 fitTable.Slope = [fitNaive.Slope; fitTransfer.Slope];
@@ -130,15 +144,15 @@ permTable.NullCI_Low = prctile(permResult.PermutedDifference, 2.5);
 permTable.NullCI_High = prctile(permResult.PermutedDifference, 97.5);
 
 summaryTable = table;
-summaryTable.Block = xFit(:);
+summaryTable.Block = xSummary(:);
 summaryTable.NaiveLearningCurve = meanMatOut(:,1);
 summaryTable.TransferLearningCurve = meanMatOut(:,2);
 summaryTable.NaiveSem = semMatOut(:,1);
 summaryTable.TransferSem = semMatOut(:,2);
 summaryTable.NaiveN = nMatOut(:,1);
 summaryTable.TransferN = nMatOut(:,2);
-summaryTable.NaiveSigmoid = naiveFitCurve(:);
-summaryTable.TransferSigmoid = transferFitCurve(:);
+summaryTable.NaiveSigmoid = iSigmoidFromParams(fitNaive.ParamRaw, xSummary);
+summaryTable.TransferSigmoid = iSigmoidFromParams(fitTransfer.ParamRaw, xSummary);
 
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== 中文图33 ===\n');
@@ -146,8 +160,8 @@ fprintf('Naive mice: %d\n', naiveMouseN);
 fprintf('Continual mice: %d\n', transferMouseN);
 fprintf('Cells: Not applicable (behavior only)\n');
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
-fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
-fprintf('Permutation slope difference (Transfer - Naive): %.4f\n', permResult.ObservedDifference);
+fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
+fprintf('Permutation slope difference (Continual - Naive): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
 
 assignin('base', 'Fig33_AllSessions', allSessions);
@@ -443,17 +457,19 @@ function [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, se
 	end
 end
 
-function hOut = iPlotGroupMeanErrorbarsSingleAx(ax, xFit, meanVec, semVec, fitCurve, curveColor)
+function hOut = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanVec, semVec, xFit, fitCurve, curveColor)
 	meanVec = double(meanVec);
 	semVec = double(semVec);
 	
-	xObs = find(isfinite(meanVec));
-	meanObs = meanVec(xObs);
-	semObs = semVec(xObs);
+	useObs = isfinite(meanVec);
+	xObs = xSummary(useObs);
+	meanObs = meanVec(useObs);
+	semObs = semVec(useObs);
 	semObs(~isfinite(semObs)) = 0;
 	
-	hE = errorbar(ax, xObs, meanObs, semObs, 'o', 'Color', curveColor, 'MarkerFaceColor', curveColor, 'MarkerEdgeColor', 'none', 'LineWidth', 1, 'MarkerSize', 4);
-	hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2);
+	hE = errorbar(ax, xObs, meanObs, semObs, 'o', 'Color', curveColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', curveColor, ...
+		'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
+	hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2);
 	hOut = [hE, hP];
 end
 

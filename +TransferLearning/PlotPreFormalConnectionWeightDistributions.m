@@ -1,17 +1,17 @@
-function fig = PlotPreFormalConnectionWeightDistributions(WeightValues, Cond)
+function fig = PlotPreFormalConnectionWeightDistributions(WeightValues)
 arguments
 	WeightValues (1, 1) struct
-	Cond table
 end
 
 classNames = ["EE", "EI", "IE", "II"];
 classTitles = ["E→E", "E→I", "I→E", "I→I"];
 legendLabels = {'Naive', 'After pretrain'};
-naiveColor = Cond.Color(Cond.Name == "Naive", :);
-afterPretrainColor = Cond.Color(Cond.Name == "Transfer", :);
+groupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
+naiveColor = groupColors(1, :);
+afterPretrainColor = groupColors(2, :);
 binEdges = iSharedBinEdges(WeightValues, classNames);
 
-fig = figure('Color', 'w', 'Name', 'Fig382A pre-formal connection weight distributions');
+fig = figure('Color', 'w', 'Name', 'Fig55A pre-formal connection weight distributions');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 fig.PaperUnits = 'centimeters';
