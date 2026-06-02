@@ -1,4 +1,4 @@
-﻿function Fig372_PlotConvergenceVenn(Matrix, Tags, legendLabels, titleText, chanceText, figureName, figSizeCm, svgPath)
+﻿function Fig71_PlotConvergenceVenn(Matrix, Tags, legendLabels, titleText, chanceText, figureName, figSizeCm, svgPath)
 f = figure('Color', 'w', 'Name', figureName);
 f.Units = 'centimeters';
 f.Position(3:4) = figSizeCm;
@@ -11,7 +11,7 @@ ax = axes(f);
 [Circles, Texts] = MATLAB.Graphics.Venn(Matrix, Tags);
 axis(ax, 'off');
 
-circleColors = [1, 0, 0; 0, 0, 1];
+circleColors = iLegendColors(legendLabels);
 for iCircle = 1:min(2, numel(Circles))
 	Circles(iCircle).FaceColor = circleColors(iCircle, :);
 	Circles(iCircle).FaceAlpha = 1/3;
@@ -45,9 +45,26 @@ for iText = 1:numel(allText)
 	allText(iText).FontSize = 12;
 end
 
-if ~isfolder(fileparts(svgPath))
-	mkdir(fileparts(svgPath));
-end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+end
+
+function colors = iLegendColors(legendLabels)
+legendLabels = string(legendLabels(:));
+colors = zeros(numel(legendLabels), 3);
+fallbackColors = [TransferLearning.ColorA; TransferLearning.ColorB];
+fallbackIndex = 0;
+for iLabel = 1:numel(legendLabels)
+	label = legendLabels(iLabel);
+	if contains(label, "Naive")
+		colors(iLabel, :) = TransferLearning.NaiveColor;
+	elseif contains(label, "Learned")
+		colors(iLabel, :) = TransferLearning.LearnedColor;
+	elseif contains(label, "Continual")
+		colors(iLabel, :) = TransferLearning.ContinualColor;
+	else
+		fallbackIndex = fallbackIndex + 1;
+		colors(iLabel, :) = fallbackColors(1 + mod(fallbackIndex - 1, size(fallbackColors, 1)), :);
+	end
+end
 end

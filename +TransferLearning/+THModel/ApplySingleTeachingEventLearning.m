@@ -10,7 +10,7 @@ learningPostActivity = TransferLearning.THModel.ApplyReadoutTeachingEventToActiv
 
 postHistory = learningHistory;
 postHistory(:, end) = learningPostActivity;
-Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistoryWithEligibility(Mouse.W_L23L5ToL23L5, postHistory, learningHistory, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, eligibilityDecay);
+Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistoryWithEligibility(Mouse.W_L23L5ToL23L5, postHistory, learningHistory, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, eligibilityDecay, Params.InitWeightMin);
 
 fullL5ReadInhibitoryTeachingActivity = TransferLearning.THModel.PatternActivity(Mouse.L5ReadInhibitoryReadoutPattern, Params);
 l5ReadInhibitoryLearningActivity = teachingSignalScale * fullL5ReadInhibitoryTeachingActivity;

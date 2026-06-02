@@ -180,8 +180,68 @@ for Ax=findall(Fig,Type='axes').'
 	pLines=findobj(Ax,'Tag','PLine');
 	pTexts=findobj(Ax,'Tag','PText');
 	if ~isempty(pLines)&&~isempty(pTexts)
+		[pLines,pTexts]=OrderTaggedPValuePairs(Ax,pLines,pTexts);
 		MATLAB.Graphics.PLineRetune(pLines,pTexts);
 	end
+end
+end
+function [pLines,pTexts]=OrderTaggedPValuePairs(Ax,pLines,pTexts)
+pLines=pLines(:);
+pTexts=pTexts(:);
+if numel(pLines)~=numel(pTexts)
+	return;
+end
+
+[linePairIds,hasLinePairIds]=TaggedPValuePairIds(pLines);
+[textPairIds,hasTextPairIds]=TaggedPValuePairIds(pTexts);
+if all(hasLinePairIds)&&all(hasTextPairIds)
+	[sortedLinePairIds,lineOrder]=sort(linePairIds);
+	[sortedTextPairIds,textOrder]=sort(textPairIds);
+	if isequal(sortedLinePairIds,sortedTextPairIds)
+		pLines=pLines(lineOrder);
+		pTexts=pTexts(textOrder);
+		return;
+	end
+end
+
+pTexts=OrderPTextsByLineGeometry(Ax,pLines,pTexts);
+end
+function [pairIds,hasPairIds]=TaggedPValuePairIds(handles)
+appdataName='TransferLearningPValuePairIndex';
+pairIds=nan(size(handles));
+hasPairIds=false(size(handles));
+for iHandle=1:numel(handles)
+	if isgraphics(handles(iHandle))&&isappdata(handles(iHandle),appdataName)
+		pairIds(iHandle)=double(getappdata(handles(iHandle),appdataName));
+		hasPairIds(iHandle)=isfinite(pairIds(iHandle));
+	end
+end
+end
+function orderedPTexts=OrderPTextsByLineGeometry(Ax,pLines,pTexts)
+orderedPTexts=pTexts;
+if isempty(pLines)
+	return;
+end
+
+axisRange=[diff(Ax.XLim),diff(Ax.YLim)];
+axisRange(~isfinite(axisRange)|axisRange==0)=1;
+lineCenters=zeros(numel(pLines),2);
+textCenters=zeros(numel(pTexts),2);
+for iLine=1:numel(pLines)
+	lineCenters(iLine,:)=[mean(double(pLines(iLine).XData(:)),'omitnan'),mean(double(pLines(iLine).YData(:)),'omitnan')];
+end
+for iText=1:numel(pTexts)
+	position=double(pTexts(iText).Position);
+	textCenters(iText,:)=position(1:2);
+end
+
+remainingTextIndices=1:numel(pTexts);
+for iLine=1:numel(pLines)
+	delta=(textCenters(remainingTextIndices,:)-lineCenters(iLine,:))./axisRange;
+	distances=sum(delta.^2,2);
+	[~,nearestIndex]=min(distances);
+	orderedPTexts(iLine)=pTexts(remainingTextIndices(nearestIndex));
+	remainingTextIndices(nearestIndex)=[];
 end
 end
 function SvgPath=iBuildStandardSvgPath(FileName)

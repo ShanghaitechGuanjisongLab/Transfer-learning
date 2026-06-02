@@ -78,8 +78,6 @@ hTH = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFi
 
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
-xlim(ax, [0.5, max(xSummary) + 0.5]);
-ylim(ax, [0, 1.02]);
 ax.FontSize = 12;
 ax.LineWidth = 2;
 ax.Color = 'none';

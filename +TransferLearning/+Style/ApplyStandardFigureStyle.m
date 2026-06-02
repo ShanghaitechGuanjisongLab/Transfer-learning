@@ -190,7 +190,20 @@ barHandles = findall(Fig, 'Type', 'Bar');
 for barIndex = 1:numel(barHandles)
 	barHandle = barHandles(barIndex);
 	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
+		if iShouldPreserveBarBaseLine(barHandle)
+			barHandle.BaseLine.Visible = 'on';
+			continue;
+		end
 		barHandle.BaseLine.Visible = 'off';
 	end
 end
+end
+
+function tf = iShouldPreserveBarBaseLine(barHandle)
+appdataName = 'TransferLearningPreserveBarBaseLine';
+tf = isappdata(barHandle, appdataName) && isequal(getappdata(barHandle, appdataName), true);
+if tf || ~isprop(barHandle, 'BaseLine') || ~isgraphics(barHandle.BaseLine)
+	return;
+end
+tf = isappdata(barHandle.BaseLine, appdataName) && isequal(getappdata(barHandle.BaseLine, appdataName), true);
 end

@@ -1,4 +1,4 @@
-function Data = Fig363_GlobalKnowledgeChangeCache(queryXlsx)
+function Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx)
 queryXlsx = string(queryXlsx);
 
 persistent Cache
@@ -8,7 +8,7 @@ if ~isempty(Cache) && isfield(Cache, 'QueryXlsx') && Cache.QueryXlsx == queryXls
 end
 
 phaseNames = ["NaiveLight", "LearnedLight", "LearnedAudio", "TransferLight", "FinalLight"];
-baseData = Fig362_GlobalInformationCache(queryXlsx, string.empty(1, 0), phaseNames);
+baseData = Fig72_GlobalInformationCache(queryXlsx, string.empty(1, 0), phaseNames);
 
 pairs = table( ...
 	["NaiveLight"; "LearnedAudio"; "TransferLight"; "LearnedAudio"], ...

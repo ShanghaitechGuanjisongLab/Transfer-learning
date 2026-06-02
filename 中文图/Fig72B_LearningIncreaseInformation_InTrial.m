@@ -1,4 +1,4 @@
-﻿% 中文图362A：学习增加信息量（In-trial）
+﻿% 中文图72B：学习增加信息量（In-trial）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -13,14 +13,14 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 linePhases = ["NaiveLight", "TransferLightHit", "TransferLightMiss"];
 lineLegends = ["Naive", "Continual Hit", "Continual Miss"];
 
-Data = Fig362_GlobalInformationCache(linePhases, string.empty(1, 0));
+Data = Fig72_GlobalInformationCache(linePhases, string.empty(1, 0));
 xData = Data.XData;
 meanCell = cellfun(@(phaseName) Data.Phase.(phaseName).Mean, cellstr(linePhases), 'UniformOutput', false);
 semCell = cellfun(@(phaseName) Data.Phase.(phaseName).Sem, cellstr(linePhases), 'UniformOutput', false);
 meanMat = vertcat(meanCell{:});
 semMat = vertcat(semCell{:});
 
-f = figure('Color', 'w', 'Name', '中文图362A Learning increases information In-trial');
+f = figure('Color', 'w', 'Name', '中文图72B Learning increases information In-trial');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
@@ -43,13 +43,15 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-lineColors = TransferLearning.FigurePalette(3);
+lineColors = [TransferLearning.NaiveColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
+lineStyles = ["-"; "-"; "--"];
 patches = MATLAB.Graphics.MultiShadowedLines( ...
 	{meanMat(1, :).', meanMat(2, :).', meanMat(3, :).'}, ...
 	{semMat(1, :).', semMat(2, :).', semMat(3, :).'}, ...
 	0.2, ...
 	X=xData, ...
-	EdgeColors=lineColors);
+	EdgeColors=lineColors, ...
+	LineStyles=lineStyles);
 
 for iPatch = 1:numel(patches)
 	if isprop(patches(iPatch), 'LineWidth')
@@ -87,12 +89,12 @@ lgd.FontName = 'Arial';
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig362A_LearningIncreaseInformation_InTrial.svg';
+svgPath = '中文图Fig72B_LearningIncreaseInformation_InTrial.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig362A_LinePhases', linePhases);
-assignin('base', 'Fig362A_MeanMat', meanMat);
-assignin('base', 'Fig362A_SemMat', semMat);
-assignin('base', 'Fig362A_CacheInfo', Data.CacheInfo);
+assignin('base', 'Fig72B_LinePhases', linePhases);
+assignin('base', 'Fig72B_MeanMat', meanMat);
+assignin('base', 'Fig72B_SemMat', semMat);
+assignin('base', 'Fig72B_CacheInfo', Data.CacheInfo);
 

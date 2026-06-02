@@ -56,7 +56,7 @@ for iTrial = 1:numTrials
 	rL5ReadInhibitoryLearning = TransferLearning.THModel.PatternActivity(Mouse.L5ReadInhibitoryReadoutPattern, Params);
 
 	postHistory = TransferLearning.THModel.ApplyReadoutTeachingToHistory(internalHistoryCue, rL5ReadLearning, Params);
-	Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistory(Mouse.W_L23L5ToL23L5, postHistory, internalHistoryCue, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold);
+	Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistory(Mouse.W_L23L5ToL23L5, postHistory, internalHistoryCue, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, Params.InitWeightMin);
 	afterRewardHebbDrive(iTrial) = TransferLearning.THModel.CueDecisionDrive(Mouse, Params, usePreCue);
 	afterRewardHebbNoInhDrive(iTrial) = TransferLearning.THModel.CueDecisionDriveNoLocalInh(Mouse, Params, usePreCue);
 	rewardHebbDelta(iTrial) = afterRewardHebbDrive(iTrial) - beforeDrive(iTrial);

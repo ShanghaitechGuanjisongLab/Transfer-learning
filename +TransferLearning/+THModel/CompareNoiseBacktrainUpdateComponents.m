@@ -33,7 +33,7 @@ for iMode = 1:numModes
 		if iBacktrainAttempt < maxAttempts && decisionDrive(iBacktrainAttempt) >= Params.HitThreshold
 			backtrainEta = -eta;
 			if modeName == "InternalOnly" || modeName == "All"
-				Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalDecayedHistoryMax(Mouse.W_L23L5ToL23L5, internalHistoryBacktrain, internalHistoryBacktrain, backtrainEta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, Params.DecisionIterationEarlyWeightDecay);
+				Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalDecayedHistoryMax(Mouse.W_L23L5ToL23L5, internalHistoryBacktrain, internalHistoryBacktrain, backtrainEta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, Params.DecisionIterationEarlyWeightDecay, Params.InitWeightMin);
 			end
 			if modeName == "InhibitoryOnly" || modeName == "All"
 				[actL23Backtrain, actL5RewardRecvBacktrain, actL5ReadBacktrain] = TransferLearning.THModel.SplitInternalActivity(TransferLearning.THModel.DecayedHistoryMaxActivity(internalHistoryBacktrain, Params.DecisionIterationEarlyWeightDecay), Params);

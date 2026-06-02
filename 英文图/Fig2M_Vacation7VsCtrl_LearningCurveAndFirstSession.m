@@ -171,9 +171,9 @@ CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 f2 = figure('Color','none', 'Name', 'English Fig2M Gap First transfer session');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
-try, f2.PaperPositionMode = 'auto'; catch, end
-try, f2.PaperUnits = 'centimeters'; f2.PaperSize = [4, 4]; catch, end
-try, f2.InvertHardcopy = 'off'; catch, end
+f2.PaperPositionMode = 'auto';
+f2.PaperUnits = 'centimeters'; 
+f2.PaperSize = [4, 4];
 
 tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 nexttile;
@@ -186,22 +186,11 @@ if isprop(ax2.XAxis, 'LineWidth')
 	ax2.XAxis.LineWidth = 2;
 	ax2.YAxis.LineWidth = 2;
 end
-ax2.Color = 'none';
-ax2.XAxis.Visible = false;
-ax2.XTick = [];
+ax2.XAxis.Visible = 'on';
+ax2.XTick = 1:2;
+ax2.XTickLabel = cellstr(displayGroups);
 legend(ax2, 'off');
-if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
-	for pt = Opt2.MultiCompare.PText(:)'
-		pt.FontSize = 12;
-	end
-end
-if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
-	for pl = Opt2.MultiCompare.PLine(:)'
-		pl.LineWidth = 2;
-	end
-end
-ax2.XLim = [0.5, 2.5];
-
+iTagRetunablePValues(Opt2);
 iStyleBars(Bars2, edgeColors(1,:), edgeColors(2,:));
 iStyleErrorBars(ErrorBars2, edgeColors);
 
@@ -210,13 +199,10 @@ title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 
 svgFS = 'English_Fig2M_Vacation7_FirstSessionHitRate.svg';
-try
-	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
-	svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
-	fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
-catch ME
-	warning(ME.identifier, 'Export failed: %s', ME.message);
-end
+if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
+
+svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
+fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
 
 sampleCounts = table(["Control"; "Gap"], [nControlMice; nV7Mice], [nFirstControlMice; nFirstV7Mice], ...
 	'VariableNames', {'Group','NLearningCurveMice','NFirstBlockMice'});
@@ -268,6 +254,23 @@ for iE = 1:height(errorBars)
 	x = double(errorBar.XData(:));
 	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
 	errorBar.Color = colors(colorIndex, :);
+end
+end
+
+function iTagRetunablePValues(options)
+if ~isfield(options, 'MultiCompare')
+	return;
+end
+multiCompare = options.MultiCompare;
+if ismember('PLine', multiCompare.Properties.VariableNames)
+	for pLine = reshape(multiCompare.PLine, 1, [])
+		pLine.Tag = 'PLine';
+	end
+end
+if ismember('PText', multiCompare.Properties.VariableNames)
+	for pText = reshape(multiCompare.PText, 1, [])
+		pText.Tag = 'PText';
+	end
 end
 end
 

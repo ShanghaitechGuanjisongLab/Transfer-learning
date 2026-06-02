@@ -1,4 +1,4 @@
-﻿% English Fig2N: Vacation7 vs Control — Reactivation & Divergence (双 tile)
+% English Fig2N: Vacation7 vs Control — Reactivation & Divergence (双 tile)
 %
 % v6 Panel N 合并原 K+L:
 %   上面板: Reactivation P(T|L) 条形图
@@ -176,14 +176,7 @@ ylabel(ax2, 'Divergence', 'FontSize', 6);
 iStyleBars(Bars2, barColors(1, :), barColors(2, :));
 iStyleErrorBars(EB2, barColors);
 
-for iOpt = 1:numel(Options)
-	Opt = Options{iOpt};
-	if isfield(Opt, 'MultiCompare') && all(ismember({'PLine','PText'}, Opt.MultiCompare.Properties.VariableNames))
-		MATLAB.Graphics.PLineRetune(Opt.MultiCompare.PLine, Opt.MultiCompare.PText);
-	end
-end
-
-%% ===== 5) Export =====
+iTagRetunablePValues(Options);
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg";
@@ -207,7 +200,6 @@ assignin('base', 'English_Fig2N_DivergenceSampleCounts', divSampleCounts);
 %% ===== Local functions =====
 
 function iStyleAxes(ax, showX)
-ax.FontName = 'Arial';
 ax.FontSize = 6;
 ax.LineWidth = 1;
 if isprop(ax.XAxis, 'LineWidth')
@@ -225,10 +217,6 @@ box(ax, 'off');
 grid(ax, 'off');
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
-end
-for textItem = findobj(ax, 'Type', 'Text')'
-	textItem.FontName = 'Arial';
-	textItem.FontSize = 6;
 end
 end
 
@@ -268,6 +256,27 @@ for iE = 1:height(errorBars)
 	x = double(errorBar.XData(:));
 	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
 	errorBar.Color = colors(colorIndex, :);
+end
+end
+
+function iTagRetunablePValues(options)
+for iOption = 1:numel(options)
+	option = options{iOption};
+	if ~isfield(option, 'MultiCompare')
+		continue;
+	end
+	multiCompare = option.MultiCompare;
+	if ismember('PLine', multiCompare.Properties.VariableNames)
+		for pLine = reshape(multiCompare.PLine, 1, [])
+			pLine.Tag = 'PLine';
+		end
+	end
+	if ismember('PText', multiCompare.Properties.VariableNames)
+		for pText = reshape(multiCompare.PText, 1, [])
+			pText.Tag = 'PText';
+			pText.FontName = 'Microsoft YaHei';
+		end
+	end
 end
 end
 

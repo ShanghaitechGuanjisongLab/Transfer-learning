@@ -21,6 +21,7 @@ nCellsUsed = height(GPlot);
 nMiceUsed = numel(unique(string(GPlot.Mouse)));
 trialColor = TransferLearning.LearnedColor;
 driftColor = TransferLearning.ColorA;
+%% 
 
 f = figure('Color', 'w', 'Name', '中文图325 Learned AudioWater PCA No Align');
 f.Units = 'centimeters';
@@ -37,7 +38,7 @@ title(ax1, 'Resting state drift', 'FontSize', 12);
 
 ax2 = nexttile(tlo, 2);
 hTrial = iPlotTrialsAttachedOnAxes(ax2, PlotData);
-title(ax2, 'Trials attached', 'FontSize', 12);
+title(ax2, "🔊 response in"+newline+"parallel directions", 'FontSize', 12);
 ax2.YAxis.Visible = 'off';
 
 iApplySharedLimits([ax1, ax2], PlotData);
@@ -45,24 +46,25 @@ xlabel(tlo, sprintf('PC1 (%.1f%%)', PlotData.PcaTable.Explained(1)), 'FontSize',
 ylabel(tlo, sprintf('PC2 (%.1f%%)', PlotData.PcaTable.Explained(2)), 'FontSize', 12);
 
 hMarkerLegend = plot(ax1, nan, nan, 'o', 'LineStyle', 'none', ...
-	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', driftColor, 'LineWidth', 1.2);
-hTrialLegend = plot(ax1, nan, nan, '-', 'LineWidth', 2, 'Color', trialColor);
-hDriftLegend = plot(ax1, nan, nan, '--', 'LineWidth', 1.5, 'Color', driftColor);
+	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', driftColor, 'LineWidth', 1);
+hBeforeCueLegend = plot(ax1, nan, nan, '-', 'LineWidth', 1, 'Color', TransferLearning.ColorB);
+hAfterCueLegend = plot(ax1, nan, nan, '-', 'LineWidth', 2, 'Color', trialColor);
+hDriftLegend = plot(ax1, nan, nan, '--', 'LineWidth', 2, 'Color', driftColor);
 
-lgd = legend(ax1, [hMarkerLegend, hTrialLegend, hDriftLegend], ["Trial #", "Trial", "Resting drift"], ...
-	'Orientation', 'horizontal', 'NumColumns', 3);
+lgd = legend(ax1, [hMarkerLegend, hBeforeCueLegend, hAfterCueLegend, hDriftLegend], ["Trial #", "3s before 🔊", "1s after 🔊", "Inter-trial drift"], ...
+	'Orientation', 'horizontal', 'NumColumns', 4);
 lgd.Layout.Tile = 'south';
 lgd.Box = 'off';
 lgd.FontSize = 12;
 lgd.FontName = 'Segoe UI Emoji';
-lgd.ItemTokenSize = [8, 8];
+lgd.ItemTokenSize(1) = 8;
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig42E_LearnedAudioWater_PCA_NoAlign.svg';
-svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
+svgPath = TransferLearning.StandardFigureSvgPath('中文图Fig42E_LearnedAudioWater_PCA_NoAlign.svg');
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Fig42E cells used: %d\n', nCellsUsed);
 fprintf('Fig42E mice used: %d\n', nMiceUsed);
@@ -141,19 +143,21 @@ PcaLines = PcaTable.Score;
 
 PcaDataAll = PcaLines.Data;
 nTime = size(PcaDataAll, 2);
-sampleRate = 8;
-idxCue = 3 * sampleRate;
-idxWater = idxCue + round(1.0 * sampleRate);
-idxCue = max(1, min(nTime, idxCue));
-idxWater = max(1, min(nTime, idxWater));
-idxPlotTime = idxCue:idxWater;
+idxPreCue = iFindPlotTimeIndex(nTime, -3);
+idxCue = iFindPlotTimeIndex(nTime, 0);
+idxWater = iFindPlotTimeIndex(nTime, 1);
+idxPlotTime = idxPreCue:idxWater;
 PcaData = PcaDataAll(:, idxPlotTime, :);
+idxCueInPlot = idxCue - idxPreCue + 1;
+idxWaterInPlot = idxWater - idxPreCue + 1;
 
 PlotData = struct();
 PlotData.PcaTable = PcaTable;
 PlotData.PcaData = PcaData;
-PlotData.cuePts = squeeze(PcaData(:, 1, :)).';
-PlotData.waterPts = squeeze(PcaData(:, end, :)).';
+PlotData.preCueSegment = 1:idxCueInPlot;
+PlotData.postCueSegment = idxCueInPlot:idxWaterInPlot;
+PlotData.cuePts = squeeze(PcaData(:, idxCueInPlot, :)).';
+PlotData.waterPts = squeeze(PcaData(:, idxWaterInPlot, :)).';
 PlotData.nLines = size(PcaData, 3);
 PlotData.lineColors = iAlphaRamp(TransferLearning.LearnedColor, PlotData.nLines);
 
@@ -173,9 +177,9 @@ function [hMarker, hDrift] = iPlotRestingDriftOnAxes(ax, PlotData)
 iFormatAxes(ax);
 
 cuePts = PlotData.cuePts;
-hDrift = plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', TransferLearning.ColorA);
+hDrift = plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 2, 'Color', TransferLearning.ColorA);
 hMarker = plot(ax, cuePts(:, 1), cuePts(:, 2), 'o', 'LineStyle', 'none', ...
-	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', TransferLearning.ColorA, 'LineWidth', 1.2);
+	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', TransferLearning.ColorA, 'LineWidth', 1);
 
 xOffset = 0.025 * PlotData.xSpan;
 yOffset = 0.02 * PlotData.ySpan;
@@ -205,13 +209,14 @@ PcaData = PlotData.PcaData;
 cuePts = PlotData.cuePts;
 waterPts = PlotData.waterPts;
 
-	for iLine = 1:PlotData.nLines
-		xy = squeeze(PcaData(:, :, iLine));
-		plot(ax, xy(1, :), xy(2, :), '-', 'LineWidth', 2, 'Color', PlotData.lineColors(iLine, :), 'HandleVisibility', 'off');
-	end
+for iLine = 1:PlotData.nLines
+	xy = squeeze(PcaData(:, :, iLine));
+	plot(ax, xy(1, PlotData.preCueSegment), xy(2, PlotData.preCueSegment), '-', 'LineWidth', 1, 'Color', TransferLearning.ColorB, 'HandleVisibility', 'off');
+	plot(ax, xy(1, PlotData.postCueSegment), xy(2, PlotData.postCueSegment), '-', 'LineWidth', 2, 'Color', PlotData.lineColors(iLine, :), 'HandleVisibility', 'off');
+end
 
 % Connect 0s points (cue onset) across trials with blue dashed line
-plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 1.5, 'Color', TransferLearning.ColorA, 'HandleVisibility', 'off');
+plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 2, 'Color', TransferLearning.ColorA, 'HandleVisibility', 'off');
 
 hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.LearnedColor);
 
@@ -233,7 +238,7 @@ end
 function iFormatAxes(ax)
 ax.FontSize = 12;
 ax.FontName = 'Segoe UI Emoji';
-ax.LineWidth = 2;
+ax.LineWidth = 1;
 box(ax, 'off');
 grid(ax, 'off');
 hold(ax, 'on');
@@ -267,7 +272,19 @@ if nLines <= 1
 	return;
 end
 
-alphaVals = linspace(0.25, 1.0, nLines)';
-colors = [repmat(baseColor, nLines, 1), alphaVals];
+alphaVals = linspace(0.45, 1.0, nLines)';
+colors = 1 - alphaVals .* (1 - repmat(baseColor, nLines, 1));
+end
+
+function idx = iFindPlotTimeIndex(nTime, targetSec)
+xsSec = seconds(TransferLearning.Xs);
+if numel(xsSec) == nTime
+	[~, idx] = min(abs(xsSec(:) - targetSec));
+	return;
+end
+
+sampleRate = 8;
+idx = round((targetSec + 3) * sampleRate) + 1;
+idx = max(1, min(nTime, idx));
 end
 

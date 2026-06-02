@@ -1,6 +1,6 @@
 function [Mouse, l23LearningActivity, l5RewardRecvLearningActivity, l5ReadLearningActivity] = ApplyInternalDecayedHistoryPlasticity(Mouse, Params, internalHistory, eta, inhibitoryHistory)
 learningActivity = TransferLearning.THModel.DecayedHistoryMaxActivity(internalHistory, Params.DecisionIterationEarlyWeightDecay);
-Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.Hebb(Mouse.W_L23L5ToL23L5, learningActivity, learningActivity, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold);
+Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.Hebb(Mouse.W_L23L5ToL23L5, learningActivity, learningActivity, eta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, Params.InitWeightMin);
 Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.ZeroSelfProjection(Mouse.W_L23L5ToL23L5);
 [l23LearningActivity, l5RewardRecvLearningActivity, l5ReadLearningActivity] = TransferLearning.THModel.SplitInternalActivity(learningActivity, Params);
 if nargin < 5

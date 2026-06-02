@@ -16,7 +16,7 @@ samples(:, 2) = chi2rnd(3, 100, 1);
 samples(:, 1) = rand(100, 1) * 12;
 samples = samples + baselines;
 
-f = figure('Color', 'w', 'Name', '中文图361A SeeTheKnowledge');
+f = figure('Color', 'w', 'Name', '中文图72A SeeTheKnowledge');
 f.Units = 'centimeters';
 f.Position(3:4) = [6, 8];
 f.PaperUnits = 'centimeters';
@@ -43,7 +43,7 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = '中文图Fig361A_SeeTheKnowledge.svg';
+svgPath = '中文图Fig72A_SeeTheKnowledge.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 

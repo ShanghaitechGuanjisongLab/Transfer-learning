@@ -1,4 +1,4 @@
-﻿% 中文图372D：自发舔水前后回合间 SD 与舔水概率
+﻿% 中文图71H：自发舔水前后回合间 SD 与舔水概率
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -10,9 +10,9 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-Data = Fig372_ConvergenceInheritanceCache();
+Data = Fig71_ConvergenceInheritanceCache();
 
-f = figure('Color', 'w', 'Name', '中文图372D Inter-trial SD before after spontaneous lick');
+f = figure('Color', 'w', 'Name', '中文图71H Inter-trial SD before after spontaneous lick');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
@@ -26,6 +26,7 @@ yyaxis(ax, 'left');
 Lines = MATLAB.Graphics.MultiShadowedLines(Data.StdMean, Data.StdSem, 1/4, X=double(Data.X), EdgeColors=[1, 0, 0; 0, 0, 1]);
 set(Lines, 'LineWidth', 2);
 ylabel(ax, 'Inter-trial SD', 'FontSize', 12);
+ax.YAxis(1).Color = [0.5, 0, 0.5];
 
 yyaxis(ax, 'right');
 behaviorColor = [0, 0.6809, 0];
@@ -67,9 +68,9 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig372D_InterTrialSd_BeforeAfterSpontaneousLick.svg';
+svgPath = '中文图Fig71H_InterTrialSd_BeforeAfterSpontaneousLick.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-assignin('base', 'Fig372D_Data', Data);
-assignin('base', 'Fig372D_BehaviorLines', BehaviorLines);
+assignin('base', 'Fig71H_Data', Data);
+assignin('base', 'Fig71H_BehaviorLines', BehaviorLines);
 

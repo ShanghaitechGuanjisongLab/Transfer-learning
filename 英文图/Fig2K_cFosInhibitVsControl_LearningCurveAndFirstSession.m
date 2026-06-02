@@ -172,9 +172,9 @@ fprintf('Fig334C learning curve LME group-effect p = %.4g\n', pCurve);
 labels = {char(grpLabels(1)), char(grpLabels(2))};
 try
 	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', 'southeastoutside');
+		lg = legend(ax, Patches(1:2), labels, 'Location', 'southeast');
 	else
-		lg = legend(ax, labels, 'Location', 'southeastoutside');
+		lg = legend(ax, labels, 'Location', 'southeast');
 	end
 	lg.FontSize = 12;
 	lg.Box = 'off';

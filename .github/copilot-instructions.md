@@ -22,3 +22,4 @@ tiledlayout的TileSpacing和Padding参数必须设置为'tight'
 
 不要在一个括号内引用多个文献。这个意思是要求你不要连续引用多个文献，而不是让你把括号拆开就完事。
 
+视觉检查的意思是用fetch_images检查SVG

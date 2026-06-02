@@ -10,7 +10,7 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-Data = Fig372_ConvergenceInheritanceCache();
+Data = Fig71_ConvergenceInheritanceCache();
 
-Fig372_PlotConvergenceVenn(Data.TransferMatrix, Data.TransferTags, ["Convergent", "Brightened"], "Continual Hit 💡💧", "", ...
-	'中文图372B Continual convergent brightened venn', [6, 8], fullfile(outDirUNC, '中文图Fig372B_TransferConvergentBrightened_Venn.svg'));
+Fig71_PlotConvergenceVenn(Data.TransferMatrix, Data.TransferTags, ["Convergent", "Brightened"], "Continual Hit 💡💧", "", ...
+	'中文图71F Continual convergent brightened venn', [6, 8], '中文图Fig71F_TransferConvergentBrightened_Venn.svg');

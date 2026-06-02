@@ -31,7 +31,7 @@ for iBacktrainAttempt = 1:Params.NoiseCueBacktrainMaxAttempts
 	end
 
 	backtrainEta = -eta;
-	Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistoryWithEligibility(Mouse.W_L23L5ToL23L5, internalHistoryBacktrain, internalHistoryBacktrain, backtrainEta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, eligibilityDecay);
+	Mouse.W_L23L5ToL23L5 = TransferLearning.THModel.HebbInternalLaggedHistoryWithEligibility(Mouse.W_L23L5ToL23L5, internalHistoryBacktrain, internalHistoryBacktrain, backtrainEta, Params.WeightMax, Params.ExcitatoryPostActivityThreshold, eligibilityDecay, Params.InitWeightMin);
 	Mouse = TransferLearning.THModel.ApplyInhibitoryCircuitPlasticityHistory(Mouse, Params, internalHistoryBacktrain, inhibitoryHistoryBacktrain, backtrainEta, [], eligibilityDecay);
 end
 end

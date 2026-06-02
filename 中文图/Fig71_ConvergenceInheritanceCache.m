@@ -1,6 +1,6 @@
-function Data = Fig372_ConvergenceInheritanceCache(varargin)
+function Data = Fig71_ConvergenceInheritanceCache(varargin)
 if nargin > 1
-	error('Fig372:BadInput', 'Expected at most one input.');
+	error('Fig71:BadInput', 'Expected at most one input.');
 end
 
 persistent Cache
@@ -73,7 +73,7 @@ end
 keepBlocks = ~cellfun(@isempty, BlockTagSignals.BeforeLickStarts) & ~cellfun(@isempty, BlockTagSignals.AfterLickStarts) & ~cellfun(@isempty, BlockTagSignals.Licking);
 BlockTagSignals = BlockTagSignals(keepBlocks, :);
 if isempty(BlockTagSignals)
-	error('Fig372:NoLickBlocks', 'No valid spontaneous-lick blocks were built.');
+	error('Fig71:NoLickBlocks', 'No valid spontaneous-lick blocks were built.');
 end
 
 BALickStarts = [vertcat(BlockTagSignals.BeforeLickStarts{:}), vertcat(BlockTagSignals.AfterLickStarts{:})];

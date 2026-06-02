@@ -1,4 +1,4 @@
-﻿% 中文图362B：学习增加信息量（whole-block）
+﻿% 中文图72C：学习增加信息量（whole-block）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -13,13 +13,13 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 barPhases = ["NaiveAudio", "LearnedAudio", "NaiveLight", "LearnedLight", "TransferLight"];
 barLabels = {"Naive 🔊💧", "Learned 🔊💧", "Naive 💡💧", "Learned 💡💧", "Continual 💡💧"};
 compareGroup = table([1, 2; 3, 4; 3, 5], 'VariableNames', "GroupPair");
-plotColor = [0, 0, 0];
+barColors = iPhaseColors(barPhases);
 
-Data = Fig362_GlobalInformationCache(string.empty(1, 0), barPhases);
+Data = Fig72_GlobalInformationCache(string.empty(1, 0), barPhases);
 entropyCell = cellfun(@(phaseName) double(Data.Phase.(phaseName).BlockEntropy(:)), cellstr(barPhases), 'UniformOutput', false);
 entropyCell = reshape(entropyCell, 1, []);
 
-f = figure('Color', 'w', 'Name', '中文图362B Learning increases information Whole-block');
+f = figure('Color', 'w', 'Name', '中文图72C Learning increases information Whole-block');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.5, 4.0];
 f.PaperUnits = 'centimeters';
@@ -37,7 +37,7 @@ end
 
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
-	Bars.CData = repmat(plotColor, numel(Bars.YData), 1);
+	Bars.CData = barColors(1:numel(Bars.YData), :);
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
 	Bars.BaseLine.LineWidth = 1;
@@ -45,7 +45,8 @@ if isscalar(Bars)
 	Bars.FaceAlpha = 1;
 else
 	for iBar = 1:numel(Bars)
-		Bars(iBar).FaceColor = plotColor;
+		Bars(iBar).FaceColor = barColors(iBar, :);
+		Bars(iBar).BarWidth = 0.5;
 		Bars(iBar).FaceAlpha = 1;
 		Bars(iBar).LineWidth = 1;
 		Bars(iBar).BaseLine.LineWidth = 1;
@@ -62,7 +63,7 @@ for iGroup = 1:numel(entropyCell)
 end
 
 xPos = iBarCenters(Bars, numel(entropyCell));
-iDrawOneSidedErrorbars(ax, xPos, means, sems, 1, plotColor);
+iDrawOneSidedErrorbars(ax, xPos, means, sems, 1, barColors);
 
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
@@ -100,13 +101,13 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig362B_LearningIncreaseInformation_WholeBlock.svg';
+svgPath = '中文图Fig72C_LearningIncreaseInformation_WholeBlock.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig362B_BarPhases', barPhases);
-assignin('base', 'Fig362B_BlockEntropy', entropyCell);
-assignin('base', 'Fig362B_CacheInfo', Data.CacheInfo);
+assignin('base', 'Fig72C_BarPhases', barPhases);
+assignin('base', 'Fig72C_BlockEntropy', entropyCell);
+assignin('base', 'Fig72C_CacheInfo', Data.CacheInfo);
 
 function xPos = iBarCenters(Bars, nGroup)
 	if isscalar(Bars)
@@ -119,7 +120,7 @@ function xPos = iBarCenters(Bars, nGroup)
 	end
 end
 
-function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth, plotColor)
+function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth, barColors)
 	hold(ax, 'on');
 	xPos = reshape(double(xPos), 1, []);
 	means = reshape(double(means), 1, []);
@@ -130,8 +131,29 @@ function iDrawOneSidedErrorbars(ax, xPos, means, sems, lineWidth, plotColor)
 			continue;
 		end
 		yTop = means(iPoint) + sems(iPoint);
-		line(ax, [xPos(iPoint), xPos(iPoint)], [means(iPoint), yTop], 'Color', plotColor, 'LineWidth', lineWidth);
-		line(ax, [xPos(iPoint) - capWidth, xPos(iPoint) + capWidth], [yTop, yTop], 'Color', plotColor, 'LineWidth', lineWidth);
+		lineColor = barColors(iPoint, :);
+		line(ax, [xPos(iPoint), xPos(iPoint)], [means(iPoint), yTop], 'Color', lineColor, 'LineWidth', lineWidth);
+		line(ax, [xPos(iPoint) - capWidth, xPos(iPoint) + capWidth], [yTop, yTop], 'Color', lineColor, 'LineWidth', lineWidth);
+	end
+end
+
+function colors = iPhaseColors(phaseNames)
+	phaseNames = string(phaseNames(:));
+	colors = zeros(numel(phaseNames), 3);
+	for iPhase = 1:numel(phaseNames)
+		colors(iPhase, :) = iPhaseColor(phaseNames(iPhase));
+	end
+end
+
+function color = iPhaseColor(phaseName)
+	if contains(phaseName, "Naive")
+		color = TransferLearning.NaiveColor;
+	elseif contains(phaseName, "Learned")
+		color = TransferLearning.LearnedColor;
+	elseif contains(phaseName, "Transfer") || contains(phaseName, "Continual")
+		color = TransferLearning.ContinualColor;
+	else
+		color = TransferLearning.GroupColors(string(phaseName));
 	end
 end
 

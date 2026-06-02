@@ -24,7 +24,7 @@ end
 if hasCurrentInhDrive
 	deltaWII = eta * (inhDrive .* (inhDrive' - inhDrive));
 end
-WIE = TransferLearning.THModel.ClampWeightsNonnegative(WIE + deltaWIE, Params.WeightMax);
-WEI = TransferLearning.THModel.ClampWeightsNonnegative(WEI + deltaWEI, Params.WeightMax);
-WII = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.ClampWeightsNonnegative(WII + deltaWII, Params.WeightMax));
+WIE = TransferLearning.THModel.ClampWeightsNonnegative(WIE + deltaWIE, Params.WeightMax, Params.InitWeightMin);
+WEI = TransferLearning.THModel.ClampWeightsNonnegative(WEI + deltaWEI, Params.WeightMax, Params.InitWeightMin);
+WII = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.ClampWeightsNonnegative(WII + deltaWII, Params.WeightMax, Params.InitWeightMin));
 end

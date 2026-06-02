@@ -1,4 +1,4 @@
-function Data = Fig362_GlobalInformationCache(varargin)
+function Data = Fig72_GlobalInformationCache(varargin)
 [linePhases, barPhases] = iParseInputs(varargin{:});
 requestedPhases = unique([linePhases, barPhases], 'stable');
 
@@ -11,7 +11,7 @@ end
 for iPhase = 1:numel(requestedPhases)
 	phaseName = requestedPhases(iPhase);
 	if ~isfield(Cache.GroupNts, phaseName)
-		error('Fig362:MissingPhase', 'Phase %s is missing from QueryNTS result.', phaseName);
+		error('Fig72:MissingPhase', 'Phase %s is missing from QueryNTS result.', phaseName);
 	end
 	if ~isfield(Cache.Phase, phaseName)
 		Cache = iEnsurePhase(Cache, phaseName);
@@ -41,7 +41,7 @@ function [linePhases, barPhases] = iParseInputs(varargin)
 		linePhases = varargin{2};
 		barPhases = varargin{3};
 	else
-		error('Fig362:BadInput', 'Expected 2 or 3 inputs.');
+		error('Fig72:BadInput', 'Expected 2 or 3 inputs.');
 	end
 	linePhases = reshape(string(linePhases), 1, []);
 	barPhases = reshape(string(barPhases), 1, []);

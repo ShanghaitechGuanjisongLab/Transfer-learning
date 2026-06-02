@@ -1,4 +1,4 @@
-% 中文图363D：知识增减（Unused old / Newly learned）
+% 中文图72G：知识增减（Unused old / Newly learned）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -11,16 +11,17 @@ end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
-Data = Fig363_GlobalKnowledgeChangeCache(queryXlsx);
+Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx);
 
 usageKeys = {'Unused old', 'Newly learned'};
 usageLabels = {'Unused old', 'Newly learned'};
 transitionKeys = {'NaiveToLearned', 'LearnedToTransfer', 'TransferToFinal', 'LearnedToFinal'};
 transitionLabels = {'Naive→Learned', 'Learned→Continual', 'Continual→Final', 'Learned→Final'};
-transitionColors = [1, 0, 0; 0, 0.6809, 0; 0, 0, 1; 0, 0, 0];
+transitionPhasePairs = ["NaiveLight", "LearnedLight"; "LearnedAudio", "TransferLight"; "TransferLight", "FinalLight"; "LearnedAudio", "FinalLight"];
+transitionColors = iTransitionColors(transitionPhasePairs);
 compareGroup = table(table(["NaiveToLearned", "LearnedToTransfer"; "NaiveToLearned", "LearnedToTransfer"], ["Unused old", "Unused old"; "Newly learned", "Newly learned"], 'VariableNames', {'Pair', 'Usage'}), 'VariableNames', {'GroupPair'});
 
-f = figure('Color', 'w', 'Name', '中文图363D Knowledge change bar');
+f = figure('Color', 'w', 'Name', '中文图72G Knowledge change bar');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
@@ -42,6 +43,7 @@ for iBar = 1:min(numel(Bars), numel(transitionLabels))
 	Bars(iBar).BaseLine.LineWidth = 2;
 	Bars(iBar).EdgeColor = 'none';
 end
+iStyleErrorBars(EB, Bars, transitionColors);
 
 ax.FontSize = 12;
 ax.FontName = 'Arial';
@@ -84,7 +86,64 @@ end
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = '中文图Fig363D_KnowledgeChange_Bar.svg';
+svgPath = '中文图Fig72G_KnowledgeChange_Bar.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
+
+function colors = iTransitionColors(transitionPhasePairs)
+	colors = zeros(size(transitionPhasePairs, 1), 3);
+	for iPair = 1:size(transitionPhasePairs, 1)
+		colors(iPair, :) = mean([iPhaseColor(transitionPhasePairs(iPair, 1)); iPhaseColor(transitionPhasePairs(iPair, 2))], 1);
+	end
+end
+
+function color = iPhaseColor(phaseName)
+	phaseName = string(phaseName);
+	if contains(phaseName, "Naive")
+		color = TransferLearning.NaiveColor;
+	elseif contains(phaseName, "Learned")
+		color = TransferLearning.LearnedColor;
+	elseif contains(phaseName, "Transfer") || contains(phaseName, "Continual")
+		color = TransferLearning.ContinualColor;
+	elseif contains(phaseName, "Final")
+		color = TransferLearning.ColorA;
+	else
+		color = TransferLearning.GroupColors(phaseName);
+	end
+end
+
+function iStyleErrorBars(errorBars, bars, colors)
+	if istable(errorBars) && ismember('Object', errorBars.Properties.VariableNames)
+		errorBarObjects = errorBars.Object;
+	elseif isstruct(errorBars) && isfield(errorBars, 'Object')
+		errorBarObjects = errorBars.Object;
+	else
+		errorBarObjects = gobjects(0, 1);
+	end
+
+	for iError = 1:numel(errorBarObjects)
+		if ~isgraphics(errorBarObjects(iError))
+			continue;
+		end
+		colorIndex = iNearestBarIndex(errorBarObjects(iError), bars, size(colors, 1));
+		errorBarObjects(iError).Color = colors(colorIndex, :);
+		errorBarObjects(iError).LineWidth = 2;
+	end
+end
+
+function colorIndex = iNearestBarIndex(errorBar, bars, nColor)
+	if isscalar(bars)
+		xCenters = double(bars.XEndPoints(:));
+		[~, colorIndex] = min(abs(xCenters - mean(double(errorBar.XData(:)), 'omitnan')));
+		colorIndex = min(colorIndex, nColor);
+		return;
+	end
+	xData = double(errorBar.XData(:));
+	distances = inf(1, min(numel(bars), nColor));
+	for iBar = 1:numel(distances)
+		barX = double(bars(iBar).XEndPoints(:));
+		distances(iBar) = min(abs(barX - mean(xData, 'omitnan')));
+	end
+	[~, colorIndex] = min(distances);
+end
 

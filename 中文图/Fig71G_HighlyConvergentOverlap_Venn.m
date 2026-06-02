@@ -10,8 +10,8 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-Data = Fig372_ConvergenceInheritanceCache();
+Data = Fig71_ConvergenceInheritanceCache();
 chanceText = "(Chance overlap " + MATLAB.SignificantFixedpoint(Data.ChanceOverlap * 100, 2) + "%)";
 
-Fig372_PlotConvergenceVenn(Data.LTMatrix, Data.LTTags, ["Learned 🔊💧", "Continual Hit 💡💧"], ["Overlap of highly"; "convergent cells"], chanceText, ...
-	'中文图372C highly convergent overlap venn', [6, 8], fullfile(outDirUNC, '中文图Fig372C_HighlyConvergentOverlap_Venn.svg'));
+Fig71_PlotConvergenceVenn(Data.LTMatrix, Data.LTTags, ["Learned 🔊💧", "Continual Hit 💡💧"], ["Overlap of highly"; "convergent cells"], chanceText, ...
+	'中文图71G highly convergent overlap venn', [6, 8], '中文图Fig71G_HighlyConvergentOverlap_Venn.svg');

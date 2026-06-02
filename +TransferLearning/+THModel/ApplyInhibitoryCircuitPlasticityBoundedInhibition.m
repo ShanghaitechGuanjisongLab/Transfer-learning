@@ -25,9 +25,9 @@ activeI = iBoundedInhibitoryActivity(inhibitoryDrive, Params);
 deltaWIE = eta * (activeE .* (activeI' - activeE));
 deltaWEI = eta * ((activeI - 0.5 * Params.ResponseScale) * activeE');
 deltaWII = eta * (activeI .* (activeI' - activeI));
-WIE = TransferLearning.THModel.ClampWeightsNonnegative(WIE + deltaWIE, Params.WeightMax);
-WEI = TransferLearning.THModel.ClampWeightsNonnegative(WEI + deltaWEI, Params.WeightMax);
-WII = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.ClampWeightsNonnegative(WII + deltaWII, Params.WeightMax));
+WIE = TransferLearning.THModel.ClampWeightsNonnegative(WIE + deltaWIE, Params.WeightMax, Params.InitWeightMin);
+WEI = TransferLearning.THModel.ClampWeightsNonnegative(WEI + deltaWEI, Params.WeightMax, Params.InitWeightMin);
+WII = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.ClampWeightsNonnegative(WII + deltaWII, Params.WeightMax, Params.InitWeightMin));
 end
 
 function [WIE, WEI, WII] = iReadoutInhibitoryHebbBounded(WIE, WEI, WII, sourceActivity, readoutActivity, Params, eta, readoutInhibitoryActivity)
@@ -59,9 +59,9 @@ end
 if hasCurrentI
 	deltaWII = eta * (activeI .* (activeI' - activeI));
 end
-WIE = TransferLearning.THModel.ClampWeightsNonnegative(WIE + deltaWIE, Params.WeightMax);
-WEI = TransferLearning.THModel.ClampWeightsNonnegative(WEI + deltaWEI, Params.WeightMax);
-WII = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.ClampWeightsNonnegative(WII + deltaWII, Params.WeightMax));
+WIE = TransferLearning.THModel.ClampWeightsNonnegative(WIE + deltaWIE, Params.WeightMax, Params.InitWeightMin);
+WEI = TransferLearning.THModel.ClampWeightsNonnegative(WEI + deltaWEI, Params.WeightMax, Params.InitWeightMin);
+WII = TransferLearning.THModel.ZeroSelfProjection(TransferLearning.THModel.ClampWeightsNonnegative(WII + deltaWII, Params.WeightMax, Params.InitWeightMin));
 end
 
 function activity = iBoundedInhibitoryActivity(inhibitoryDrive, Params)

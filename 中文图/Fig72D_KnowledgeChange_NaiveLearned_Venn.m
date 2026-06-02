@@ -1,4 +1,4 @@
-﻿% 中文图363B：知识增减（Learned→Continual）
+﻿% 中文图72D：知识增减（Naive→Learned）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -11,9 +11,9 @@ end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
-Data = Fig363_GlobalKnowledgeChangeCache(queryXlsx);
+Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx);
 
-iPlotKnowledgeVenn(Data.PairStats(2, :), '中文图363B Knowledge change Learned to Continual', [6, 8], fullfile(outDirUNC, '中文图Fig363B_KnowledgeChange_LearnedTransfer_Venn.svg'));
+iPlotKnowledgeVenn(Data.PairStats(1, :), '中文图72D Knowledge change Naive to Learned', [6, 8], '中文图Fig72D_KnowledgeChange_NaiveLearned_Venn.svg');
 
 function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 	f = figure('Color', 'w', 'Name', figureName);
@@ -27,7 +27,7 @@ function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 	ax = axes(f);
 	[Circles, Texts] = MATLAB.Graphics.Venn(pairRow.Knowledge{1}, MATLAB.SignificantFixedpoint(pairRow.Knowledge{1}, 2));
 	axis(ax, 'off');
-	circleColors = [1, 0, 0; 0, 0, 1];
+	circleColors = [iPhaseColor(pairRow.LeftPhase); iPhaseColor(pairRow.RightPhase)];
 	for iCircle = 1:min(2, numel(Circles))
 		Circles(iCircle).FaceColor = circleColors(iCircle, :);
 		Circles(iCircle).FaceAlpha = 1/3;
@@ -47,9 +47,21 @@ function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 		allText(iText).FontSize = 12;
 	end
 
-	if ~isfolder(fileparts(svgPath))
-		mkdir(fileparts(svgPath));
-	end
 	svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
+end
+
+function color = iPhaseColor(phaseName)
+	phaseName = string(phaseName);
+	if contains(phaseName, "Naive")
+		color = TransferLearning.NaiveColor;
+	elseif contains(phaseName, "Learned")
+		color = TransferLearning.LearnedColor;
+	elseif contains(phaseName, "Transfer") || contains(phaseName, "Continual")
+		color = TransferLearning.ContinualColor;
+	elseif contains(phaseName, "Final")
+		color = TransferLearning.ColorA;
+	else
+		color = TransferLearning.GroupColors(phaseName);
+	end
 end
