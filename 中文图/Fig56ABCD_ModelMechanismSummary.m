@@ -176,23 +176,23 @@ layout = tiledlayout(fig, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 axConnection = nexttile(layout, 1);
 connectionNaive = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Naive"));
 connectionContinual = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Continual"));
-[connectionPValue, connectionStats, ~] = iPlotBarComparison(axConnection, {connectionNaive, connectionContinual}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-RO"]);
+[connectionPValue, connectionStats, ~] = iPlotBarComparison(axConnection, {connectionNaive, connectionContinual}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-beh."]);
 
 axActivity = nexttile(layout, 2);
 firstUnitTable = unitTable(unitTable.Unit == 1 & unitTable.DidSimulate, :);
 activityNaive = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Naive"));
 activityContinual = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Continual"));
-[activityPValue, activityStats, ~] = iPlotBarComparison(axActivity, {activityNaive, activityContinual}, compareGroup, palette, "Activity", ["L5E", "non-readout"]);
+[activityPValue, activityStats, ~] = iPlotBarComparison(axActivity, {activityNaive, activityContinual}, compareGroup, palette, "Activity", ["L5E", "non-behavior"]);
 
 axNoise = nexttile(layout, 3);
 noiseLabelPosition = [0.96, 0.91; 0.96, 0.74];
 noiseLabelAlignment = ["right", "right"];
-noiseStats = iPlotLineComparison(axNoise, unitTable, "NoiseBacktrainFrequency", palette, "Frequency", ["Noise", "anti-Hebb"], true, 3.75, 0.16, noiseLabelPosition, noiseLabelAlignment);
+noiseStats = iPlotLineComparison(axNoise, unitTable, "NoiseBacktrainFrequency", palette, "Frequency", ["Noise", "anti-learning"], true, 3.75, 0.16, noiseLabelPosition, noiseLabelAlignment);
 
 axProjection = nexttile(layout, 4);
 projectionLabelPosition = [0.96, 0.25; 0.96, 0.91];
 projectionLabelAlignment = ["right", "right"];
-projectionStats = iPlotLineComparison(axProjection, unitTable, "PositiveProjectionDelta", palette, "Δweight", ["Excit. cue neurons", "→ L5 readout"], true, 3.75, 0.18, projectionLabelPosition, projectionLabelAlignment);
+projectionStats = iPlotLineComparison(axProjection, unitTable, "PositiveProjectionDelta", palette, "Δweight", ["Excit. cue neurons", "→ L5 behavior"], true, 3.75, 0.18, projectionLabelPosition, projectionLabelAlignment);
 
 Stats = struct();
 Stats.Connection = struct('Summary', connectionStats, 'PValue', connectionPValue);
