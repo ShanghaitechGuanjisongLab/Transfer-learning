@@ -1,0 +1,13 @@
+这些链接因APA格式规范，不宜放在论文正文中，在此列出。
+Ebbinghaus, H. (1885). Uber das Gedachtnis: Untersuchungen zur experimentellen Psychologie. Duncker & Humblot. https://catalog.hathitrust.org/Record/000360864
+He, K., Zhang, X., Ren, S., & Sun, J. (2015, 7–13 Dec. 2015). Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification. 2015 IEEE International Conference on Computer Vision (ICCV), https://ieeexplore.ieee.org/document/7410480
+Hebb, D. O. (1949). The organization of behavior: A neuropsychological theory. Wiley. https://archive.org/details/in.ernet.dli.2015.168156
+Kamin, L. J. (1969). Predictability, surprise, attention, and conditioning. In B. A. Campbell & R. M. Church (Eds.), Punishment and aversive behavior (pp. 279–296). Appleton-Century-Crofts. https://ntrs.nasa.gov/citations/19680014821
+Lashley, K. S. (1950). In search of the engram. Symposia of the Society for Experimental Biology, 4, 454–482. https://pdfcookie.com/documents/lashley-1950-in-search-of-the-engram-mlxzz9ner327
+Pavlov, I. P. (1927). Conditioned reflexes: An investigation of the physiological activity of the cerebral cortex. Oxford University Press. https://archive.org/details/conditioned-reflexes-an-investigation-of-the-physiological-activity-of-the-cerebral-cortex
+Perkins, D., & Salomon, G. (1999). Transfer Of Learning. 11. https://www.researchgate.net/publication/2402396_Transfer_Of_Learning
+Rescorla, R. A., & Wagner, A. (1972). A theory of Pavlovian conditioning: Variations in the effectiveness of reinforcement and nonreinforcement. In (Vol. Vol. 2). https://www.researchgate.net/publication/233820243_A_theory_of_Pavlovian_conditioning_Variations_in_the_effectiveness_of_reinforcement_and_nonreinforcement
+Semon, R. (1921). The mneme. George Allen & Unwin. https://archive.org/details/cu31924100387210
+Skinner, B. F. (1938). The behavior of organisms: An experimental analysis. Appleton-Century. https://archive.org/details/SkinnerB.F.1938.TheBehaviorOfOrganismsAnExperimentalAnalysis/Skinner%2C%20B.%20F.%20%281938%29.%20The%20behavior%20of%20organisms%20-%20An%20experimental%20analysis/
+Sutton, R., & Barto, A. (1990). Time-Derivative Models of Pavlovian Reinforcement. In. https://www.researchgate.net/publication/235419082_Time-Derivative_Models_of_Pavlovian_Reinforcement
+Wylie, H. H. (1917). An experimental study of transfer of response in white rats. https://catalog.hathitrust.org/Record/001503333
