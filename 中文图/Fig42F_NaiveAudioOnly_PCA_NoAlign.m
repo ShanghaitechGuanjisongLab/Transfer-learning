@@ -1,4 +1,4 @@
-% 中文图325：Learned 🔊💧 的 inter-trial divergence PCA（双 tile，不对齐到 0 点）
+% 中文图42F：Naive 🔊 的 inter-trial divergence PCA（模仿42E）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -12,18 +12,20 @@ end
 DSList = {
 	TransferLearning.AudioLightBaseline()
 	TransferLearning.ALInterspersed()
+	TransferLearning.Vacation7()
+	TransferLearning.LightAudioBaseline()
+	TransferLearning.LAInterspersed()
+	TransferLearning.THInhibit()
 };
 
-G = iNtsSuperMouse(DSList, "Learned", "AudioWater", 30);
-GPlot = iAverageAdjacentTrials(G, 3);
-PlotData = iComputePcaPlotData(GPlot);
-nCellsUsed = height(GPlot);
-nMiceUsed = numel(unique(string(GPlot.Mouse)));
-trialColor = TransferLearning.LearnedColor;
+G = iNtsSuperMouse(DSList, "Naive", "AudioOnly", 10);
+PlotData = iComputePcaPlotData(G);
+nCellsUsed = height(G);
+nMiceUsed = numel(unique(string(G.Mouse)));
+trialColor = TransferLearning.NaiveColor;
 driftColor = TransferLearning.ColorA;
-%% 
 
-f = figure('Color', 'w', 'Name', '中文图325 Learned AudioWater PCA No Align');
+f = figure('Color', 'w', 'Name', '中文图42F Naive AudioOnly PCA No Align');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
@@ -31,45 +33,42 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 12, 8];
 f.PaperSize = [12, 8];
 
-tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
-ax1 = nexttile(tlo, 1);
-[hMarker, hDrift] = iPlotRestingDriftOnAxes(ax1, PlotData);
-title(ax1, 'Resting state drift', 'FontSize', 12);
+ax = axes(f);
+hold(ax, 'on');
+hTrial = iPlotTrialsAttachedOnAxes(ax, PlotData, trialColor, driftColor);
+title(ax, "Naive 🔊 response in variable directions", 'FontSize', 12);
 
-ax2 = nexttile(tlo, 2);
-hTrial = iPlotTrialsAttachedOnAxes(ax2, PlotData);
-title(ax2, "Learned 🔊 response"+newline+"in parallel directions", 'FontSize', 12);
-ax2.YAxis.Visible = 'off';
+iApplySingleLimit(ax, PlotData);
+xlabel(ax, sprintf('PC1 (%.1f%%)', PlotData.PcaTable.Explained(1)), 'FontSize', 12);
+ylabel(ax, sprintf('PC2 (%.1f%%)', PlotData.PcaTable.Explained(2)), 'FontSize', 12);
 
-iApplySharedLimits([ax1, ax2], PlotData);
-xlabel(tlo, sprintf('PC1 (%.1f%%)', PlotData.PcaTable.Explained(1)), 'FontSize', 12);
-ylabel(tlo, sprintf('PC2 (%.1f%%)', PlotData.PcaTable.Explained(2)), 'FontSize', 12);
+ax.FontSize = 12;
+ax.FontName = 'Segoe UI Emoji';
+ax.LineWidth = 1;
+box(ax, 'off');
+grid(ax, 'off');
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
+end
 
-hMarkerLegend = plot(ax1, nan, nan, 'o', 'LineStyle', 'none', ...
-	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', driftColor, 'LineWidth', 1);
-hBeforeCueLegend = plot(ax1, nan, nan, '-', 'LineWidth', 1, 'Color', TransferLearning.ColorB);
-hAfterCueLegend = plot(ax1, nan, nan, '-', 'LineWidth', 2, 'Color', trialColor);
-hDriftLegend = plot(ax1, nan, nan, '--', 'LineWidth', 2, 'Color', driftColor);
+hBeforeCueLegend = plot(ax, nan, nan, '-', 'LineWidth', 1, 'Color', TransferLearning.ColorB);
+hAfterCueLegend = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', trialColor);
+hDriftLegend = plot(ax, nan, nan, '--', 'LineWidth', 2, 'Color', driftColor);
 
-lgd = legend(ax1, [hMarkerLegend, hBeforeCueLegend, hAfterCueLegend, hDriftLegend], ["Trial #", "3s before 🔊", "1s after 🔊", "Inter-trial drift"], ...
-	'Orientation', 'horizontal', 'NumColumns', 4);
-lgd.Layout.Tile = 'south';
+lgd = legend(ax, [hBeforeCueLegend, hAfterCueLegend, hDriftLegend], ...
+	["3s before 🔊", "1s after 🔊", "Inter-trial drift"], ...
+	'Location', 'eastoutside');
 lgd.Box = 'off';
 lgd.FontSize = 12;
 lgd.FontName = 'Segoe UI Emoji';
-lgd.ItemTokenSize(1) = 8;
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-if ~isfolder(outDirUNC)
-	mkdir(outDirUNC);
-end
-svgPath = TransferLearning.StandardFigureSvgPath('中文图Fig42E_LearnedAudioWater_PCA_NoAlign.svg');
+svgPath = TransferLearning.StandardFigureSvgPath('中文图Fig42F_NaiveAudioOnly_PCA_NoAlign.svg');
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Fig42E cells used: %d\n', nCellsUsed);
-fprintf('Fig42E mice used: %d\n', nMiceUsed);
+fprintf('Fig42F cells used: %d\n', nCellsUsed);
+fprintf('Fig42F mice used: %d\n', nMiceUsed);
 
-assignin('base', 'Fig42E_GroupNtats', GPlot);
+assignin('base', 'Fig42F_GroupNtats', G);
 
 function GroupNtats = iNtsSuperMouse(DSList, phaseName, stimulusName, minTrials)
 cellTraces = {};
@@ -99,6 +98,13 @@ for iDS = 1:numel(DSList)
 		if any(~isfinite(sig), 'all')
 			continue;
 		end
+		% Per-cell z-score to eliminate inter-dataset scale differences
+		mu = mean(sig, 'all', 'omitnan');
+		sd = std(sig, 0, 'all', 'omitnan');
+		if sd == 0 || ~isfinite(sd)
+			continue;
+		end
+		sig = (sig - mu) / sd;
 		cellTraces{end+1, 1} = sig; %#ok<AGROW>
 		cellUIDList(end+1, 1) = cid; %#ok<AGROW>
 		cellMetaIndex = find(cellMeta.CellUID == cid, 1, 'first');
@@ -110,7 +116,7 @@ for iDS = 1:numel(DSList)
 end
 
 if isempty(cellTraces)
-	error('Fig325:EmptySuperMouse', 'No cells found after pooling for requested trials.');
+	error('Fig42F:EmptySuperMouse', 'No cells found after pooling for requested trials.');
 end
 
 nCells = numel(cellTraces);
@@ -138,7 +144,7 @@ GroupNtatsOut = table(ntats, GroupNtatsIn.CellUID, GroupNtatsIn.Mouse, 'Variable
 end
 
 function PlotData = iComputePcaPlotData(GroupNtats)
-PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2,true);
+PcaTable = UniExp.LinearPca(GroupNtats.NTATS, 2, true);
 PcaLines = PcaTable.Score;
 
 PcaDataAll = PcaLines.Data;
@@ -159,7 +165,7 @@ PlotData.postCueSegment = idxCueInPlot:idxWaterInPlot;
 PlotData.cuePts = squeeze(PcaData(:, idxCueInPlot, :)).';
 PlotData.waterPts = squeeze(PcaData(:, idxWaterInPlot, :)).';
 PlotData.nLines = size(PcaData, 3);
-PlotData.lineColors = iAlphaRamp(TransferLearning.LearnedColor, PlotData.nLines);
+PlotData.lineColors = iAlphaRamp(TransferLearning.NaiveColor, PlotData.nLines);
 
 xAll = reshape(PcaData(1, :, :), [], 1);
 yAll = reshape(PcaData(2, :, :), [], 1);
@@ -173,36 +179,7 @@ if ~(isfinite(PlotData.ySpan) && PlotData.ySpan > 0)
 end
 end
 
-function [hMarker, hDrift] = iPlotRestingDriftOnAxes(ax, PlotData)
-iFormatAxes(ax);
-
-cuePts = PlotData.cuePts;
-hDrift = plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 2, 'Color', TransferLearning.ColorA);
-hMarker = plot(ax, cuePts(:, 1), cuePts(:, 2), 'o', 'LineStyle', 'none', ...
-	'MarkerSize', 5, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', TransferLearning.ColorA, 'LineWidth', 1);
-
-xOffset = 0.025 * PlotData.xSpan;
-yOffset = 0.02 * PlotData.ySpan;
-for iLine = 1:PlotData.nLines
-	if mod(iLine, 2) == 1
-		yText = cuePts(iLine, 2) + yOffset;
-		vAlign = 'bottom';
-	else
-		yText = cuePts(iLine, 2) - yOffset;
-		vAlign = 'top';
-	end
-	text(ax, cuePts(iLine, 1) + xOffset, yText, sprintf('%d', iLine), ...
-		'FontSize', 12, 'HorizontalAlignment', 'left', 'VerticalAlignment', vAlign, ...
-		'Clipping', 'on', 'HandleVisibility', 'off');
-end
-
-view(ax, 2);
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
-end
-
-function hTrial = iPlotTrialsAttachedOnAxes(ax, PlotData)
+function hTrial = iPlotTrialsAttachedOnAxes(ax, PlotData, trialColor, driftColor)
 iFormatAxes(ax);
 
 PcaData = PlotData.PcaData;
@@ -215,16 +192,12 @@ for iLine = 1:PlotData.nLines
 	plot(ax, xy(1, PlotData.postCueSegment), xy(2, PlotData.postCueSegment), '-', 'LineWidth', 2, 'Color', PlotData.lineColors(iLine, :), 'HandleVisibility', 'off');
 end
 
-% Connect 0s points (cue onset) across trials with blue dashed line
-plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 2, 'Color', TransferLearning.ColorA, 'HandleVisibility', 'off');
+plot(ax, cuePts(:, 1), cuePts(:, 2), '--', 'LineWidth', 2, 'Color', driftColor, 'HandleVisibility', 'off');
 
-hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.LearnedColor);
+hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', trialColor);
 
 for iLine = 1:PlotData.nLines
 	text(ax, cuePts(iLine, 1), cuePts(iLine, 2), '🔊', ...
-		'FontSize', 12, 'FontName', 'Segoe UI Emoji', 'HorizontalAlignment', 'center', ...
-		'VerticalAlignment', 'middle', 'Clipping', 'on', 'HandleVisibility', 'off');
-	text(ax, waterPts(iLine, 1), waterPts(iLine, 2), '💧', ...
 		'FontSize', 12, 'FontName', 'Segoe UI Emoji', 'HorizontalAlignment', 'center', ...
 		'VerticalAlignment', 'middle', 'Clipping', 'on', 'HandleVisibility', 'off');
 end
@@ -244,7 +217,7 @@ grid(ax, 'off');
 hold(ax, 'on');
 end
 
-function iApplySharedLimits(axs, PlotData)
+function iApplySingleLimit(ax, PlotData)
 xAll = reshape(PlotData.PcaData(1, :, :), [], 1);
 yAll = reshape(PlotData.PcaData(2, :, :), [], 1);
 xMargin = 0.06 * PlotData.xSpan;
@@ -257,13 +230,8 @@ if ~(isfinite(yMargin) && yMargin > 0)
 	yMargin = 1;
 end
 
-xLim = [min(xAll) - xMargin, max(xAll) + xMargin];
-yLim = [min(yAll) - yMargin, max(yAll) + yMargin];
-
-for iAx = 1:numel(axs)
-	xlim(axs(iAx), xLim);
-	ylim(axs(iAx), yLim);
-end
+xlim(ax, [min(xAll) - xMargin, max(xAll) + xMargin]);
+ylim(ax, [min(yAll) - yMargin, max(yAll) + yMargin]);
 end
 
 function colors = iAlphaRamp(baseColor, nLines)
@@ -271,7 +239,6 @@ if nLines <= 1
 	colors = [baseColor, 1];
 	return;
 end
-
 alphaVals = linspace(0.45, 1.0, nLines)';
 colors = 1 - alphaVals .* (1 - repmat(baseColor, nLines, 1));
 end
@@ -282,9 +249,7 @@ if numel(xsSec) == nTime
 	[~, idx] = min(abs(xsSec(:) - targetSec));
 	return;
 end
-
 sampleRate = 8;
 idx = round((targetSec + 3) * sampleRate) + 1;
 idx = max(1, min(nTime, idx));
 end
-
