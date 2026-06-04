@@ -97,14 +97,15 @@ end
 
 pL23 = ranksum(naiveL23, continualL23);
 pL5 = ranksum(naiveL5, continualL5);
+%% 
 
 f = figure('Color', 'w', 'Name', 'Chinese Fig44CE Initial/Continual LightWater bars');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 8];
+f.Position(3:4) = [4, 16];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 8];
-f.PaperSize = [3, 8];
+f.PaperPosition = [0, 0, 4, 16];
+f.PaperSize = [4, 16];
 
 layout = tiledlayout(f, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
@@ -120,11 +121,11 @@ ylim(axActive, [0, max(0.1, axActive.YLim(2))]);
 
 axL23 = nexttile(layout, 3);
 [~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(naiveL23(:)), double(continualL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-iStyleBarPanel(axL23, optL23, barsL23, errL23, barColors, 'Divergence', 'L2/3 divergence');
+iStyleBarPanel(axL23, optL23, barsL23, errL23, barColors, 'Divergence', 'Layer 2/3');
 
 axL5 = nexttile(layout, 4);
 [~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(naiveL5(:)), double(continualL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-iStyleBarPanel(axL5, optL5, barsL5, errL5, barColors, 'Divergence', 'L5 divergence');
+iStyleBarPanel(axL5, optL5, barsL5, errL5, barColors, 'Divergence', 'Layer 5');
 
 for axItem = [axZ, axActive, axL23, axL5]
 	if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar)
@@ -132,7 +133,7 @@ for axItem = [axZ, axActive, axL23, axL5]
 	end
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig44CE_InitialTransferLight_1s_BarScatter_DivByLayer.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44CE_InitialTransferLight_1s_BarScatter_DivByLayer.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 fprintf('\n=== Fig44CE initial/continual LightWater bars ===\n');
@@ -543,7 +544,7 @@ for iE = 1:height(ErrorBars)
 		errorBar.LineStyle = 'none';
 	end
 	if isprop(errorBar, 'CapSize')
-		errorBar.CapSize = 5.28;
+		errorBar.CapSize = 7;
 	end
 end
 end
