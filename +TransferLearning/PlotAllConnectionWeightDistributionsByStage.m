@@ -61,7 +61,7 @@ for stageIndex = 1:3
 	if denom > 0
 		if ~isempty(negValues)
 			bar(ax, binCenters, negCounts / denom, 1, 'FaceColor', stageColors(stageIndex, :), ...
-				'FaceAlpha', 0.4, 'EdgeColor', 'none');
+				'FaceAlpha', 1/3, 'EdgeColor', 'none');
 		end
 		if ~isempty(nonNegValues)
 			bar(ax, binCenters, nonNegCounts / denom, 1, 'FaceColor', stageColors(stageIndex, :), ...
@@ -73,6 +73,7 @@ for stageIndex = 1:3
 	title(ax, stageNames(stageIndex), 'FontWeight', 'normal');
 	box(ax, 'off');
 	grid(ax, 'off');
+	xlim([-2.5,0.8]);
 end
 
 MATLAB.Graphics.UnifyAxesLims(axesArray, @xlim, @ylim);

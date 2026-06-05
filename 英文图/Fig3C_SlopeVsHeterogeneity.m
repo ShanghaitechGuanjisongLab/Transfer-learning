@@ -58,17 +58,8 @@ for iL = 1:numel(layers)
     else
         rho = NaN;
         p = NaN;
-    end
-
-    if ~isfinite(p)
-        pLabel = 'p = NaN';
-    elseif p < 0.001
-        pLabel = 'p < 0.001';
-    elseif p < 0.01
-        pLabel = sprintf('p = %.3f', p);
-    else
-        pLabel = sprintf('p = %.2f', p);
-    end
+	end
+	pLabel="p = "+MATLAB.SignificantFixedpoint(p,2);
 
     ax = nexttile(tl, iL);
     hold(ax, 'on');

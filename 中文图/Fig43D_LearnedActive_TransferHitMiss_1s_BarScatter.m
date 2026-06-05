@@ -1,4 +1,4 @@
-﻿% 中文图43D：声水学会阶段活跃细胞的光水迁移命中/错失回合1s z-score比较
+% 中文图43D：声水学会阶段活跃细胞的光水迁移命中/错失回合1s z-score比较
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -52,6 +52,7 @@ pairedRowMask = false(size(activeMask));
 pairedRowMask(activeRowIndex(maskPair)) = true;
 sampleCounts = TransferLearning.PanelSampleCountTable(S, ["Hit"; "Miss"], [pairedRowMask, pairedRowMask], DS.Cells);
 hitMissPValue = signrank(vHit, vMiss);
+%% 
 
 f = figure('Color', 'w', 'Name', '中文图43D Learned-active Hit Miss 1s');
 f.Units = 'centimeters';
@@ -150,6 +151,7 @@ if ~isfolder(outDirUNC)
 end
 
 svgPath = '中文图Fig43D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
+title('🔊💧 active cells');
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig43D sample counts ===\n');

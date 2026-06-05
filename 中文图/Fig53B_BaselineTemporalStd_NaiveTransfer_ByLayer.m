@@ -45,14 +45,15 @@ end
 
 Stats = table(layerLabels, nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), nan(2,1), ...
 	'VariableNames', {'Layer', 'NaiveMean', 'TransferMean', 'NaiveN', 'TransferN', 'NaiveCells', 'TransferCells', 'PValue', 'DeltaMean'});
+%% 
 
 f = figure('Color', 'w', 'Name', 'Fig342F baseline temporal std by layer');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
+f.Position(3:4) = [4, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.PaperPosition = [0, 0, 4, 8];
+f.PaperSize = [4, 8];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 ylabel(layout, '💡💧 Baseline temporal std', 'FontSize', 6);
@@ -84,14 +85,14 @@ for iL = 1:numel(layers)
 	fprintf('ranksum p = %.6g\n', p);
 
 	ax = nexttile(layout, iL);
-	[~, optional, bars, errorBars] = UniExp.BarScatterCompare({xNaive(:), xTran(:)}, false, compareGroup, 'AsteriskThreshold', 0.05);
+	[~, optional, bars, errorBars] = UniExp.BarScatterCompare({xNaive(:), xTran(:)}, compareGroup, 'AsteriskThreshold', 0.05);
 	iStyleTile(ax, bars, errorBars, optional, groupColors(1, :), groupColors(2, :), iL == numel(layers), layerLabels(iL), p);
 end
 
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig342F_MouseLayerStd', T);
@@ -255,6 +256,9 @@ function iStyleTile(ax, bars, errorBars, optional, colorNaive, colorTransfer, sh
 			end
 		end
 		if ismember('PLine', optional.MultiCompare.Properties.VariableNames)
+			if ismember('PText', optional.MultiCompare.Properties.VariableNames)
+				MATLAB.Graphics.PLineRetune(optional.MultiCompare.PLine, optional.MultiCompare.PText);
+			end
 			for pl = optional.MultiCompare.PLine(:)'
 				pl.LineWidth = 1;
 				pl.Tag = 'PLine';

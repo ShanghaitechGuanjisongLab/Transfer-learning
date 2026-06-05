@@ -62,11 +62,11 @@ colors = [1 0 0; 0 0 1; 0.7922 0.7922 0.7922];
 
 f = figure('Color', 'w', 'Name', '中文图42B Post-stimulus activation-state patterns');
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5, 4];
+f.Position(3:4) = [6, 4];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 4.5, 4];
-f.PaperSize = [4.5,4];
+f.PaperPosition = [0, 0, 6, 4];
+f.PaperSize = [6,4];
 
 ax = axes(f, 'Position', [0.345 0.18 0.31 0.70]);
 MATLAB.Graphics.NestedPie({fractions}, ...

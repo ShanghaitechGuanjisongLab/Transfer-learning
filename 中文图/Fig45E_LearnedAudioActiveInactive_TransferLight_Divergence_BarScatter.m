@@ -106,27 +106,20 @@ for iM = 1:nMice
 		end
 	end
 end
+%% 
 
 f = figure('Color', 'w', 'Name', 'Fig334E Learned active/inactive transfer divergence');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
+f.Position(3:4) = [6, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
-
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-xl = xlabel(Layout, '🔊💧');
-xl.FontName = 'Arial';
-xl.FontSize = 6;
-yl = ylabel(Layout, '💡💧 Divergence');
-yl.FontName = 'Arial';
-yl.FontSize = 6;
+f.PaperPosition = [0, 0, 6,8];
+f.PaperSize = [6,8];
 
 palette2 = TransferLearning.GroupColors(["Active", "Inactive"]);
 Stats = table(layerLabels, nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), ...
 	'VariableNames', {'Layer','MeanActive','MeanInactive','PValue','NMouse','NCellActive','NCellInactive'});
-Options = cell(numel(layers), 1);
+layerData = cell(numel(layers), 2);
 
 for iL = 1:numel(layers)
 	vA = DivActive(:, iL);
@@ -147,23 +140,8 @@ for iL = 1:numel(layers)
 	Stats.NMouse(iL) = nMouseLayer;
 	Stats.NCellActive(iL) = nCellActive;
 	Stats.NCellInactive(iL) = nCellInactive;
-
-	ax = nexttile(Layout, iL);
-	[~, Options{iL}, Bars, EB] = UniExp.BarScatterCompare({double(vA(:)), double(vI(:))}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-	iTagPValueObjects(Options{iL});
-	delete(findobj(ax, 'Type', 'Scatter'));
-	iStyleAxes(ax, layerLabels(iL), iL == 2);
-	if iL == 2
-		ax.XTickLabel = {'Active', 'Inactive'};
-	else
-		ax.XTickLabel = {};
-	end
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-		ax.Toolbar.Visible = 'off';
-	end
-
-	iStyleBars(Bars, palette2(1, :), palette2(2, :));
-	iStyleErrorBars(EB, palette2);
+	layerData{iL, 1} = double(vA(:));
+	layerData{iL, 2} = double(vI(:));
 
 	fprintf('\n=== Fig334E %s ===\n', layerLabels(iL));
 	fprintf('Mouse count: n = %d paired mice\n', nMouseLayer);
@@ -173,10 +151,51 @@ for iL = 1:numel(layers)
 	fprintf('signrank p = %.6g\n', p);
 end
 
+ax = axes(f);
+groupLabels = ["Active", "Inactive"];
+dataTable = cell2table(layerData, 'VariableNames', cellstr(groupLabels), 'RowNames', cellstr(layerLabels));
+dataTable.Properties.DimensionNames = {'Layer', 'Group'};
+compareGroup = iWithinLayerCompareGroup(layerLabels, groupLabels, dataTable.Properties.DimensionNames);
+[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataTable, UniExp.Flags.IndividualErrorbars, compareGroup, iColorTable(groupLabels, palette2), ax, 'AsteriskThreshold', 0.05);
+for iBar = 1:numel(bars)
+	bars(iBar).BarWidth = 0.5;
+	bars(iBar).LineWidth = 1;
+	bars(iBar).EdgeColor = 'none';
+	bars(iBar).LineStyle = 'none';
+	bars(iBar).DisplayName = groupLabels(iBar);
+	if isprop(bars(iBar), 'FaceAlpha')
+		bars(iBar).FaceAlpha = 1;
+	end
+	if isprop(bars(iBar), 'BaseLine') && isgraphics(bars(iBar).BaseLine)
+		bars(iBar).BaseLine.Visible = 'off';
+	end
+end
+iStyleErrorBars(errorBars, bars, groupLabels, palette2);
+iRetunePValueLines(optional);
+
+ax.FontName = 'Arial';
+ax.FontSize = 6;
+ax.LineWidth = 1;
+if isprop(ax.XAxis, 'LineWidth')
+	ax.XAxis.LineWidth = 1;
+	ax.YAxis.LineWidth = 1;
+end
+ax.XTickLabelRotation = 0;
+ylabel(ax, '💡💧 Divergence', 'FontName', 'Arial', 'FontSize', 6);
+xlabel(ax, 'Layer', 'FontName', 'Arial', 'FontSize', 6);
+title(ax, 'Learned active vs inactive', 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');
+box(ax, 'off');
+grid(ax, 'off');
+leg = legend(bars, cellstr(groupLabels), 'Location', 'northwest', 'Box', 'off');
+leg.FontName = 'Arial';
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
+end
+
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, '中文图Fig45E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig45E_LearnedAudioActiveInactive_TransferLight_Divergence_BarScatter.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig334E_Stats', Stats);
@@ -262,84 +281,66 @@ end
 div = sqrt(noisePower / signalPower);
 end
 
-function iStyleAxes(ax, titleText, showX)
-ax.FontName = 'Arial';
-ax.FontSize = 6;
-ax.LineWidth = 1;
-if isprop(ax.XAxis, 'LineWidth')
-	ax.XAxis.LineWidth = 1;
-	ax.YAxis.LineWidth = 1;
-end
-ax.XTick = [1 2];
-if ~showX
-	ax.XTickLabel = {};
-end
-legend(ax, 'off');
-box(ax, 'off');
-grid(ax, 'off');
-title(ax, titleText, 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');
-for t = findobj(ax, 'Type', 'Text')'
-	t.FontName = 'Arial';
-	t.FontSize = 6;
-end
+function compareGroup = iWithinLayerCompareGroup(layerLabels, groupLabels, dimensionNames)
+layerLabels = string(layerLabels(:));
+groupLabels = string(groupLabels(:)).';
+layerPair = [layerLabels, layerLabels];
+groupPair = repmat(groupLabels(1:2), numel(layerLabels), 1);
+GroupPair = table(layerPair, groupPair, 'VariableNames', cellstr(dimensionNames));
+compareGroup = table(GroupPair);
 end
 
-function iStyleBars(Bars, colorA, colorB)
-if isscalar(Bars)
-	Bars.FaceColor = 'flat';
-	nB = numel(Bars.YData);
-	Bars.CData = repmat([colorA; colorB], ceil(nB/2), 1);
-	Bars.CData = Bars.CData(1:nB, :);
-	Bars.BarWidth = 0.5;
-	Bars.FaceAlpha = 1;
-	Bars.LineWidth = 1;
-	Bars.BaseLine.LineWidth = 1;
-	Bars.EdgeColor = 'none';
+function colors = iColorTable(groupLabels, groupColors)
+colors = array2table(groupColors, 'VariableNames', {'R','G','B'}, 'RowNames', cellstr(groupLabels));
+end
+
+function iStyleErrorBars(errorBars, bars, groupLabels, groupColors)
+if isempty(errorBars)
 	return;
 end
-if numel(Bars) >= 2
-	Bars(1).FaceColor = colorA;
-	Bars(2).FaceColor = colorB;
-	Bars(1).BarWidth = 0.5;
-	Bars(2).BarWidth = 0.5;
-	Bars(1).FaceAlpha = 1;
-	Bars(2).FaceAlpha = 1;
-	Bars(1).LineWidth = 1;
-	Bars(1).BaseLine.LineWidth = 1;
-	Bars(2).LineWidth = 1;
-	Bars(2).BaseLine.LineWidth = 1;
-	Bars(1).EdgeColor = 'none';
-	Bars(2).EdgeColor = 'none';
-end
-end
-
-function iStyleErrorBars(ErrorBars, colors)
-for iE = 1:height(ErrorBars)
-	errorBar = ErrorBars.Object(iE);
-	errorBar.LineWidth = 1;
-	x = double(errorBar.XData(:));
-	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
-	errorBar.Color = colors(colorIndex, :);
-end
-end
-
-function iTagPValueObjects(optional)
-if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
-	return;
-end
-multiCompare = optional.MultiCompare;
-if ismember('PLine', multiCompare.Properties.VariableNames)
-	for pLine = multiCompare.PLine(:)'
-		if isgraphics(pLine)
-			pLine.Tag = 'PLine';
+% 构建 DisplayName → color 映射
+nameToColor = containers.Map(cellstr(groupLabels), mat2cell(groupColors, ones(size(groupColors,1),1), size(groupColors,2)));
+for rowIndex = 1:height(errorBars)
+	errorBar = errorBars.Object(rowIndex);
+	if ~isgraphics(errorBar)
+		continue;
+	end
+	x = double(errorBar.XData(1));
+	% 找到 X 位置最接近的 bar，用其 DisplayName 确定颜色
+	bestDist = inf;
+	bestName = '';
+	for iBar = 1:numel(bars)
+		xp = double(bars(iBar).XEndPoints(:));
+		d = min(abs(xp - x));
+		if d < bestDist
+			bestDist = d;
+			bestName = bars(iBar).DisplayName;
 		end
 	end
+	errorBar.LineWidth = 1;
+	errorBar.Color = nameToColor(bestName);
+	errorBar.HandleVisibility = 'off';
+	setappdata(errorBar, 'TransferLearningPreserveLineWidth', true);
 end
-if ismember('PText', multiCompare.Properties.VariableNames)
-	for pText = multiCompare.PText(:)'
-		if isgraphics(pText)
-			pText.Tag = 'PText';
-		end
+end
+
+function iRetunePValueLines(optional)
+if ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+if ~all(ismember({'PLine','PText'}, optional.MultiCompare.Properties.VariableNames))
+	return;
+end
+MATLAB.Graphics.PLineRetune(optional.MultiCompare.PLine, optional.MultiCompare.PText);
+for pLine = optional.MultiCompare.PLine(:)'
+	if isgraphics(pLine)
+		pLine.LineWidth = 1;
+		pLine.Tag = 'PLine';
+	end
+end
+for pText = optional.MultiCompare.PText(:)'
+	if isgraphics(pText)
+		pText.Tag = 'PText';
 	end
 end
 end

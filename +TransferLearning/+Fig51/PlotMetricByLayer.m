@@ -1,4 +1,4 @@
-﻿function [f, summaryTbl] = PlotMetricByLayer(Data, metricField, figName, yLabelText, svgName)
+function [f, summaryTbl] = PlotMetricByLayer(Data, metricField, figName, yLabelText, svgName)
 arguments
 	Data struct
 	metricField (1,1) string
@@ -13,11 +13,11 @@ colorContinual = groupColors(2, :);
 
 f = figure('Color', 'w', 'Name', char(figName));
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
+f.Position(3:4) = [4, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.PaperPosition = [0, 0, 4, 8];
+f.PaperSize = [4, 8];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 summaryTbl = table();
@@ -75,9 +75,8 @@ for iLayer = 1:2
 	end
 
 ylabel(Layout, yLabelText, 'FontSize', 6);
-MATLAB.Graphics.UnifyAxesLims(axList, @ylim);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 end
 
