@@ -1,17 +1,35 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 5308caa4-aa67-47ac-8bf8-1eac24ceeb46
+.AUTHOR 埃博拉酱-机器人
+.TAGS git github mirror proxy fetch pull 镜像 加速 China
+.LICENSEURI https://opensource.org/licenses/MIT
+.RELEASENOTES 初始版本。
+#>
+
+<#
+.SYNOPSIS
+    在国内网络环境下，通过多个 GitHub 镜像站点自动尝试 git fetch，根据历史成功率智能排序，优先使用最快镜像，拉取成功后自动快进合并。
+.DESCRIPTION
+    通过多个 GitHub 镜像站点自动尝试 git fetch，按历史成功率智能排序，实现国内无障碍拉取 GitHub 仓库。本脚本自动检测当前仓库的 origin 远程和当前分支，通过多个镜像代理站点依次尝试 git fetch，并根据历史成功/失败记录智能排序，优先使用成功率最高的镜像。拉取成功后自动执行快进合并（--ff-only）。
+.PARAMETER 镜像站前缀
+    镜像站地址前缀列表，默认内置 5 个国内常用镜像站。
+.EXAMPLE
+    .\GitHub镜像拉取.ps1
+    从 origin 拉取当前分支，快进合并。
+.EXAMPLE
+    .\GitHub镜像拉取.ps1 -镜像站前缀 "https://gh.llkk.cc/", "https://gh-proxy.com/"
+    仅使用指定的两个镜像站。
+#>
+
 param(
-    [string]$源远程名 = "origin",
-    [string]$分支 = "",
     [string[]]$镜像站前缀 = @(
         "https://gh.llkk.cc/",
         "https://gh-proxy.com/",
         "https://ghfast.top/",
         "https://gh-proxy.net/",
         "https://hub.gitmirror.com/"
-    ),
-    [string[]]$额外镜像地址 = @(),
-    [string]$记录文件 = "",
-    [switch]$仅获取,
-    [switch]$变基
+    )
 )
 
 $ErrorActionPreference = "Stop"
@@ -257,24 +275,17 @@ function 合成-镜像仓库地址 {
     return "$($镜像站.TrimEnd('/'))/$仓库地址"
 }
 
-$仓库根目录 = 读取-Git文本 @("rev-parse", "--show-toplevel")
+$源远程名 = "origin"
+$记录文件 = Join-Path (Join-Path $env:USERPROFILE "Temp") "镜像拉取记录.json"
 
-if ([string]::IsNullOrWhiteSpace($记录文件)) {
-    $记录文件 = Join-Path (Join-Path $仓库根目录 "Temp") "镜像拉取记录.json"
-}
-
+$分支 = 读取-Git文本 @("branch", "--show-current")
 if ([string]::IsNullOrWhiteSpace($分支)) {
-    $分支 = 读取-Git文本 @("branch", "--show-current")
-}
-
-if ([string]::IsNullOrWhiteSpace($分支)) {
-    throw "当前处于分离 HEAD 状态，请用 -分支 指定要拉取的分支。"
+    throw "当前处于分离 HEAD 状态。"
 }
 
 $源仓库地址 = 读取-Git文本 @("remote", "get-url", $源远程名)
 $HTTPS仓库地址 = 转换为-HTTPS仓库地址 $源仓库地址
 $候选镜像地址 = @()
-$候选镜像地址 += $额外镜像地址 | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
 
 foreach ($镜像站 in $镜像站前缀) {
     if (-not [string]::IsNullOrWhiteSpace($镜像站)) {
@@ -328,19 +339,8 @@ if ([string]::IsNullOrWhiteSpace($成功镜像地址)) {
     throw "所有内置镜像站都未能获取 $分支。"
 }
 
-if ($仅获取) {
-    Write-Host "已从镜像获取 $分支：$成功镜像地址"
-    exit 0
-}
-
-if ($变基) {
-    Write-Host "将当前分支变基到镜像中的 $分支..."
-    执行-Git命令 @("rebase", "FETCH_HEAD")
-}
-else {
-    Write-Host "将当前分支快进到镜像中的 $分支..."
-    执行-Git命令 @("merge", "--ff-only", "FETCH_HEAD")
-}
+Write-Host "将当前分支快进到镜像中的 $分支..."
+执行-Git命令 @("merge", "--ff-only", "FETCH_HEAD")
 
 $最新提交 = 读取-Git文本 @("log", "-1", "--pretty=format:%h %s")
 Write-Host "完成。当前最新提交：$最新提交"

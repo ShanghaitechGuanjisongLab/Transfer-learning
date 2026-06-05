@@ -24,4 +24,4 @@ MATLAB：多鼠/多条件模型诊断和验证要优先并行运算（如 `parfo
 
 没有我明示，禁用Python
 
-用fetch工具抓网页，不要用powershell。
+用fetch工具抓网页，不要用powershell。如果遇到反爬/反机器人等阻挡，还可尝试调用Playwright工具。
