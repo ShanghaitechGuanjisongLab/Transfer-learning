@@ -1,4 +1,4 @@
-﻿function Fig71_PlotConvergenceVenn(Matrix, Tags, legendLabels, titleText, chanceText, figureName, figSizeCm, svgPath)
+function Fig71_PlotConvergenceVenn(Matrix, Tags, legendLabels, titleText, chanceText, figureName, figSizeCm, svgPath)
 f = figure('Color', 'w', 'Name', figureName);
 f.Units = 'centimeters';
 f.Position(3:4) = figSizeCm;
@@ -33,7 +33,7 @@ end
 
 title(ax, titleText, 'FontSize', 12, 'FontWeight', 'normal');
 if numel(Circles) >= 2
-	lgd = legend(Circles(1:2), cellstr(string(legendLabels(:))), 'Location', MATLAB.Graphics.OptimizedLegendLocation(Texts(2:end)), 'Box', 'off', 'FontSize', 12);
+	lgd = legend(Circles(1:2), cellstr(string(legendLabels(:))), 'Location', 'northoutside', 'Box', 'off', 'FontSize', 12);
 	lgd.FontName = 'Segoe UI Emoji';
 end
 if strlength(chanceText) > 0

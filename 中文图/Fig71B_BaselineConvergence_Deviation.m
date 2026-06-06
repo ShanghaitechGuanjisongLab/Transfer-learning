@@ -1,4 +1,5 @@
-﻿Data = Fig71_BaselineConvergenceCache();
+Data = Fig71_BaselineConvergenceCache();
+%% 
 
 f = figure('Color', 'w', 'Name', '中文图71B Baseline convergence deviation');
 f.Units = 'centimeters';
@@ -38,7 +39,7 @@ end
 box(ax, 'off');
 grid(ax, 'off');
 xlabel(ax, 'Time(s)');
-ylabel(ax, 'Inter-trial log_2(SD)');
+ylabel(ax, 'log_2(Divergence)');
 ax.XTick = -3:1:0;
 
 lineObj = findobj(ax, 'Type', 'Line');

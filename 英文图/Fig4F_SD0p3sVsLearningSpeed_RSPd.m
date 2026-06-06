@@ -62,12 +62,11 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 2;
 end
 
-cols = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
-lineStyles = ["-"; "-"; "--"];
+cols = [TransferLearning.LearnedColor; TransferLearning.ColorA; TransferLearning.ColorB];
 meanCells = {meanL(:), meanH(:), meanM(:)};
 semCells  = {semL(:),  semH(:),  semM(:)};
 
-Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 0.2, X=xsPlot(:), EdgeColors=cols, LineStyles=lineStyles);
+Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 0.2, X=xsPlot(:), EdgeColors=cols);
 for iPatch = 1:numel(Patches)
 	if isprop(Patches(iPatch), 'LineWidth')
 		Patches(iPatch).LineWidth = 2;

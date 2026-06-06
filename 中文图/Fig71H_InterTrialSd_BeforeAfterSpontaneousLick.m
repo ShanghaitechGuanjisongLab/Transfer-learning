@@ -1,4 +1,4 @@
-﻿% 中文图71H：自发舔水前后回合间 SD 与舔水概率
+% 中文图71H：自发舔水前后回合间 SD 与舔水概率
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -25,7 +25,7 @@ hold(ax, 'on');
 yyaxis(ax, 'left');
 Lines = MATLAB.Graphics.MultiShadowedLines(Data.StdMean, Data.StdSem, 1/4, X=double(Data.X), EdgeColors=[1, 0, 0; 0, 0, 1]);
 set(Lines, 'LineWidth', 2);
-ylabel(ax, 'Inter-trial SD', 'FontSize', 12);
+ylabel(ax, 'Divergence', 'FontSize', 12);
 ax.YAxis(1).Color = [0.5, 0, 0.5];
 
 yyaxis(ax, 'right');
@@ -48,7 +48,7 @@ end
 ax.TickLabelInterpreter = 'none';
 box(ax, 'off');
 grid(ax, 'off');
-title(ax, 'Inter-trial SD B/A spontaneous lick', 'FontSize', 12, 'FontWeight', 'normal');
+title(ax, 'Divergence B/A spontaneous lick', 'FontSize', 12, 'FontWeight', 'normal');
 xlabel(ax, 'Time (s)', 'FontSize', 12);
 
 lgd = legend(Lines, ["Before spontaneous lick", "After spontaneous lick"], 'Location', 'northeast', 'Box', 'off', 'FontSize', 12);

@@ -22,8 +22,8 @@ function Cache = iBuildCache()
 	phaseNames = ["LearnedAudio", "NaiveLight", "TransferLightHit", "TransferLightMiss"];
 	legendLabels = ["Learned", "Naive", "Continual hit", "Continual miss"];
 	barLabels = ["Learned", "Naive", "C-hit", "C-miss"];
-	phaseColors = [TransferLearning.LearnedColor; TransferLearning.NaiveColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
-	phaseLineStyles = ["-"; "-"; "-"; "--"];
+	phaseColors = [TransferLearning.LearnedColor; TransferLearning.NaiveColor; TransferLearning.ColorA; TransferLearning.ColorB];
+	phaseLineStyles = ["-"; "-"; "-"; "-"];
 	compareGroup = table(["NaiveLight", "TransferLightHit"; "NaiveLight", "LearnedAudio"; "TransferLightHit", "TransferLightMiss"], 'VariableNames', {'GroupPair'});
 
 	phase = struct();

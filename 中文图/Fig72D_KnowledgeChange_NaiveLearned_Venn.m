@@ -1,4 +1,4 @@
-﻿% 中文图72D：知识增减（Naive→Learned）
+% 中文图72D：知识增减（Naive→Learned）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -40,7 +40,7 @@ function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 		end
 	end
 	title(ax, pairRow.Transition, 'FontSize', 12, 'FontWeight', 'normal');
-	lgd = legend(Circles(1:2), {char(pairRow.LeftLegend), char(pairRow.RightLegend)}, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Texts(2:end)), 'Box', 'off', 'FontSize', 12);
+	lgd = legend(Circles(1:2), {char(pairRow.LeftLegend), char(pairRow.RightLegend)}, 'Location', 'northoutside', 'Box', 'off', 'FontSize', 12);
 	lgd.FontName = 'Segoe UI Emoji';
 	allText = findall(f, 'Type', 'Text');
 	for iText = 1:numel(allText)

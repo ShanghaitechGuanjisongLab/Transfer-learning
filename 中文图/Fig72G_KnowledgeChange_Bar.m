@@ -16,7 +16,7 @@ Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx);
 usageKeys = {'Unused old', 'Newly learned'};
 usageLabels = {'Unused old', 'Newly learned'};
 transitionKeys = {'NaiveToLearned', 'LearnedToTransfer', 'TransferToFinal', 'LearnedToFinal'};
-transitionLabels = {'Naive→Learned', 'Learned→Continual', 'Continual→Final', 'Learned→Final'};
+transitionLabels = {'Naive→Learned', 'Learned→Continual start', 'Continual start→Continual learned', 'Learned→Continual learned'};
 transitionPhasePairs = ["NaiveLight", "LearnedLight"; "LearnedAudio", "TransferLight"; "TransferLight", "FinalLight"; "LearnedAudio", "FinalLight"];
 transitionColors = iTransitionColors(transitionPhasePairs);
 compareGroup = table(table(["NaiveToLearned", "LearnedToTransfer"; "NaiveToLearned", "LearnedToTransfer"], ["Unused old", "Unused old"; "Newly learned", "Newly learned"], 'VariableNames', {'Pair', 'Usage'}), 'VariableNames', {'GroupPair'});
@@ -31,7 +31,7 @@ f.PaperSize = [12, 8];
 
 ax = axes(f);
 hold(ax, 'on');
-[~, Opt, Bars, EB] = UniExp.BarScatterCompare(Data.UNCompare, compareGroup, UniExp.Flags.empty, AsteriskThreshold=0.01);
+[~, Opt, Bars, EB] = UniExp.BarScatterCompare(Data.UNCompare, compareGroup, UniExp.Flags.IndividualErrorbars, AsteriskThreshold=0.01);
 delete(findobj(ax, 'Type', 'Scatter'));
 for eb = EB.Object(:)'
 	eb.LineWidth = 2;

@@ -43,15 +43,13 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-lineColors = [TransferLearning.NaiveColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
-lineStyles = ["-"; "-"; "--"];
+lineColors = [TransferLearning.NaiveColor; TransferLearning.ColorA; TransferLearning.ColorB];
 patches = MATLAB.Graphics.MultiShadowedLines( ...
 	{meanMat(1, :).', meanMat(2, :).', meanMat(3, :).'}, ...
 	{semMat(1, :).', semMat(2, :).', semMat(3, :).'}, ...
 	0.2, ...
 	X=xData, ...
-	EdgeColors=lineColors, ...
-	LineStyles=lineStyles);
+	EdgeColors=lineColors);
 
 for iPatch = 1:numel(patches)
 	if isprop(patches(iPatch), 'LineWidth')
@@ -59,8 +57,8 @@ for iPatch = 1:numel(patches)
 	end
 end
 
-xline(ax, 0, ':k', 'LineWidth', 2);
-xline(ax, 1, '-k', 'LineWidth', 2);
+xline(ax, 0, '--k', 'LineWidth', 2);
+xline(ax, 1, '--k', 'LineWidth', 2);
 
 for ln = findobj(ax, 'Type', 'Line')'
 	ln.LineWidth = 2;

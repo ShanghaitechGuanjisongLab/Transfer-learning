@@ -1,10 +1,17 @@
 function Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx)
 queryXlsx = string(queryXlsx);
 
-persistent Cache
-if ~isempty(Cache) && isfield(Cache, 'QueryXlsx') && Cache.QueryXlsx == queryXlsx
-	Data = Cache;
-	return;
+cacheDir = fullfile(tempdir, 'Fig72_KnowledgeChangeCache');
+if ~isfolder(cacheDir)
+	mkdir(cacheDir);
+end
+cacheFile = fullfile(cacheDir, 'KnowledgeChange_' + queryXlsx + '.mat');
+if isfile(cacheFile)
+	loaded = load(cacheFile, 'CachedData');
+	if isfield(loaded, 'CachedData') && isfield(loaded.CachedData, 'QueryXlsx') && loaded.CachedData.QueryXlsx == queryXlsx
+		Data = loaded.CachedData;
+		return;
+	end
 end
 
 phaseNames = ["NaiveLight", "LearnedLight", "LearnedAudio", "TransferLight", "FinalLight"];
@@ -13,9 +20,9 @@ baseData = Fig72_GlobalInformationCache(queryXlsx, string.empty(1, 0), phaseName
 pairs = table( ...
 	["NaiveLight"; "LearnedAudio"; "TransferLight"; "LearnedAudio"], ...
 	["LearnedLight"; "TransferLight"; "FinalLight"; "FinalLight"], ...
-	["Naive 💡💧"; "Learned 🔊💧"; "Continual 💡💧"; "Learned 🔊💧"], ...
-	["Learned 💡💧"; "Continual 💡💧"; "Final 💡💧"; "Final 💡💧"], ...
-	["Naive→Learned"; "Learned→Continual"; "Continual→Final"; "Learned→Final"], ...
+	["Naive 💡💧"; "Learned 🔊💧"; "C-start 💡💧"; "Learned 🔊💧"], ...
+	["Learned 💡💧"; "C-start 💡💧"; "C-learned 💡💧"; "C-learned 💡💧"], ...
+	["Naive→Learned"; "Learned→C-start"; "C-start→C-learned"; "Learned→C-learned"], ...
 	["NaiveToLearned"; "LearnedToTransfer"; "TransferToFinal"; "LearnedToFinal"], ...
 	'VariableNames', {'LeftPhase', 'RightPhase', 'LeftLegend', 'RightLegend', 'Transition', 'TransitionKey'});
 
@@ -82,5 +89,6 @@ Data.QueryXlsx = queryXlsx;
 Data.PairStats = pairStats;
 Data.UNCompare = unCompare;
 Data.CacheInfo = struct('NumPair', height(pairStats), 'Transitions', pairStats.Transition.');
-Cache = Data;
+CachedData = Data;
+save(cacheFile, 'CachedData', '-v7.3');
 end
