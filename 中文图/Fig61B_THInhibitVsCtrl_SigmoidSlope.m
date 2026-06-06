@@ -51,6 +51,8 @@ fitTH = iFitSigmoidCurve(iCarryForwardSessions(displayedTH), "TH");
 permResult = iPermutationTestSigmoidSlope(iCarryForwardSessions(displayedCtrl), iCarryForwardSessions(displayedTH), 10000, 1);
 groupSessions = iCarryForwardSessions([displayedCtrl; displayedTH]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(groupSessions, 'Performance', 'Session', 'Group', 'Mouse');
+sessions7 = groupSessions(groupSessions.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
 
 xSummary = (1:max([max(fitCtrl.XObserved), max(fitTH.XObserved), max(x)])).';
 xFit = linspace(1, max(xSummary), 200).';
@@ -98,16 +100,26 @@ if yTop - yBottom < 0.2
 	yBottom = yMid - 0.1;
 	yTop = yMid + 0.1;
 end
-TransferLearning.Style.AddRightSidePValueLine(ax, max(xSummary), yBottom, yTop, groupP);
+% Horizontal P-value line spanning blocks 1-7
+max7Ctrl = max(meanMatOut(1:min(7, end), 1), [], 'omitnan');
+max7TH = max(meanMatOut(1:min(7, end), 2), [], 'omitnan');
+yTop7 = max(max7Ctrl, max7TH);
 
 lgd = legend(ax, [hCtrl(1), hCtrl(2), hTH(1), hTH(2)], ...
 	{'Control Mean ± SEM', 'Control Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
 	'Location', 'southoutside', 'NumColumns', 2);
 lgd.Box = 'off';
 lgd.FontSize = 10;
+lgd.AutoUpdate=false;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+textY = yPLine + 0.2 * yrange;
+text(ax, 4, textY, '＊', ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 svgName = "中文图Fig61B_THInhibitVsCtrl_SigmoidSlope.svg";
 
@@ -152,7 +164,8 @@ fprintf('Ctrl sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.
 fprintf('TH sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTH.Lower, fitTH.Upper, fitTH.Slope, fitTH.Midpoint, fitTH.RSquared);
 fprintf('Permutation slope difference (TH - Ctrl): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
-fprintf('Two-way ANOVA Group P = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 fprintf('Sigmoid slope panel: cell count and Spearman rho are not applicable.\n');
 
 assignin('base', 'Fig61D_Sigmoid_AllSessions', allSessions);

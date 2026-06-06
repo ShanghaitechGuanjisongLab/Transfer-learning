@@ -40,6 +40,14 @@ slopeT = transferSlopeData.Slope; miceT = transferSlopeData.Mouse;
 keepN = isfinite(slopeN); slopeN = slopeN(keepN); miceN = miceN(keepN);
 keepT = isfinite(slopeT); slopeT = slopeT(keepT); miceT = miceT(keepT);
 
+% Ensure selected mice have at least 3 data points (sessions)
+nSessN = iCountSessionsPerMouse(displayedNaive, miceN);
+nSessT = iCountSessionsPerMouse(displayedTransfer, miceT);
+enoughN = nSessN >= 3;
+enoughT = nSessT >= 3;
+slopeN = slopeN(enoughN); miceN = miceN(enoughN);
+slopeT = slopeT(enoughT); miceT = miceT(enoughT);
+
 [~, idxMinN] = min(slopeN); mouseMinN = miceN(idxMinN);
 [~, idxMaxT] = max(slopeT); mouseMaxT = miceT(idxMaxT);
 
@@ -60,11 +68,13 @@ ax = axes(f); hold(ax, 'on');
 
 % Naive (lowest slope)
 xN = double(naiveSess.Session(:)); yN = double(naiveSess.Performance(:));
+xFitN = linspace(min(xN), max(xN), 200)';
 scatter(ax, xN, yN, 36, curveColors(1,:), 'o', 'filled', 'DisplayName', 'Naive');
 hFitN = plot(ax, xFitN, iSigmoidFromFixedLowerParams(fitN.ParamRaw, xFitN), '-', 'Color', curveColors(1,:), 'LineWidth', 2.2, 'DisplayName', 'Naive Sigmoid');
 
 % Continual (highest slope)
 xT = double(tranSess.Session(:)); yT = double(tranSess.Performance(:));
+xFitT = linspace(min(xT), max(xT), 200)';
 scatter(ax, xT, yT, 36, curveColors(2,:), 'o', 'filled', 'DisplayName', 'Continual');
 hFitT = plot(ax, xFitT, iSigmoidFromFixedLowerParams(fitT.ParamRaw, xFitT), '-', 'Color', curveColors(2,:), 'LineWidth', 2.2, 'DisplayName', 'Continual Sigmoid');
 
@@ -242,4 +252,16 @@ end
 
 function [lower, upper, slope, midpoint] = iDecodeFixedLowerSigmoidParams(p)
 	lower = 0; upper = 1; slope = p(1).^2; midpoint = p(2);
+end
+
+function sessCounts = iCountSessionsPerMouse(Sess, mice)
+	mice = string(mice); Sess.Mouse = string(Sess.Mouse);
+	sessCounts = zeros(numel(mice), 1);
+	for i = 1:numel(mice)
+		R = Sess(Sess.Mouse == mice(i), :);
+		perf = double(R.Performance);
+		reached = find(perf >= 1.0, 1, 'first');
+		if ~isempty(reached), R = R(1:reached, :); end
+		sessCounts(i) = height(R);
+	end
 end

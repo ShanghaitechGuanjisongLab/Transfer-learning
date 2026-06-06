@@ -18,6 +18,8 @@ continualFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
 curveColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 anovaTable = iBuildGroupAnovaTableFromMatrices(naivePerformance, continualPerformance, ["Naive", "Continual"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
+anovaTable7 = anovaTable(anovaTable.Block <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable7, 'Performance', 'Block', 'Group', 'Mouse');
 
 fig = figure('Color', 'w', 'Name', 'Fig54C model Naive Continual sigmoid');
 fig.Units = 'centimeters';
@@ -51,7 +53,16 @@ if yTop - yBottom < 0.2
 	yBottom = yMid - 0.1;
 	yTop = yMid + 0.1;
 end
-TransferLearning.Style.AddRightSidePValueLine(ax, max(xSummary), yBottom, yTop, groupP);
+% Horizontal P-value line spanning blocks 1-7
+max7Naive = max(summary.Mean(1:min(7, end), 1), [], 'omitnan');
+max7Continual = max(summary.Mean(1:min(7, end), 2), [], 'omitnan');
+yTop7 = max(max7Naive, max7Continual);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+text(ax, 4, textY, '＊', ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 lgd = legend(ax, [hNaive(1), hNaive(2), hContinual(1), hContinual(2)], ...
 	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
@@ -62,7 +73,8 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-fprintf('Fig54C Two-way ANOVA Group P = %.4g\n', groupP);
+fprintf('Fig54C Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Fig54C Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 iPrintPermutationResult('Fig54C', SigmoidStats);
 iAssertSigmoidSlopeSignificant('Fig54C', SigmoidStats, Params.TransferHighestAlpha, fig);
 

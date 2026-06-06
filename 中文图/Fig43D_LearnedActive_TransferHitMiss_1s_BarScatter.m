@@ -56,11 +56,11 @@ hitMissPValue = signrank(vHit, vMiss);
 
 f = figure('Color', 'w', 'Name', '中文图43D Learned-active Hit Miss 1s');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
+f.Position(3:4) = [4, 8];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.PaperPosition = [0, 0, 4, 8];
+f.PaperSize = [4, 8];
 
 tiledlayout(f, 1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 nexttile;
@@ -151,8 +151,8 @@ if ~isfolder(outDirUNC)
 end
 
 svgPath = '中文图Fig43D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
-title('🔊💧 active cells');
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
+title("🔊💧"+newline+"active cells");
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig43D sample counts ===\n');
 disp(sampleCounts);

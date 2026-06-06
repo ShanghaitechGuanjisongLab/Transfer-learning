@@ -60,6 +60,8 @@ fitNaive = iFitSigmoidCurve(displayedNaive, "Naive");
 fitTransfer = iFitSigmoidCurve(displayedTransfer, "Transfer");
 permResult = iPermutationTestSigmoidSlope(displayedNaive, displayedTransfer, 10000, 1);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performance', 'Session', 'Group', 'Mouse');
+sessionsForAnova7 = allSessions(allSessions.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessionsForAnova7, 'Performance', 'Session', 'Group', 'Mouse');
 
 % Per-mouse blocks to 50% hit rate
 naiveBlocks50 = iPerMouseBlocksTo50(displayedNaive);
@@ -116,7 +118,16 @@ if yTop - yBottom < 0.2
 	yBottom = yMid - 0.1;
 	yTop = yMid + 0.1;
 end
-TransferLearning.Style.AddRightSidePValueLine(ax, xMax + 0.80, yBottom, yTop, groupP);
+% Horizontal P-value line spanning blocks 1-7 (positions based on ylim range ratio)
+max7Naive = max(meanMatOut(1:min(7, end), 1), [], 'omitnan');
+max7Transfer = max(meanMatOut(1:min(7, end), 2), [], 'omitnan');
+yTop7 = max(max7Naive, max7Transfer);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+text(ax, 4, textY, '＊', ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 lgd = legend(ax, [hNaive(1), hNaive(2), hTransfer(1), hTransfer(2)], ...
 	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
@@ -194,7 +205,8 @@ fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%
 fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
 fprintf('Permutation slope difference (Continual - Naive): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
-fprintf('Two-way ANOVA Group P = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 fprintf('Per-mouse blocks-to-50%% ranksum p = %.4g\n', blocks50RankSumP);
 
 assignin('base', 'Fig33B_AllSessions', allSessions);

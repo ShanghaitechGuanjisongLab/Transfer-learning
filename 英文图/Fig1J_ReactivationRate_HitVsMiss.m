@@ -39,11 +39,11 @@ nCells = sum(learnedActiveCells(mask), 'omitnan');
 
 f = figure('Color','w', 'Name','English Fig1J Reactivation Hit vs Miss');
 f.Units = 'centimeters';
-f.Position(3:4) = [3.0, 4.0]; % 30mm x 40mm
+f.Position(3:4) = [4.0, 8.0]; % 30mm x 40mm
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.PaperPosition = [0, 0, 4, 8];
+f.PaperSize = [4, 8];
 
 ax = axes(f);
 hold(ax,'on');
@@ -99,7 +99,7 @@ if isfinite(p)
 end
 
 svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 fprintf('\n=== English Fig1J Reactivation Hit vs Miss ===\n');
