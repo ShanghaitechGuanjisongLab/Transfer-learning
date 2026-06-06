@@ -70,7 +70,7 @@ for iL = 1:numel(layers)
     hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 'o', 'filled', 'LineWidth', 0.2);
     if iL == 1
         hLegend = [hC; hT];
-        ylabel(ax, 'Sigmoid slope', 'FontSize', 12);
+        ylabel(ax, 'Learning slope', 'FontSize', 12);
     else
         ax.YAxis.Visible = 'off';
     end

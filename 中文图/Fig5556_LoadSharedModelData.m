@@ -44,7 +44,7 @@ tf = isstruct(data) ...
 	&& isfield(data, 'Performance') && isfield(data.Performance, 'Naive') && isfield(data.Performance, 'Transfer') && isfield(data.Performance, 'THOff') ...
 	&& isfield(data, 'PreFormalWeightValues') ...
 	&& isfield(data, 'Heterogeneity') ...
-	&& isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig55C') && isfield(data.Sigmoid, 'Fig383D') ...
+	&& isfield(data, 'Sigmoid') && (isfield(data.Sigmoid, 'Fig55C') || isfield(data.Sigmoid, 'Fig54C')) && isfield(data.Sigmoid, 'Fig383D') ...
 	&& isfield(data, 'HeatmapData');
 end
 
@@ -54,6 +54,12 @@ if isstruct(data) && isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig382C'
 end
 if isstruct(data) && isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig55C') && ~isfield(data.Sigmoid, 'Fig382C')
 	data.Sigmoid.Fig382C = data.Sigmoid.Fig55C;
+end
+if isstruct(data) && isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig55C') && ~isfield(data.Sigmoid, 'Fig54C')
+	data.Sigmoid.Fig54C = data.Sigmoid.Fig55C;
+end
+if isstruct(data) && isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig54C') && ~isfield(data.Sigmoid, 'Fig55C')
+	data.Sigmoid.Fig55C = data.Sigmoid.Fig54C;
 end
 if isstruct(data) && isfield(data, 'Sigmoid') && isfield(data.Sigmoid, 'Fig383B') && ~isfield(data.Sigmoid, 'Fig383D')
 	data.Sigmoid.Fig383D = data.Sigmoid.Fig383B;

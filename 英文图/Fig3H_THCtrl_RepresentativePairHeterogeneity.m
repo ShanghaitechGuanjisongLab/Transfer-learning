@@ -135,6 +135,10 @@ wZ = nTrials * sZ;
     fprintf('Wrote: %s\n', pngName);
 end
 
+cbSvgName = 'English_Fig3H_Volshow_Colorbar.svg';
+iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
+fprintf('Wrote: %s\n', cbSvgName);
+
 binEdges = linspace(-1, 1, 41);
 histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 histColors = {histColorArray(1,:), histColorArray(2,:)};
@@ -335,6 +339,28 @@ if ~isfinite(vAbs) || vAbs <= 0
 end
 Vn = 0.5 + 0.5 * (V / vAbs);
 Vn = max(0, min(1, Vn));
+end
+
+function iExportVolshowColorbarSVG(vAbs, cmap, svgName)
+cbFig = figure('Color', 'none');
+cbFig.Units = 'centimeters';
+cbFig.Position(3:4) = [1.2, 7.0];
+
+ax = axes(cbFig, 'Position', [0.10, 0.05, 0.10, 0.90]);
+axis(ax, 'off');
+colormap(ax, cmap);
+clim(ax, [-vAbs, vAbs]);
+
+cb = colorbar(ax, 'eastoutside');
+cb.Position = [0.50, 0.08, 0.22, 0.84];
+cb.Ticks = [-vAbs, 0, vAbs];
+cb.TickLabels = {sprintf('%.2f', -vAbs), '0', sprintf('%.2f', vAbs)};
+cb.Label.String = 'z-score';
+cb.FontSize = 6;
+cb.Box = 'off';
+
+TransferLearning.ExportStandardFigureTransparent(cbFig, 3, svgName);
+close(cbFig);
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)

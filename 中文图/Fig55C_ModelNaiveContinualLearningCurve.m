@@ -1,6 +1,6 @@
-% Fig55C model-simulated Naive/Continual learning curve with sigmoid fits.
+% Fig54C model-simulated Naive/Continual learning curve with sigmoid fits.
 
-svgName = '中文图Fig55C_ModelNaiveContinualLearningCurve.svg';
+svgName = '中文图Fig54C_ModelNaiveContinualLearningCurve.svg';
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'));
@@ -8,7 +8,7 @@ Params = Fig5556Data.Params;
 RunInfo = Fig5556Data.RunInfo;
 naivePerformance = Fig5556Data.Performance.Naive;
 continualPerformance = Fig5556Data.Performance.Transfer;
-SigmoidStats = Fig5556Data.Sigmoid.Fig55C;
+SigmoidStats = Fig5556Data.Sigmoid.Fig54C;
 
 summary = iLearningCurveSummary(naivePerformance, continualPerformance);
 xSummary = (1:size(summary.Mean, 1)).';
@@ -17,7 +17,7 @@ naiveFitCurve = iSigmoidFromFit(SigmoidStats.FitA, xFit);
 continualFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
 curveColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 
-fig = figure('Color', 'w', 'Name', 'Fig55C model Naive Continual sigmoid');
+fig = figure('Color', 'w', 'Name', 'Fig54C model Naive Continual sigmoid');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [12, 8];
 fig.PaperUnits = 'centimeters';
@@ -50,15 +50,15 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-iPrintPermutationResult('Fig55C', SigmoidStats);
-iAssertSigmoidSlopeSignificant('Fig55C', SigmoidStats, Params.TransferHighestAlpha, fig);
+iPrintPermutationResult('Fig54C', SigmoidStats);
+iAssertSigmoidSlopeSignificant('Fig54C', SigmoidStats, Params.TransferHighestAlpha, fig);
 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig55C_ModelNaiveContinualPerformance', struct('Naive', naivePerformance, 'Continual', continualPerformance));
-assignin('base', 'Fig55C_ModelNaiveContinualRunInfo', RunInfo);
-assignin('base', 'Fig55C_ModelNaiveContinualSigmoidStats', SigmoidStats);
+assignin('base', 'Fig54C_ModelNaiveContinualPerformance', struct('Naive', naivePerformance, 'Continual', continualPerformance));
+assignin('base', 'Fig54C_ModelNaiveContinualRunInfo', RunInfo);
+assignin('base', 'Fig54C_ModelNaiveContinualSigmoidStats', SigmoidStats);
 
 function summary = iLearningCurveSummary(performanceA, performanceB)
 numSessions = max(size(performanceA, 2), size(performanceB, 2));
@@ -120,7 +120,7 @@ end
 if isgraphics(fig)
 	close(fig);
 end
-error('Fig55C:SigmoidSlopeNotSignificant', ...
+error('Fig54C:SigmoidSlopeNotSignificant', ...
 	'%s requires Transfer sigmoid slope to be significantly greater than Naive (alpha=%.3f). %s observed difference=%.4f, two-sided permutation p=%.4g.', ...
 	figureLabel, alpha, char(comparison.Comparison(1)), observedDifference, pValue);
 end

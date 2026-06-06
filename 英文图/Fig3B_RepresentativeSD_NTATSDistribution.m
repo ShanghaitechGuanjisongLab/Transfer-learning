@@ -1,4 +1,4 @@
-﻿% 英文图3B：代表性单会话的 3D 热图 + 细胞间 1s z-score 分布
+% 英文图3B：代表性单会话的 3D 热图 + 细胞间 1s z-score 分布
 %
 % 先按原规则找出 Pair A / Pair B，共 4 个候选会话
 % 再在这 4 个会话中挑选 response heterogeneity 最大的 1 个作为代表
@@ -247,6 +247,10 @@ pngName = 'English_Fig3B_Volshow_Representative.png';
 exportapp(fig, fullfile(outDirUNC, pngName));
 fprintf('Wrote: %s\n', pngName);
 
+cbSvgName = 'English_Fig3B_Volshow_Colorbar.svg';
+iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
+fprintf('Wrote: %s\n', cbSvgName);
+
 %% ===== 6) Export representative histogram SVG (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
@@ -279,6 +283,7 @@ grid(ax, 'off');
 text(ax, 0.97, 0.95, sprintf('RH=%.2f', sdVals(repPairIdx, repSessIdx)), ...
 	'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 	'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
+title(ax, 'A representative continual block', 'FontSize', 6, 'FontWeight', 'normal');
 
 xlabel(ax, 'z-score', 'FontSize', 6);
 ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
@@ -298,6 +303,28 @@ if ~isfinite(vAbs) || vAbs <= 0
 end
 Vn = 0.5 + 0.5 * (V / vAbs);
 Vn = max(0, min(1, Vn));
+end
+
+function iExportVolshowColorbarSVG(vAbs, cmap, svgName)
+cbFig = figure('Color', 'none');
+cbFig.Units = 'centimeters';
+cbFig.Position(3:4) = [1.2, 7.0];
+
+ax = axes(cbFig, 'Position', [0.10, 0.05, 0.10, 0.90]);
+axis(ax, 'off');
+colormap(ax, cmap);
+clim(ax, [-vAbs, vAbs]);
+
+cb = colorbar(ax, 'eastoutside');
+cb.Position = [0.50, 0.08, 0.22, 0.84];
+cb.Ticks = [-vAbs, 0, vAbs];
+cb.TickLabels = {sprintf('%.2f', -vAbs), '0', sprintf('%.2f', vAbs)};
+cb.Label.String = 'z-score';
+cb.FontSize = 6;
+cb.Box = 'off';
+
+TransferLearning.ExportStandardFigureTransparent(cbFig, 3, svgName);
+close(cbFig);
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)

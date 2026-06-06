@@ -1,6 +1,5 @@
 % 中文图334G：cFos 与对照组 LightWater block learning curve sigmoid 拟合斜率
 
-svgName = '中文图Fig45G_cFos_FirstTrainingUnitTrialFitSlope.svg';
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -29,6 +28,9 @@ displayedCFos = iFilterToDisplayedMice(allSessions(string(allSessions.Group) == 
 nControlMice = numel(unique(string(displayedControl.Mouse)));
 nCFosMice = numel(unique(string(displayedCFos.Mouse)));
 
+displayedControlCarry = iCarryForwardSessions(displayedControl);
+displayedCFosCarry = iCarryForwardSessions(displayedCFos);
+
 sessionForSummary = allSessions(:, ["Mouse","DateTime","Performance","Group"]);
 sessionForSummary.Group = string(sessionForSummary.Group);
 sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
@@ -36,9 +38,11 @@ sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
 [meanMat, semMat, blockNumbers] = iUnpackLearningSummarize(summaryLearning, groupOrder);
 nMat = iComputeNBySession(allSessions, blockNumbers, groupOrder);
 
-fitControl = iFitSigmoidCurve(displayedControl, displayGroup(1));
-fitCFos = iFitSigmoidCurve(displayedCFos, displayGroup(2));
-permResult = iPermutationTestSigmoidSlope(displayedControl, displayedCFos, displayGroup(1), displayGroup(2), 10000, 1);
+fitControl = iFitSigmoidCurve(displayedControlCarry, displayGroup(1));
+fitCFos = iFitSigmoidCurve(displayedCFosCarry, displayGroup(2));
+permResult = iPermutationTestSigmoidSlope(displayedControlCarry, displayedCFosCarry, displayGroup(1), displayGroup(2), 10000, 1);
+groupSessions = iCarryForwardSessions([displayedControl; displayedCFos]);
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(groupSessions, 'Performance', 'Session', 'Group', 'Mouse');
 
 xMax = max([max(fitControl.XObserved), max(fitCFos.XObserved), max(blockNumbers)]);
 xFit = (1:xMax).';
@@ -54,6 +58,7 @@ nMatOut = nan(numel(xFit), size(nMat, 2));
 meanMatOut(1:size(meanMat, 1), :) = meanMat;
 semMatOut(1:size(semMat, 1), :) = semMat;
 nMatOut(1:size(nMat, 1), :) = nMat;
+%% 
 
 fig = figure('Color', 'w', 'Name', 'Fig45G cFos block learning sigmoid');
 fig.Units = 'centimeters';
@@ -71,13 +76,26 @@ hCFos = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFitCurve, meanMatOut(:,2), 
 
 ylabel(axisHandle, 'Hit rate', 'FontSize', 12);
 xlabel(axisHandle, 'Block', 'FontSize', 12);
-ylim(axisHandle, [0 1.02]);
-xlim(axisHandle, [0.5, xMax + 0.5]);
 axisHandle.FontSize = 12;
 axisHandle.LineWidth = 2;
 axisHandle.Color = 'none';
-axisHandle.YTick = 0:0.5:1;
-axisHandle.XTick = unique([1, 5:5:ceil(xMax)]);
+
+controlLastIndex = find(isfinite(meanMatOut(:, 1)), 1, 'last');
+cfosLastIndex = find(isfinite(meanMatOut(:, 2)), 1, 'last');
+controlLast = meanMatOut(controlLastIndex, 1);
+cfosLast = meanMatOut(cfosLastIndex, 2);
+yLow = min([controlLast, cfosLast], [], 'omitnan');
+yHigh = max([controlLast, cfosLast], [], 'omitnan');
+yBottom = yLow;
+yTop = yHigh;
+if yTop - yBottom < 0.2
+	yMid = mean([yBottom, yTop], 'omitnan');
+	yBottom = yMid - 0.1;
+	yTop = yMid + 0.1;
+end
+[~, pText] = TransferLearning.Style.AddRightSidePValueLine(axisHandle, xMax + 0.55, yBottom, yTop, groupP);
+
+
 legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
 	{'Control Mean ± SEM', 'Control Sigmoid', 'cFos Mean ± SEM', 'cFos Sigmoid'}, ...
 	'FontSize', 10, 'Location', 'southoutside', 'NumColumns', 2, 'Box', 'off');
@@ -92,6 +110,7 @@ for axisItem = reshape(allAxes, 1, [])
 	end
 end
 
+svgName = '中文图Fig45F_cFos_FirstBlockFitSlope.svg';
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 
 fitTable = table;
@@ -131,6 +150,7 @@ fprintf('Control sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2
 fprintf('cFos sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitCFos.Lower, fitCFos.Upper, fitCFos.Slope, fitCFos.Midpoint, fitCFos.RSquared);
 fprintf('Permutation slope difference (cFos - Control): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation significance p-value (two-sided) = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
+fprintf('Two-way ANOVA Group P = %.4g\n', groupP);
 
 assignin('base', 'Fig334G_BlockSigmoid_AllSessions', allSessions);
 assignin('base', 'Fig334G_BlockSigmoid_FitTable', fitTable);
@@ -270,6 +290,29 @@ end
 rows = isfinite(double(sessionTable.Session)) & isfinite(double(sessionTable.Performance));
 shownMice = unique(string(sessionTable.Mouse(rows)), 'stable');
 sessionTable = sessionTable(ismember(string(sessionTable.Mouse), shownMice), :);
+end
+
+function sessionTable = iCarryForwardSessions(sessionTable)
+if isempty(sessionTable)
+	return;
+end
+sessionTable = sortrows(sessionTable, {'Mouse', 'DateTime', 'Session'});
+mouseNames = unique(string(sessionTable.Mouse), 'stable');
+outPieces = cell(numel(mouseNames), 1);
+for iMouse = 1:numel(mouseNames)
+	rows = string(sessionTable.Mouse) == mouseNames(iMouse);
+	mRows = sessionTable(rows, :);
+	reached = find(double(mRows.Performance) >= 1.0, 1, 'first');
+	if isempty(reached)
+		outPieces{iMouse} = mRows;
+		continue;
+	end
+	if reached < height(mRows)
+		mRows.Performance(reached+1:end) = 1;
+	end
+	outPieces{iMouse} = mRows;
+end
+sessionTable = sortrows(vertcat(outPieces{:}), {'Group', 'Mouse', 'DateTime'});
 end
 
 function hOut = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFit, meanCurve, semCurve, yFit, lineColor)

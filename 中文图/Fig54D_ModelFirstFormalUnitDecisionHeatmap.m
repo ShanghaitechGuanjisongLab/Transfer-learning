@@ -21,17 +21,16 @@ FullCellHeatmapData = iBuildThreeColumnFullCellHeatmapData(PretrainFullCellHeatm
 RunInfo = [PretrainRunInfo; iRelabelFormalRunInfo(FormalRunInfo)];
 
 HeatmapData = iBuildL5RawResponseHeatmapData(FullCellHeatmapData, Params);
+HeatmapData = iKeepFirstTwoTimePoints(HeatmapData);
 [fig, PlotData] = TransferLearning.PlotModelFirstFormalUnitDecisionHeatmap(HeatmapData, ...
 	YLabel=sprintf('L5 cells'), ...
 	ColorbarLabel="Response", ...
 	FigureName="Model first formal unit L5 response heatmap");
 layout = PlotData.Axes(1).Parent;
-xlabel(layout, 'time', 'FontSize', 12);
-xRange = [HeatmapData.Iterations(1), HeatmapData.Iterations(2)];
+xlabel(layout, 'Time', 'FontSize', 12);
 for axisIndex = 1:numel(PlotData.Axes)
 	ax = PlotData.Axes(axisIndex);
-	xlim(ax, xRange);
-	ax.XTickMode = 'auto';
+	ax.XTick = [0, 1];
 	ax.XTickLabelMode = 'auto';
 end
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
@@ -238,4 +237,32 @@ HeatmapData.NumCellsPerMouse = Params.NL5RewardRecv + Params.NL5Read;
 HeatmapData.NumCells = sum(l5Mask);
 HeatmapData.Layer = "L5";
 HeatmapData.ResponseType = "Response";
+end
+
+function HeatmapData = iKeepFirstTwoTimePoints(HeatmapData)
+if numel(HeatmapData.Iterations) < 2
+	error('Fig54D:InsufficientIterations', 'Expected at least two iterations for display.');
+end
+
+for conditionIndex = 1:numel(HeatmapData.ConditionData)
+	conditionData = HeatmapData.ConditionData{conditionIndex};
+	conditionData.MedianDelta = conditionData.MedianDelta(:, 1:2);
+	if isfield(conditionData, 'DeltaHistory') && ndims(conditionData.DeltaHistory) >= 2
+		conditionData.DeltaHistory = conditionData.DeltaHistory(:, 1:2, :);
+	end
+	HeatmapData.ConditionData{conditionIndex} = conditionData;
+end
+
+HeatmapData.Iterations = [0, 1];
+
+if numel(HeatmapData.ConditionData) == 2
+	HeatmapData.Naive = HeatmapData.ConditionData{1};
+	HeatmapData.Continual = HeatmapData.ConditionData{2};
+elseif numel(HeatmapData.ConditionData) == 3
+	HeatmapData.NaiveCueA = HeatmapData.ConditionData{1};
+	HeatmapData.NaiveCueB = HeatmapData.ConditionData{2};
+	HeatmapData.ContinualCueB = HeatmapData.ConditionData{3};
+	HeatmapData.Naive = HeatmapData.NaiveCueB;
+	HeatmapData.Continual = HeatmapData.ContinualCueB;
+end
 end

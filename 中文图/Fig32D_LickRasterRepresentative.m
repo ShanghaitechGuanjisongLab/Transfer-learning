@@ -1,4 +1,4 @@
-% Fig32C: 代表性训练日的舔水原始记录（Naive vs Transfer）
+﻿% Fig32D: 代表性训练日的舔水原始记录（Naive vs Transfer）
 %
 % 横轴为时间[-1, 2]s，纵轴为试次序号，颜色为二值化舔水（0/1）。
 % 二值化方法：以[-3,0]s基线均值+2倍标准差为阈值，超过即判定为舔水。
@@ -38,7 +38,7 @@ blMask = xsSec >= -3 & xsSec < 0;
 [tranMat, tranBehav]   = iExtractSessionCD2(ALB, "yqn0020", datetime(2024,4,24,5,57,0), winMask, blMask);
 
 %% 作图
-f = figure('Color', 'w', 'Name', 'Fig32C LickRaster');
+f = figure('Color', 'w', 'Name', 'Fig32D LickRaster');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];  % 90mm x 80mm (高度40mm倍数 x2)
 f.PaperUnits = 'centimeters';
@@ -101,7 +101,7 @@ lg.FontSize = 12;
 lg.Box = 'off';
 
 %% 导出
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32C_LickRaster.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32D_LickRaster.svg');
 fprintf('Saved SVG: %s\n', svgPath);
 
 %% === 辅助函数 ===

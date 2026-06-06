@@ -1,4 +1,4 @@
-﻿% Fig32B：声水初始/迁移学习曲线 + 首会话条形图
+﻿% Fig32B：光水初始/迁移学习曲线 + 首会话条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -9,20 +9,23 @@ if ~exist('UniExp.DataSet','class')
 	end
 end
 
-ALB  = TransferLearning.AudioLightBaseline();
 LAB  = TransferLearning.LightAudioBaseline();
-ALPB = TransferLearning.ALPureBehavior();
+ALB  = TransferLearning.AudioLightBaseline();
 LAPB = TransferLearning.LAPureBehavior();
+ALPB = TransferLearning.ALPureBehavior();
+LAI  = TransferLearning.LAInterspersed();
 
 naiveAnchors = ["Naive","Learned"];
 tranAnchors  = ["Transfer","Final"];
 
-naiveA = iAudioWaterSessionsByMouse(ALB,  "AudioLightBaseline", true,  naiveAnchors(1), naiveAnchors(2));
-naiveB = iAudioWaterSessionsByMouse(ALPB, "ALPureBehavior",     false, naiveAnchors(1), naiveAnchors(2));
-tranA  = iAudioWaterSessionsByMouse(LAB,  "LightAudioBaseline", true,  tranAnchors(1), tranAnchors(2));
-tranB  = iAudioWaterSessionsByMouse(LAPB, "LAPureBehavior",     false, tranAnchors(1), tranAnchors(2));
+naiveA = iLightWaterSessionsByMouse(LAB,  "LightAudioBaseline", true,  naiveAnchors(1), naiveAnchors(2));
+naiveB = iLightWaterSessionsByMouse(LAPB, "LAPureBehavior",     false, naiveAnchors(1), naiveAnchors(2));
+naiveC = iLightWaterSessionsByMouse_LAInterspersed(LAI, "LAInterspersed", false, naiveAnchors(1), naiveAnchors(2));
 
-naive = [naiveA; naiveB];
+tranA  = iLightWaterSessionsByMouse(ALB,  "AudioLightBaseline", true,  tranAnchors(1), tranAnchors(2));
+tranB  = iLightWaterSessionsByMouse(ALPB, "ALPureBehavior",     false, tranAnchors(1), tranAnchors(2));
+
+naive = [naiveA; naiveB; naiveC];
 tran  = [tranA;  tranB];
 naive.Group(:) = "Naive";
 tran.Group(:)  = "Transfer";
@@ -33,7 +36,7 @@ iAssertNoCrossSourceDuplicateMice(tran,  "Transfer");
 allSessions = [naive; tran];
 iAssertNoMouseAppearsInMultipleGroups(allSessions);
 if isempty(allSessions)
-	error('Fig32B:EmptyData', 'No AudioWater sessions found.');
+	error('Fig32B:EmptyData', 'No LightWater blocks found.');
 end
 
 allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
@@ -48,7 +51,7 @@ PValueLS = nan;
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["Naive","Transfer"]);
 nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
-f = figure('Color','w', 'Name', 'Fig32B AudioWater learning curve');
+f = figure('Color','w', 'Name', 'Fig32B LightWater learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
@@ -62,6 +65,7 @@ hold(ax,'on');
 
 displayGroups = ["Naive","Continual"];
 edgeColors = TransferLearning.GroupColors(displayGroups);
+cueTitleColor = TransferLearning.ColorB;
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -80,8 +84,9 @@ else
 end
 lg.FontSize = 12;
 lg.Box = 'off';
-lg.Title.String = '🔊💧';
+lg.Title.String = '💡💧';
 lg.Title.FontSize = 12;
+lg.Title.Color = cueTitleColor;
 
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
@@ -92,7 +97,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32B_AudioWater_LearningCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32B_LightWater_LearningCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -104,8 +109,8 @@ summaryCurve.TransferSem = semMat(:,2);
 summaryCurve.NaiveN = nMat(:,1);
 summaryCurve.TransferN = nMat(:,2);
 summaryCurve.PLearningSummarize(:) = curveP;
-assignin('base', 'Fig32B_AudioWaterLearningCurve_Raw', allSessions);
-assignin('base', 'Fig32B_AudioWaterLearningCurve_Summary', summaryCurve);
+assignin('base', 'Fig32B_LightWaterLearningCurve_Raw', allSessions);
+assignin('base', 'Fig32B_LightWaterLearningCurve_Summary', summaryCurve);
 
 firstSess = allSessions(allSessions.Session == 1, :);
 naiveFirst = double(firstSess.Performance(string(firstSess.Group) == "Naive"));
@@ -114,7 +119,7 @@ naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
 firstBarPValue = ranksum(naiveFirst, tranFirst);
 
-f2 = figure('Color','none', 'Name', 'Fig32B AudioWater first-session performance');
+f2 = figure('Color','none', 'Name', 'Fig32B LightWater first-session performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
@@ -157,7 +162,7 @@ grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32B_AudioWater_FirstSessionPerformance.svg');
+svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32B_LightWater_FirstSessionPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== Fig32B first-block bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
@@ -169,10 +174,10 @@ firstSessionTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'Naive
 firstSessionTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstSessionTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
 firstSessionTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
-assignin('base', 'Fig32B_AudioWater_FirstSession', firstSessionTable);
+assignin('base', 'Fig32B_LightWater_FirstSession', firstSessionTable);
 
-function out = iAudioWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
-T = iQueryAudioWaterBehaviorAll(DS);
+function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
+T = iQueryLightWaterBehaviorAll(DS);
 if isempty(T)
 	out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), strings(0,1), ...
 		'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
@@ -187,19 +192,39 @@ T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
 out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
 end
 
-function T = iQueryAudioWaterBehaviorAll(DS)
+function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imagingCohort, startPhase, endPhase)
+badMice = iFindMiceWithAudioWaterInPhase(DS, "Naive");
+T = iQueryLightWaterBehaviorAll(DS);
+if isempty(T)
+	out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), strings(0,1), ...
+		'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
+	return;
+end
+T.Mouse = string(T.Mouse);
+if ~isempty(badMice)
+	T = T(~ismember(T.Mouse, badMice), :);
+end
+T.DateTime = iNormalizeDateTime(T.DateTime);
+T = iSessionizeByDateTime(T);
+T = iSelectSessionsBetweenPhases(T, startPhase, endPhase);
+T.Source = repmat(string(sourceName), height(T), 1);
+T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
+out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession','Phase'});
+end
+
+function T = iQueryLightWaterBehaviorAll(DS)
 varsTry = ["Mouse","DateTime","Stimulus","Phase","Behavior"];
 varsFallback = ["Mouse","DateTime","Stimulus","Phase","Performance"];
 try
-	T = DS.TableQuery(varsTry, Stimulus="AudioWater");
+	T = DS.TableQuery(varsTry, Stimulus="LightWater");
 catch
-	T = DS.TableQuery(varsFallback, Stimulus="AudioWater");
+	T = DS.TableQuery(varsFallback, Stimulus="LightWater");
 end
 if isempty(T)
 	return;
 end
 T.Stimulus = string(T.Stimulus);
-T = T(T.Stimulus == "AudioWater", :);
+T = T(T.Stimulus == "LightWater", :);
 end
 
 function dt = iNormalizeDateTime(dt)
@@ -266,6 +291,15 @@ for i = 1:numel(mice)
 	keepRows(idx(st:ed)) = true;
 end
 S = S(keepRows, :);
+end
+
+function badMice = iFindMiceWithAudioWaterInPhase(DS, phaseName)
+Ta = DS.TableQuery("Mouse", Stimulus="AudioWater", Phase=phaseName);
+if isempty(Ta)
+	badMice = string.empty(0,1);
+else
+	badMice = unique(string(Ta.Mouse));
+end
 end
 
 function iAssertNoCrossSourceDuplicateMice(T, groupName)

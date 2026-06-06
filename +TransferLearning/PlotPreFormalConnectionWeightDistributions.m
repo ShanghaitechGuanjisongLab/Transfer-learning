@@ -11,7 +11,7 @@ naiveColor = groupColors(1, :);
 afterPretrainColor = groupColors(2, :);
 binEdges = iSharedBinEdges(WeightValues, classNames);
 
-fig = figure('Color', 'w', 'Name', 'Fig55A pre-formal connection weight distributions');
+fig = figure('Color', 'w', 'Name', 'Fig54A pre-formal connection weight distributions');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 fig.PaperUnits = 'centimeters';

@@ -100,7 +100,7 @@ subTitles = ["Learned", "Hit", "Miss"];
 	LMHColor=[TransferLearning.HeatmapNegative; 1,1,1; TransferLearning.HeatmapPositive]);
 
 xlabel(Layout, 'Time', 'FontSize', 12);
-ylabel(Layout, sprintf('%d cells', size(laneData, 1)), 'FontSize', 12);
+ylabel(Layout, sprintf('%u active cells', uint32(size(laneData, 1))), 'FontSize', 12);
 
 CB = colorbar;
 CB.Layout.Tile = 'east';

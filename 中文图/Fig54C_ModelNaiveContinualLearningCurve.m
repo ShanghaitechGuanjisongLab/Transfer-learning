@@ -1,23 +1,25 @@
-% Fig63D model-simulated Normal/TH inhibited learning curve with sigmoid fits.
+% Fig54C model-simulated Naive/Continual learning curve with sigmoid fits.
 
-svgName = '中文图Fig63D_ModelNormalTHInhibitedLearningCurve.svg';
+svgName = '中文图Fig54C_ModelNaiveContinualLearningCurve.svg';
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'));
+Params = Fig5556Data.Params;
 RunInfo = Fig5556Data.RunInfo;
-normalPerformance = Fig5556Data.Performance.Transfer;
-thInhibitedPerformance = Fig5556Data.Performance.THOff;
-SigmoidStats = Fig5556Data.Sigmoid.Fig383D;
-summary = iLearningCurveSummary(normalPerformance, thInhibitedPerformance);
+naivePerformance = Fig5556Data.Performance.Naive;
+continualPerformance = Fig5556Data.Performance.Transfer;
+SigmoidStats = Fig5556Data.Sigmoid.Fig54C;
+
+summary = iLearningCurveSummary(naivePerformance, continualPerformance);
 xSummary = (1:size(summary.Mean, 1)).';
 xFit = linspace(1, max(xSummary), 200).';
-normalFitCurve = iSigmoidFromFit(SigmoidStats.FitA, xFit);
-thInhibitedFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
-curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
-anovaTable = iBuildGroupAnovaTableFromMatrices(normalPerformance, thInhibitedPerformance, ["Normal", "TH"]);
+naiveFitCurve = iSigmoidFromFit(SigmoidStats.FitA, xFit);
+continualFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
+curveColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+anovaTable = iBuildGroupAnovaTableFromMatrices(naivePerformance, continualPerformance, ["Naive", "Continual"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
 
-fig = figure('Color', 'w', 'Name', 'Fig63D model Normal TH inhibited sigmoid');
+fig = figure('Color', 'w', 'Name', 'Fig54C model Naive Continual sigmoid');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [12, 8];
 fig.PaperUnits = 'centimeters';
@@ -25,8 +27,8 @@ fig.PaperSize = [12, 8];
 fig.PaperPositionMode = 'auto';
 ax = axes(fig);
 hold(ax, 'on');
-hNormal = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, summary.Mean(:, 1), summary.Sem(:, 1), xFit, normalFitCurve, curveColors(1, :));
-hTH = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, summary.Mean(:, 2), summary.Sem(:, 2), xFit, thInhibitedFitCurve, curveColors(2, :));
+hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, summary.Mean(:, 1), summary.Sem(:, 1), xFit, naiveFitCurve, curveColors(1, :));
+hContinual = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, summary.Mean(:, 2), summary.Sem(:, 2), xFit, continualFitCurve, curveColors(2, :));
 
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
@@ -36,12 +38,12 @@ ax.Color = 'none';
 box(ax, 'off');
 grid(ax, 'off');
 title(ax, '');
-normalLastIndex = find(isfinite(summary.Mean(:, 1)), 1, 'last');
-thLastIndex = find(isfinite(summary.Mean(:, 2)), 1, 'last');
-normalLast = summary.Mean(normalLastIndex, 1);
-thLast = summary.Mean(thLastIndex, 2);
-yLow = min([normalLast, thLast], [], 'omitnan');
-yHigh = max([normalLast, thLast], [], 'omitnan');
+naiveLastIndex = find(isfinite(summary.Mean(:, 1)), 1, 'last');
+continualLastIndex = find(isfinite(summary.Mean(:, 2)), 1, 'last');
+naiveLast = summary.Mean(naiveLastIndex, 1);
+continualLast = summary.Mean(continualLastIndex, 2);
+yLow = min([naiveLast, continualLast], [], 'omitnan');
+yHigh = max([naiveLast, continualLast], [], 'omitnan');
 yBottom = yLow;
 yTop = yHigh;
 if yTop - yBottom < 0.2
@@ -51,8 +53,8 @@ if yTop - yBottom < 0.2
 end
 TransferLearning.Style.AddRightSidePValueLine(ax, max(xSummary), yBottom, yTop, groupP);
 
-lgd = legend(ax, [hNormal(1), hNormal(2), hTH(1), hTH(2)], ...
-	{'Normal Mean ± SEM', 'Normal Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
+lgd = legend(ax, [hNaive(1), hNaive(2), hContinual(1), hContinual(2)], ...
+	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
 	'Location', 'southoutside', 'NumColumns', 2);
 lgd.Box = 'off';
 lgd.FontSize = 10;
@@ -60,16 +62,16 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-fprintf('Fig63D Two-way ANOVA Group P = %.4g\n', groupP);
-iPrintPermutationResult('Fig63D', SigmoidStats);
+fprintf('Fig54C Two-way ANOVA Group P = %.4g\n', groupP);
+iPrintPermutationResult('Fig54C', SigmoidStats);
+iAssertSigmoidSlopeSignificant('Fig54C', SigmoidStats, Params.TransferHighestAlpha, fig);
 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig63D_ModelNormalTHInhibitedPerformance', struct('Normal', normalPerformance, 'THInhibited', thInhibitedPerformance));
-assignin('base', 'Fig63D_ModelNormalTHInhibitedRunInfo', RunInfo);
-assignin('base', 'Fig63D_ModelNormalTHInhibitedSigmoidStats', SigmoidStats);
-assignin('base', 'Fig63D_ModelNormalTHInhibitedSvgPath', svgPath);
+assignin('base', 'Fig54C_ModelNaiveContinualPerformance', struct('Naive', naivePerformance, 'Continual', continualPerformance));
+assignin('base', 'Fig54C_ModelNaiveContinualRunInfo', RunInfo);
+assignin('base', 'Fig54C_ModelNaiveContinualSigmoidStats', SigmoidStats);
 
 function summary = iLearningCurveSummary(performanceA, performanceB)
 numSessions = max(size(performanceA, 2), size(performanceB, 2));
@@ -121,6 +123,21 @@ fprintf('%s permutation slope difference (%s): %.4f\n', figureLabel, comparison.
 fprintf('%s permutation two-sided p = %.4g (%d permutations)\n', figureLabel, comparison.PValueTwoSided(1), comparison.NPermutation(1));
 end
 
+function iAssertSigmoidSlopeSignificant(figureLabel, SigmoidStats, alpha, fig)
+comparison = SigmoidStats.ComparisonTable;
+observedDifference = comparison.ObservedSlopeDifference(1);
+pValue = comparison.PValueTwoSided(1);
+if observedDifference > 0 && pValue < alpha
+	return;
+end
+if isgraphics(fig)
+	close(fig);
+end
+error('Fig54C:SigmoidSlopeNotSignificant', ...
+	'%s requires Transfer sigmoid slope to be significantly greater than Naive (alpha=%.3f). %s observed difference=%.4f, two-sided permutation p=%.4g.', ...
+	figureLabel, alpha, char(comparison.Comparison(1)), observedDifference, pValue);
+end
+
 function iEnsureTransferLearningProject()
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
@@ -138,6 +155,6 @@ function T = iBuildGroupAnovaTableFromMatrices(performanceA, performanceB, group
 resp = [performanceA(:); performanceB(:)];
 block = [blockA(:); blockB(:)];
 group = [repmat(groupNames(1), numel(performanceA), 1); repmat(groupNames(2), numel(performanceB), 1)];
-mouse = [compose("Normal%03d", mouseA(:)); compose("TH%03d", mouseB(:))];
+mouse = [compose("Naive%03d", mouseA(:)); compose("Continual%03d", mouseB(:))];
 T = table(resp, block, group, mouse, 'VariableNames', {'Performance','Block','Group','Mouse'});
 end

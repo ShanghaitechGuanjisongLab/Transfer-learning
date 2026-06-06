@@ -45,6 +45,7 @@ lightSessions = allSessions(allSessions.Group == "Light", :);
 fitAudio = iFitSigmoidCurve(audioSessions, "Audio");
 fitLight = iFitSigmoidCurve(lightSessions, "Light");
 permResult = iPermutationTestSigmoidSlope(audioSessions, lightSessions, 10000, 1);
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performance', 'Session', 'Group', 'Mouse');
 %% 
 
 audioColor = TransferLearning.ColorA;
@@ -75,16 +76,26 @@ hLightFit = plot(ax, xFit, iSigmoidFromParams(fitLight.ParamRaw, xFit), '-', 'Co
 
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-xlim(ax, [0.5, xMax + 0.5]);
-ylim(ax, [0, 1.02]);
 ax.FontSize = 12;
 ax.LineWidth = 2;
 ax.Color = 'none';
-ax.YTick = 0:0.5:1;
-ax.XTick = unique([1, 5:5:ceil(xMax)]);
 box(ax, 'off');
 grid(ax, 'off');
 title(ax, '');
+
+audioLast = summaryCurve.Mean(audioRows & summaryCurve.Session == xMax);
+lightLast = summaryCurve.Mean(lightRows & summaryCurve.Session == xMax);
+yLow = min([audioLast, lightLast], [], 'omitnan');
+yHigh = max([audioLast, lightLast], [], 'omitnan');
+yPad = 0.012;
+yBottom = yLow;
+yTop = yHigh ;
+if yTop - yBottom < 0.2
+	yMid = mean([yBottom, yTop], 'omitnan');
+	yBottom = yMid - 0.1;
+	yTop =  yMid + 0.1;
+end
+TransferLearning.Style.AddRightSidePValueLine(ax, xMax + 0.80, yBottom, yTop, groupP);
 
 lg = legend(ax, [hAudioMean, hAudioFit, hLightMean, hLightFit], ...
 	{'🔊 Mean ± SEM', '🔊 Sigmoid', '💡 Mean ± SEM', '💡 Sigmoid'}, ...
@@ -117,6 +128,7 @@ fprintf('Audio sigmoid slope = %.6f\n', fitAudio.Slope);
 fprintf('Light sigmoid slope = %.6f\n', fitLight.Slope);
 fprintf('Audio - Light slope difference = %.6f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.6g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
+fprintf('Two-way ANOVA Group P = %.6g\n', groupP);
 
 function out = iCueWaterSessionsByMouse(DS, sourceName, imagingCohort, stimulusName, startPhase, endPhase)
 	T = iQueryCueWaterBehaviorAll(DS, stimulusName);
@@ -395,7 +407,7 @@ function permOut = iPermutationTestSigmoidSlope(TAudio, TLight, nPermutation, rn
 	observedDiff = fitAudio.Slope - fitLight.Slope;
 	permDiff = nan(nPermutation, 1);
 	nAudio = numel(audioMice);
-	for iPerm = 1:nPermutation
+	parfor iPerm = 1:nPermutation
 		order = randperm(numel(allMouseTables));
 		permAudio = vertcat(allMouseTables{order(1:nAudio)});
 		permLight = vertcat(allMouseTables{order(nAudio + 1:end)});

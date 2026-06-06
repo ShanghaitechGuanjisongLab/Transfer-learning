@@ -1,4 +1,4 @@
-﻿% 中文图52C：信号保留散点 + 分组条形图组合
+% 中文图52C：信号保留散点 + 分组条形图组合
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -9,7 +9,6 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-svgName = "中文图Fig52C_SignalRetention_Combined.svg";
 
 DS = TransferLearning.AudioLightBaseline();
 
@@ -153,9 +152,9 @@ pLines = gobjects(0, 1);
 
 f = figure('Color', 'w', 'Name', '中文图52C Signal retention');
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5 4.0];
+f.Position(3:4) = [4.0 4.0];
 
-LM = 0.16; BM = 0.14; RM = 0.04; TM = 0.06;
+LM = 0.19; BM = 0.14; RM = 0.04; TM = 0.06;
 bwR = 0.24; bhT = 0.24; G = 0.06;
 
 sW = 1 - LM - G - bwR - RM;
@@ -181,7 +180,8 @@ box(axE, 'off');
 xlh.Units = 'normalized';
 xlh.Position(1) = (sW/2 + G/2 + bwR/2) / sW;
 ylh.Units = 'normalized';
-ylh.Position(2) = (sH/2 + G/2 + bhT/2) / sH;
+ylh.Position(2) = 0.5;
+ylh.Position(1) = -0.16;
 if pCorr == 0 || pCorr < 1e-10
 	pStr = 'p<10^{-10}';
 elseif pCorr < 0.001
@@ -241,7 +241,9 @@ xBrk = max(abs(mN2)+seN2, abs(mP2)+seP2) + 0.015;
 pLines(end+1, 1) = plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
 pLines(end+1, 1) = plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
 pLines(end+1, 1) = plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-text(axR, xBrk+0.01, 1.5, iAsterisk(pPN2), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270, 'Tag', 'PText');
+text(axR, xBrk+0.055, 1.5, iAsterisk(pPN2), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270, 'Tag', 'PText');
+xlimNow = xlim(axR);
+xlim(axR, [xlimNow(1), max(xlimNow(2), xBrk + 0.10)]);
 hold(axR, 'off');
 axR.FontSize = fs;
 axR.YTick = [1 2]; axR.YTickLabel = {'−', '+'};
@@ -249,6 +251,9 @@ axR.YAxisLocation = 'left';
 box(axR, 'off');
 
 TransferLearning.Style.ApplyStandardFigureStyle(f, 1);
+bb.BaseValue = 0;
+bb.ShowBaseLine = 'on';
+
 for iLine = 1:numel(errorLines)
 	if isgraphics(errorLines(iLine))
 		errorLines(iLine).LineWidth = errorLineWidth;
@@ -259,6 +264,7 @@ for iLine = 1:numel(pLines)
 		pLines(iLine).LineWidth = pLineWidth;
 	end
 end
+svgName = "中文图Fig51C_SignalRetention_Combined.svg";
 svgPath = TransferLearning.StandardFigureSvgPath(svgName);
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
@@ -276,6 +282,18 @@ function s = iAsterisk(p)
 		s = '＊＊＊';
 	elseif p < 0.01
 		s = '＊＊';
+	elseif p < 0.05
+		s = '＊';
+	else
+		s = 'n.s.';
+	end
+end
+
+function s = iAsteriskVertical(p)
+	if p < 0.001
+		s = sprintf('＊\n＊\n＊');
+	elseif p < 0.01
+		s = sprintf('＊\n＊');
 	elseif p < 0.05
 		s = '＊';
 	else

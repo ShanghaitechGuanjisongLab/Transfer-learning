@@ -76,13 +76,13 @@ nNon = nTotal - nReuse;
 
 %% 
 % --- Plot
-f = figure('Color', 'w', 'Name', 'English Fig1I Reused Cells Pie');
+f = figure('Color', 'none', 'Name', 'English Fig1I Reused Cells Pie');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4]; % 30mm x 40mm
+f.Position(3:4) = [6.0, 4.0];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.PaperPosition = [0, 0, 6.0, 4.0];
+f.PaperSize = [6.0, 4.0];
 
 if nTotal > 0
 	pReuse = nReuse / nTotal;
@@ -94,23 +94,44 @@ end
 
 majorColor = 0.7922 .* [1 1 1];
 minorColor = [0, 0.6275, 0.9137];
-if pReuse >= pNon
-	wedgeColors = [majorColor; minorColor];
-else
-	wedgeColors = [minorColor; majorColor];
-end
+wedgeColors = [majorColor; minorColor];
 
-ax = axes(f);
-h = MATLAB.Graphics.NestedPie( ...
-	{[pReuse, pNon]}, ...
+ax = axes(f, 'Position', [0.22, 0.12, 0.56, 0.78]);
+valueVec = [pNon, pReuse];
+sideLabels = strings(1, 2);
+titleText = sprintf('🔊💧\nactive cells');
+MATLAB.Graphics.NestedPie( ...
+	{valueVec}, ...
 	WedgeColors={wedgeColors}, ...
-	LabelText=[string(sprintf('🔊💡\nreactive\ncells')), string(sprintf('🔊💧\nactive\ncells'))], ...
+	LabelText=sideLabels, ...
 	PercentStatus="on", ...
 	PercentFontColor='k', ...
 	RhoLower=0.4, ...
 	LineWidth=0.5, ...
-	LabelOffset=0, ...
+	LabelOffset=0.16, ...
 	AxesHandle=ax);
+title(ax, titleText, 'FontSize', 6, 'FontWeight', 'normal');
+
+if all(isfinite(valueVec)) && sum(valueVec) > 0
+	startReuseDeg = 360 * valueVec(1) / sum(valueVec);
+	endReuseDeg = 360;
+	thetaDeg = 0.5 * (startReuseDeg + endReuseDeg);
+	theta = deg2rad(thetaDeg);
+	labelText = sprintf('💡💧\nreactivated');
+	labelRadius = 1.12;
+	tx = labelRadius * cos(theta);
+	ty = labelRadius * sin(theta);
+	if tx >= 0
+		hAlign = 'left';
+		tx = tx + 0.005;
+	else
+		hAlign = 'right';
+		tx = tx - 0.005;
+	end
+	text(ax, tx, ty, labelText, 'FontSize', 6, 'FontWeight', 'normal', ...
+		'Color', minorColor, 'HorizontalAlignment', hAlign, ...
+		'VerticalAlignment', 'middle', 'Clipping', 'off');
+end
 
 % Set all text to 6pt
 set(findobj(f, 'Type', 'text'), 'FontSize', 6);
@@ -127,7 +148,7 @@ end
 svgName = "English_Fig1I_ReusedCellsPie.svg";
 svgPath = svgName;
 try
-	svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
+	svgPath = TransferLearning.ExportStandardFigureTransparent(f, 1, svgPath);
 	fprintf('Wrote: %s\n', svgPath);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
@@ -174,5 +195,16 @@ if isempty(xsSec) || ~isvector(xsSec)
 end
 [d, idx] = min(abs(xsSec(:) - tSec));
 ok = isfinite(d) && (d <= tolSec);
+end
+
+function outText = iCapitalizeLeadingLetter(inText)
+outText = string(inText);
+chars = char(outText);
+idx = regexp(chars, '[A-Za-z]', 'once');
+if isempty(idx)
+	return;
+end
+chars(idx) = upper(chars(idx));
+outText = string(chars);
 end
 

@@ -1,4 +1,4 @@
-% Fig32D：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
+﻿% Fig32E：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -36,7 +36,7 @@ iAssertNoCrossSourceDuplicateMice(tran,  "Transfer");
 allSessions = [naive; tran];
 iAssertNoMouseAppearsInMultipleGroups(allSessions);
 if isempty(allSessions)
-	error('Fig32D:EmptyData', 'No LightWater sessions found.');
+	error('Fig32E:EmptyData', 'No LightWater sessions found.');
 end
 
 allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
@@ -50,13 +50,13 @@ trialRows = [
 	iLightWaterTrialsForSessions(ALB,  "AudioLightBaseline", firstSessions);
 	iLightWaterTrialsForSessions(ALPB, "ALPureBehavior",     firstSessions)];
 if isempty(trialRows)
-	error('Fig32D:EmptyTrials', 'No first training-unit LightWater trials found.');
+	error('Fig32E:EmptyTrials', 'No first training-unit LightWater trials found.');
 end
 trialRows = sortrows(trialRows, ["Group","Mouse","DateTime","Trial"]);
 
 [meanMat, semMat, x, nMat] = iSummarizeTrialCurve(trialRows, ["Naive","Transfer"]);
 
-f = figure('Color','w', 'Name', 'Fig32D LightWater first training-unit trial curve');
+f = figure('Color','w', 'Name', 'Fig32E LightWater first training-unit trial curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 ax = axes(f);
@@ -99,7 +99,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32D_LightWater_FirstTrainingUnitTrialCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32E_LightWater_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summaryCurve = table;
@@ -111,8 +111,8 @@ summaryCurve.TransferSem = semMat(:,2);
 summaryCurve.NaiveN = nMat(:,1);
 summaryCurve.TransferN = nMat(:,2);
 summaryCurve.PMixedEffect(:) = curveP;
-assignin('base', 'Fig32D_LightWaterFirstTrainingUnitTrial_Raw', trialRows);
-assignin('base', 'Fig32D_LightWaterFirstTrainingUnitTrial_Summary', summaryCurve);
+assignin('base', 'Fig32E_LightWaterFirstTrainingUnitTrial_Raw', trialRows);
+assignin('base', 'Fig32E_LightWaterFirstTrainingUnitTrial_Summary', summaryCurve);
 
 firstTrial = trialRows(trialRows.Trial == 1, :);
 naiveFirst = double(firstTrial.Behavior(firstTrial.Group == "Naive"));
@@ -121,7 +121,7 @@ naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
 firstBarPValue = ranksum(naiveFirst, tranFirst);
 
-f2 = figure('Color','none', 'Name', 'Fig32D LightWater first-trial performance');
+f2 = figure('Color','none', 'Name', 'Fig32E LightWater first-trial performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
@@ -165,9 +165,9 @@ grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32D_LightWater_FirstTrialPerformance.svg');
+svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32E_LightWater_FirstTrialPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
-fprintf('\n=== Fig32D first-trial bar ===\n');
+fprintf('\n=== Fig32E first-trial bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
 fprintf('Continual mice n = %d\n', numel(tranFirst));
 fprintf('ranksum p = %.6g\n', firstBarPValue);
@@ -177,7 +177,7 @@ firstTrialTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFi
 firstTrialTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstTrialTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
 firstTrialTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
-assignin('base', 'Fig32D_LightWater_FirstTrial', firstTrialTable);
+assignin('base', 'Fig32E_LightWater_FirstTrial', firstTrialTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 T = iQueryLightWaterTrialsAll(DS);
@@ -321,7 +321,7 @@ T.Source = string(T.Source);
 nSrc = splitapply(@(x) numel(unique(string(x))), T.Source, G);
 dup = mice(nSrc > 1);
 if ~isempty(dup)
-	error('Fig32D:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
+	error('Fig32E:DuplicateMouseAcrossSources', 'Group %s has duplicated mice across sources.', char(string(groupName)));
 end
 end
 
@@ -332,7 +332,7 @@ T.Group = string(T.Group);
 nG = splitapply(@(x) numel(unique(string(x))), T.Group, G);
 dup = mice(nG > 1);
 if ~isempty(dup)
-	error('Fig32D:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
+	error('Fig32E:MouseInMultipleGroups', 'Some mice appear in multiple groups.');
 end
 end
 

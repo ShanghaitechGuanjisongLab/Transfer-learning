@@ -152,12 +152,8 @@ if isfinite(pCurve)
 	yMid = (y1 + y2) / 2;
 	yHalfLen = abs(y1 - y2) / 4;
 	plot(ax, [sessIdx sessIdx], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
-	if pCurve < 0.001
-		astStr = '***';
-	elseif pCurve < 0.01
-		astStr = '**';
-	elseif pCurve < 0.05
-		astStr = '*';
+	if  pCurve < 0.05
+		astStr = '＊';
 	else
 		astStr = 'n.s.';
 	end

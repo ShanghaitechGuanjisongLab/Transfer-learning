@@ -16,7 +16,7 @@ bottomGroupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 [weightData, weightMeanMat, weightSemMat, weightNMat] = iBuildMetricDataTable(WeightValues.MouseStd, classNames, classLabels, groupFields, topGroupLabels, ["ConnectionType", "Group"]);
 [heterogeneityData, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityNMat] = iBuildMetricDataTable(WeightValues.Heterogeneity, heterogeneityNames, heterogeneityLabels, groupFields, bottomGroupLabels, ["CellType", "Group"]);
 
-fig = figure('Color', 'w', 'Name', 'Fig55B pre-formal connection weight SD and learning-process heterogeneity bars');
+fig = figure('Color', 'w', 'Name', 'Fig54B pre-formal connection weight SD and learning-process heterogeneity bars');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [12, 8];
 fig.PaperUnits = 'centimeters';
