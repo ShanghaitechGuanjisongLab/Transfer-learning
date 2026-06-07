@@ -43,6 +43,8 @@ fitCFos = iFitSigmoidCurve(displayedCFosCarry, displayGroup(2));
 permResult = iPermutationTestSigmoidSlope(displayedControlCarry, displayedCFosCarry, displayGroup(1), displayGroup(2), 10000, 1);
 groupSessions = iCarryForwardSessions([displayedControl; displayedCFos]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(groupSessions, 'Performance', 'Session', 'Group', 'Mouse');
+sessions7 = groupSessions(groupSessions.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
 
 xMax = max([max(fitControl.XObserved), max(fitCFos.XObserved), max(blockNumbers)]);
 xFit = (1:xMax).';
@@ -93,7 +95,16 @@ if yTop - yBottom < 0.2
 	yBottom = yMid - 0.1;
 	yTop = yMid + 0.1;
 end
-[~, pText] = TransferLearning.Style.AddRightSidePValueLine(axisHandle, xMax + 0.55, yBottom, yTop, groupP);
+% Horizontal P-value line spanning blocks 1-7
+max7Control = max(meanMatOut(1:min(7, end), 1), [], 'omitnan');
+max7CFos = max(meanMatOut(1:min(7, end), 2), [], 'omitnan');
+yTop7 = max(max7Control, max7CFos);
+yl = ylim(axisHandle); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(axisHandle, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+text(axisHandle, 4, textY, '＊', ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 
 legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
@@ -150,7 +161,8 @@ fprintf('Control sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2
 fprintf('cFos sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitCFos.Lower, fitCFos.Upper, fitCFos.Slope, fitCFos.Midpoint, fitCFos.RSquared);
 fprintf('Permutation slope difference (cFos - Control): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation significance p-value (two-sided) = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
-fprintf('Two-way ANOVA Group P = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 
 assignin('base', 'Fig334G_BlockSigmoid_AllSessions', allSessions);
 assignin('base', 'Fig334G_BlockSigmoid_FitTable', fitTable);

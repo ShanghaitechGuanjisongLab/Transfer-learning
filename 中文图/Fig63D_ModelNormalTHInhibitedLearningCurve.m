@@ -16,6 +16,8 @@ thInhibitedFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
 curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 anovaTable = iBuildGroupAnovaTableFromMatrices(normalPerformance, thInhibitedPerformance, ["Normal", "TH"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
+anovaTable7 = anovaTable(anovaTable.Block <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable7, 'Performance', 'Block', 'Group', 'Mouse');
 
 fig = figure('Color', 'w', 'Name', 'Fig63D model Normal TH inhibited sigmoid');
 fig.Units = 'centimeters';
@@ -49,7 +51,16 @@ if yTop - yBottom < 0.2
 	yBottom = yMid - 0.1;
 	yTop = yMid + 0.1;
 end
-TransferLearning.Style.AddRightSidePValueLine(ax, max(xSummary), yBottom, yTop, groupP);
+% Horizontal P-value line spanning blocks 1-7
+max7Normal = max(summary.Mean(1:min(7, end), 1), [], 'omitnan');
+max7TH = max(summary.Mean(1:min(7, end), 2), [], 'omitnan');
+yTop7 = max(max7Normal, max7TH);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+text(ax, 4, textY, '＊', ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 lgd = legend(ax, [hNormal(1), hNormal(2), hTH(1), hTH(2)], ...
 	{'Normal Mean ± SEM', 'Normal Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
@@ -60,7 +71,8 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-fprintf('Fig63D Two-way ANOVA Group P = %.4g\n', groupP);
+fprintf('Fig63D Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Fig63D Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 iPrintPermutationResult('Fig63D', SigmoidStats);
 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);

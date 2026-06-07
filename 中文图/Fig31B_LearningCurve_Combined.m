@@ -46,6 +46,8 @@ fitAudio = iFitSigmoidCurve(audioSessions, "Audio");
 fitLight = iFitSigmoidCurve(lightSessions, "Light");
 permResult = iPermutationTestSigmoidSlope(audioSessions, lightSessions, 10000, 1);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performance', 'Session', 'Group', 'Mouse');
+sessions7 = allSessions(allSessions.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
 %% 
 
 audioColor = TransferLearning.ColorA;
@@ -95,7 +97,16 @@ if yTop - yBottom < 0.2
 	yBottom = yMid - 0.1;
 	yTop =  yMid + 0.1;
 end
-TransferLearning.Style.AddRightSidePValueLine(ax, xMax + 0.80, yBottom, yTop, groupP);
+% Horizontal P-value line spanning blocks 1-7
+max7Audio = max(summaryCurve.Mean(summaryCurve.Group=="Audio" & summaryCurve.Session<=7), [], 'omitnan');
+max7Light = max(summaryCurve.Mean(summaryCurve.Group=="Light" & summaryCurve.Session<=7), [], 'omitnan');
+yTop7 = max(max7Audio, max7Light);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+text(ax, 4, textY, '＊', ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
 lg = legend(ax, [hAudioMean, hAudioFit, hLightMean, hLightFit], ...
 	{'🔊 Mean ± SEM', '🔊 Sigmoid', '💡 Mean ± SEM', '💡 Sigmoid'}, ...
@@ -128,7 +139,8 @@ fprintf('Audio sigmoid slope = %.6f\n', fitAudio.Slope);
 fprintf('Light sigmoid slope = %.6f\n', fitLight.Slope);
 fprintf('Audio - Light slope difference = %.6f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.6g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
-fprintf('Two-way ANOVA Group P = %.6g\n', groupP);
+fprintf('Two-way ANOVA Group P (all blocks) = %.6g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.6g\n', groupP7);
 
 function out = iCueWaterSessionsByMouse(DS, sourceName, imagingCohort, stimulusName, startPhase, endPhase)
 	T = iQueryCueWaterBehaviorAll(DS, stimulusName);
