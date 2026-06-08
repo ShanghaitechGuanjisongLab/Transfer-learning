@@ -14,8 +14,8 @@
 %   TransferLearning.英文图3.G_THInhibitVsCtrl_LearningCurve
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgNameLC = "English_Fig3G_THInhibitVsCtrl_LearningCurve.svg";
-svgNameFS = "English_Fig3G_THInhibitVsCtrl_FirstSessionHitRate.svg";
+svgNameLC = "中文图Fig62A_THInhibitVsCtrl_LearningCurve.svg";
+svgNameFS = "中文图Fig62A_THInhibitVsCtrl_FirstSessionHitRate.svg";
 
 %% --- 0) Ensure project loaded
 try
@@ -155,22 +155,14 @@ yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
 labels = {char(grpLabels(1)), char(grpLabels(2))};
-try
-	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2)));
-	else
-		lg = legend(ax, labels, 'Location', 'best');
-	end
-	lg.FontSize = 12;
-catch
-end
+lg = legend(ax, Patches(1:2), labels, 'Location','southeastoutside');
+
 
 box(ax, 'off');
 grid(ax, 'off');
 
-%% --- 6) Export
-	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+if ~isfolder(outDirUNC), mkdir(outDirUNC); end
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
 
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgNameLC);
 fprintf('Wrote: %s\n', svgPath);
@@ -188,12 +180,10 @@ xTH   = double(firstSess.Performance(firstSess.Group=="TH"));
 
 xCtrl = xCtrl(isfinite(xCtrl));
 xTH   = xTH(isfinite(xTH));
-[pFS, ~] = iRanksumSafe(xCtrl, xTH);
 
 fprintf('First Transfer session hit rate:\n');
 fprintf('  Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl), std(xCtrl)/sqrt(numel(xCtrl)), numel(xCtrl));
 fprintf('  TH:   %.3f ± %.3f (n=%d)\n', mean(xTH),   std(xTH)/sqrt(numel(xTH)),     numel(xTH));
-fprintf('  ranksum p = %.4g\n', pFS);
 fprintf('First-block panel: cell count and Spearman rho are not applicable.\n');
 
 DataCell = {double(xCtrl(:)), double(xTH(:))};
@@ -249,16 +239,17 @@ for iE = 1:height(ErrorBars2)
 	[~, colorIndex] = min(abs((1:size(edgeColors, 1)).' - xData(1)));
 	eb.Color = edgeColors(colorIndex, :);
 end
+TransferLearning.Style.SetBarPValues(Opt2);
+fprintf('\n=== Figure caption (6.2A first block): %s ===\n', ...
+	TransferLearning.Style.iFormatPText(Opt2.MultiCompare.PValue(1)));
 if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
 	for pt = Opt2.MultiCompare.PText(:)'
 		pt.FontSize = 12;
-		pt.Tag = 'PText';
 	end
 end
 if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
 	for pl = Opt2.MultiCompare.PLine(:)'
 		pl.LineWidth = 1;
-		pl.Tag = 'PLine';
 	end
 end
 ax2.XLim = [-0.05, 3.05];

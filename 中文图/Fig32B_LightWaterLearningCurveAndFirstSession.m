@@ -1,4 +1,4 @@
-﻿% Fig32B：光水初始/迁移学习曲线 + 首会话条形图
+% Fig32B：光水初始/迁移学习曲线 + 首会话条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -50,6 +50,9 @@ PValueLS = nan;
 [~, SummaryL] = evalc('UniExp.LearningSummarize(sessionForSummary)');
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["Naive","Transfer"]);
 nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performance', 'Session', 'Group', 'Mouse');
+sessions7 = allSessions(allSessions.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
 
 f = figure('Color','w', 'Name', 'Fig32B LightWater learning curve');
 f.Units = 'centimeters';
@@ -76,6 +79,22 @@ end
 
 curveP = iLearningCurvePValue(allSessions, PValueLS);
 
+% Horizontal P-value line spanning blocks 1-7
+max7Naive = max(meanMat(1:min(7, end), 1), [], 'omitnan');
+max7Transfer = max(meanMat(1:min(7, end), 2), [], 'omitnan');
+max7SemNaive = semMat(find(meanMat(1:min(7,end),1)==max7Naive,1,'first'),1);
+max7SemTransfer = semMat(find(meanMat(1:min(7,end),2)==max7Transfer,1,'first'),2);
+yTop7 = max(max7Naive + max7SemNaive, max7Transfer + max7SemTransfer);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(ax, 4, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
+
 labels = cellstr(displayGroups);
 if numel(patches) >= 2
 	lg = legend(ax, patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(patches(1:2)));
@@ -90,8 +109,8 @@ lg.Title.Color = cueTitleColor;
 
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-ylim(ax, [0 1]);
 box(ax, 'off');
+ax.XTick = 1;
 grid(ax, 'off');
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -99,6 +118,8 @@ end
 
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32B_LightWater_LearningCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 
 summaryCurve = table;
 summaryCurve.Block = x(:);
@@ -117,20 +138,20 @@ naiveFirst = double(firstSess.Performance(string(firstSess.Group) == "Naive"));
 tranFirst  = double(firstSess.Performance(string(firstSess.Group) == "Transfer"));
 naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
-firstBarPValue = ranksum(naiveFirst, tranFirst);
+%% 
 
 f2 = figure('Color','none', 'Name', 'Fig32B LightWater first-session performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
-pos2(3:4) = [4,4];
+pos2(3:4) = [4,3];
 f2.Position = pos2;
 f2.PaperUnits = 'centimeters';
-f2.PaperSize = [4,4];
+f2.PaperSize = [4,3];
 f2.PaperPositionMode = 'auto';
 
 tiledlayout(1,1,'TileSpacing','tight','Padding','tight');
 nexttile;
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
@@ -143,16 +164,18 @@ ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
 ax2.XTick = [];
 legend(ax2, 'off');
-if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
-	for pt = optional2.MultiCompare.PText(:)'
-		pt.FontSize = 12;
-	end
-end
 if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
 	for pl = optional2.MultiCompare.PLine(:)'
 		pl.LineWidth = 2;
+		pl.Tag = 'PLine';
 	end
 end
+if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
+	for pt = optional2.MultiCompare.PText(:)'
+		pt.Tag = 'PText';
+	end
+end
+TransferLearning.Style.SetBarPValues(optional2);
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
 iStyleErrorBars(errorBars2, edgeColors);
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
@@ -167,13 +190,14 @@ fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== Fig32B first-block bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
 fprintf('Continual mice n = %d\n', numel(tranFirst));
-fprintf('First-block bar ranksum p = %.6g\n', firstBarPValue);
+fprintf('First-block bar P (BarScatterCompare): %s\n', ...
+	TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
 firstSessionTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
 firstSessionTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstSessionTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
-firstSessionTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
+firstSessionTable.BarPValue = repmat(optional2.MultiCompare.PValue(1), nFirst, 1);
 assignin('base', 'Fig32B_LightWater_FirstSession', firstSessionTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)

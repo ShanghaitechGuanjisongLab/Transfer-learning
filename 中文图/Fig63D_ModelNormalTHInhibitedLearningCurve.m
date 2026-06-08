@@ -59,8 +59,11 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-text(ax, 4, textY, '＊', ...
+starStr = TransferLearning.Style.iFormatPText(groupP7);
+text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
 
 lgd = legend(ax, [hNormal(1), hNormal(2), hTH(1), hTH(2)], ...
 	{'Normal Mean ± SEM', 'Normal Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
@@ -74,6 +77,7 @@ end
 fprintf('Fig63D Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Fig63D Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 iPrintPermutationResult('Fig63D', SigmoidStats);
+fprintf('Fig63D permutation results are for reference only; figure uses Two-way ANOVA.\n');
 
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);

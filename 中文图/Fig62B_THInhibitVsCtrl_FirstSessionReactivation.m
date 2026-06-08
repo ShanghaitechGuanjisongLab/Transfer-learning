@@ -38,8 +38,6 @@ if isempty(xCtrl23) || isempty(xTH23) || isempty(xCtrl5) || isempty(xTH5)
 	error('Fig62B:NoFiniteData', 'No finite layer-wise reactivation values in one or both groups.');
 end
 
-p23 = ranksum(xCtrl23, xTH23);
-p5 = ranksum(xCtrl5, xTH5);
 ctrlCells23 = sum(double(RCtrl.NLearnedActive23), 'omitnan');
 thCells23 = sum(double(RTH.NLearnedActive23), 'omitnan');
 ctrlCells5 = sum(double(RCtrl.NLearnedActive5), 'omitnan');
@@ -49,13 +47,11 @@ fprintf('\n=== Fig62B MOp2/3 reactivation ===\n');
 fprintf('Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl23), std(xCtrl23) / sqrt(numel(xCtrl23)), numel(xCtrl23));
 fprintf('TH:   %.3f ± %.3f (n=%d)\n', mean(xTH23), std(xTH23) / sqrt(numel(xTH23)), numel(xTH23));
 fprintf('Learned-audio active cells: Ctrl=%d, TH=%d\n', ctrlCells23, thCells23);
-fprintf('ranksum p = %.4g\n', p23);
 
 fprintf('\n=== Fig62B MOp5 reactivation ===\n');
 fprintf('Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl5), std(xCtrl5) / sqrt(numel(xCtrl5)), numel(xCtrl5));
 fprintf('TH:   %.3f ± %.3f (n=%d)\n', mean(xTH5), std(xTH5) / sqrt(numel(xTH5)), numel(xTH5));
 fprintf('Learned-audio active cells: Ctrl=%d, TH=%d\n', ctrlCells5, thCells5);
-fprintf('ranksum p = %.4g\n', p5);
 fprintf('Reactivation comparison: Spearman rho is not applicable.\n');
 
 f = figure('Color', 'w', 'Name', 'Fig62B TH first-session reactivation');
@@ -74,13 +70,17 @@ nexttile(layout, 1);
 [~, options23, bars23, errorBars23] = UniExp.BarScatterCompare({xCtrl23(:), xTH23(:)}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 delete(findobj(gca, 'Type', 'Scatter'));
 iStyleTile(gca, bars23, errorBars23, false, 'MOp2/3');
-iApplyPText(options23, p23);
+TransferLearning.Style.SetBarPValues(options23);
+fprintf('\n=== Figure caption (6.2B MOp2/3): %s ===\n', ...
+	TransferLearning.Style.iFormatPText(options23.MultiCompare.PValue(1)));
 
 nexttile(layout, 2);
 [~, options5, bars5, errorBars5] = UniExp.BarScatterCompare({xCtrl5(:), xTH5(:)}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 delete(findobj(gca, 'Type', 'Scatter'));
 iStyleTile(gca, bars5, errorBars5, true, 'MOp5');
-iApplyPText(options5, p5);
+TransferLearning.Style.SetBarPValues(options5);
+fprintf('\n=== Figure caption (6.2B MOp5): %s ===\n', ...
+	TransferLearning.Style.iFormatPText(options5.MultiCompare.PValue(1)));
 
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
@@ -89,8 +89,8 @@ svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig62B_ReactivationTable', R);
-assignin('base', 'Fig62B_ReactivationP23', p23);
-assignin('base', 'Fig62B_ReactivationP5', p5);
+assignin('base', 'Fig62B_ReactivationOptions23', options23);
+assignin('base', 'Fig62B_ReactivationOptions5', options5);
 assignin('base', 'Fig62B_ReactivationCells23', [ctrlCells23, thCells23]);
 assignin('base', 'Fig62B_ReactivationCells5', [ctrlCells5, thCells5]);
 

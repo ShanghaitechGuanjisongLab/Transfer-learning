@@ -101,11 +101,13 @@ max7CFos = max(meanMatOut(1:min(7, end), 2), [], 'omitnan');
 yTop7 = max(max7Control, max7CFos);
 yl = ylim(axisHandle); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
-textY = yPLine + 0.1 * yrange;
+textY = yPLine + 0.2 * yrange;
 plot(axisHandle, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-text(axisHandle, 4, textY, '＊', ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
-
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(axisHandle, 4, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12,AffectAutoLimits=true);
+yt = yticks(axisHandle);
+yticks(axisHandle, yt(yt <= 1 + 1e-6));
 
 legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
 	{'Control Mean ± SEM', 'Control Sigmoid', 'cFos Mean ± SEM', 'cFos Sigmoid'}, ...

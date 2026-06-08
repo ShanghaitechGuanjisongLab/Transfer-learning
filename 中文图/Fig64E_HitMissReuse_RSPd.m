@@ -1,4 +1,4 @@
-﻿% English Fig4E: RSPd Hit vs Miss reactivation rate (paired, layers merged)
+% English Fig4E: RSPd Hit vs Miss reactivation rate (paired, layers merged)
 %
 % Reactivation = P(Transfer active at 1 s | Learned AudioWater active at 1 s)
 % compared between transfer Hit and Miss trials.
@@ -27,7 +27,7 @@ if nnz(mask) < 1
 end
 
 % --- Plot (mimic Fig1J: 3×4 cm, paired, FontSize 6)
-svgName = "English_Fig4E_RSPd_HitMiss_Reuse.svg";
+svgName = "中文图Fig64E_RSPd_HitMiss_Reuse.svg";
 f = figure('Color','w', 'Name','English Fig4E Hit vs Miss Reuse');
 f.Units = 'centimeters';
 f.Position(3:4) = [3.0, 4.0];
@@ -52,11 +52,10 @@ end
 Y = [hit(:), miss(:)];
 hitColor = TransferLearning.ColorA;
 missColor = TransferLearning.ColorB;
-plot(ax, Y', '-', 'LineWidth', 1, 'Color', [0, 0, 0]);
+plot(ax, Y', '-', 'LineWidth', 0.5, 'Color', [0, 0, 0]);
 scatter(ax, ones(numel(hit),1), hit, 15, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', hitColor);
 scatter(ax, 2*ones(numel(miss),1), miss, 15, missColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', missColor);
 set(ax, 'XLim',[0.5 2.5], 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
-ylim(ax, [0 1]);
 grid(ax,'off');
 box(ax,'off');
 if isprop(ax, 'FontName')

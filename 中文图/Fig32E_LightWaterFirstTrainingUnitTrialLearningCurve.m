@@ -55,6 +55,9 @@ end
 trialRows = sortrows(trialRows, ["Group","Mouse","DateTime","Trial"]);
 
 [meanMat, semMat, x, nMat] = iSummarizeTrialCurve(trialRows, ["Naive","Transfer"]);
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(trialRows, 'Behavior', 'Trial', 'Group', 'Mouse');
+trials7 = trialRows(trialRows.Trial <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(trials7, 'Behavior', 'Trial', 'Group', 'Mouse');
 
 f = figure('Color','w', 'Name', 'Fig32E LightWater first training-unit trial curve');
 f.Units = 'centimeters';
@@ -80,6 +83,22 @@ end
 
 curveP = iLearningCurvePValue(trialRows);
 
+% Horizontal P-value line spanning trials 1-7
+max7Naive = max(meanMat(1:min(7, end), 1), [], 'omitnan');
+max7Transfer = max(meanMat(1:min(7, end), 2), [], 'omitnan');
+max7SemNaive = semMat(find(meanMat(1:min(7,end),1)==max7Naive,1,'first'),1);
+max7SemTransfer = semMat(find(meanMat(1:min(7,end),2)==max7Transfer,1,'first'),2);
+yTop7 = max(max7Naive + max7SemNaive, max7Transfer + max7SemTransfer);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+starStr = TransferLearning.Style.iFormatPText(groupP7);
+text(ax, 4, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
+
 labels = cellstr(displayGroups);
 if numel(patches) >= 2
 	lg = legend(ax, patches(1:2), labels, 'Location', 'southeastoutside');
@@ -101,6 +120,8 @@ end
 
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32E_LightWater_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
+fprintf('Two-way ANOVA Group P (all trials) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (trials 1-7) = %.4g\n', groupP7);
 
 summaryCurve = table;
 summaryCurve.Trial = x(:);
@@ -119,7 +140,6 @@ naiveFirst = double(firstTrial.Behavior(firstTrial.Group == "Naive"));
 tranFirst  = double(firstTrial.Behavior(firstTrial.Group == "Transfer"));
 naiveFirst = naiveFirst(isfinite(naiveFirst));
 tranFirst  = tranFirst(isfinite(tranFirst));
-firstBarPValue = ranksum(naiveFirst, tranFirst);
 
 f2 = figure('Color','none', 'Name', 'Fig32E LightWater first-trial performance');
 f2.Units = 'centimeters';
@@ -132,7 +152,7 @@ f2.PaperPositionMode = 'auto';
 
 tiledlayout(1,1,'TileSpacing','tight','Padding','tight');
 nexttile;
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
@@ -145,16 +165,18 @@ ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
 ax2.XTick = [];
 legend(ax2, 'off');
-if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
-	for pt = optional2.MultiCompare.PText(:)'
-		pt.FontSize = 12;
-	end
-end
 if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
 	for pl = optional2.MultiCompare.PLine(:)'
 		pl.LineWidth = 2;
+		pl.Tag = 'PLine';
 	end
 end
+if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
+	for pt = optional2.MultiCompare.PText(:)'
+		pt.Tag = 'PText';
+	end
+end
+TransferLearning.Style.SetBarPValues(optional2);
 
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
 iKeepUpperErrorBarOnly(ax2, errorBars2, bars2, edgeColors(1,:), edgeColors(2,:));
@@ -170,13 +192,14 @@ fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== Fig32E first-trial bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
 fprintf('Continual mice n = %d\n', numel(tranFirst));
-fprintf('ranksum p = %.6g\n', firstBarPValue);
+fprintf('First-trial bar P (BarScatterCompare): %s\n', ...
+	TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
 nFirst = max(numel(naiveFirst), numel(tranFirst));
 firstTrialTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
 firstTrialTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
 firstTrialTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
-firstTrialTable.BarRanksumPValue = repmat(firstBarPValue, nFirst, 1);
+firstTrialTable.BarPValue = repmat(optional2.MultiCompare.PValue(1), nFirst, 1);
 assignin('base', 'Fig32E_LightWater_FirstTrial', firstTrialTable);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)

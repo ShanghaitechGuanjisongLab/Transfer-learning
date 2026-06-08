@@ -10,7 +10,7 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgName = "中文图Fig53B_BaselineTemporalStd_NaiveTransfer_ByLayer.svg";
+svgName = "中文图Fig52B_BaselineTemporalStd_NaiveTransfer_ByLayer.svg";
 
 xs = TransferLearning.Xs;
 if isduration(xs)
@@ -85,8 +85,13 @@ for iL = 1:numel(layers)
 	fprintf('ranksum p = %.6g\n', p);
 
 	ax = nexttile(layout, iL);
-	[~, optional, bars, errorBars] = UniExp.BarScatterCompare({xNaive(:), xTran(:)}, compareGroup, 'AsteriskThreshold', 0.05);
-	iStyleTile(ax, bars, errorBars, optional, groupColors(1, :), groupColors(2, :), iL == numel(layers), layerLabels(iL), p);
+	[~, optional, bars, errorBars] = UniExp.BarScatterCompare({xNaive(:), xTran(:)}, compareGroup, 'AsteriskThreshold', 1);
+	TransferLearning.Style.SetBarPValues(optional);
+	if isfield(optional, 'MultiCompare') && ismember('PText', optional.MultiCompare.Properties.VariableNames)
+		fprintf('  BarScatterCompare on figure: PValue=%.5g PText="%s"\n', ...
+			optional.MultiCompare.PValue, optional.MultiCompare.PText.String);
+	end
+	iStyleTile(ax, bars, errorBars, optional, groupColors(1, :), groupColors(2, :), iL == numel(layers), layerLabels(iL));
 end
 
 if ~isfolder(outDirUNC)
@@ -214,7 +219,7 @@ function badMice = iFindMiceWithAudioWaterInPhase(DS, phaseName)
 	badMice = mice(bad);
 end
 
-function iStyleTile(ax, bars, errorBars, optional, colorNaive, colorTransfer, showXTick, titleText, pValue)
+function iStyleTile(ax, bars, errorBars, optional, colorNaive, colorTransfer, showXTick, titleText)
 	ax.FontSize = 6;
 	ax.LineWidth = 1;
 	ax.TickDir = 'out';
@@ -251,7 +256,6 @@ function iStyleTile(ax, bars, errorBars, optional, colorNaive, colorTransfer, sh
 		if ismember('PText', optional.MultiCompare.Properties.VariableNames)
 			for pt = optional.MultiCompare.PText(:)'
 				pt.FontSize = 6;
-				pt.String = iFormatPValue(pValue);
 				pt.Tag = 'PText';
 			end
 		end

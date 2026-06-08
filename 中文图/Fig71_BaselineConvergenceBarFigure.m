@@ -25,8 +25,7 @@ f.PaperSize = [4.5, 4.0];
 
 ax = axes(f);
 ax.FontSize = 6;
-[~, Optional, barsObj, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, AsteriskThreshold=0.01, CapSize=0.5);
-
+[~, Optional, barsObj, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, AsteriskThreshold=1, CapSize=0.5);TransferLearning.Style.SetBarPValues(Optional);
 ax.FontName = 'Segoe UI Emoji';
 ax.LineWidth = 1;
 if isprop(ax.XAxis, 'LineWidth')

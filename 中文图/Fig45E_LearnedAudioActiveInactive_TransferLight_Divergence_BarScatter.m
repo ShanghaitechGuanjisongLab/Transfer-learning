@@ -156,7 +156,7 @@ groupLabels = ["Active", "Inactive"];
 dataTable = cell2table(layerData, 'VariableNames', cellstr(groupLabels), 'RowNames', cellstr(layerLabels));
 dataTable.Properties.DimensionNames = {'Layer', 'Group'};
 compareGroup = iWithinLayerCompareGroup(layerLabels, groupLabels, dataTable.Properties.DimensionNames);
-[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataTable, UniExp.Flags.IndividualErrorbars, compareGroup, iColorTable(groupLabels, palette2), ax, 'AsteriskThreshold', 0.05);
+[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataTable, UniExp.Flags.IndividualErrorbars, compareGroup, iColorTable(groupLabels, palette2), ax, 'AsteriskThreshold', 1);
 for iBar = 1:numel(bars)
 	bars(iBar).BarWidth = 0.5;
 	bars(iBar).LineWidth = 1;
@@ -172,6 +172,7 @@ for iBar = 1:numel(bars)
 end
 iStyleErrorBars(errorBars, bars, groupLabels, palette2);
 iRetunePValueLines(optional);
+TransferLearning.Style.SetBarPValues(optional);
 
 ax.FontName = 'Arial';
 ax.FontSize = 6;
@@ -183,10 +184,10 @@ end
 ax.XTickLabelRotation = 0;
 ylabel(ax, '💡💧 Divergence', 'FontName', 'Arial', 'FontSize', 6);
 xlabel(ax, 'Layer', 'FontName', 'Arial', 'FontSize', 6);
-title(ax, 'Learned active vs inactive', 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');
+title(ax, '🔊💧 active vs inactive', 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');
 box(ax, 'off');
 grid(ax, 'off');
-leg = legend(bars, cellstr(groupLabels), 'Location', 'northwest', 'Box', 'off');
+leg = legend(bars, cellstr(groupLabels), 'Location', 'northoutside', 'Box', 'off',Orientation='horizontal');
 leg.FontName = 'Arial';
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';

@@ -31,9 +31,8 @@ f.PaperSize = [12, 8];
 
 ax = axes(f);
 hold(ax, 'on');
-[~, Opt, Bars, EB] = UniExp.BarScatterCompare(Data.UNCompare, compareGroup, UniExp.Flags.IndividualErrorbars, AsteriskThreshold=0.01);
-delete(findobj(ax, 'Type', 'Scatter'));
-for eb = EB.Object(:)'
+[~, Opt, Bars, EB] = UniExp.BarScatterCompare(Data.UNCompare, compareGroup, UniExp.Flags.IndividualErrorbars, AsteriskThreshold=1);
+delete(findobj(ax, 'Type', 'Scatter'));TransferLearning.Style.SetBarPValues(Opt);for eb = EB.Object(:)'
 	eb.LineWidth = 2;
 end
 for iBar = 1:min(numel(Bars), numel(transitionLabels))

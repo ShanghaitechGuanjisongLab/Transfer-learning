@@ -67,8 +67,9 @@ nexttile;
 
 Data = array2table([double(vHit(:)), double(vMiss(:))], 'VariableNames', {'Hit', 'Miss'});
 CompareGroup = table(["Hit", "Miss"], 'VariableNames', {'GroupPair'});
-[~, optional, Bars, EB] = UniExp.BarScatterCompare(Data, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+[~, optional, Bars, EB] = UniExp.BarScatterCompare(Data, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 iTagPValueObjects(optional);
+TransferLearning.Style.SetBarPValues(optional);
 ax = gca;
 ax.FontSize = 6;
 ax.FontName = 'Segoe UI Emoji';
@@ -156,9 +157,10 @@ svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig43D sample counts ===\n');
 disp(sampleCounts);
-fprintf('Hit vs Miss signrank p = %.6g\n', hitMissPValue);
+fprintf('Hit vs Miss BarScatterCompare P = %s\n', ...
+	TransferLearning.Style.iFormatPText(optional.MultiCompare.PValue(1)));
 
-assignin('base', 'Fig43D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'SignrankPValue', hitMissPValue));
+assignin('base', 'Fig43D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'BarScatterComparePValue', optional.MultiCompare.PValue(1)));
 
 function iTagPValueObjects(optional)
 if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)

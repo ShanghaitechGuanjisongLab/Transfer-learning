@@ -159,24 +159,24 @@ Options = cell(2, 1);
 % --- Tile 1: Reactivation ---
 ax1 = nexttile(Layout, 1);
 [~, Options{1}, Bars1, EB1] = UniExp.BarScatterCompare( ...
-	{double(xReactCtrl(:)), double(xReactV7(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+	{double(xReactCtrl(:)), double(xReactV7(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 delete(findobj(ax1, 'Type', 'Scatter'));
 iStyleAxes(ax1, false);
 ylabel(ax1, 'Reactivation', 'FontSize', 6);
 iStyleBars(Bars1, barColors(1, :), barColors(2, :));
 iStyleErrorBars(EB1, barColors);
+TransferLearning.Style.SetBarPValues(Options{1});
 
 % --- Tile 2: Divergence ---
 ax2 = nexttile(Layout, 2);
 [~, Options{2}, Bars2, EB2] = UniExp.BarScatterCompare( ...
-	{double(xDivCtrl(:)), double(xDivV7(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+	{double(xDivCtrl(:)), double(xDivV7(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 delete(findobj(ax2, 'Type', 'Scatter'));
 iStyleAxes(ax2, true);
 ylabel(ax2, 'Divergence', 'FontSize', 6);
 iStyleBars(Bars2, barColors(1, :), barColors(2, :));
 iStyleErrorBars(EB2, barColors);
-
-iTagRetunablePValues(Options);
+TransferLearning.Style.SetBarPValues(Options{2});
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgName = "English_Fig2N_Vacation7VsCtrl_Reactivation_Divergence.svg";

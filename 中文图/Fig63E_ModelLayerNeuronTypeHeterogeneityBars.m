@@ -90,6 +90,14 @@ function [barHandles, optional] = iPlotGroupedBars(ax, dataTable, compareGroup, 
 barWidth = 0.5;
 capSize = 4;
 [~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(dataTable, UniExp.Flags.empty, compareGroup, iColorTable(groupLabels, groupColors), ax, 'AsteriskThreshold', 0.05, 'CapSize', capSize);
+fprintf('\n=== Fig63E %s BarScatterCompare P-values ===\n', titleText);
+if isfield(optional, 'MultiCompare') && istable(optional.MultiCompare)
+	for iMC = 1:height(optional.MultiCompare)
+		fprintf('  %s vs %s: %s\n', ...
+			optional.MultiCompare.Group{iMC, 1}, optional.MultiCompare.Group{iMC, 2}, ...
+			TransferLearning.Style.iFormatPText(optional.MultiCompare.PValue(iMC)));
+	end
+end
 for barIndex = 1:numel(barHandles)
 	barHandles(barIndex).BarWidth = barWidth;
 	barHandles(barIndex).LineWidth = 1;

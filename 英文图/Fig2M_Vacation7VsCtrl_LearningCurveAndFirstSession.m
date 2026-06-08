@@ -111,20 +111,6 @@ for p = Patches(:)'
 		p.LineWidth = 2;
 	end
 end
-labels = cellstr(displayGroups);
-try
-	if numel(Patches) >= 2
-		lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2)));
-	else
-		lg = legend(ax, labels, 'Location', 'best');
-	end
-	lg.FontSize = 12;
-	lg.Title.String = '💡💧';
-	lg.Title.FontSize = 12;
-	lg.Box = 'off';
-catch
-end
-
 ax.FontSize = 12;
 ax.LineWidth = 2;
 if isprop(ax.XAxis, 'LineWidth')
@@ -133,7 +119,31 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-ylim(ax, [0 1]);
+
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(Sess, 'Performance', 'Session', 'Group', 'Mouse');
+sessions7 = Sess(Sess.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
+max7Ctrl = max(meanCells{1}(1:min(7, end)), [], 'omitnan');
+max7Vacation = max(meanCells{2}(1:min(7, end)), [], 'omitnan');
+yTop7 = max(max7Ctrl, max7Vacation);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(ax, 4, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
+
+labels = cellstr(displayGroups);
+lg = legend(ax, Patches(1:2), labels, 'Location', 'southeastoutside');
+
+lg.FontSize = 12;
+lg.Title.String = '💡💧';
+lg.Title.FontSize = 12;
+lg.Box = 'off';
+
 box(ax, 'off');
 grid(ax, 'off');
 
@@ -147,6 +157,8 @@ try
 	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
 	svgLC = TransferLearning.ExportStandardFigure(f, 2, svgLC);
 	fprintf('Wrote: %s\n', svgLC);
+fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
@@ -168,29 +180,16 @@ DataCell = {double(xCtrl(:)), double(xV7(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 %%
 
-f2 = figure('Color','none', 'Name', 'English Fig2M Gap First transfer session');
+f2 = figure( 'Name', 'English Fig2M Gap First transfer session');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
-f2.PaperPositionMode = 'auto';
-f2.PaperUnits = 'centimeters'; 
-f2.PaperSize = [4, 4];
 
-tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-nexttile;
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 ax2 = gca;
-delete(findobj(ax2, 'Type', 'Scatter'));
-ax2.FontSize = 12;
-ax2.LineWidth = 2;
-if isprop(ax2.XAxis, 'LineWidth')
-	ax2.XAxis.LineWidth = 2;
-	ax2.YAxis.LineWidth = 2;
-end
-ax2.XAxis.Visible = 'on';
 ax2.XTick = 1:2;
 ax2.XTickLabel = cellstr(displayGroups);
-legend(ax2, 'off');
 iTagRetunablePValues(Opt2);
+TransferLearning.Style.SetBarPValues(Opt2);
 iStyleBars(Bars2, edgeColors(1,:), edgeColors(2,:));
 iStyleErrorBars(ErrorBars2, edgeColors);
 

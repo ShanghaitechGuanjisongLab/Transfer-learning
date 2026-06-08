@@ -91,8 +91,15 @@ for iL = 1:numel(layers)
 
 	ax = axes(f, 'Units', 'normalized', 'Position', axPositions(iL, :));
 	axes(ax);
-	[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 0.05);
-	delete(findobj(gca, 'Type', 'Scatter'));
+[~, Opt, Bars, EB] = UniExp.BarScatterCompare({valsN, valsT, valsL}, false, CompareGroup, 'AsteriskThreshold', 1);
+	delete(findobj(gca, 'Type', 'Scatter'));TransferLearning.Style.SetBarPValues(Opt);
+	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
+		for pp = 1:height(Opt.MultiCompare)
+			gp = Opt.MultiCompare.GroupPair(pp,:);
+			fprintf('  BarScatterCompare on figure: [%d vs %d] PValue=%.5g PText="%s"\n', ...
+				gp(1), gp(2), Opt.MultiCompare.PValue(pp), Opt.MultiCompare.PText(pp).String);
+		end
+	end
 	for eb = EB.Object(:)'
 		eb.LineWidth = 1;
 		x = double(eb.XData(:));
@@ -138,18 +145,6 @@ for iL = 1:numel(layers)
 			Bars(ib).BaseLine.LineWidth = 1;
 			Bars(ib).EdgeColor = 'none';
 			try, Bars(ib).FaceAlpha = 1; catch, end
-		end
-	end
-	if isfield(Opt, 'MultiCompare') && ismember('PText', Opt.MultiCompare.Properties.VariableNames)
-		for pt = Opt.MultiCompare.PText(:)'
-			pt.FontSize = 6;
-			pt.Tag = 'PText';
-		end
-	end
-	if isfield(Opt, 'MultiCompare') && ismember('PLine', Opt.MultiCompare.Properties.VariableNames)
-		for pl = Opt.MultiCompare.PLine(:)'
-			pl.LineWidth = 1;
-			pl.Tag = 'PLine';
 		end
 	end
 end

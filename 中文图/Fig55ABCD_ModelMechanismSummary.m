@@ -1,6 +1,6 @@
 % Fig56ABCD model mechanism summary for Naive vs Continual CueB training.
 
-svgName = '中文图Fig56ABCD_ModelMechanismSummary.svg';
+
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'));
@@ -9,7 +9,7 @@ Cond = Fig5556Data.Cond;
 
 MechanismData = iBuildMechanismData(Params, Cond, Fig5556Data.ConditionNames, Fig5556Data.ConditionSeedValues);
 [fig, Stats] = iPlotFig56ABCD(MechanismData);
-
+svgName = '中文图Fig55ABCD_ModelMechanismSummary.svg';
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -212,8 +212,13 @@ axes(ax);
 naiveValues = dataCell{1};
 continualValues = dataCell{2};
 pValue = ranksum(naiveValues, continualValues);
-[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, 'AsteriskThreshold', 0.05);
-iStyleBarTile(ax, bars, errorBars, optional, palette, titleText, pValue);
+[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optional);
+fprintf('\n=== Fig55ABCD "%s" BarScatterCompare ===\n', titleText);
+if isfield(optional, 'MultiCompare') && ismember('PText', optional.MultiCompare.Properties.VariableNames)
+	fprintf('  PValue=%.5g PText="%s"\n', optional.MultiCompare.PValue, optional.MultiCompare.PText.String);
+end
+iStyleBarTile(ax, bars, errorBars, optional, palette, titleText);
 ylabel(ax, yLabelText);
 stats = table(["Naive"; "Continual"], [numel(naiveValues); numel(continualValues)], [mean(naiveValues, 'omitnan'); mean(continualValues, 'omitnan')], [iSem(naiveValues); iSem(continualValues)], ...
 	'VariableNames', {'Condition','N','Mean','Sem'});
@@ -267,7 +272,7 @@ for lineIndex = 1:numLines
 end
 end
 
-function iStyleBarTile(ax, bars, errorBars, optional, palette, titleText, pValue)
+function iStyleBarTile(ax, bars, errorBars, optional, palette, titleText)
 ax.FontSize = 12;
 ax.LineWidth = 0.5;
 ax.TickDir = 'out';
@@ -282,7 +287,7 @@ iHideToolbar(ax);
 iStyleBars(bars, palette);
 iStyleErrorBars(errorBars, palette);
 iStyleScatter(ax);
-iApplyPText(optional, pValue);
+iApplyPText(optional);
 end
 
 function iStyleLineTile(ax, ~, titleText, yLabelText, showXLabel, xLimitMax, yLimitMax)
@@ -390,7 +395,7 @@ for scatterObject = scatterObjects(:)'
 end
 end
 
-function iApplyPText(optional, pValue)
+function iApplyPText(optional)
 if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
 	return;
 end
@@ -398,7 +403,6 @@ if ismember('PText', optional.MultiCompare.Properties.VariableNames)
 	for textObject = optional.MultiCompare.PText(:)'
 		if isgraphics(textObject)
 			textObject.FontSize = 12;
-			textObject.String = iFormatPValue(pValue);
 			textObject.Tag = 'PText';
 		end
 	end

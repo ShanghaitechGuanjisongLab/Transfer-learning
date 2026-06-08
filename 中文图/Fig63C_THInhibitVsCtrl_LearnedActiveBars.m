@@ -14,9 +14,8 @@ compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 fprintf('1~3s Ctrl: %.3f ± %.3f (n=%d cells)\n', mean(Data.Ctrl.LateMean, 'omitnan'), iSem(Data.Ctrl.LateMean), numel(Data.Ctrl.LateMean));
 fprintf('1~3s TH:   %.3f ± %.3f (n=%d cells)\n', mean(Data.TH.LateMean, 'omitnan'), iSem(Data.TH.LateMean), numel(Data.TH.LateMean));
-fprintf('1~3s ranksum p = %.4g\n', Data.LatePValue);
-fprintf('TH decrease 0~1s: %.3f; 1~3s: %.3f; interaction p = %.4g\n', ...
-	Data.DecreaseEarlyMean, Data.DecreaseLateMean, Data.InteractionPValue);
+fprintf('TH decrease 0~1s: %.3f; 1~3s: %.3f\n', ...
+	Data.DecreaseEarlyMean, Data.DecreaseLateMean);
 
 f = figure('Color', 'w', 'Name', '中文图63C learned-active calcium bars');
 f.Units = 'centimeters';
@@ -33,13 +32,15 @@ layoutTitle.FontName = 'Segoe UI Emoji';
 axTop = nexttile(layout, 1);
 [~, optLate, barsLate, ebLate] = UniExp.BarScatterCompare({Data.Ctrl.LateMean(:), Data.TH.LateMean(:)}, compareGroup, AsteriskThreshold=0.05, CapSize=0.5);
 iStyleTile(axTop, barsLate, ebLate, {'', ''}, '1~3 s', 'z-score');
-iApplyPText(optLate, Data.LatePValue);
+TransferLearning.Style.SetBarPValues(optLate);
+fprintf('=== 6.3C top (1~3s z-score): %s ===\n', TransferLearning.Style.iFormatPText(optLate.MultiCompare.PValue(1)));
 iRetunePValues(optLate);
 
 axBottom = nexttile(layout, 2);
 [~, optDecrease, barsDecrease, ebDecrease] = UniExp.BarScatterCompare({Data.DecreaseEarlyBootstrap(:), Data.DecreaseLateBootstrap(:)}, compareGroup, AsteriskThreshold=0.05, CapSize=0.5);
 iStyleTile(axBottom, barsDecrease, ebDecrease, {'0~1', '1~3'}, 'TH decrease', 'Ctrl~TH');
-iApplyPText(optDecrease, Data.InteractionPValue);
+TransferLearning.Style.SetBarPValues(optDecrease);
+fprintf('=== 6.3C bottom (decrease 0~1 vs 1~3): %s ===\n', TransferLearning.Style.iFormatPText(optDecrease.MultiCompare.PValue(1)));
 iRetunePValues(optDecrease);
 
 svgPath = '中文图Fig63C_THInhibitVsCtrl_LearnedActiveBars.svg';

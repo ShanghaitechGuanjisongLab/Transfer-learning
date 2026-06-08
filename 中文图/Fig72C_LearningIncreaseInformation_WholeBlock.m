@@ -28,9 +28,8 @@ f.PaperPosition = [0, 0, 4.5, 4.0];
 f.PaperSize = [4.5, 4.0];
 
 ax = axes(f);
-[~, Opt, Bars, EB] = UniExp.BarScatterCompare(entropyCell, compareGroup, AsteriskThreshold=0.01);
-delete(findobj(ax, 'Type', 'Scatter'));
-
+[~, Opt, Bars, EB] = UniExp.BarScatterCompare(entropyCell, compareGroup, AsteriskThreshold=1);
+delete(findobj(ax, 'Type', 'Scatter'));TransferLearning.Style.SetBarPValues(Opt);
 for eb = EB.Object(:)'
 	delete(eb);
 end

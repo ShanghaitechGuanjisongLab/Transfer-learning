@@ -48,7 +48,6 @@ nNaive = size(XInitial, 1);
 nContinual = size(XTransfer, 1);
 nNaiveActive = sum(activeNaive);
 nContinualActive = sum(activeContinual);
-[~, pActive] = fishertest([nNaiveActive, nNaive - nNaiveActive; nContinualActive, nContinual - nContinualActive]);
 
 sampleRate = 8;
 idx1sDiv = 4 * sampleRate;
@@ -94,9 +93,6 @@ nCellContinualL5 = iSumFinite(divSummary.NCellL5(maskContinualL5));
 if isempty(naiveL23) || isempty(continualL23) || isempty(naiveL5) || isempty(continualL5)
 	error('Fig44CE:InsufficientDivergenceData', 'At least one LightWater layer comparison is empty.');
 end
-
-pL23 = ranksum(naiveL23, continualL23);
-pL5 = ranksum(naiveL5, continualL5);
 %% 
 
 f = figure('Color', 'w', 'Name', 'Chinese Fig44CE Initial/Continual LightWater bars');
@@ -110,22 +106,29 @@ f.PaperSize = [4, 16];
 layout = tiledlayout(f, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 axZ = nexttile(layout, 1);
-[~, optZ, barsZ, errZ] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-pZScore = iExtractFirstPValue(optZ);
+[~, optZ, barsZ, errZ] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optZ);
 iStyleBarPanel(axZ, optZ, barsZ, errZ, barColors, 'z-score', '1 s z-score');
+[pCTop, tCTop] = iExtractFirstPValueAndText(optZ);
 
 axActive = nexttile(layout, 2);
-[~, optActive, barsActive, errActive] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeContinual(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+[~, optActive, barsActive, errActive] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeContinual(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optActive);
 iStyleBarPanel(axActive, optActive, barsActive, errActive, barColors, 'Active fraction', 'Active fraction');
 ylim(axActive, [0, max(0.1, axActive.YLim(2))]);
+[pCBottom, tCBottom] = iExtractFirstPValueAndText(optActive);
 
 axL23 = nexttile(layout, 3);
-[~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(naiveL23(:)), double(continualL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+[~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(naiveL23(:)), double(continualL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optL23);
 iStyleBarPanel(axL23, optL23, barsL23, errL23, barColors, 'Divergence', 'Layer 2/3');
+[pETop, tETop] = iExtractFirstPValueAndText(optL23);
 
 axL5 = nexttile(layout, 4);
-[~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(naiveL5(:)), double(continualL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+[~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(naiveL5(:)), double(continualL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optL5);
 iStyleBarPanel(axL5, optL5, barsL5, errL5, barColors, 'Divergence', 'Layer 5');
+[pEBottom, tEBottom] = iExtractFirstPValueAndText(optL5);
 
 for axItem = [axZ, axActive, axL23, axL5]
 	if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar)
@@ -139,20 +142,22 @@ fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig44CE initial/continual LightWater bars ===\n');
 fprintf('Naive 1s z-score: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
 fprintf('Continual 1s z-score: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
-fprintf('1s z-score BarScatterCompare p = %.6g\n', pZScore);
-fprintf('Active fraction Fisher exact p = %.6g\n', pActive);
-fprintf('L2/3 divergence: Naive %d mice, %d cells; Continual %d mice, %d cells; ranksum p = %.6g\n', ...
-	nnz(maskNaiveL23), nCellNaiveL23, nnz(maskContinualL23), nCellContinualL23, pL23);
-fprintf('L5 divergence: Naive %d mice, %d cells; Continual %d mice, %d cells; ranksum p = %.6g\n', ...
-	nnz(maskNaiveL5), nCellNaiveL5, nnz(maskContinualL5), nCellContinualL5, pL5);
+fprintf('C-top (1 s z-score): BarScatterCompare PValue=%.6g, PText="%s"\n', pCTop, tCTop);
+fprintf('C-bottom (active fraction): BarScatterCompare PValue=%.6g, PText="%s"\n', pCBottom, tCBottom);
+fprintf('E-top (Layer 2/3 divergence): Naive %d mice, %d cells; Continual %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
+	nnz(maskNaiveL23), nCellNaiveL23, nnz(maskContinualL23), nCellContinualL23, pETop, tETop);
+fprintf('E-bottom (Layer 5 divergence): Naive %d mice, %d cells; Continual %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
+	nnz(maskNaiveL5), nCellNaiveL5, nnz(maskContinualL5), nCellContinualL5, pEBottom, tEBottom);
 
 assignin('base', 'Fig44CE_NTATS1s', struct('Initial', vInitial, 'Continual', vTransfer, 'Idx0', idx0s, 'Idx1', idx1sZ, ...
-	'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveContinual', activeContinual, 'PZScore', pZScore, 'PActive', pActive, ...
+	'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveContinual', activeContinual, ...
+	'PC_Top', pCTop, 'PC_Bottom', pCBottom, 'PE_Top', pETop, 'PE_Bottom', pEBottom, ...
+	'TC_Top', tCTop, 'TC_Bottom', tCBottom, 'TE_Top', tETop, 'TE_Bottom', tEBottom, ...
 	'InitialStats', initialStats, 'ContinualStats', transferStats));
 assignin('base', 'Fig44CE_DivergenceTable', divTable);
 assignin('base', 'Fig44CE_DivergenceSummary', divSummary);
-assignin('base', 'Fig44CE_pL23', pL23);
-assignin('base', 'Fig44CE_pL5', pL5);
+assignin('base', 'Fig44CE_pL23', pETop);
+assignin('base', 'Fig44CE_pL5', pEBottom);
 
 function [G, stats] = iQueryInitialLightAll()
 LAB = TransferLearning.LightAudioBaseline();
@@ -549,10 +554,17 @@ for iE = 1:height(ErrorBars)
 end
 end
 
-function pValue = iExtractFirstPValue(options)
+function [pValue, pText] = iExtractFirstPValueAndText(options)
 pValue = NaN;
+pText = "";
 if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PValue', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PValue)
 	pValue = options.MultiCompare.PValue(1);
+	if ismember('PText', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PText)
+		pTextObj = options.MultiCompare.PText(1);
+		if isgraphics(pTextObj) && isprop(pTextObj, 'String')
+			pText = string(pTextObj.String);
+		end
+	end
 end
 end
 

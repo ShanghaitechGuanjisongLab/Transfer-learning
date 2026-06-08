@@ -29,8 +29,13 @@ fprintf('TH ΔHit:   %d mice, %d adjacent block pairs\n', statsT.DeltaHitMouseN,
 fprintf('Ctrl MOp5 response heterogeneity: %d mice, %d total cells, %d moderate-response cells in [-1, 1]\n', statsC.HeterogeneityMouseN, statsC.MOp5CellN, statsC.ModerateMOp5CellN);
 fprintf('TH MOp5 response heterogeneity:   %d mice, %d total cells, %d moderate-response cells in [-1, 1]\n', statsT.HeterogeneityMouseN, statsT.MOp5CellN, statsT.ModerateMOp5CellN);
 
-fprintf('ΔHit and Response heterogeneity: P-values are shown on figure via SetBarPValues\n');
+pDH = iRanksumSafe(dhC, dhT);
+pSD = iRanksumSafe(sdC, sdT);
+fprintf('ΔHit ranksum p=%.4g\n', pDH);
+fprintf('Response heterogeneity (MOp5) ranksum p=%.4g\n', pSD);
 fprintf('Bar-comparison panel: Spearman rho is not applicable.\n');
+fprintf('\n=== Figure caption P-values: ΔHit p=%s, Response heterogeneity p=%s ===\n', ...
+	TransferLearning.Style.iFormatPText(pDH), TransferLearning.Style.iFormatPText(pSD));
 
 svgName = "English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD.svg";
 %% 
@@ -132,13 +137,8 @@ fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD_StatsCtrl', statsC);
 assignin('base', 'English_Fig3J_THInhibitVsCtrl_DeltaHitAndSD_StatsTH', statsT);
-fprintf('\n=== Figure caption (6.1G) ===\n');
-if isfield(Opt1, 'MultiCompare') && ismember('PValue', Opt1.MultiCompare.Properties.VariableNames)
-	fprintf('ΔHit: %s\n', TransferLearning.Style.iFormatPText(Opt1.MultiCompare.PValue(1)));
-end
-if isfield(Opt2, 'MultiCompare') && ismember('PValue', Opt2.MultiCompare.Properties.VariableNames)
-	fprintf('Response heterogeneity (MOp5): %s\n', TransferLearning.Style.iFormatPText(Opt2.MultiCompare.PValue(1)));
-end
+assignin('base', 'English_Fig3J_THInhibitVsCtrl_DeltaHitP', pDH);
+assignin('base', 'English_Fig3J_THInhibitVsCtrl_ResponseHeterogeneityP', pSD);
 
 function [dhVec, sdVec, stats] = iCohortData(DS, idx1s, phaseStart, phaseEnd)
 stats = iEmptyCohortStats();

@@ -1,4 +1,4 @@
-% 中文图334F：cFos 与对照组首个训练单元分回合命中率曲线
+% 中文图45D：cFos 与对照组首个训练单元分回合命中率曲线
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -19,16 +19,20 @@ edgeColors(1,:) = TransferLearning.ContinualColor;
 
 trialRows = iBuildFirstTrainingUnitTrials(dataset, groupOrder);
 if isempty(trialRows)
-	error('Fig334F:EmptyTrials', 'No first training-unit LightWater trials found.');
+	error('Fig45D:EmptyTrials', 'No first training-unit LightWater trials found.');
 end
 trialRows = sortrows(trialRows, ["Group", "Mouse", "DateTime", "Trial"]);
 nControlMice = numel(unique(string(trialRows.Mouse(trialRows.Group == groupOrder(1)))));
 nCFosMice = numel(unique(string(trialRows.Mouse(trialRows.Group == groupOrder(2)))));
 
 [meanMat, semMat, trialNumbers, nMat] = iSummarizeTrialCurve(trialRows, groupOrder);
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(trialRows, 'Behavior', 'Trial', 'Group', 'Mouse');
+trials7 = trialRows(trialRows.Trial <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(trials7, 'Behavior', 'Trial', 'Group', 'Mouse');
 curveP = iLearningCurvePValue(trialRows, groupOrder);
+%% 
 
-fig = figure('Color','w', 'Name', 'Fig334F cFos first training-unit trial curve');
+fig = figure('Color','w', 'Name', 'Fig45D cFos first training-unit trial curve');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 axisHandle = axes(fig);
@@ -48,6 +52,25 @@ for patchObj = patches(:)'
 	end
 end
 
+xlabel(axisHandle, 'Trial', 'FontSize', 12);
+ylabel(axisHandle, 'Hit rate', 'FontSize', 12);
+
+% Horizontal P-value line spanning trials 1-7
+max7Ctrl = max(meanMat(1:min(7, end), 1), [], 'omitnan');
+max7CFos = max(meanMat(1:min(7, end), 2), [], 'omitnan');
+max7SemCtrl = semMat(find(meanMat(1:min(7,end),1)==max7Ctrl,1,'first'),1);
+max7SemCFos = semMat(find(meanMat(1:min(7,end),2)==max7CFos,1,'first'),2);
+yTop7 = max(max7Ctrl + max7SemCtrl, max7CFos + max7SemCFos);
+yl = ylim(axisHandle); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(axisHandle, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(axisHandle, 6, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(axisHandle);
+yticks(axisHandle, yt(yt <= 1 + 1e-6));
+
 if numel(patches) >= 2
 	legendHandle = legend(axisHandle, patches(1:2), cellstr(groupLabels), 'Location', 'southeastoutside');
 else
@@ -58,19 +81,18 @@ legendHandle.Box = 'off';
 legendHandle.Title.String = '💡💧';
 legendHandle.Title.FontSize = 12;
 
-xlabel(axisHandle, 'Trial', 'FontSize', 12);
-ylabel(axisHandle, 'Hit rate', 'FontSize', 12);
-ylim(axisHandle, [0 inf]);
 box(axisHandle, 'off');
 grid(axisHandle, 'off');
 if isprop(axisHandle, 'Toolbar') && ~isempty(axisHandle.Toolbar)
 	axisHandle.Toolbar.Visible = 'off';
 end
 
-svgPath = TransferLearning.ExportStandardFigure(fig, 2, '中文图Fig45F_cFos_FirstTrainingUnitTrialCurve.svg');
+svgPath = TransferLearning.ExportStandardFigure(fig, 2, '中文图Fig45D_cFos_FirstTrainingUnitTrialCurve.svg');
 fprintf('Wrote: %s\n', svgPath);
-fprintf('Fig334F mice: Control n = %d, cFos n = %d\n', nControlMice, nCFosMice);
-fprintf('Fig334F trial curve mixed-effect p = %.4g\n', curveP);
+fprintf('Two-way ANOVA Group P (all trials) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (trials 1-7) = %.4g\n', groupP7);
+fprintf('Fig45D mice: Control n = %d, cFos n = %d\n', nControlMice, nCFosMice);
+fprintf('Fig45D trial curve mixed-effect p = %.4g\n', curveP);
 
 summaryCurve = table;
 summaryCurve.Trial = trialNumbers(:);

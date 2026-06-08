@@ -131,39 +131,25 @@ edgeColors(1,:) = TransferLearning.ContinualColor;
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
-% --- 6b) Stats: draw overall learning-curve significance (like English Fig1B)
-% Use LME Group main effect (additive model): tests overall curve separation
-lmeTbl = table;
-lmeTbl.Performance = double(Sess.Performance);
-lmeTbl.Session = double(Sess.Session);
-lmeTbl.Group = categorical(string(Sess.Group));
-lmeTbl.Mouse = categorical(string(Sess.Mouse));
-lmeModel = fitlme(lmeTbl, 'Performance ~ Session + Group + (1|Mouse)');
-lmeAnova = anova(lmeModel);
-rowGrp = find(string(lmeAnova.Term) == "Group", 1);
-pCurve = NaN;
-if ~isempty(rowGrp)
-	pCurve = lmeAnova.pValue(rowGrp);
-end
-if isfinite(pCurve)
-	sessIdx = min(2, min(numel(meanCells{1}), numel(meanCells{2})));
-	y1 = meanCells{1}(sessIdx);
-	y2 = meanCells{2}(sessIdx);
-	yMid = (y1 + y2) / 2;
-	yHalfLen = abs(y1 - y2) / 4;
-	plot(ax, [sessIdx sessIdx], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
-	if  pCurve < 0.05
-		astStr = '＊';
-	else
-		astStr = 'n.s.';
-	end
-	ht = iText(ax, sessIdx + 0.1, yMid, astStr, 'FontSize', 12, ...
-		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', ...
-		'HandleVisibility', 'off');
-	ht.AffectAutoLimits = 'on';
-end
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(Sess, 'Performance', 'Session', 'Group', 'Mouse');
+sessions7 = Sess(Sess.Session <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
+max7Ctrl = max(meanCells{1}(1:min(7, end)), [], 'omitnan');
+max7CFos = max(meanCells{2}(1:min(7, end)), [], 'omitnan');
+yTop7 = max(max7Ctrl, max7CFos);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(ax, 4, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
+
 fprintf('Fig334C mice: Control n = %d, cFos n = %d\n', nControlMice, nInhibitedMice);
-fprintf('Fig334C learning curve LME group-effect p = %.4g\n', pCurve);
+fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 
 labels = {char(grpLabels(1)), char(grpLabels(2))};
 try
@@ -182,7 +168,6 @@ end
 ax.FontSize = 12;
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
 

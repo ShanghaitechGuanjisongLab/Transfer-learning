@@ -126,8 +126,13 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-text(ax, 4, textY, '＊', ...
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+
+% Clean yticks: remove values > 1
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
 
 lgd = legend(ax, [hNaive(1), hNaive(2), hTransfer(1), hTransfer(2)], ...
 	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
@@ -149,7 +154,6 @@ blocks50Naive = naiveBlocks50.BlocksTo50;
 blocks50Transfer = transferBlocks50.BlocksTo50;
 blocks50Naive = blocks50Naive(isfinite(blocks50Naive));
 blocks50Transfer = blocks50Transfer(isfinite(blocks50Transfer));
-blocks50RankSumP = ranksum(blocks50Naive, blocks50Transfer);
 
 edgeColorsBar = TransferLearning.GroupColors(["Naive","Continual"]);
 f2 = figure( 'Name', 'Fig33B per-mouse slope');
@@ -161,7 +165,7 @@ f2.PaperPositionMode = 'auto';
 
 tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 nexttile;
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({blocks50Naive(:), blocks50Transfer(:)}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({blocks50Naive(:), blocks50Transfer(:)}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
@@ -173,18 +177,18 @@ end
 ax2.Color = 'none';
 ax2.XTickLabel = {};
 legend(ax2, 'off');
-if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
-	for pt = optional2.MultiCompare.PText(:)'
-		pt.FontSize = 12;
-		pt.Tag = 'PText';
-	end
-end
 if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
 	for pl = optional2.MultiCompare.PLine(:)'
 		pl.LineWidth = 2;
 		pl.Tag = 'PLine';
 	end
 end
+if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames)
+	for pt = optional2.MultiCompare.PText(:)'
+		pt.Tag = 'PText';
+	end
+end
+TransferLearning.Style.SetBarPValues(optional2);
 iStyleBars(bars2, edgeColorsBar(1,:), edgeColorsBar(2,:));
 iStyleErrorBars(errorBars2, edgeColorsBar);
 title(ax2, 'Blocks to 50% hit rate');
@@ -203,11 +207,9 @@ fprintf('Naive mice: %d\n', naiveMouseN);
 fprintf('Continual mice: %d\n', transferMouseN);
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
 fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
-fprintf('Permutation slope difference (Continual - Naive): %.4f\n', permResult.ObservedDifference);
-fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
 fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
-fprintf('Per-mouse blocks-to-50%% ranksum p = %.4g\n', blocks50RankSumP);
+fprintf('Per-mouse blocks-to-50%% bar P (BarScatterCompare) = %s\n', TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
 assignin('base', 'Fig33B_AllSessions', allSessions);
 assignin('base', 'Fig33B_NaiveBlocksTo50', naiveBlocks50);

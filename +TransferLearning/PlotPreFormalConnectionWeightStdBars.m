@@ -59,29 +59,33 @@ dataTable.Properties.DimensionNames = cellstr(dimensionNames);
 end
 
 function [barHandles, optional] = iPlotGroupedBars(ax, dataTable, compareGroup, groupLabels, groupColors, xLabelText, yLabelText)
-[~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(dataTable, UniExp.Flags.empty, compareGroup, iColorTable(groupLabels, groupColors), ax, 'AsteriskThreshold', 0.05);
-for barHandle = barHandles(:)'
-	barHandle.BarWidth = 0.5;
-	barHandle.LineWidth = 1;
-	barHandle.EdgeColor = 'none';
-	barHandle.LineStyle = 'none';
-	barHandle.DisplayName = groupLabels(find(barHandles == barHandle, 1, 'first'));
-	if isprop(barHandle, 'FaceAlpha')
-		barHandle.FaceAlpha = 1;
-	end
-	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
-		barHandle.BaseLine.Visible = 'off';
+[~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(dataTable, compareGroup, iColorTable(groupLabels, groupColors), ax, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+for iBar = 1:numel(barHandles)
+	barHandles(iBar).LineStyle = 'none';
+	barHandles(iBar).FaceColor = groupColors(iBar, :);
+	if isprop(barHandles(iBar), 'BaseLine') && isgraphics(barHandles(iBar).BaseLine)
+		barHandles(iBar).BaseLine.Visible = 'off';
 	end
 end
-for errorBar = findobj(ax, 'Type', 'ErrorBar')'
-	errorBar.LineWidth = 1;
-	errorBar.Color = [0, 0, 0];
-	errorBar.HandleVisibility = 'off';
-	setappdata(errorBar, 'TransferLearningPreserveLineWidth', true);
+for rowIndex = 1:height(errorBars)
+	errorBar = errorBars.Object(rowIndex);
+	if ~isgraphics(errorBar)
+		continue;
+	end
+	x = double(errorBar.XData(1));
+	bestDist = inf;
+	bestColor = groupColors(1, :);
+	for iBar2 = 1:numel(barHandles)
+		xp = double(barHandles(iBar2).XEndPoints(:));
+		d = min(abs(xp - x));
+		if d < bestDist
+			bestDist = d;
+			bestColor = barHandles(iBar2).FaceColor;
+		end
+	end
+	errorBar.Color = bestColor;
 end
 
-ax.XLim = [0.5, height(dataTable) + 0.5];
-ax.XTickLabelRotation = 0;
 xlabel(ax, xLabelText);
 ylabel(ax, yLabelText);
 box(ax, 'off');
@@ -89,18 +93,31 @@ grid(ax, 'off');
 legendHandle = optional.Legend;
 legendHandle.String = cellstr(groupLabels);
 legendHandle.Location = 'eastoutside';
-legendHandle.Orientation = 'vertical';
 legendHandle.Box = 'off';
 legendHandle.FontSize = 12;
+iRecalcErrorBarCapSize(ax, barHandles, errorBars, 0.5);
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
-if ~isempty(errorBars)
-	for rowIndex = 1:height(errorBars)
-		if isgraphics(errorBars.Object(rowIndex))
-			errorBars.Object(rowIndex).LineWidth = 1;
-			setappdata(errorBars.Object(rowIndex), 'TransferLearningPreserveLineWidth', true);
-		end
+
+end
+
+function iRecalcErrorBarCapSize(ax, barHandles, errorBars, capSizeRatio)
+% Recompute CapSize using the same formula as BarScatterCompare
+% CapSize = Ax.Position(3) * BarWidth * GroupWidth * capSizeRatio / (diff(xlim) * numel(Bars))
+axUnits = ax.Units;
+ax.Units = 'points';
+axWidth = ax.Position(3);
+ax.Units = axUnits;
+barWidth = barHandles(1).BarWidth;
+groupWidth = barHandles(1).GroupWidth;
+xRange = diff(xlim(ax));
+nBars = numel(barHandles);
+capSize = axWidth * barWidth * groupWidth * capSizeRatio / (xRange * nBars);
+for rowIndex = 1:height(errorBars)
+	errBar = errorBars.Object(rowIndex);
+	if isgraphics(errBar) && isprop(errBar, 'CapSize')
+		errBar.CapSize = capSize;
 	end
 end
 end
@@ -116,7 +133,6 @@ end
 
 function colors = iColorTable(groupLabels, groupColors)
 colors = array2table(groupColors, 'VariableNames', {'R','G','B'}, 'RowNames', cellstr(groupLabels));
-colors{'ErrorBar', {'R','G','B'}} = [0, 0, 0];
 end
 
 function iRetunePValueLines(optional)

@@ -177,12 +177,75 @@ end
 end
 function RetuneTaggedPLines(Fig)
 for Ax=findall(Fig,Type='axes').'
-	pLines=findobj(Ax,'Tag','PLine');
-	pTexts=findobj(Ax,'Tag','PText');
-	if ~isempty(pLines)&&~isempty(pTexts)
-		[pLines,pTexts]=OrderTaggedPValuePairs(Ax,pLines,pTexts);
-		MATLAB.Graphics.PLineRetune(pLines,pTexts);
+	allKids = findall(Ax);
+	[numberedPairs, legacyPLines, legacyPTexts] = iClassifyPValueTags(allKids);
+	% Numbered tags: pair by matching suffix
+	for iP = 1:numel(numberedPairs)
+		MATLAB.Graphics.PLineRetune(numberedPairs(iP).PLine, numberedPairs(iP).PText);
 	end
+	% Legacy unnumbered tags: fall back to geometry-based ordering
+	if ~isempty(legacyPLines) && ~isempty(legacyPTexts)
+		[pLines, pTexts] = OrderTaggedPValuePairs(Ax, legacyPLines, legacyPTexts);
+		MATLAB.Graphics.PLineRetune(pLines, pTexts);
+	end
+end
+end
+function [numberedPairs, legacyPLines, legacyPTexts] = iClassifyPValueTags(allKids)
+numberedPairs = struct('PLine', {}, 'PText', {});
+legacyPLines = gobjects(0);
+legacyPTexts = gobjects(0);
+usedNumbers = [];
+for iK = 1:numel(allKids)
+	h = allKids(iK);
+	tag = h.Tag;
+	num = iParseTaggedNumber(tag, 'PLine_');
+	if ~isnan(num)
+		idx = find(usedNumbers == num, 1);
+		if isempty(idx)
+			usedNumbers(end+1) = num;
+			idx = numel(usedNumbers);
+			numberedPairs(idx).PLine = h;
+			numberedPairs(idx).PText = gobjects(1);
+		else
+			numberedPairs(idx).PLine = h;
+		end
+		continue;
+	end
+	num = iParseTaggedNumber(tag, 'PText_');
+	if ~isnan(num)
+		idx = find(usedNumbers == num, 1);
+		if isempty(idx)
+			usedNumbers(end+1) = num;
+			idx = numel(usedNumbers);
+			numberedPairs(idx).PText = h;
+			numberedPairs(idx).PLine = gobjects(1);
+		else
+			numberedPairs(idx).PText = h;
+		end
+		continue;
+	end
+	if strcmp(tag, 'PLine')
+		legacyPLines(end+1) = h;
+	elseif strcmp(tag, 'PText')
+		legacyPTexts(end+1) = h;
+	end
+end
+% Filter out incomplete pairs
+keep = false(size(numberedPairs));
+for iP = 1:numel(numberedPairs)
+	keep(iP) = isgraphics(numberedPairs(iP).PLine) && isgraphics(numberedPairs(iP).PText);
+end
+numberedPairs = numberedPairs(keep);
+end
+function num = iParseTaggedNumber(tag, prefix)
+if ~startsWith(tag, prefix)
+	num = NaN;
+	return;
+end
+suffix = extractAfter(tag, strlength(prefix));
+num = str2double(suffix);
+if ~isfinite(num) || num <= 0 || num ~= round(num)
+	num = NaN;
 end
 end
 function [pLines,pTexts]=OrderTaggedPValuePairs(Ax,pLines,pTexts)
@@ -191,31 +254,7 @@ pTexts=pTexts(:);
 if numel(pLines)~=numel(pTexts)
 	return;
 end
-
-[linePairIds,hasLinePairIds]=TaggedPValuePairIds(pLines);
-[textPairIds,hasTextPairIds]=TaggedPValuePairIds(pTexts);
-if all(hasLinePairIds)&&all(hasTextPairIds)
-	[sortedLinePairIds,lineOrder]=sort(linePairIds);
-	[sortedTextPairIds,textOrder]=sort(textPairIds);
-	if isequal(sortedLinePairIds,sortedTextPairIds)
-		pLines=pLines(lineOrder);
-		pTexts=pTexts(textOrder);
-		return;
-	end
-end
-
 pTexts=OrderPTextsByLineGeometry(Ax,pLines,pTexts);
-end
-function [pairIds,hasPairIds]=TaggedPValuePairIds(handles)
-appdataName='TransferLearningPValuePairIndex';
-pairIds=nan(size(handles));
-hasPairIds=false(size(handles));
-for iHandle=1:numel(handles)
-	if isgraphics(handles(iHandle))&&isappdata(handles(iHandle),appdataName)
-		pairIds(iHandle)=double(getappdata(handles(iHandle),appdataName));
-		hasPairIds(iHandle)=isfinite(pairIds(iHandle));
-	end
-end
 end
 function orderedPTexts=OrderPTextsByLineGeometry(Ax,pLines,pTexts)
 orderedPTexts=pTexts;

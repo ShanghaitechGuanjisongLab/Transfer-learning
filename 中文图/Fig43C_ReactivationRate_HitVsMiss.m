@@ -93,7 +93,7 @@ if isfinite(p)
 	delete(S);
 end
 
-svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
+svgName = "中文图Fig43C_ReactivationRate_HitVsMiss.svg";
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -101,3 +101,4 @@ fprintf('\n=== English Fig1J Reactivation Hit vs Miss ===\n');
 fprintf('paired mice n = %d\n', nnz(mask));
 fprintf('participating learned-active cells n = %d\n', nCells);
 fprintf('signrank right-tail p = %.6g\n', p);
+fprintf('Figure caption (4.3C) P = %s\n', TransferLearning.Style.iFormatPText(p));

@@ -1,6 +1,6 @@
 % Fig54B model before-formal connection-type weight SD bars.
 
-svgName = '中文图Fig54B_PreFormalConnectionWeightStdBars.svg';
+
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
@@ -14,7 +14,7 @@ run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'))
 WeightValues = Fig5556Data.PreFormalWeightValues;
 RunInfo = Fig5556Data.RunInfo;
 %%
-
+svgName = '中文图Fig54B_PreFormalConnectionWeightStdBars.svg';
 [fig, SummaryTable] = TransferLearning.PlotPreFormalConnectionWeightStdBars(WeightValues);
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);

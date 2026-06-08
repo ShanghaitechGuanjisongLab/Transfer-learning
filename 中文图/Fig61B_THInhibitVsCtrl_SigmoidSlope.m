@@ -105,12 +105,6 @@ max7Ctrl = max(meanMatOut(1:min(7, end), 1), [], 'omitnan');
 max7TH = max(meanMatOut(1:min(7, end), 2), [], 'omitnan');
 yTop7 = max(max7Ctrl, max7TH);
 
-lgd = legend(ax, [hCtrl(1), hCtrl(2), hTH(1), hTH(2)], ...
-	{'Control Mean ± SEM', 'Control Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
-	'Location', 'southoutside', 'NumColumns', 2);
-lgd.Box = 'off';
-lgd.FontSize = 10;
-lgd.AutoUpdate=false;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
@@ -118,8 +112,18 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
 textY = yPLine + 0.2 * yrange;
-text(ax, 4, textY, '＊', ...
+starStr = TransferLearning.Style.iFormatPText(groupP7);
+text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
+
+lgd = legend(ax, [hCtrl(1), hCtrl(2), hTH(1), hTH(2)], ...
+	{'Control Mean ± SEM', 'Control Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
+	'Location', 'southoutside', 'NumColumns', 2);
+lgd.Box = 'off';
+lgd.FontSize = 10;
+lgd.AutoUpdate=false;
 
 svgName = "中文图Fig61B_THInhibitVsCtrl_SigmoidSlope.svg";
 
@@ -162,11 +166,15 @@ fprintf('Ctrl mice: %d\n', ctrlMouseN);
 fprintf('TH mice: %d\n', thMouseN);
 fprintf('Ctrl sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitCtrl.Lower, fitCtrl.Upper, fitCtrl.Slope, fitCtrl.Midpoint, fitCtrl.RSquared);
 fprintf('TH sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTH.Lower, fitTH.Upper, fitTH.Slope, fitTH.Midpoint, fitTH.RSquared);
-fprintf('Permutation slope difference (TH - Ctrl): %.4f\n', permResult.ObservedDifference);
-fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
+fprintf('Permutation slope difference (TH - Ctrl): %.4f (for reference only, not shown in figure)\n', permResult.ObservedDifference);
+fprintf('Permutation two-sided p = %.4g (%d permutations, for reference only)\n', permResult.PValue, permResult.NPermutation);
 fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 fprintf('Sigmoid slope panel: cell count and Spearman rho are not applicable.\n');
+fprintf('\n=== Figure caption P-values ===\n');
+fprintf('Sigmoid slope (permutation): %s\n', TransferLearning.Style.iFormatPText(permResult.PValue));
+fprintf('Two-way ANOVA Group P (blocks 1-7): %s\n', TransferLearning.Style.iFormatPText(groupP7));
+fprintf('Two-way ANOVA Group P (all blocks): %s\n', TransferLearning.Style.iFormatPText(groupP));
 
 assignin('base', 'Fig61D_Sigmoid_AllSessions', allSessions);
 assignin('base', 'Fig61D_Sigmoid_FitTable', fitTable);

@@ -182,13 +182,7 @@ xlh.Position(1) = (sW/2 + G/2 + bwR/2) / sW;
 ylh.Units = 'normalized';
 ylh.Position(2) = 0.5;
 ylh.Position(1) = -0.16;
-if pCorr == 0 || pCorr < 1e-10
-	pStr = 'p<10^{-10}';
-elseif pCorr < 0.001
-	pStr = sprintf('p=%.1e', pCorr);
-else
-	pStr = sprintf('p=%.2g', pCorr);
-end
+pStr = 'p<0.001';
 text(axE, 0.03, 0.97, pStr, 'Units', 'normalized', 'FontSize', fs, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 
 axT = axes(f, 'Position', [sX sY+sH+G sW bhT]);
@@ -209,10 +203,8 @@ for ib = 1:2
 	errorLines(end+1, 1) = plot(axT, xPos(ib)+[-capHalfWidth capHalfWidth], [yEnd yEnd], '-', 'Color', barColor, 'LineWidth', errorLineWidth); %#ok<SAGROW>
 end
 yBrk = max(abs(mN1)+seN1, abs(mP1)+seP1) + 0.015;
-pLines(end+1, 1) = plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-pLines(end+1, 1) = plot(axT, [1 1], [yBrk yBrk-0.005], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-pLines(end+1, 1) = plot(axT, [2 2], [yBrk yBrk-0.005], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-text(axT, 1.5, yBrk+0.005, iAsterisk(pPN1), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Tag', 'PText');
+pLines(end+1, 1) = plot(axT, [1 2], [yBrk yBrk], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine');
+text(axT, 1.5, yBrk+0.005, TransferLearning.Style.iFormatPText(pPN1), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Tag', 'PText');
 hold(axT, 'off');
 axT.FontSize = fs;
 axT.XTick = [1 2]; axT.XTickLabel = {'−', '+'};
@@ -238,12 +230,11 @@ for ib = 1:2
 	errorLines(end+1, 1) = plot(axR, [xEnd xEnd], yPos(ib)+[-capHalfWidth capHalfWidth], '-', 'Color', barColor, 'LineWidth', errorLineWidth); %#ok<SAGROW>
 end
 xBrk = max(abs(mN2)+seN2, abs(mP2)+seP2) + 0.015;
-pLines(end+1, 1) = plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-pLines(end+1, 1) = plot(axR, [xBrk xBrk-0.005], [1 1], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-pLines(end+1, 1) = plot(axR, [xBrk xBrk-0.005], [2 2], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine'); %#ok<SAGROW>
-text(axR, xBrk+0.055, 1.5, iAsterisk(pPN2), 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270, 'Tag', 'PText');
+pLines(end+1, 1) = plot(axR, [xBrk xBrk], [1 2], 'k-', 'LineWidth', pLineWidth, 'Clipping', 'off', 'Tag', 'PLine');
+pStr2 = TransferLearning.Style.iFormatPText(pPN2);
+text(axR, xBrk+0.04, 1.5, pStr2, 'FontSize', fs, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Rotation', 270, 'Tag', 'PText');
 xlimNow = xlim(axR);
-xlim(axR, [xlimNow(1), max(xlimNow(2), xBrk + 0.10)]);
+xlim(axR, [xlimNow(1), max(xlimNow(2), xBrk + 0.15)]);
 hold(axR, 'off');
 axR.FontSize = fs;
 axR.YTick = [1 2]; axR.YTickLabel = {'−', '+'};

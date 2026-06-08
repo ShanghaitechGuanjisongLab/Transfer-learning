@@ -194,6 +194,11 @@ for barIndex = 1:numel(barHandles)
 			barHandle.BaseLine.Visible = 'on';
 			continue;
 		end
+		ax = ancestor(barHandle, 'axes');
+		if ~isempty(ax) && isgraphics(ax) && isprop(ax.XAxis, 'Visible') && strcmp(ax.XAxis.Visible, 'off')
+			barHandle.BaseLine.Visible = 'on';
+			continue;
+		end
 		barHandle.BaseLine.Visible = 'off';
 	end
 end
