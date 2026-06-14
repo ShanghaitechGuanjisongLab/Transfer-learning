@@ -1,12 +1,7 @@
 % 中文图42B：刺激后激活状态变化模式占全细胞比例（饼图）
 
-if ~exist('UniExp.DataSet', 'class')
-	thisFile = mfilename('fullpath');
-	thisDir = fileparts(thisFile);
-	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
-	if exist(prjFile, 'file')
-		matlab.project.loadProject(prjFile);
-	end
+if ~exist('TransferLearning', 'class')
+	matlab.project.loadProject(fullfile(fileparts(fileparts(mfilename('fullpath'))), 'Transferlearning.prj'));
 end
 
 DS = TransferLearning.AudioLightBaseline();
