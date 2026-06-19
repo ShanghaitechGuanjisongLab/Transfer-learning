@@ -71,26 +71,40 @@ ax.FontName = 'Segoe UI Emoji';
 ylabel(ax, 'Reactivation', 'FontSize', 6);
 title(ax, '💡💧', 'FontSize', 6, 'FontWeight', 'normal');
 
-% p-value line with asterisk (paired signrank) via MATLAB.Graphics.PLine
-if isfinite(p)
-	S = scatter(ax, [ones(nnz(mask),1); 2*ones(nnz(mask),1)], [hit(mask); miss(mask)], ...
-		1, 'k', 'filled', 'Visible','off', 'HandleVisibility','off');
-	if isprop(S, 'HitTest'); S.HitTest = 'off'; end
-	if isprop(S, 'PickableParts'); S.PickableParts = 'none'; end
-	if isprop(S, 'AffectAutoLimits'); S.AffectAutoLimits = false; end
-	pText = TransferLearning.Style.iFormatPText(p);
-	Descriptors = table(S, 0, 0, pText, 0, ...
-		'VariableNames', {'ObjectA','IndexA','IndexB','Text','ExtraOffset'});
-	[pLines, pTexts] = MATLAB.Graphics.PLine(Descriptors);
-	for pl = pLines(:)'
-		pl.LineWidth = 1;
-		pl.Tag = 'PLine';
+compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+[~, optional, barsHidden, errorBarsHidden] = UniExp.BarScatterCompare({double(hit(mask)), double(miss(mask))}, UniExp.Flags.empty, compareGroup, ax, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optional);
+for barHandle = barsHidden(:)'
+	if isgraphics(barHandle)
+		barHandle.Visible = 'off';
+		barHandle.HandleVisibility = 'off';
 	end
-	for pt = pTexts(:)'
-		pt.FontSize = 6;
-		pt.Tag = 'PText';
+end
+if istable(errorBarsHidden) && ismember('Object', errorBarsHidden.Properties.VariableNames)
+	for errorBar = errorBarsHidden.Object(:)'
+		if isgraphics(errorBar)
+			errorBar.Visible = 'off';
+			errorBar.HandleVisibility = 'off';
+		end
 	end
-	delete(S);
+end
+if isfield(optional, 'MultiCompare') && istable(optional.MultiCompare)
+	if ismember('PLine', optional.MultiCompare.Properties.VariableNames)
+		for pLine = optional.MultiCompare.PLine(:)'
+			if isgraphics(pLine)
+				pLine.LineWidth = 1;
+				pLine.Tag = 'PLine';
+			end
+		end
+	end
+	if ismember('PText', optional.MultiCompare.Properties.VariableNames)
+		for pText = optional.MultiCompare.PText(:)'
+			if isgraphics(pText)
+				pText.FontSize = 6;
+				pText.Tag = 'PText';
+			end
+		end
+	end
 end
 
 svgName = "中文图Fig43C_ReactivationRate_HitVsMiss.svg";
@@ -101,4 +115,4 @@ fprintf('\n=== English Fig1J Reactivation Hit vs Miss ===\n');
 fprintf('paired mice n = %d\n', nnz(mask));
 fprintf('participating learned-active cells n = %d\n', nCells);
 fprintf('signrank right-tail p = %.6g\n', p);
-fprintf('Figure caption (4.3C) P = %s\n', TransferLearning.Style.iFormatPText(p));
+fprintf('Figure caption (4.3C) P = %s\n', TransferLearning.Style.iFormatPText(optional.MultiCompare.PValue(1)));

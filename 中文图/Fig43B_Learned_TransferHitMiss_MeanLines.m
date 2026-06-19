@@ -1,4 +1,4 @@
-﻿% 中文图331B：声水学会、光水迁移命中/错失三条均值线
+% 中文图43B：声水学会、光水迁移命中/错失三条均值线
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -24,7 +24,7 @@ kSigma = 3;
 
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('中文图331B:No1s', 'Cannot find sample close to 1s.');
+	error('中文图43B:No1s', 'Cannot find sample close to 1s.');
 end
 
 qLearnedAudio = struct('Phase', 'Learned', 'Stimulus', 'AudioWater');
@@ -77,7 +77,7 @@ ax.FontSize = 12;
 ax.FontName = 'Segoe UI Emoji';
 
 lineColors = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
-lineStyles = ["-"; "-"; "--"];
+lineStyles = ["-"; "-"; ":"];
 
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Y, E, 0.2, ...
