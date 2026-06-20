@@ -101,9 +101,7 @@ try, f.PaperPositionMode = 'auto'; catch, end
 ax = axes(f);
 hold(ax,'on');
 
-displayGroups = ["Control", "Gap"];
-edgeColors = TransferLearning.GroupColors(displayGroups);
-edgeColors(1, :) = TransferLearning.ContinualColor;
+edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 for p = Patches(:)'

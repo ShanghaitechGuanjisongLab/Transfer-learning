@@ -73,8 +73,7 @@ f.PaperSize = [9, 8];
 
 ax = axes(f);
 hold(ax, 'on');
-edgeColors = TransferLearning.GroupColors(["Control", "Inhibited"]);
-edgeColors(1,:) = TransferLearning.ContinualColor;
+edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 for p = Patches(:)'
 	if isprop(p, 'LineWidth')

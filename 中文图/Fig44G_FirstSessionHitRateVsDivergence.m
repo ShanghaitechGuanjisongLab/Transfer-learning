@@ -102,6 +102,7 @@ fprintf('Continual mice: %d\n', nnz(maskTran));
 fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
 svgPath = '中文图Fig44G_FirstSessionHitRateVsDivergence.svg';
+title('💡💧')
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 

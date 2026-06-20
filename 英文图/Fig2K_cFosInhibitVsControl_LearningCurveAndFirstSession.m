@@ -126,8 +126,7 @@ ax = axes(f);
 hold(ax,'on');
 title(ax, 'cFos-specific inhibition', 'FontSize', 12, 'FontWeight', 'normal');
 
-edgeColors = TransferLearning.GroupColors(grpLabels);
-edgeColors(1,:) = TransferLearning.ContinualColor;
+edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 

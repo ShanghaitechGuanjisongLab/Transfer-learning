@@ -151,8 +151,7 @@ f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
-barColors = TransferLearning.GroupColors(["Control", "Gap"]);
-barColors(1, :) = TransferLearning.ContinualColor;
+barColors =[TransferLearning.ContinualColor;TransferLearning.ColorA];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 Options = cell(2, 1);
 

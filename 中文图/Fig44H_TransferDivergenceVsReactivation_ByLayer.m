@@ -80,6 +80,7 @@ fprintf('\n=== Fig333E All ===\n');
 fprintf('n=%d, ρ=%.3f, p=%.4g\n', nnz(use), rho, p);
 
 svgPath = '中文图Fig44H_TransferDivergenceVsReactivation_ByLayer.svg';
+title('Continual 💡💧');
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
