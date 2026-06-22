@@ -4,7 +4,7 @@
 % - 上下双 tile
 % - 白底
 % - 仅下 tile 显示 Ctrl/TH xticklabels
-% - Ctrl 使用 Continual 标准色，TH 使用 ColorB，不透明柱
+% - Ctrl 使用 Continual 标准色，TH 使用 ColorA，不透明柱
 %
 % Reactivation = P(Transfer active | Learned AudioWater active) at 1 s
 % 按鼠汇总，2/3层与5层分开计算。
@@ -117,7 +117,7 @@ end
 title(ax, titleText, 'FontSize', 6, 'FontWeight', 'normal');
 
 colorCtrl = TransferLearning.ContinualColor;
-colorTH = TransferLearning.ColorB;
+colorTH = TransferLearning.ColorA;
 if isscalar(bars)
 	bars.FaceColor = 'flat';
 	nBars = numel(bars.YData);

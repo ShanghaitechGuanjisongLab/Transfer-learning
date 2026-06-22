@@ -47,5 +47,5 @@ legend("With Variance", "No Variance", "Location", "best");
 ylim([0 100]);
 grid on;
 
-sgtitle("Task B: Variance vs No Variance (ResNet-18 + CIFAR-10)", "Interpreter", "none");
+sgtitle("Task B (MNIST): Variance vs No Variance (ResNet-18)", "Interpreter", "none");
 end

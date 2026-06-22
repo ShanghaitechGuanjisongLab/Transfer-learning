@@ -51,12 +51,6 @@ J.Group = string(J.Group);
 %% --- 3) Sessionize
 vars = intersect(J.Properties.VariableNames, {'Mouse','DateTime','Behavior','Performance','Group','Phase'}, 'stable');
 Sess = iSessionizeByDateTime(J(:, vars));
-Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
-Sess = iAddSessionIndex(Sess);
-
-sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group','Session'});
-sessionForSummary.Group = string(sessionForSummary.Group);
-sessionForSummary = sortrows(sessionForSummary, {'Group','Mouse','DateTime'});
 
 %% --- 3b) Include PO chemogenetic inhibition into TH group (matching Fig3.5C)
 poMatPath = "\\Data-Server-2\个人数据\张天夫\202505\化学遗传抑制PO.v1.mat";
@@ -73,14 +67,19 @@ try
 			poSess.Mouse = string(poSess.Mouse);
 			poSess.DateTime = iNormalizeDateTime(poSess.DateTime);
 			poSess.Group = repmat("TH", height(poSess), 1);
-			poSess.Session = ones(height(poSess), 1);
-			poSess = unique(poSess(:, ["Mouse","DateTime","Performance","Group","Session"]), 'rows');
-			sessionForSummary = [sessionForSummary; poSess]; %#ok<AGROW>
-			sessionForSummary = sortrows(sessionForSummary, {'Group','Mouse','DateTime'});
+			poSess.Phase = repmat("", height(poSess), 1);
+			poSess = unique(poSess(:, ["Group","Mouse","DateTime","Performance","Phase"]), 'rows');
+			Sess = [Sess; poSess]; %#ok<AGROW>
 		end
 	end
 catch
 end
+
+Sess = sortrows(Sess, {'Group','Mouse','DateTime'});
+Sess = iAddSessionIndex(Sess);
+sessionForSummary = Sess(:, {'Mouse','DateTime','Performance','Group','Session'});
+sessionForSummary.Group = string(sessionForSummary.Group);
+sessionForSummary = sortrows(sessionForSummary, {'Group','Mouse','DateTime'});
 
 %% --- 4) Learning curve summary
 PValueLS = NaN;
@@ -130,7 +129,7 @@ ax = axes(f);
 hold(ax, 'on');
 ax.LineWidth = 2;
 
-edgeColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+edgeColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -138,6 +137,7 @@ ax.FontSize = 12;
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
 
+sessionForSummary = iCarryForwardSessions(sessionForSummary);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(sessionForSummary, 'Performance', 'Session', 'Group', 'Mouse');
 sessions7 = sessionForSummary(sessionForSummary.Session <= 7, :);
 groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
@@ -388,4 +388,36 @@ if isstruct(pIn)
 		end
 	end
 end
+end
+function T = iCarryForwardSessions(T)
+% Fill Performance=1 for all sessions after a mouse first reaches 100%.
+if isempty(T)
+	return;
+end
+T = sortrows(T, {'Mouse', 'Session'});
+mice = unique(string(T.Mouse));
+maxSession = max(double(T.Session));
+outPieces = cell(numel(mice), 1);
+for iM = 1:numel(mice)
+	mM = T(string(T.Mouse) == mice(iM), :);
+	xm = double(mM.Session);
+	ym = double(mM.Performance);
+	reached = find(ym >= 1.0, 1, 'first');
+	if isempty(reached)
+		outPieces{iM} = mM;
+		continue;
+	end
+	sessReached = xm(reached);
+	if sessReached >= maxSession
+		outPieces{iM} = mM;
+		continue;
+	end
+	fillBlocks = (sessReached + 1 : maxSession)';
+	newRows = mM(1, :);
+	newRows = repmat(newRows, numel(fillBlocks), 1);
+	newRows.Session = fillBlocks;
+	newRows.Performance = repmat(1, numel(fillBlocks), 1);
+	outPieces{iM} = [mM; newRows];
+end
+T = sortrows(vertcat(outPieces{:}), {'Mouse', 'Session'});
 end

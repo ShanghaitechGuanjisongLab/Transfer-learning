@@ -11,6 +11,7 @@ end
 
 Data = Fig63BC_THInhibitCtrlActiveCalciumData();
 [lineMean, lineSem] = iZeroAlignedLineStats(Data);
+%% 
 
 f = figure('Color', 'w', 'Name', '中文图63B TH/Ctrl learned-active calcium lines');
 f.Units = 'centimeters';
@@ -28,7 +29,7 @@ ax.LineWidth = 2;
 ax.XAxis.LineWidth = 2;
 ax.YAxis.LineWidth = 2;
 
-lineColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+lineColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
 patches = MATLAB.Graphics.MultiShadowedLines( ...
 	lineMean, lineSem, 0.2, ...
 	X=repmat(Data.XPlot(:), 1, 2), ...
@@ -46,7 +47,7 @@ grid(ax, 'off');
 xlim(ax, [0, 3]);
 xlabel(ax, 'Time', 'FontSize', 12);
 ylabel(ax, 'z-score', 'FontSize', 12);
-title(ax, 'Naive 🔊💧 active cells', 'FontSize', 12, 'FontWeight', 'normal', 'FontName', 'Segoe UI Emoji');
+title(ax, '🔊💧 active cells', 'FontSize', 12, 'FontWeight', 'normal', 'FontName', 'Segoe UI Emoji');
 ax.XTick = [0 1 3];
 ax.XTickLabel = {"💡", "💧", "3"};
 

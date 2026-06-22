@@ -1,6 +1,13 @@
-function fig = PlotTrainingCurvesCompare(statsA, statsB)
-% Plot Task A vs Task B training curves on 4 panels for comparison.
+function fig = PlotTrainingCurvesCompare(statsA, statsB, labelA, labelB, titleText)
+% Plot two training stats curves on 4 panels for comparison.
 % Returns the figure handle for ExportStandardFigure export.
+%
+% Default labels:
+%   labelA = "Continual B"
+%   labelB = "Naive B"
+if nargin < 3 || isempty(labelA), labelA = "Continual B"; end
+if nargin < 4 || isempty(labelB), labelB = "Naive B"; end
+if nargin < 5 || isempty(titleText), titleText = "Continual vs Naive Learning: Task B (MNIST)"; end
 
 epochsA = 1:numel(statsA.trainLoss);
 epochsB = 1:numel(statsB.trainLoss);
@@ -14,7 +21,7 @@ plot(epochsB, statsB.trainLoss, "r-s", "LineWidth", 1.2, "MarkerSize", 4);
 xlabel("Epoch");
 ylabel("Loss");
 title("Total Loss");
-legend("Task A (train split)", "Task B (test split)", "Location", "best");
+legend(labelA, labelB, "Location", "best");
 grid on;
 
 % --- Panel B: Cross-Entropy ---
@@ -24,7 +31,7 @@ plot(epochsB, statsB.trainCE, "r-s", "LineWidth", 1.2, "MarkerSize", 4);
 xlabel("Epoch");
 ylabel("Cross-Entropy");
 title("Cross-Entropy Loss");
-legend("Task A (train split)", "Task B (test split)", "Location", "best");
+legend(labelA, labelB, "Location", "best");
 grid on;
 
 % --- Panel C: Response Variance ---
@@ -34,7 +41,7 @@ plot(epochsB, statsB.trainVar, "r-s", "LineWidth", 1.2, "MarkerSize", 4);
 xlabel("Epoch");
 ylabel("Hidden Var (pool5)");
 title("Hidden Response Variance");
-legend("Task A (train split)", "Task B (test split)", "Location", "best");
+legend(labelA, labelB, "Location", "best");
 grid on;
 
 % --- Panel D: Validation Accuracy ---
@@ -44,9 +51,9 @@ plot(epochsB, statsB.valAccuracy * 100, "r-s", "LineWidth", 1.2, "MarkerSize", 4
 xlabel("Epoch");
 ylabel("Accuracy (%)");
 title("Validation Accuracy");
-legend("Task A (train split)", "Task B (test split)", "Location", "best");
+legend(labelA, labelB, "Location", "best");
 ylim([0 100]);
 grid on;
 
-sgtitle("Task A vs Task B Training Comparison (ResNet-18 + CIFAR-10)", "Interpreter", "none");
+sgtitle(titleText, "Interpreter", "none");
 end

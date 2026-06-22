@@ -16,6 +16,7 @@ fprintf('1~3s Ctrl: %.3f ± %.3f (n=%d cells)\n', mean(Data.Ctrl.LateMean, 'omit
 fprintf('1~3s TH:   %.3f ± %.3f (n=%d cells)\n', mean(Data.TH.LateMean, 'omitnan'), iSem(Data.TH.LateMean), numel(Data.TH.LateMean));
 fprintf('TH decrease 0~1s: %.3f; 1~3s: %.3f\n', ...
 	Data.DecreaseEarlyMean, Data.DecreaseLateMean);
+%% 
 
 f = figure('Color', 'w', 'Name', '中文图63C learned-active calcium bars');
 f.Units = 'centimeters';
@@ -26,7 +27,7 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-layoutTitle = title(layout, 'Naive 🔊💧 active cells', 'FontSize', 6, 'FontWeight', 'normal');
+layoutTitle = title(layout, '🔊💧 active cells', 'FontSize', 6, 'FontWeight', 'normal');
 layoutTitle.FontName = 'Segoe UI Emoji';
 
 axTop = nexttile(layout, 1);
@@ -38,7 +39,7 @@ iRetunePValues(optLate);
 
 axBottom = nexttile(layout, 2);
 [~, optDecrease, barsDecrease, ebDecrease] = UniExp.BarScatterCompare({Data.DecreaseEarlyBootstrap(:), Data.DecreaseLateBootstrap(:)}, compareGroup, AsteriskThreshold=0.05, CapSize=0.5);
-iStyleTile(axBottom, barsDecrease, ebDecrease, {'0~1', '1~3'}, 'TH decrease', 'Ctrl~TH');
+iStyleTile(axBottom, barsDecrease, ebDecrease, {'0~1', '1~3'}, 'TH decrease', 'Ctrl-TH');
 TransferLearning.Style.SetBarPValues(optDecrease);
 fprintf('=== 6.3C bottom (decrease 0~1 vs 1~3): %s ===\n', TransferLearning.Style.iFormatPText(optDecrease.MultiCompare.PValue(1)));
 iRetunePValues(optDecrease);
@@ -70,7 +71,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 
-barColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+barColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
 iStyleBars(bars, barColors(1:2, :));
 for iE = 1:height(errorBars)
 	eb = errorBars.Object(iE);
@@ -142,7 +143,6 @@ MATLAB.Graphics.PLineRetune(options.MultiCompare.PLine, options.MultiCompare.PTe
 for pl = options.MultiCompare.PLine(:)'
 	if isgraphics(pl)
 		pl.LineWidth = 0.5;
-		pl.Tag = 'PLine';
 	end
 end
 end
