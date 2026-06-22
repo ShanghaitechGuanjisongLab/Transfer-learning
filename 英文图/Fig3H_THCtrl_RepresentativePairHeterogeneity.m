@@ -1,4 +1,4 @@
-﻿% English Fig3H: Representative Ctrl/TH single-session heatmaps and histograms
+% English Fig3H: Representative Ctrl/TH single-session heatmaps and histograms
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -130,8 +130,6 @@ wZ = nTrials * sZ;
     pause(1);
     pngName = sprintf('English_Fig3H_Volshow_%s.png', sessInfo(iS).label);
     exportapp(fig, fullfile(outDirUNC, pngName));
-    drawnow;
-    close(fig);
     fprintf('Wrote: %s\n', pngName);
 end
 
@@ -140,7 +138,7 @@ iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
 fprintf('Wrote: %s\n', cbSvgName);
 
 binEdges = linspace(-1, 1, 41);
-histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorA];
 histColors = {histColorArray(1,:), histColorArray(2,:)};
 histTitles = ["Control", "TH inhibited"];
 histFigs = gobjects(1, 2);
@@ -190,7 +188,6 @@ for iS = 1:2
     svgName = sprintf('English_Fig3H_Hist_%s.svg', sessInfo(iS).label);
     TransferLearning.ExportStandardFigure(histFigs(iS), 1, svgName);
     fprintf('Wrote: %s\n', svgName);
-    close(histFigs(iS));
 end
 
 function [idxCtrl, idxTH] = iPickRepresentativeSessions(sdCtrl, globalCtrl, sdTH, globalTH)

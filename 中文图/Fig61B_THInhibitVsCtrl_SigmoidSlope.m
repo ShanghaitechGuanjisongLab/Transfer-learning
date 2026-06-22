@@ -48,7 +48,6 @@ nMat = iComputeNBySession(allSessions, x, ["Ctrl","TH"]);
 
 fitCtrl = iFitSigmoidCurve(iCarryForwardSessions(displayedCtrl), "Ctrl");
 fitTH = iFitSigmoidCurve(iCarryForwardSessions(displayedTH), "TH");
-permResult = iPermutationTestSigmoidSlope(iCarryForwardSessions(displayedCtrl), iCarryForwardSessions(displayedTH), 10000, 1);
 groupSessions = iCarryForwardSessions([displayedCtrl; displayedTH]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(groupSessions, 'Performance', 'Session', 'Group', 'Mouse');
 sessions7 = groupSessions(groupSessions.Session <= 7, :);
@@ -75,7 +74,7 @@ f.PaperSize = [12, 8];
 f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
-curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
 hCtrl = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, ctrlFitCurve, curveColors(1, :));
 hTH = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFit, thFitCurve, curveColors(2, :));
 
@@ -109,24 +108,25 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 yl = ylim(ax); yrange = yl(2) - yl(1);
-yPLine = yTop7 + 0.08 * yrange;
-plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
+yPLine = yTop7;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1, 'Tag', 'PLine_1');
 textY = yPLine + 0.2 * yrange;
 starStr = TransferLearning.Style.iFormatPText(groupP7);
 text(ax, 4, textY, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12, 'Tag', 'PText_1', AffectAutoLimits=true);
 yt = yticks(ax);
+xlim([0,20]);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
 lgd = legend(ax, [hCtrl(1), hCtrl(2), hTH(1), hTH(2)], ...
 	{'Control Mean ± SEM', 'Control Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
-	'Location', 'southoutside', 'NumColumns', 2);
+	'Location', 'southeast');
 lgd.Box = 'off';
 lgd.FontSize = 10;
 lgd.AutoUpdate=false;
 
 svgName = "中文图Fig61B_THInhibitVsCtrl_SigmoidSlope.svg";
-
+title('💡💧 continual');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 
 fitTable = table;
@@ -138,17 +138,6 @@ fitTable.Midpoint = [fitCtrl.Midpoint; fitTH.Midpoint];
 fitTable.SSE = [fitCtrl.SSE; fitTH.SSE];
 fitTable.RSquared = [fitCtrl.RSquared; fitTH.RSquared];
 fitTable.NMouse = [ctrlMouseN; thMouseN];
-
-permTable = table;
-permTable.ObservedCtrlSlope = permResult.ObservedCtrlSlope;
-permTable.ObservedTHSlope = permResult.ObservedTHSlope;
-permTable.ObservedDifference = permResult.ObservedDifference;
-permTable.PermutationPValue = permResult.PValue;
-permTable.PermutationCount = permResult.NPermutation;
-permTable.NullMeanDifference = mean(permResult.PermutedDifference, 'omitnan');
-permTable.NullStdDifference = std(permResult.PermutedDifference, 'omitnan');
-permTable.NullCI_Low = prctile(permResult.PermutedDifference, 2.5);
-permTable.NullCI_High = prctile(permResult.PermutedDifference, 97.5);
 
 summaryTable = table;
 summaryTable.Block = xSummary(:);
@@ -166,20 +155,12 @@ fprintf('Ctrl mice: %d\n', ctrlMouseN);
 fprintf('TH mice: %d\n', thMouseN);
 fprintf('Ctrl sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitCtrl.Lower, fitCtrl.Upper, fitCtrl.Slope, fitCtrl.Midpoint, fitCtrl.RSquared);
 fprintf('TH sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTH.Lower, fitTH.Upper, fitTH.Slope, fitTH.Midpoint, fitTH.RSquared);
-fprintf('Permutation slope difference (TH - Ctrl): %.4f (for reference only, not shown in figure)\n', permResult.ObservedDifference);
-fprintf('Permutation two-sided p = %.4g (%d permutations, for reference only)\n', permResult.PValue, permResult.NPermutation);
 fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 fprintf('Sigmoid slope panel: cell count and Spearman rho are not applicable.\n');
 fprintf('\n=== Figure caption P-values ===\n');
-fprintf('Sigmoid slope (permutation): %s\n', TransferLearning.Style.iFormatPText(permResult.PValue));
 fprintf('Two-way ANOVA Group P (blocks 1-7): %s\n', TransferLearning.Style.iFormatPText(groupP7));
 fprintf('Two-way ANOVA Group P (all blocks): %s\n', TransferLearning.Style.iFormatPText(groupP));
-
-assignin('base', 'Fig61D_Sigmoid_AllSessions', allSessions);
-assignin('base', 'Fig61D_Sigmoid_FitTable', fitTable);
-assignin('base', 'Fig61D_Sigmoid_Summary', summaryTable);
-assignin('base', 'Fig61D_Sigmoid_Permutation', permResult);
 
 function out = iBuildFig3GSessions(DS, groupName)
 	T = iQueryLightWaterBlocks(DS);
@@ -476,49 +457,6 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 	fitOut.RSquared = rSquared;
 	fitOut.XObserved = xObs;
 	fitOut.YObserved = yObs;
-end
-
-function permOut = iPermutationTestSigmoidSlope(TCtrl, TTH, nPermutation, rngSeed)
-	if nargin < 3 || isempty(nPermutation)
-		nPermutation = 2000;
-	end
-	if nargin >= 4 && ~isempty(rngSeed)
-		rng(rngSeed);
-	end
-	TCtrl = sortrows(TCtrl, {'Mouse','DateTime'});
-	TTH = sortrows(TTH, {'Mouse','DateTime'});
-	ctrlMice = unique(string(TCtrl.Mouse), 'stable');
-	thMice = unique(string(TTH.Mouse), 'stable');
-	allMouseTables = cell(numel(ctrlMice) + numel(thMice), 1);
-	for i = 1:numel(ctrlMice)
-		allMouseTables{i} = TCtrl(string(TCtrl.Mouse) == ctrlMice(i), :);
-	end
-	for i = 1:numel(thMice)
-		allMouseTables{numel(ctrlMice) + i} = TTH(string(TTH.Mouse) == thMice(i), :);
-	end
-	fitCtrl = iFitSigmoidCurve(TCtrl, "Ctrl");
-	fitTH = iFitSigmoidCurve(TTH, "TH");
-	observedDiff = fitTH.Slope - fitCtrl.Slope;
-	permDiff = nan(nPermutation, 1);
-	nCtrl = numel(ctrlMice);
-	parfor iPerm = 1:nPermutation
-		ord = randperm(numel(allMouseTables));
-		idxCtrl = ord(1:nCtrl);
-		idxTH = ord(nCtrl+1:end);
-		permCtrl = vertcat(allMouseTables{idxCtrl});
-		permTH = vertcat(allMouseTables{idxTH});
-		fitPermCtrl = iFitSigmoidCurve(permCtrl, "CtrlPerm");
-		fitPermTH = iFitSigmoidCurve(permTH, "THPerm");
-		permDiff(iPerm) = fitPermTH.Slope - fitPermCtrl.Slope;
-	end
-	pValue = mean(abs(permDiff) >= abs(observedDiff));
-	permOut = struct;
-	permOut.ObservedCtrlSlope = fitCtrl.Slope;
-	permOut.ObservedTHSlope = fitTH.Slope;
-	permOut.ObservedDifference = observedDiff;
-	permOut.PermutedDifference = permDiff;
-	permOut.PValue = pValue;
-	permOut.NPermutation = nPermutation;
 end
 
 function y = iSigmoidFromParams(p, x)

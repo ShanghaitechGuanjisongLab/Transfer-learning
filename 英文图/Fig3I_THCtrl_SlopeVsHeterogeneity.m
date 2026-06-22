@@ -1,4 +1,4 @@
-﻿% English Fig3I: TH/Ctrl per-mouse sigmoid slope vs Response heterogeneity
+% English Fig3I: TH/Ctrl per-mouse sigmoid slope vs Response heterogeneity
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
@@ -17,7 +17,7 @@ end
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
 colorC = TransferLearning.ContinualColor;
-colorT = TransferLearning.ColorB;
+colorT = TransferLearning.ColorA;
 
 f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl sigmoid slope vs Response heterogeneity');
 f.Units = 'centimeters';

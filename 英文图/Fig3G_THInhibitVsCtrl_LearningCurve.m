@@ -130,7 +130,7 @@ ax = axes(f);
 hold(ax, 'on');
 ax.LineWidth = 2;
 
-edgeColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+edgeColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
