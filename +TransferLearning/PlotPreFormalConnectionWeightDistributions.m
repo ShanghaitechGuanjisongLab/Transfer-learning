@@ -5,7 +5,7 @@ end
 
 classNames = ["EE", "EI", "IE", "II"];
 classTitles = ["E→E", "E→I", "I→E", "I→I"];
-legendLabels = {'Naive', 'After pretrain'};
+legendLabels = {'Naive', 'CueA learned'};
 groupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
 naiveColor = groupColors(1, :);
 afterPretrainColor = groupColors(2, :);

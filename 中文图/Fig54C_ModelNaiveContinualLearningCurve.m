@@ -20,6 +20,7 @@ anovaTable = iBuildGroupAnovaTableFromMatrices(naivePerformance, continualPerfor
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
 anovaTable7 = anovaTable(anovaTable.Block <= 7, :);
 groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable7, 'Performance', 'Block', 'Group', 'Mouse');
+%% 
 
 fig = figure('Color', 'w', 'Name', 'Fig54C model Naive Continual sigmoid');
 fig.Units = 'centimeters';
@@ -63,7 +64,7 @@ textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
 if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
 text(ax, 4, textY, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12,AffectAutoLimits=true);
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
@@ -80,13 +81,9 @@ fprintf('Fig54C Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Fig54C Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 iPrintPermutationResult('Fig54C', SigmoidStats);
 iAssertSigmoidSlopeSignificant('Fig54C', SigmoidStats, Params.TransferHighestAlpha, fig);
-
+title('Cue B');
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'Fig54C_ModelNaiveContinualPerformance', struct('Naive', naivePerformance, 'Continual', continualPerformance));
-assignin('base', 'Fig54C_ModelNaiveContinualRunInfo', RunInfo);
-assignin('base', 'Fig54C_ModelNaiveContinualSigmoidStats', SigmoidStats);
 
 function summary = iLearningCurveSummary(performanceA, performanceB)
 numSessions = max(size(performanceA, 2), size(performanceB, 2));

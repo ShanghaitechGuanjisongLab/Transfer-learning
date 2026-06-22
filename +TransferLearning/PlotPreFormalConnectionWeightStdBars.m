@@ -8,7 +8,7 @@ classLabels = ["E→E", "E→I", "I→E", "I→I"];
 heterogeneityNames = ["L23E", "L23I", "L5E", "L5I"];
 heterogeneityLabels = ["L2/3 E", "L2/3 I", "L5 E", "L5 I"];
 groupFields = ["Naive", "AfterPretrain"];
-topGroupLabels = ["Naive", "After pretrain"];
+topGroupLabels = ["Naive", "CueA learned"];
 bottomGroupLabels = ["Naive", "Continual"];
 topGroupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
 bottomGroupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
@@ -30,6 +30,10 @@ topAx = nexttile(tileLayout, 1);
 
 bottomAx = nexttile(tileLayout, 2);
 [~, bottomOptional] = iPlotGroupedBars(bottomAx, heterogeneityData, iWithinItemCompareGroup(heterogeneityLabels, bottomGroupLabels, heterogeneityData.Properties.DimensionNames), bottomGroupLabels, bottomGroupColors, 'Layer and cell type', 'Heterogeneity');
+	if isfield(bottomOptional, 'Legend') && isgraphics(bottomOptional.Legend)
+		bottomOptional.Legend.Title.String = 'Cue B';
+		bottomOptional.Legend.Title.FontWeight = 'normal';
+	end
 iSetFigureTextFontSize(fig, 12);
 iRetunePValueLines(topOptional);
 iRetunePValueLines(bottomOptional);

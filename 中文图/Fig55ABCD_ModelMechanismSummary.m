@@ -187,7 +187,7 @@ activityContinual = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUn
 axNoise = nexttile(layout, 3);
 noiseLabelPosition = [0.96, 0.91; 0.96, 0.74];
 noiseLabelAlignment = ["right", "right"];
-noiseStats = iPlotLineComparison(axNoise, unitTable, "NoiseBacktrainFrequency", palette, "Frequency", ["Noise", "anti-learning"], true, 3.75, 0.16, noiseLabelPosition, noiseLabelAlignment);
+noiseStats = iPlotLineComparison(axNoise, unitTable, "NoiseBacktrainFrequency", palette, "Frequency", ["Noise", "reverse-learning"], true, 3.75, 0.16, noiseLabelPosition, noiseLabelAlignment);
 
 axProjection = nexttile(layout, 4);
 projectionLabelPosition = [0.96, 0.25; 0.96, 0.91];

@@ -1,4 +1,4 @@
-﻿% 英文图3E：代表性单会话 3D 热图 + 细胞间 1s z-score 分布
+% 英文图3E：代表性单会话 3D 热图 + 细胞间 1s z-score 分布
 %
 % Transfer: 选择响应异质性（SD@1s，[-1,1]细胞）最大的会话
 % Naive:    选择响应异质性最小的会话
@@ -226,7 +226,6 @@ for iS = 1:2
 	pngName = sprintf('English_Fig3E_Volshow_%s.png', sessTags(iS));
 	exportapp(fig, fullfile(outDirUNC, pngName));
 	drawnow;
-	close(fig);
 	fprintf('Wrote: %s\n', pngName);
 end
 

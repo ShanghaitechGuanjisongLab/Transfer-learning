@@ -1,6 +1,5 @@
 % Fig54A model pre-formal connection weight distributions.
 
-svgName = '中文图Fig54A_PreFormalConnectionWeightDistributions.svg';
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
@@ -13,11 +12,9 @@ end
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'));
 WeightValues = Fig5556Data.PreFormalWeightValues;
 RunInfo = Fig5556Data.RunInfo;
+%% 
 
 fig = TransferLearning.PlotPreFormalConnectionWeightDistributions(WeightValues);
+svgName = '中文图Fig54A_PreFormalConnectionWeightDistributions.svg';
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'Fig54A_PreFormalWeightValues', WeightValues);
-assignin('base', 'Fig54A_PreFormalWeightRunInfo', RunInfo);
-assignin('base', 'Fig54A_PreFormalWeightSvgPath', svgPath);

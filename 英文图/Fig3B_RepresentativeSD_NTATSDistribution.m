@@ -266,7 +266,7 @@ ax = axes(fh);
 hold(ax, 'on');
 
 histogram(ax, v, binEdges, 'Normalization', 'probability', ...
-	'FaceColor', pairColors{repPairIdx}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
+	'FaceColor', TransferLearning.ContinualColor, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
 xline(ax, mean(v), '--', 'Color', pairColors{repPairIdx}, 'LineWidth', 1);
 
 xlim(ax, [-1, 1]);
@@ -324,7 +324,6 @@ cb.FontSize = 6;
 cb.Box = 'off';
 
 TransferLearning.ExportStandardFigureTransparent(cbFig, 3, svgName);
-close(cbFig);
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
