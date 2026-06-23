@@ -47,7 +47,7 @@ grid(ax, 'off');
 xlim(ax, [0, 3]);
 xlabel(ax, 'Time', 'FontSize', 12);
 ylabel(ax, 'z-score', 'FontSize', 12);
-title(ax, '🔊💧 active cells', 'FontSize', 12, 'FontWeight', 'normal', 'FontName', 'Segoe UI Emoji');
+	title(ax, 'L5 🔊💧 active cells', 'FontSize', 12, 'FontWeight', 'normal', 'FontName', 'Segoe UI Emoji');
 ax.XTick = [0 1 3];
 ax.XTickLabel = {"💡", "💧", "3"};
 

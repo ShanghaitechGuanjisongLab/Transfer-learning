@@ -2,21 +2,22 @@ function RunResNetTaskABWithVarianceLoss(mode)
 % RunResNetTaskABWithVarianceLoss  Train ResNet-18 on Task A→Task B.
 %
 %   RunResNetTaskABWithVarianceLoss("both")       % train all groups, plot comparison
-%   RunResNetTaskABWithVarianceLoss("transfer")   % only A→B with variance
-%   RunResNetTaskABWithVarianceLoss("noVar")      % only A→B no variance
-%   RunResNetTaskABWithVarianceLoss("direct")     % only B from scratch with variance
+%   RunResNetTaskABWithVarianceLoss("transfer")   % only A→B (only A has variance)
+%   RunResNetTaskABWithVarianceLoss("noVar")      % only A→B (no variance at all)
+%   RunResNetTaskABWithVarianceLoss("direct")     % only B from scratch (no variance)
 %   RunResNetTaskABWithVarianceLoss("compare")    % load saved stats and plot only
 %
 % Comparisons:
-%   1) TaskB_transfer vs TaskB_direct (both with variance) → TaskB_TransferVsDirect.svg
-%   2) TaskB_transfer (withVar) vs TaskB_transfer (noVar) → TaskB_VarianceVsNoVariance.svg
+%   1) Continual B vs Naive B → TaskB_ContinualVsNaive.svg
+%   2) Task A with variance vs without → TaskA_VarianceVsNoVariance.svg
+%   3) Task B (A-had-var) vs Task B (A-had-no-var) → TaskB_VarianceOnAVsNoVarianceOnA.svg
 %
-% Task A: CIFAR-10;  Task B: MNIST handwritten digits.
+% Task A: CIFAR-10;  Task B: MNIST.  Only Task A ever uses variance.
 %
 % Save paths:
-%   D:\训练数据\models\statsA_var_transfer.mat,  statsB_var_transfer.mat
-%   D:\训练数据\models\statsB_var_direct.mat
-%   D:\训练数据\models\statsB_noVar_transfer.mat
+%   D:\训练数据\models\statsA_var.mat,   statsB_afterVarA.mat
+%   D:\训练数据\models\statsA_noVar.mat, statsB_noVar.mat
+%   D:\训练数据\models\statsB_direct.mat
 
 arguments
     mode (1,:) char {mustBeMember(mode, ["both","transfer","noVar","direct","compare"])} = "both"
@@ -55,52 +56,65 @@ dataset = TransferLearning.LoadCifar10TaskABInMemory(dataRoot, 0.1, 0.8, 2026061
 [XmnistTrain, ymnistTrain] = TransferLearning.LoadMnistAsCifarFormat(dataRoot, "train", 0.8, 20260616);
 [XmnistVal,   ymnistVal]   = TransferLearning.LoadMnistAsCifarFormat(dataRoot, "t10k",  0.2,  20260616);
 
-% ---- Group 1: A→B, with variance ----
+% ---- Group 1: A (with var) → B (no var) ----
 if ismember(mode, ["both","transfer"])
-    fprintf("=== Group: A->B with variance (varWeight=%.2f) ===\n", cfg.varWeight);
-    [statsA_transfer, statsB_var_transfer] = TransferLearning.TrainTaskATaskB( ...
-        dataset, cfg, cfg.varWeight, XmnistTrain, ymnistTrain, XmnistVal, ymnistVal);
-    save(fullfile(modelDir, "statsA_var_transfer.mat"), "statsA_transfer", "-v7.3");
-    save(fullfile(modelDir, "statsB_var_transfer.mat"), "statsB_var_transfer", "-v7.3");
+    fprintf("=== Group: A(variance) → B(no variance) ===\n");
+    [statsA_var, statsB_afterVarA] = TransferLearning.TrainTaskATaskB( ...
+        dataset, cfg, cfg.varWeight, 0, XmnistTrain, ymnistTrain, XmnistVal, ymnistVal);
+    save(fullfile(modelDir, "statsA_var.mat"), "statsA_var", "-v7.3");
+    save(fullfile(modelDir, "statsB_afterVarA.mat"), "statsB_afterVarA", "-v7.3");
 end
 
-% ---- Group 2: A→B, no variance ----
+% ---- Group 2: A (no var) → B (no var) ----
 if ismember(mode, ["both","noVar"])
-    fprintf("=== Group: A->B no variance (varWeight=0) ===\n");
-    [~, statsB_noVar_transfer] = TransferLearning.TrainTaskATaskB( ...
-        dataset, cfg, 0, XmnistTrain, ymnistTrain, XmnistVal, ymnistVal);
-    save(fullfile(modelDir, "statsB_noVar_transfer.mat"), "statsB_noVar_transfer", "-v7.3");
+    fprintf("=== Group: A(no variance) → B(no variance) ===\n");
+    [statsA_noVar, statsB_noVar] = TransferLearning.TrainTaskATaskB( ...
+        dataset, cfg, 0, 0, XmnistTrain, ymnistTrain, XmnistVal, ymnistVal);
+    save(fullfile(modelDir, "statsA_noVar.mat"), "statsA_noVar", "-v7.3");
+    save(fullfile(modelDir, "statsB_noVar.mat"), "statsB_noVar", "-v7.3");
 end
 
-% ---- Group 3: B from scratch, with variance ----
+% ---- Group 3: B from scratch (no var) ----
 if ismember(mode, ["both","direct"])
-    fprintf("=== Group: B-DIRECT with variance (varWeight=%.2f) ===\n", cfg.varWeight);
+    fprintf("=== Group: B-DIRECT (no variance) ===\n");
     rng(20260616);
     net = TransferLearning.BuildResNet18Classifier(cfg.inputSize, cfg.numClasses);
-    [~, statsB_var_direct] = TransferLearning.TrainImageTaskVarianceLoss( ...
+    [~, statsB_direct] = TransferLearning.TrainImageTaskVarianceLoss( ...
         net, XmnistTrain, ymnistTrain, XmnistVal, ymnistVal, ...
         dataset.classNames, cfg.inputSize, cfg.maxEpochsB, ...
-        cfg.miniBatchSize, cfg.learnRate, cfg.varWeight, cfg.gpuIndices);
-    save(fullfile(modelDir, "statsB_var_direct.mat"), "statsB_var_direct", "-v7.3");
+        cfg.miniBatchSize, cfg.learnRate, 0, cfg.gpuIndices);
+    save(fullfile(modelDir, "statsB_direct.mat"), "statsB_direct", "-v7.3");
 end
 
-% ---- Comparison 1: Transfer vs Direct (both with variance) ----
+% ---- Comparison 1: Continual B vs Naive B ----
 if ismember(mode, ["both","compare"])
-    loaded_transfer = load(fullfile(modelDir, "statsB_var_transfer.mat"), "statsB_var_transfer");
-    loaded_direct   = load(fullfile(modelDir, "statsB_var_direct.mat"),   "statsB_var_direct");
-    fTD = TransferLearning.PlotTrainingCurvesCompare( ...
-        loaded_transfer.statsB_var_transfer, loaded_direct.statsB_var_direct);
-    TransferLearning.ExportStandardFigure(fTD, 2, "TaskB_TransferVsDirect.svg");
-    fprintf("Transfer vs Direct chart -> TaskB_TransferVsDirect.svg\n");
+    loaded_continual = load(fullfile(modelDir, "statsB_afterVarA.mat"), "statsB_afterVarA");
+    loaded_direct     = load(fullfile(modelDir, "statsB_direct.mat"),     "statsB_direct");
+    f = TransferLearning.PlotTrainingCurvesCompare( ...
+        loaded_continual.statsB_afterVarA, loaded_direct.statsB_direct);
+    TransferLearning.ExportStandardFigure(f, 2, "TaskB_ContinualVsNaive.svg");
+    fprintf("Continual vs Naive -> TaskB_ContinualVsNaive.svg\n");
 end
 
-% ---- Comparison 2: Variance vs No Variance (both A→B) ----
+% ---- Comparison 2: Task A with variance vs without ----
 if ismember(mode, ["both","compare"])
-    loaded_withVar = load(fullfile(modelDir, "statsB_var_transfer.mat"),    "statsB_var_transfer");
-    loaded_noVar   = load(fullfile(modelDir, "statsB_noVar_transfer.mat"),  "statsB_noVar_transfer");
-    fVar = TransferLearning.PlotTrainingCurvesCompareVariance( ...
-        loaded_withVar.statsB_var_transfer, loaded_noVar.statsB_noVar_transfer);
-    TransferLearning.ExportStandardFigure(fVar, 2, "TaskB_VarianceVsNoVariance.svg");
-    fprintf("Variance vs NoVariance chart -> TaskB_VarianceVsNoVariance.svg\n");
+    loaded_varA   = load(fullfile(modelDir, "statsA_var.mat"),   "statsA_var");
+    loaded_noVarA = load(fullfile(modelDir, "statsA_noVar.mat"), "statsA_noVar");
+    f = TransferLearning.PlotTrainingCurvesCompareVariance( ...
+        loaded_varA.statsA_var, loaded_noVarA.statsA_noVar, ...
+        "With Variance", "No Variance", "Task A (CIFAR-10): Variance vs No Variance (ResNet-18)");
+    TransferLearning.ExportStandardFigure(f, 2, "TaskA_VarianceVsNoVariance.svg");
+    fprintf("TaskA variance vs noVar -> TaskA_VarianceVsNoVariance.svg\n");
+end
+
+% ---- Comparison 3: Task B (A had var) vs Task B (A had no var) ----
+if ismember(mode, ["both","compare"])
+    loaded_bAfterVar   = load(fullfile(modelDir, "statsB_afterVarA.mat"), "statsB_afterVarA");
+    loaded_bNoVar      = load(fullfile(modelDir, "statsB_noVar.mat"),      "statsB_noVar");
+    f = TransferLearning.PlotTrainingCurvesCompareVariance( ...
+        loaded_bAfterVar.statsB_afterVarA, loaded_bNoVar.statsB_noVar, ...
+        "A had variance", "A had no variance", "Task B (MNIST): Effect of Variance in Task A (ResNet-18)");
+    TransferLearning.ExportStandardFigure(f, 2, "TaskB_VarianceOnAvsNoVarianceOnA.svg");
+    fprintf("TaskB (A-had-var) vs TaskB (A-had-no-var) -> TaskB_VarianceOnAvsNoVarianceOnA.svg\n");
 end
 end

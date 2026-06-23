@@ -27,7 +27,7 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-layoutTitle = title(layout, '🔊💧 active cells', 'FontSize', 6, 'FontWeight', 'normal');
+layoutTitle = title(layout, 'L5 🔊💧 active cells', 'FontSize', 6, 'FontWeight', 'normal');
 layoutTitle.FontName = 'Segoe UI Emoji';
 
 axTop = nexttile(layout, 1);

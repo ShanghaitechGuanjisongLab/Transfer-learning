@@ -1,11 +1,5 @@
 function Data = Fig63BC_THInhibitCtrlActiveCalciumData()
-% Shared data for Fig63B/C: learned AudioWater active cells in first Transfer LightWater session.
-
-persistent Cache
-if ~isempty(Cache)
-	Data = Cache;
-	return;
-end
+% Shared data for Fig63B/C: learned AudioWater active cells (MOp5 only) in first Transfer LightWater session.
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -31,8 +25,12 @@ if ~ok1s
 	error('Fig63BC:No1s', 'Cannot find sample close to 1 s.');
 end
 
-ctrl = iBuildGroupData(TransferLearning.AudioLightBaseline(), "Ctrl", baseMask, idx1s, plotMask, earlyMask, lateMask);
-th = iBuildGroupData(TransferLearning.THInhibit(), "TH", baseMask, idx1s, plotMask, earlyMask, lateMask);
+ctrlDS = TransferLearning.AudioLightBaseline();
+thDS = TransferLearning.THInhibit();
+ctrl = iBuildGroupData(ctrlDS, "Ctrl", baseMask, idx1s, plotMask, earlyMask, lateMask);
+th = iBuildGroupData(thDS, "TH", baseMask, idx1s, plotMask, earlyMask, lateMask);
+ctrl = iFilterL5(ctrl, ctrlDS);
+th = iFilterL5(th, thDS);
 
 if isempty(ctrl.Trace) || isempty(th.Trace)
 	error('Fig63BC:EmptyData', 'No learned-active cells found in Ctrl or TH group.');
@@ -63,7 +61,6 @@ Data.NCtrlCell = numel(ctrl.LateMean);
 Data.NTHCell = numel(th.LateMean);
 Data.NCtrlMouse = numel(unique(ctrl.CellRows.Mouse));
 Data.NTHMouse = numel(unique(th.CellRows.Mouse));
-Cache = Data;
 end
 
 function groupData = iBuildGroupData(DS, groupName, baseMask, idx1s, plotMask, earlyMask, lateMask)
@@ -218,4 +215,24 @@ end
 function [idx, ok] = iFindTimeIndex(xsSec, targetSec, tolSec)
 [d, idx] = min(abs(xsSec(:) - targetSec));
 ok = isfinite(d) && d <= tolSec;
+end
+
+function groupData = iFilterL5(groupData, DS)
+if isempty(groupData.CellRows)
+	return;
+end
+Cells = DS.Cells(:, {'CellUID','ZLayer'});
+Cells.CellUID = uint64(Cells.CellUID);
+[~, loc] = ismember(groupData.CellRows.CellUID, Cells.CellUID);
+isL5 = string(Cells.ZLayer(loc)) == "MOp5";
+isL5(~isfinite(isL5)) = false;
+if ~any(isL5)
+	groupData = iEmptyGroupData(groupData.Group, size(groupData.Trace, 2));
+	return;
+end
+groupData.Trace = groupData.Trace(isL5, :);
+groupData.EarlyMean = groupData.EarlyMean(isL5);
+groupData.LateMean = groupData.LateMean(isL5);
+groupData.LateMinusEarly = groupData.LateMinusEarly(isL5);
+groupData.CellRows = groupData.CellRows(isL5, :);
 end
