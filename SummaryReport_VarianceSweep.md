@@ -104,6 +104,41 @@
 
 ---
 
+---
+
+## 最终验证（最优配置应用）
+
+### 配置
+- `varWeight=0.01`, 仅 `res3b_relu`
+- TaskA: CIFAR-10, 500 样本/epoch × 100 epoch
+- TaskB: MNIST, 600 样本/epoch × 100 epoch
+- 对照组为纯 CE（无方差正则）
+
+### 结果
+
+| 指标 | Var | NoVar | 差值 |
+|------|-----|-------|------|
+| TaskA 最终准确率 | 80.47% | 81.41% | **-0.94%** |
+| TaskA 最终隐藏方差 | 0.0718 | 0.0959 | -0.0242 (↓25%) |
+| TaskB 最终准确率 | 99.18% | 98.75% | +0.43% |
+| TaskB 前10 epoch 均值 | 85.68% | 87.08% | **-1.39%** |
+| TaskB epoch 5 | 96.39% | 96.67% | -0.28% |
+
+### 分析
+
+1. **TaskA 表现轻微下降**：方差正则削弱了表征能力（-0.94 pp），但确实降低了隐藏层方差（↓25%）
+2. **TaskB 早期学习速度不增反降**：前 10 epoch 均值低于对照组 1.39 pp
+3. **最终 TaskB 表现出奇地略高**：+0.43 pp，但绝对值均已 >98.7%，差异无实质意义
+4. **整体结论不变**：在 CIFAR-10→MNIST 这一简单任务对上，隐藏层方差正则无正面贡献
+
+### 输出图表
+
+1. `TaskB_ContinualVsNaive.svg` — TaskB 持续学习(A→B) vs 直接训练损失对比
+2. `TaskA_VarianceVsNoVariance.svg` — TaskA 加 vs 不加方差正则的训练过程
+3. `TaskB_VarianceOnAvsNoVarianceOnA.svg` — 迁移效果：A有方差 vs A无方差对B的影响
+
+---
+
 *报告生成于 2026-06-28*
 *对应代码：`RunResNetTaskABWithVarianceLoss.m`, `ComputeModelGradientsVarianceLoss.m`, `CleanSweepLayerSets.m`, `CleanSweepLayerSetsPar.m`*
 
