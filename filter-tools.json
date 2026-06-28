@@ -1,0 +1,31 @@
+{
+  "tools": [
+    {
+      "name": "safe_evaluate_matlab_code",
+      "title": "Safe MATLAB Code Evaluation",
+      "description": "Safely evaluates MATLAB code with a built-in content filter that rejects dangerous commands (e.g. clear, eval, system, quit). Set the project folder before evaluating.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "MATLAB code to evaluate. Dangerous commands like clear, eval, system, quit etc. will be automatically rejected."
+          },
+          "project_path": {
+            "type": "string",
+            "description": "(Optional) Absolute path to the project folder. MATLAB sets this as the current working folder before execution."
+          }
+        },
+        "required": ["code"]
+      }
+    }
+  ],
+  "signatures": {
+    "safe_evaluate_matlab_code": {
+      "function": "safe_evaluate",
+      "input": {
+        "order": ["code", "project_path"]
+      }
+    }
+  }
+}

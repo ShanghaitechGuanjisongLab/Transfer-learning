@@ -1,13 +1,4 @@
-% 英文图1J: Hit vs Miss Reactivation (per mouse, layers merged)
-%
-% Reactivation = P(Transfer active | Learned active) at 1s
-%   L = Learned AudioWater active at 1s
-%   T_hit/T_miss = Transfer LightWater Hit/Miss active at 1s
-% Paired test: signrank(Hit > Miss)
-%
-% Execution:
-%   TransferLearning.英文图1.K_ReactivationRate_HitVsMiss
-
+% 中文图43C：Hit vs Miss Reactivation（秩和检验 + 手动P值线）
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -54,7 +45,7 @@ ax.LineWidth = 1;
 
 p = NaN;
 if nnz(mask) >= 4
-	p = signrank(hit(mask), miss(mask), 'tail','right');
+	p = ranksum(hit(mask), miss(mask));
 end
 
 Y = [hit(mask), miss(mask)];
@@ -71,48 +62,19 @@ ax.FontName = 'Segoe UI Emoji';
 ylabel(ax, 'Reactivation', 'FontSize', 6);
 title(ax, '💡💧', 'FontSize', 6, 'FontWeight', 'normal');
 
-compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
-[~, optional, barsHidden, errorBarsHidden] = UniExp.BarScatterCompare({double(hit(mask)), double(miss(mask))}, UniExp.Flags.empty, compareGroup, ax, 'AsteriskThreshold', 1);
-TransferLearning.Style.SetBarPValues(optional);
-for barHandle = barsHidden(:)'
-	if isgraphics(barHandle)
-		barHandle.Visible = 'off';
-		barHandle.HandleVisibility = 'off';
-	end
-end
-if istable(errorBarsHidden) && ismember('Object', errorBarsHidden.Properties.VariableNames)
-	for errorBar = errorBarsHidden.Object(:)'
-		if isgraphics(errorBar)
-			errorBar.Visible = 'off';
-			errorBar.HandleVisibility = 'off';
-		end
-	end
-end
-if isfield(optional, 'MultiCompare') && istable(optional.MultiCompare)
-	if ismember('PLine', optional.MultiCompare.Properties.VariableNames)
-		for pLine = optional.MultiCompare.PLine(:)'
-			if isgraphics(pLine)
-				pLine.LineWidth = 1;
-				pLine.Tag = 'PLine';
-			end
-		end
-	end
-	if ismember('PText', optional.MultiCompare.Properties.VariableNames)
-		for pText = optional.MultiCompare.PText(:)'
-			if isgraphics(pText)
-				pText.FontSize = 6;
-				pText.Tag = 'PText';
-			end
-		end
-	end
-end
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = max(max(hit(mask)), max(miss(mask))) + 0.08 * yrange;
+textY = yPLine + 0.08 * yrange;
+plot(ax, [1, 2], [yPLine, yPLine], 'k-', 'LineWidth', 1, 'Tag', 'PLine_1');
+text(ax, 1.5, textY, TransferLearning.Style.iFormatPText(p), ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 6, 'Tag', 'PText_1');
 
 svgName = "中文图Fig43C_ReactivationRate_HitVsMiss.svg";
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-fprintf('\n=== English Fig1J Reactivation Hit vs Miss ===\n');
+fprintf('\n=== 中文图43C Reactivation Hit vs Miss ===\n');
 fprintf('paired mice n = %d\n', nnz(mask));
 fprintf('participating learned-active cells n = %d\n', nCells);
-fprintf('signrank right-tail p = %.6g\n', p);
-fprintf('Figure caption (4.3C) P = %s\n', TransferLearning.Style.iFormatPText(optional.MultiCompare.PValue(1)));
+fprintf('ranksum p = %.6g\n', p);
+fprintf('Figure caption (4.3C) P = %s\n', TransferLearning.Style.iFormatPText(p));

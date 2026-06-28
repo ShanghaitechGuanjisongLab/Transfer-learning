@@ -162,7 +162,6 @@ if isprop(ax2.XAxis, 'LineWidth')
 end
 ax2.Color = 'none';
 ax2.XAxis.Visible = 'off';
-ax2.XTick = [];
 legend(ax2, 'off');
 if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
 	for pl = optional2.MultiCompare.PLine(:)'
@@ -465,7 +464,7 @@ if isscalar(barsObj)
 	barsObj.CData = barsObj.CData(1:nBars, :);
 	barsObj.BarWidth = 0.5;
 	barsObj.LineWidth = 2;
-	barsObj.BaseLine.LineWidth = 2;
+	barsObj.BaseLine.LineWidth = 1;
 	barsObj.EdgeColor = 'none';
 	barsObj.FaceAlpha = 1;
 else

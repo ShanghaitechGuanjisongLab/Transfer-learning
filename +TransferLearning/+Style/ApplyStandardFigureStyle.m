@@ -20,7 +20,7 @@ else
 end
 iSetAxisLineWidths(Fig, axisLineWidth);
 iSetConstantLineWidths(Fig, axisLineWidth);
-iHideBarBaseLines(Fig);
+iSetBarBaseLineWidths(Fig, Scale);
 end
 
 function iSetAllFontSizes(Fig, fontSize)
@@ -185,60 +185,12 @@ for iH = 1:numel(handles)
 end
 end
 
-function iHideBarBaseLines(Fig)
+function iSetBarBaseLineWidths(Fig, Scale)
 barHandles = findall(Fig, 'Type', 'Bar');
 for barIndex = 1:numel(barHandles)
 	barHandle = barHandles(barIndex);
 	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
-		if iShouldPreserveBarBaseLine(barHandle) || iShouldPreserveMixedSignBarBaseLine(barHandle)
-			barHandle.BaseLine.Visible = 'on';
-			continue;
-		end
-		ax = ancestor(barHandle, 'axes');
-		if ~isempty(ax) && isgraphics(ax) && isprop(ax.XAxis, 'Visible') && strcmp(ax.XAxis.Visible, 'off')
-			barHandle.BaseLine.Visible = 'on';
-			continue;
-		end
-		barHandle.BaseLine.Visible = 'off';
+		barHandle.BaseLine.LineWidth = 0.5 * Scale;
 	end
 end
-end
-
-function tf = iShouldPreserveBarBaseLine(barHandle)
-appdataName = 'TransferLearningPreserveBarBaseLine';
-tf = isappdata(barHandle, appdataName) && isequal(getappdata(barHandle, appdataName), true);
-if tf || ~isprop(barHandle, 'BaseLine') || ~isgraphics(barHandle.BaseLine)
-	return;
-end
-tf = isappdata(barHandle.BaseLine, appdataName) && isequal(getappdata(barHandle.BaseLine, appdataName), true);
-end
-
-function tf = iShouldPreserveMixedSignBarBaseLine(barHandle)
-if ~isgraphics(barHandle) || ~isprop(barHandle, 'YData')
-	tf = false;
-	return;
-end
-
-ax = ancestor(barHandle, 'axes');
-if ~isgraphics(ax)
-	tf = false;
-	return;
-end
-
-barsInAxes = findall(ax, 'Type', 'Bar');
-allY = [];
-for iB = 1:numel(barsInAxes)
-	y = double(barsInAxes(iB).YData);
-	allY = [allY; y(:)]; %#ok<AGROW>
-end
-
-allY = allY(isfinite(allY));
-if isempty(allY)
-	tf = false;
-	return;
-end
-
-hasPositive = any(allY > 0);
-hasNegative = any(allY < 0);
-tf = hasPositive && hasNegative;
 end

@@ -1,13 +1,16 @@
-function [net, stats] = TrainImageTaskVarianceLoss(net, XTrain, yTrain, XVal, yVal, classNames, inputSize, maxEpochs, miniBatchSize, learnRate, varWeight, gpuIndices)
+function [net, stats] = TrainImageTaskVarianceLoss(net, XTrain, yTrain, XVal, yVal, classNames, inputSize, maxEpochs, miniBatchSize, learnRate, varWeight, gpuIndices, samplesPerEpoch)
 if nargin < 12 || isempty(gpuIndices)
     gpuIndices = 1;
+end
+if nargin < 13 || isempty(samplesPerEpoch)
+    samplesPerEpoch = size(XTrain, 1);
 end
 
 gpuIndices = unique(gpuIndices(:)');
 numGpuRequested = numel(gpuIndices);
 
 if numGpuRequested > 1
-    [net, stats] = trainMultiGpu(net, XTrain, yTrain, XVal, yVal, classNames, inputSize, maxEpochs, miniBatchSize, learnRate, varWeight, gpuIndices);
+    [net, stats] = trainMultiGpu(net, XTrain, yTrain, XVal, yVal, classNames, inputSize, maxEpochs, miniBatchSize, learnRate, varWeight, gpuIndices, samplesPerEpoch);
     return;
 end
 
@@ -43,6 +46,9 @@ stats.valAccuracy = zeros(maxEpochs, 1);
 disp("CIFAR data pre-uploaded to GPU (32x32 cache).");
 
 for epoch = 1:maxEpochs
+    stats.valAccuracy(epoch) = TransferLearning.EvaluateClassificationAccuracyDlarray( ...
+        net, dlXval, dlTval, miniBatchSize);
+
     order = randperm(numTrain);
 
     if useGPU
@@ -56,11 +62,11 @@ for epoch = 1:maxEpochs
     end
     batchCount = 0;
 
-    for startIdx = 1:miniBatchSize:numTrain
+    for startIdx = 1:miniBatchSize:samplesPerEpoch
         iteration = iteration + 1;
         batchCount = batchCount + 1;
 
-        endIdx = min(startIdx + miniBatchSize - 1, numTrain);
+        endIdx = min(startIdx + miniBatchSize - 1, samplesPerEpoch);
         batchOrder = order(startIdx:endIdx);
 
         dlX = dlarray(single(XsmallTrainGpu(:, :, :, batchOrder)) / 255, "SSCB");
@@ -85,15 +91,16 @@ for epoch = 1:maxEpochs
     stats.trainCE(epoch) = epochCE / batchCount;
     stats.trainVar(epoch) = epochVar / batchCount;
 
-    stats.valAccuracy(epoch) = TransferLearning.EvaluateClassificationAccuracyDlarray( ...
-        net, dlXval, dlTval, miniBatchSize);
-
     fprintf("Epoch %d/%d | loss=%.4f (ce=%.4f, var=%.4f) | valAcc=%.4f\n", ...
         epoch, maxEpochs, stats.trainLoss(epoch), stats.trainCE(epoch), stats.trainVar(epoch), stats.valAccuracy(epoch));
 end
+
+stats.finalValAccuracy = TransferLearning.EvaluateClassificationAccuracyDlarray( ...
+    net, dlXval, dlTval, miniBatchSize);
+fprintf("Final post-training valAcc=%.4f\n", stats.finalValAccuracy);
 end
 
-function [netOut, stats] = trainMultiGpu(netIn, XTrain, yTrain, XVal, yVal, classNames, inputSize, maxEpochs, miniBatchSize, learnRate, varWeight, gpuIndices)
+function [netOut, stats] = trainMultiGpu(netIn, XTrain, yTrain, XVal, yVal, classNames, inputSize, maxEpochs, miniBatchSize, learnRate, varWeight, gpuIndices, samplesPerEpoch)
 pool = gcp("nocreate");
 if isempty(pool) || pool.NumWorkers ~= numel(gpuIndices)
     if ~isempty(pool)
@@ -104,6 +111,7 @@ end
 
 numClasses = numel(classNames);
 numTrain = size(XTrain, 1);
+samplesPerEpoch = min(samplesPerEpoch, numTrain);
 
 stats.trainLoss = zeros(maxEpochs, 1);
 stats.trainCE = zeros(maxEpochs, 1);
@@ -122,15 +130,21 @@ spmd
     sqGradDecay = 0.999;
 
     for epoch = 1:maxEpochs
-        order = randperm(numTrain);
+        if spmdIndex == 1
+            stats.valAccuracy(epoch) = TransferLearning.EvaluateClassificationAccuracy( ...
+                net, XVal, yVal, classNames, inputSize, miniBatchSize);
+        end
+        stats = spmdBroadcast(1, stats);
+
+        order = randperm(numTrain, samplesPerEpoch);
 
         epochLossLocal = 0;
         epochCELocal = 0;
         epochVarLocal = 0;
         batchCountLocal = 0;
 
-        for startIdx = 1:miniBatchSize:numTrain
-            endIdx = min(startIdx + miniBatchSize - 1, numTrain);
+        for startIdx = 1:miniBatchSize:samplesPerEpoch
+            endIdx = min(startIdx + miniBatchSize - 1, samplesPerEpoch);
             batchIdx = order(startIdx:endIdx);
 
             countAll = numel(batchIdx);
@@ -198,15 +212,19 @@ spmd
             stats.trainCE(epoch) = epochCEGlobal / batchCountGlobal;
             stats.trainVar(epoch) = epochVarGlobal / batchCountGlobal;
 
-            stats.valAccuracy(epoch) = TransferLearning.EvaluateClassificationAccuracy( ...
-                net, XVal, yVal, classNames, inputSize, miniBatchSize);
-
             fprintf("Epoch %d/%d | loss=%.4f (ce=%.4f, var=%.4f) | valAcc=%.4f\n", ...
                 epoch, maxEpochs, stats.trainLoss(epoch), stats.trainCE(epoch), stats.trainVar(epoch), stats.valAccuracy(epoch));
         end
 
         stats = spmdBroadcast(1, stats);
     end
+
+    if spmdIndex == 1
+        stats.finalValAccuracy = TransferLearning.EvaluateClassificationAccuracy( ...
+            net, XVal, yVal, classNames, inputSize, miniBatchSize);
+        fprintf("Final post-training valAcc=%.4f\n", stats.finalValAccuracy);
+    end
+    stats = spmdBroadcast(1, stats);
 
     netOutSpmd = net;
 end
