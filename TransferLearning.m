@@ -16,11 +16,11 @@ classdef(Abstract)TransferLearning
 		scFLARE=memoize(@iscFLARE);
 		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
 		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
-		NaiveColor=[0.2263    0.7801    0.0000];
-		ContinualColor=[0.2629    0.0122    0.3160];
-		ColorA=[0.9851    0.3353    0.0204];
-		ColorB=[0.0755    0.1743    0.0166];
-		LearnedColor=[0.0039    0.5927    0.8302];
+		NaiveColor=[0.0623    0.0018    0.3060];
+		ContinualColor=[0.3606    0.9556    0.1805];
+		ColorA=[1.0000    0.2892    0.1748];
+		ColorB=[0.1665    0.2642    0.0226];
+		LearnedColor=[0.0000    0.6646    0.8862];
 		HeatmapPositive=[1.0000    0.0000    0.0000];
 		HeatmapNegative=[0.0000    0.0000    1.0000];
 	end
@@ -32,25 +32,6 @@ classdef(Abstract)TransferLearning
 		function MS=MeanSem(Data,ReduceDimension,ConcatDimension)
 			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,ReduceDimension);
 			MS=cat(ConcatDimension,Mean,Sem);
-		end
-		function Colors=GroupColors(GroupNames)
-			GroupNames=string(GroupNames(:));
-			Colors=zeros(numel(GroupNames),3);
-			FallbackColors=[TransferLearning.ColorA;TransferLearning.ColorB];
-			FallbackIndex=0;
-			for GroupIndex=1:numel(GroupNames)
-				switch GroupNames(GroupIndex)
-					case "Naive"
-						Colors(GroupIndex,:)=TransferLearning.NaiveColor;
-					case "Learned"
-						Colors(GroupIndex,:)=TransferLearning.LearnedColor;
-					case "Continual"
-						Colors(GroupIndex,:)=TransferLearning.ContinualColor;
-					otherwise
-						FallbackIndex=FallbackIndex+1;
-						Colors(GroupIndex,:)=FallbackColors(1+mod(FallbackIndex-1,size(FallbackColors,1)),:);
-				end
-			end
 		end
 		function P=ProjectPath(varargin)
 			Root=fileparts(mfilename('fullpath'));

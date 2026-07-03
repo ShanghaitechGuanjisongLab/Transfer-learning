@@ -23,13 +23,13 @@ f.PaperSize = [12, 8];
 ax = axes(f);
 hold(ax, 'on');
 yyaxis(ax, 'left');
-Lines = MATLAB.Graphics.MultiShadowedLines(Data.StdMean, Data.StdSem, 1/4, X=double(Data.X), EdgeColors=[1, 0, 0; 0, 0, 1]);
+Lines = MATLAB.Graphics.MultiShadowedLines(Data.StdMean, Data.StdSem, 1/4, X=double(Data.X), EdgeColors=[0.0000    0.7766    0.0000; 0.0000    0.0000    0.3531]);
 set(Lines, 'LineWidth', 2);
 ylabel(ax, 'Divergence', 'FontSize', 12);
-ax.YAxis(1).Color = [0.5, 0, 0.5];
+ax.YAxis(1).Color = [0    0.3883    0.1766];
 
 yyaxis(ax, 'right');
-behaviorColor = [0, 0.6809, 0];
+behaviorColor = [1.0000    0.4117    0.0892];
 BehaviorLines = MATLAB.Graphics.MultiShadowedLines(Data.BehaviorMean, Data.BehaviorSem, 1/4, X=double(Data.X), EdgeColors=behaviorColor);
 set(BehaviorLines, 'LineWidth', 2);
 ylabel(ax, 'Lick probability', 'FontSize', 12);

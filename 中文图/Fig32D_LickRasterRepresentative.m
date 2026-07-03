@@ -1,184 +1,157 @@
-﻿% Fig32D: 代表性训练日的舔水原始记录（Naive vs Transfer）
+﻿% 中文图32D：光水首个训练单元事件栅格（上下双tile）
 %
-% 横轴为时间[-1, 2]s，纵轴为试次序号，颜色为二值化舔水（0/1）。
-% 二值化方法：以[-3,0]s基线均值+2倍标准差为阈值，超过即判定为舔水。
-% 两张子图：Naive代表日 / Transfer代表日。
-% CD2取自ResampledTags，时间轴为TransferLearning.Xs。
+% Top:     Naive —— LAPureBehavior 每鼠首个光水训练单元
+% Bottom:  Continual —— ALPureBehavior 每鼠首个光水训练单元
+%
+% 数据源：ALPureBehavior / LAPureBehavior，Blocks.EventLog 列
+% 方法：   UniExp.TrialwiseEventPlot
 
-warning('off', 'backtrace');
-
-if ~exist('TransferLearning','class') || ~exist('UniExp.DataSet','class')
-	thisFile = mfilename('fullpath');
-	thisDir = fileparts(thisFile);
-	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
-	if exist(prjFile,'file')
-		matlab.project.loadProject(prjFile);
-	end
+if ~exist('UniExp.DataSet','class')
+    thisFile = mfilename('fullpath');
+    thisDir = fileparts(thisFile);
+    prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
+    if exist(prjFile,'file')
+        matlab.project.loadProject(prjFile);
+    end
 end
 
-%% 加载数据
-LAB = TransferLearning.LightAudioBaseline();  % Naive LightWater
-ALB = TransferLearning.AudioLightBaseline();  % Transfer LightWater
+%% --- 提取每鼠首个 LightWater 训练单元的 EventLog ---
+naiveELs = iCollectFirstLightWaterEventLogs(TransferLearning.LAPureBehavior(), "Naive");
+contELs  = iCollectFirstLightWaterEventLogs(TransferLearning.ALPureBehavior(), "Transfer");
 
-xs = TransferLearning.Xs;
-xsSec = seconds(xs);
+if isempty(naiveELs) && isempty(contELs)
+    error('Fig32D:EmptyData', 'No LightWater Naive or Transfer blocks found.');
+end
 
-% 显示窗口 [-1, 2]
-winMask = xsSec >= -1 & xsSec <= 2;
-xsWin = xsSec(winMask);
+fprintf('Naive: %d mice\n', numel(naiveELs));
+fprintf('Continual: %d mice\n', numel(contELs));
 
-%% 选择代表性会话
-% Naive: yqn0044, 2022-07-04 21:42, perf=0%（首次接触光水，无预期舔水）
-% Transfer: yqn0020, 2024-04-24 05:57, perf=83%（迁移首日，已有学习迁移）
+%% --- 绘图 ---
+marker  = categorical("灯光亮");
+tRange  = seconds([-5, 20]);
+exclude = categorical(["灯光灭","错失","给水"]);
 
-% 基线窗口 [-3, 0]
-blMask = xsSec >= -3 & xsSec < 0;
-
-[naiveMat, naiveBehav] = iExtractSessionCD2(LAB, "yqn0044", datetime(2022,7,4,21,42,0), winMask, blMask);
-[tranMat, tranBehav]   = iExtractSessionCD2(ALB, "yqn0020", datetime(2024,4,24,5,57,0), winMask, blMask);
-
-%% 作图
-f = figure('Color', 'w', 'Name', 'Fig32D LickRaster');
+f = figure('Color','w', 'Name','中文图32D LightWater first-block event raster');
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 8];  % 90mm x 80mm (高度40mm倍数 x2)
+f.Position(3:4) = [14, 12];
 f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0 0 9 8];
-f.PaperSize = [9 8];
+f.PaperPositionMode = 'auto';
 
-tl = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+layout = tiledlayout(f, 2, 1, 'TileSpacing','compact','Padding','tight');
 
-% 💡 at t=0, 💧 at t=1
-tLight = 0;
-tWater = 1;
-behaviorColors = TransferLearning.GroupColors(["Miss","Hit"]);
-lickColor = TransferLearning.ColorB;
+% --- Top: Naive ---
+axTop = nexttile(layout, 1);
+legendDataTop = [];
+if ~isempty(naiveELs)
+    hold(axTop, 'on');
+    for iM = 1:numel(naiveELs)
+        lt = UniExp.TrialwiseEventPlot(naiveELs{iM}, marker, tRange, ExcludedEvents=exclude);
+        if iM == 1
+            legendDataTop = lt;
+        end
+    end
+    hold(axTop, 'off');
+    delete(findobj(axTop, 'Type', 'Legend'));
+    if ~isempty(legendDataTop)
+        lg = legend(axTop, legendDataTop.Scatter, string(legendDataTop.Event), 'Location', 'best');
+        lg.Box = 'off';
+        lg.AutoUpdate = 'off';
+    end
+    title(axTop, sprintf('Naive (n=%d mice)', numel(naiveELs)), 'FontSize', 8, 'FontWeight', 'normal');
+    axTop.XAxis.Visible = 'off';
+else
+    title(axTop, 'Naive — no data', 'FontSize', 8, 'FontWeight', 'normal');
+end
+box(axTop,'off');
 
-% --- Naive ---
-ax1 = nexttile(tl, 1);
-imagesc(ax1, xsWin, 1:size(naiveMat,1), naiveMat);
-hold(ax1, 'on');
-xline(ax1, tLight, '--', 'LineWidth', 2);
-xline(ax1, tWater, '--', 'LineWidth', 2);
-ax1.YDir = 'reverse';
-ax1.FontSize = 12;
-ax1.LineWidth = 2;
-title(ax1, 'Naive', 'FontSize', 12, 'FontWeight', 'normal');
-iReplaceTickWithEmoji(ax1, tLight, '💡', tWater, '💧');
-box(ax1, 'off');
+% --- Bottom: Continual ---
+axBot = nexttile(layout, 2);
+legendDataBot = [];
+if ~isempty(contELs)
+    hold(axBot, 'on');
+    for iM = 1:numel(contELs)
+        lt = UniExp.TrialwiseEventPlot(contELs{iM}, marker, tRange, ExcludedEvents=exclude);
+        if iM == 1
+            legendDataBot = lt;
+        end
+    end
+    hold(axBot, 'off');
+    delete(findobj(axBot, 'Type', 'Legend'));
+    if ~isempty(legendDataBot)
+        lg = legend(axBot, legendDataBot.Scatter, string(legendDataBot.Event), 'Location', 'best');
+        lg.Box = 'off';
+        lg.AutoUpdate = 'off';
+    end
+    title(axBot, sprintf('Continual (n=%d mice)', numel(contELs)), 'FontSize', 8, 'FontWeight', 'normal');
+else
+    title(axBot, 'Continual — no data', 'FontSize', 8, 'FontWeight', 'normal');
+end
+box(axBot,'off');
 
-% 在右侧标注Hit/Miss色带
-iDrawBehaviorStrip(ax1, naiveBehav, xsWin, behaviorColors);
+xlabel(axBot, 'Time (s)', 'FontSize', 8);
+ylabel(layout, 'Trial', 'FontSize', 8);
 
-% --- Transfer ---
-ax2 = nexttile(tl, 2);
-imagesc(ax2, xsWin, 1:size(tranMat,1), tranMat);
-hold(ax2, 'on');
-xline(ax2, tLight, '--', 'LineWidth', 2);
-xline(ax2, tWater, '--', 'LineWidth', 2);
-ax2.YDir = 'reverse';
-ax2.FontSize = 12;
-ax2.LineWidth = 2;
-xlabel(ax2, 'Time (s)', 'FontSize', 12);
-ylabel(tl, 'Trial', 'FontSize', 12);
-title(ax2, 'Continual', 'FontSize', 12, 'FontWeight', 'normal');
-iReplaceTickWithEmoji(ax2, tLight, '💡', tWater, '💧');
-box(ax2, 'off');
+%% --- 导出（跳过 ScatterAxPadding，因 duration 类型不受支持）---
+TransferLearning.Style.ApplyStandardFigureStyle(f, 2);
+svgPath = TransferLearning.StandardFigureSvgPath('中文图Fig32D_LickRasterAllMice.svg');
+print(f, svgPath, '-dsvg');
+fprintf('Wrote: %s\n', svgPath);
 
-iDrawBehaviorStrip(ax2, tranBehav, xsWin, behaviorColors);
+%% ========== 子函数 ==========
 
-% 使用二值colormap: 白=0(无舔), 有色=1(舔水)
-cmap2 = [1 1 1; lickColor];
-colormap(ax1, cmap2);
-colormap(ax2, cmap2);
-clim(ax1, [0 1]);
-clim(ax2, [0 1]);
+function eventLogs = iCollectFirstLightWaterEventLogs(DS, phaseName)
+% 返回 cell array，每个 cell 是一只鼠首个指定 phase 光水 block 的 EventLog timetable
+eventLogs = {};
+if isempty(DS), return; end
 
-% 图例：用一个隐藏的patch在ax1上标注
-pLick = patch(ax1, NaN, NaN, cmap2(2,:), 'EdgeColor', 'none', 'DisplayName', 'Lick');
-lg = legend(ax1, pLick, 'Location', 'northwest');
-lg.FontSize = 12;
-lg.Box = 'off';
+lw = DS.Blocks(string(DS.Blocks.Design) == "LightWater", :);
+if isempty(lw), return; end
 
-%% 导出
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig32D_LickRaster.svg');
-fprintf('Saved SVG: %s\n', svgPath);
+dt = DS.DateTimes(:, {'DateTime','Mouse','Phase'});
+dt.DateTime = iNormDT(datetime(dt.DateTime));
+dt.Mouse = string(dt.Mouse);
+dt.Phase   = string(dt.Phase);
 
-%% === 辅助函数 ===
+lw.DateTime = iNormDT(datetime(lw.DateTime));
+lw = innerjoin(lw, dt, 'Keys','DateTime');
+phaseRows  = lw(string(lw.Phase) == string(phaseName), :);
+if isempty(phaseRows), return; end
 
-function [mat, behav] = iExtractSessionCD2(DS, mouseName, targetDT, winMask, blMask)
-% 提取指定鼠指定会话的LightWater试次CD2，二值化后返回 nTrials x nTimeBins 矩阵
-% 二值化：基线均值(每试次[-3,0]s) + 1倍全Block CD2标准差
-mouseName = string(mouseName);
-blks = DS.Blocks;
-blks.BlockUID = uint64(blks.BlockUID);
-blks.DateTime = datetime(blks.DateTime);
-if ~isempty(blks.DateTime.TimeZone); blks.DateTime.TimeZone = ''; end
-
-% 找到目标DateTime对应的Block
-sessBlks = blks(blks.DateTime == targetDT, :);
-if isempty(sessBlks)
-	error('Session not found: %s @ %s', mouseName, char(targetDT));
+mice = unique(string(phaseRows.Mouse), 'stable');
+for iM = 1:numel(mice)
+    m = mice(iM);
+    rows = phaseRows(string(phaseRows.Mouse) == m, :);
+    rows = sortrows(rows, 'DateTime');
+    firstRow = rows(1, :);
+    el = firstRow.EventLog{1};
+    if isempty(el), continue; end
+    % 确保 Event 是 categorical
+    if ~iscategorical(el.Event)
+        el.Event = categorical(string(el.Event));
+    end
+    % 确保 Time 是 duration
+    if ~isduration(el.Time)
+        el.Time = seconds(el.Time);
+    end
+    eventLogs{end+1} = el; %#ok<AGROW>
+end
+% 统一所有 EventLog 的 categorical 类别集合，避免 ismember 报错
+if ~isempty(eventLogs)
+    allCats = categorical.empty(0,1);
+    for k = 1:numel(eventLogs)
+        allCats = [allCats; eventLogs{k}.Event];
+    end
+    catSet = categories(allCats);
+    for k = 1:numel(eventLogs)
+        eventLogs{k}.Event = categorical(string(eventLogs{k}.Event), catSet);
+    end
+end
 end
 
-% 计算全Block CD2的std
-blockStds = nan(height(sessBlks), 1);
-for iB = 1:height(sessBlks)
-	bt = sessBlks.BlockTags{iB};
-	blockStds(iB) = double(std(bt.CD2));
-end
-blockSD = mean(blockStds);  % 若多个block取均值
-
-tr = DS.Trials;
-tr.BlockUID = uint64(tr.BlockUID);
-
-% 筛选该session的LightWater试次
-mask = ismember(tr.BlockUID, sessBlks.BlockUID) & string(tr.Stimulus) == "LightWater";
-sessTr = tr(mask, :);
-sessTr = sortrows(sessTr, 'TrialIndex');
-
-nTrials = height(sessTr);
-nBins = sum(winMask);
-mat = nan(nTrials, nBins);
-
-rt = sessTr.ResampledTags;
-for i = 1:nTrials
-	cd2 = rt{i}.CD2;
-	bl = cd2(blMask);
-	thresh = mean(bl) + blockSD;
-	binarized = double(cd2 > thresh);
-	mat(i, :) = binarized(winMask);
-end
-
-behav = double(sessTr.Behavior);
-end
-
-
-
-function iReplaceTickWithEmoji(ax, t1, emoji1, t2, emoji2)
-% 保留默认XTick，只把对应位置的label替换为emoji
-ticks = ax.XTick;
-labels = string(ax.XTickLabel);
-for i = 1:numel(ticks)
-	if abs(ticks(i) - t1) < 1e-10
-		labels(i) = emoji1;
-	elseif abs(ticks(i) - t2) < 1e-10
-		labels(i) = emoji2;
-	end
-end
-ax.XTickLabel = labels;
-end
-
-function iDrawBehaviorStrip(ax, behav, xsWin, behaviorColors)
-% 在热图右侧画一条细的Hit/Miss色带
-stripX = xsWin(end) + diff(xsWin(1:2)) * 1.5;
-stripW = diff(xsWin(1:2)) * 2;
-for i = 1:numel(behav)
-	if behav(i) == 1
-		clr = behaviorColors(2,:);
-	else
-		clr = behaviorColors(1,:);
-	end
-	rectangle(ax, 'Position', [stripX, i-0.5, stripW, 1], 'FaceColor', clr, 'EdgeColor', 'none');
+function dt = iNormDT(dt)
+dt = datetime(dt);
+try
+    if ~isempty(dt.TimeZone), dt.TimeZone = ''; end
+catch
 end
 end

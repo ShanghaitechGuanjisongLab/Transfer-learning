@@ -42,7 +42,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 2;
 end
 
-cols = TransferLearning.GroupColors(["RSPd", "MOp"]);
+cols = [TransferLearning.ColorA;TransferLearning.ColorB];
 meanCells = {meanRSP(:), meanMOp(:)};
 semCells  = {semRSP(:),  semMOp(:)};
 

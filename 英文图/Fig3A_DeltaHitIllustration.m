@@ -1,4 +1,4 @@
-﻿% 英文图3A：ΔHit 示意图
+% 英文图3A：ΔHit 示意图
 %
 % 取 Transfer cohort (AudioLightBaseline) 中一只代表性鼠的 LightWater 学习曲线，
 % 在图上标注两个相邻会话之间的行为增量 ΔHit。
@@ -86,7 +86,7 @@ grid(ax, 'off');
 ax.FontSize = 6;
 
 % Learning curve (no markers on line — annotation scatter provides them)
-standardColors = TransferLearning.GroupColors(["Naive", "Continual", "Learned"]);
+standardColors =  [0.0017    0.3805    0.0000;0.5414    0.0000    0.8231;0.0017    0.3805    0.0000];
 plot(ax, xSess, yPerf, '-', ...
 	'Color', standardColors(2,:), ...
 	'LineWidth', 1);

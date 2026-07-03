@@ -69,8 +69,7 @@ fig.PaperUnits = 'centimeters';
 fig.PaperSize = [12, 8];
 fig.PaperPositionMode = 'auto';
 
-curveColors = TransferLearning.GroupColors(displayGroup);
-curveColors(1,:) = TransferLearning.ContinualColor;
+curveColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
 axisHandle = axes(fig);
 hold(axisHandle, 'on');
 hControl = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFitCurve, meanMatOut(:,1), semMatOut(:,1), controlFitCurvePlot, curveColors(1, :));

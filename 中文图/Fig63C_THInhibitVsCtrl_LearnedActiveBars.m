@@ -32,7 +32,7 @@ layoutTitle.FontName = 'Segoe UI Emoji';
 
 axTop = nexttile(layout, 1);
 [~, optLate, barsLate, ebLate] = UniExp.BarScatterCompare({Data.Ctrl.LateMean(:), Data.TH.LateMean(:)}, compareGroup, AsteriskThreshold=0.05, CapSize=0.5);
-iStyleTile(axTop, barsLate, ebLate, {'', ''}, '1~3 s', 'z-score');
+iStyleTile(axTop, barsLate, ebLate, {'Ctrl', 'TH'}, '1~3 s', 'z-score');
 TransferLearning.Style.SetBarPValues(optLate);
 fprintf('=== 6.3C top (1~3s z-score): %s ===\n', TransferLearning.Style.iFormatPText(optLate.MultiCompare.PValue(1)));
 iRetunePValues(optLate);

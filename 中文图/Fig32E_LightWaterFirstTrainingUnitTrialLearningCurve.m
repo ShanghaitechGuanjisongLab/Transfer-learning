@@ -1,4 +1,4 @@
-﻿% Fig32E：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
+% Fig32E：光水初始/迁移首个训练单元的单试次学习曲线 + 首试次条形图
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
