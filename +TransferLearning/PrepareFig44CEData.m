@@ -8,7 +8,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 xs = TransferLearning.Xs;
 if ~isduration(xs)
 	xs = seconds(xs);

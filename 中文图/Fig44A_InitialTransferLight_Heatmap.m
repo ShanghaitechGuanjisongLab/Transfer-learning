@@ -1,4 +1,4 @@
-﻿% 中文图44A：初始光水与迁移光水双泳道热图（全细胞，不做对齐、不做筛选）
+% 中文图44A：初始光水与迁移光水双泳道热图（全细胞，不做对齐、不做筛选）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -56,7 +56,7 @@ f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
 f.PaperSize = [9, 8];
 
-L = tiledlayout(f, 1, 2, 'TileSpacing', 'none', 'Padding', 'tight');
+L = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 laneData = {XInitialPlot, XTransferPlot};
 [~, Axes] = UniExp.LanearHeatmap( ...
@@ -79,8 +79,7 @@ for ax = axesAll
 	ax.TickDir = 'in';
 	ax.YTick = [];
 	ax.YTickLabel = {};
-	ax.XTick = [0 1];
-	ax.XTickLabel = {"💡", "💧"};
+	ax.XTickLabel(ismember(ax.XTick , [0 1])) = {'💡', '💧'};
 	xline(ax, 0, '--k', 'LineWidth', 2);
 	xline(ax, 1, '--k', 'LineWidth', 2);
 	box(ax, 'on');

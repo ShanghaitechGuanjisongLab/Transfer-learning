@@ -58,6 +58,7 @@ trialRows = sortrows(trialRows, ["Group","Mouse","DateTime","Trial"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(trialRows, 'Behavior', 'Trial', 'Group', 'Mouse');
 trials7 = trialRows(trialRows.Trial <= 7, :);
 groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(trials7, 'Behavior', 'Trial', 'Group', 'Mouse');
+%% 
 
 f = figure('Color','w', 'Name', 'Fig32E LightWater first training-unit trial curve');
 f.Units = 'centimeters';
@@ -71,8 +72,7 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 hold(ax,'on');
 
-displayGroups = ["Naive","Continual"];
-edgeColors = TransferLearning.GroupColors(displayGroups);
+edgeColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -93,8 +93,7 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-starStr = TransferLearning.Style.iFormatPText(groupP7);
-text(ax, 4, textY, starStr, ...
+text(ax, 4, textY, '＊', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));

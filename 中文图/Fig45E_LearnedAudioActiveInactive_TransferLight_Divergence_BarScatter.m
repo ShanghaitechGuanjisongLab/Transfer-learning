@@ -116,7 +116,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 6,8];
 f.PaperSize = [6,8];
 
-palette2 = TransferLearning.GroupColors(["Active", "Inactive"]);
+palette2 = [TransferLearning.ColorA;TransferLearning.ColorB];
 Stats = table(layerLabels, nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), nan(numel(layers), 1), ...
 	'VariableNames', {'Layer','MeanActive','MeanInactive','PValue','NMouse','NCellActive','NCellInactive'});
 layerData = cell(numel(layers), 2);

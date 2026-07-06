@@ -14,20 +14,17 @@ if ~isduration(xs)
 	xs = seconds(xs);
 end
 xsSec = seconds(xs);
-[idx0s, ok0s] = iFindTimeIndex(xsSec, 0, 0.25);
-if ~ok0s
-	error('Cannot find sample close to 0s.');
-end
-xMask = (xsSec >= 0) & (xsSec <= 2);
-xsPlot = xsSec(xMask);
+xMask   = (xsSec >= -1) & (xsSec <= 2);
+blMask  = (xsSec >= -1) & (xsSec  < 0);
+xsPlot  = xsSec(xMask);
 
 [GInitial, initialStats] = iQueryInitialLightAll();
 [GTransfer, transferStats] = iQueryTransferLightAll();
 XInitial = iGetNtats2D(GInitial);
 XTransfer = iGetNtats2D(GTransfer);
 
-XInitial = iZeroAnchorZScore(XInitial, idx0s);
-XTransfer = iZeroAnchorZScore(XTransfer, idx0s);
+XInitial = XInitial - mean(XInitial(:, blMask), 2, 'omitnan');
+XTransfer = XTransfer - mean(XTransfer(:, blMask), 2, 'omitnan');
 
 XInitial = XInitial(:, xMask);
 XTransfer = XTransfer(:, xMask);
@@ -52,7 +49,7 @@ ax.LineWidth = 2;
 ax.XAxis.LineWidth = 2;
 ax.YAxis.LineWidth = 2;
 
-lineColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+lineColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Y, E, 0.2, ...
 	X=repmat(xsPlot(:), 1, 2), ...
@@ -69,8 +66,16 @@ box(ax, 'off');
 grid(ax, 'off');
 xlabel(ax, 'Time', 'FontSize', 12);
 ylabel(ax, 'z-score', 'FontSize', 12);
-ax.XTick = [0 1];
-ax.XTickLabel = {"💡", "💧"};
+ticks = ax.XTick;
+labels = string(ax.XTickLabel);
+for i = 1:numel(ticks)
+	if abs(ticks(i)) < 1e-10
+		labels(i) = "💡";
+	elseif abs(ticks(i) - 1) < 1e-10
+		labels(i) = "💧";
+	end
+end
+ax.XTickLabel = labels;
 
 lg = legend(Patches, ["Naive", "Continual"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box', 'off');
 lg.FontSize = 12;
@@ -169,10 +174,6 @@ for iGroup = 1:numel(groupTables)
 end
 mouseNames = unique(mouseNames(~ismissing(mouseNames) & strlength(mouseNames) > 0), 'stable');
 stats = struct('MouseCount', numel(mouseNames), 'CellCount', cellCount, 'MouseNames', mouseNames);
-end
-
-function X = iZeroAnchorZScore(X, idx0s)
-X = X - X(:, idx0s);
 end
 
 function X = iGetNtats2D(G)

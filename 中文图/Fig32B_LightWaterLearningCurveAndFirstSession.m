@@ -67,7 +67,7 @@ end
 hold(ax,'on');
 
 displayGroups = ["Naive","Continual"];
-edgeColors = TransferLearning.GroupColors(displayGroups);
+edgeColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 cueTitleColor = TransferLearning.ColorB;
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
@@ -105,12 +105,10 @@ lg.FontSize = 12;
 lg.Box = 'off';
 lg.Title.String = '💡💧';
 lg.Title.FontSize = 12;
-lg.Title.Color = cueTitleColor;
 
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 box(ax, 'off');
-ax.XTick = 1;
 grid(ax, 'off');
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
