@@ -51,13 +51,6 @@ f.PaperSize = [3, 4];
 
 ax = axes(f);
 hold(ax,'on');
-try
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-		ax.Toolbar.Visible = 'off';
-	end
-catch
-end
-ax.LineWidth = 1;
 
 rho = NaN;
 p = NaN;
@@ -67,45 +60,33 @@ end
 fprintf('Spearman ρ = %.4f (n = %d)\n', rho, nnz(mask));
 
 % 散点：空心圆，边框0.2
-scatterColor = TransferLearning.ColorA;
-fitColor = TransferLearning.ColorB;
-scatter(ax, x(mask), y(mask), 5, scatterColor, 'LineWidth', 0.2);
+scatterColor = TransferLearning.ContinualColor;
+fitColor = TransferLearning.ContinualColor;
+scatter(ax, x(mask), y(mask), 5, scatterColor);
 
-% 拟合线：实线
+% 拟合线：实线，打特殊标签供 ExportStandardFigure 减半宽度 & 淡化颜色
 if nnz(mask) >= 2 && std(x(mask)) > 0
 	pFit = polyfit(x(mask), y(mask), 1);
 	xFit = [min(x(mask)) max(x(mask))];
 	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', fitColor);
+	plot(ax, xFit, yFit, '-', 'Color', fitColor, 'Tag', 'TransferLearningSupplementalLine');
 end
 grid(ax,'off');
 box(ax,'off');
-ax.FontSize = 6;
-ax.FontName = 'Segoe UI Emoji';
-xlabel(ax, 'Reactivation', 'FontSize', 6);
-ylabel(ax, 'Hit rate', 'FontSize', 6);
-title(ax, '💡💧', 'FontSize', 6, 'FontWeight', 'normal');
+xlabel(ax, '🔊 learned cells reactivation');
+ylabel(ax, '💡💧 hit rate');
 
-if isfinite(p)
+if isfinite(p) && isfinite(rho)
 	if p < 0.001
-		pLabel = 'p < 0.001';
-	elseif p < 0.01
-		pLabel = sprintf('p = %.3f', p);
+		labelStr = sprintf('Spear. ρ = %.2f\np < 0.001', rho);
 	else
-		pLabel = sprintf('p = %.2f', p);
+		labelStr = sprintf('Spear. ρ = %.2f\np = %.3f', rho, p);
 	end
-	text(ax, 0.95, 0.95, pLabel, 'Units','normalized', ...
-		'HorizontalAlignment','right', 'VerticalAlignment','top', 'FontSize', 6, 'FontWeight', 'bold');
+	text(ax, 0.95, 0.05, labelStr, 'Units','normalized', ...
+		'HorizontalAlignment','right', 'VerticalAlignment','bottom');
 end
 
 % Export
-try
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-	if ~isfolder(outDirUNC)
-		mkdir(outDirUNC);
-	end
-catch
-end
 
 svgName = "English_Fig1K_ReactivationVsHitRate.svg";
 try

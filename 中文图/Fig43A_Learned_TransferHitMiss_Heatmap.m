@@ -1,4 +1,4 @@
-﻿% 中文图331A：声水学会、光水迁移命中/错失三列热图
+% 中文图331A：声水学会、光水迁移命中/错失三列热图
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -63,13 +63,9 @@ end
 
 X = X(activeMask, :, :);
 
-vLearn1s = squeeze(X(:, idx1s, 1));
-vHit1s = squeeze(X(:, idx1s, 2));
-sortKey = min(vLearn1s, vHit1s);
-sortKey(~(isfinite(vLearn1s) & isfinite(vHit1s))) = -inf;
-[~, sortIdx] = sort(sortKey, 'descend');
+X = UniExp.HeatmapSort(X);
 
-laneData = X(sortIdx, xMask, :);
+laneData = X(:, xMask, :);
 
 negV = min(laneData, [], 'all', 'omitnan');
 posV = max(laneData, [], 'all', 'omitnan');
@@ -87,7 +83,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 9, 8];
 f.PaperSize = [9, 8];
 
-Layout = tiledlayout(f, 1, 3, 'TileSpacing', 'none', 'Padding', 'tight');
+Layout = tiledlayout(f, 1, 3, 'TileSpacing', 'tight', 'Padding', 'tight');
 subTitles = ["Learned", "Hit", "Miss"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
@@ -99,42 +95,25 @@ subTitles = ["Learned", "Hit", "Miss"];
 	ImagescStyle={'XData', [xsPlot(1), xsPlot(end)]}, ...
 	LMHColor=[TransferLearning.HeatmapNegative; 1,1,1; TransferLearning.HeatmapPositive]);
 
-xlabel(Layout, 'Time', 'FontSize', 12);
-ylabel(Layout, sprintf('%u active cells', uint32(size(laneData, 1))), 'FontSize', 12);
+xlabel(Layout, 'Time');
+% ylabel(Layout, sprintf('%u active cells', size(laneData, 1)));
 
 CB = colorbar;
 CB.Layout.Tile = 'east';
 CB.Label.String = 'z-score';
-CB.FontSize = 12;
-CB.Label.FontSize = 12;
 CB.Box = 'off';
 
 for iA = 1:numel(Axes)
 	A = Axes(iA);
-	if ~isgraphics(A)
-		continue;
-	end
-	A.FontSize = 12;
-	A.FontName = 'Segoe UI Emoji';
-	xline(A, 0, '--', 'LineWidth', 2);
-	xline(A, 1, '--', 'LineWidth', 2);
+	xline(A, 0, '--');
+	xline(A, 1, '--');
+	Logical=ismember(A.XTick,[0,1]);
 	if iA == 1
-		A.XTick = [0 1];
-		A.XTickLabel = {"🔊", "💧"};
+		A.XTickLabel(Logical) = {"🔊", "💧"};
 	else
-		A.XTick = [0 1];
-		A.XTickLabel = {"💡", "💧"};
+		A.XTickLabel(Logical) = {"💡", "💧"};
 	end
 	A.TickDir = 'in';
-	A.LineWidth = 2;
-	box(A, 'on');
-	if isprop(A, 'Title') && isgraphics(A.Title)
-		A.Title.FontName = 'Segoe UI Emoji';
-		A.Title.FontSize = 12;
-	end
-	if isprop(A, 'Toolbar') && ~isempty(A.Toolbar)
-		A.Toolbar.Visible = 'off';
-	end
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
@@ -147,12 +126,6 @@ svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig43A sample counts ===\n');
 disp(sampleCounts);
-
-assignin('base', 'Fig43A_ActiveMask', activeMask);
-assignin('base', 'Fig43A_ActiveCellUID', activeCellUID);
-assignin('base', 'Fig43A_SortIdx', sortIdx);
-assignin('base', 'Fig43A_SortKey_Min1s', sortKey);
-assignin('base', 'Fig43A_SampleCounts', sampleCounts);
 
 function X = iGetNtats3D(S)
 if istable(S)

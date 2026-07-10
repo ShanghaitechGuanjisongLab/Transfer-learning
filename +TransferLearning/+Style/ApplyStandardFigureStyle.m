@@ -8,7 +8,7 @@ end
 fontSize = 6 * Scale;
 axisLineWidth = 0.5 * Scale;
 otherLineWidth = 1 * Scale;
-scatterSize = 4 * Scale*Scale;
+scatterSize = 5 * Scale*Scale;
 
 iSetAllFontSizes(Fig, fontSize);
 iSetLegendBoxesOff(Fig);
@@ -21,6 +21,7 @@ end
 iSetAxisLineWidths(Fig, axisLineWidth);
 iSetConstantLineWidths(Fig, axisLineWidth);
 iSetBarBaseLineWidths(Fig, Scale);
+iStyleSupplementalLines(Fig);
 end
 
 function iSetAllFontSizes(Fig, fontSize)
@@ -191,6 +192,19 @@ for barIndex = 1:numel(barHandles)
 	barHandle = barHandles(barIndex);
 	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
 		barHandle.BaseLine.LineWidth = 0.5 * Scale;
+	end
+end
+end
+
+function iStyleSupplementalLines(Fig)
+handles = findall(Fig, 'Tag', 'TransferLearningSupplementalLine');
+for iH = 1:numel(handles)
+	h = handles(iH);
+	if isprop(h, 'LineWidth')
+		h.LineWidth = h.LineWidth / 2;
+	end
+	if isprop(h, 'Color')
+		h.Color = (h.Color + [1, 1, 1]) / 2;
 	end
 end
 end

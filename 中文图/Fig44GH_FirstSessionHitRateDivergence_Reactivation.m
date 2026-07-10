@@ -28,18 +28,15 @@ if isempty(reactivationTable)
 end
 divergenceH = iBuildTransferDivergenceTable(ALB, string(reactivationTable.Mouse), reactivationTable.DateTimeTransfer, idx0, idx1s);
 dataH = outerjoin(reactivationTable(:, {'Mouse','DateTimeTransfer','Reactivation'}), divergenceH, 'Keys', 'Mouse', 'MergeKeys', true, 'Type', 'left');
+%% 
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 colorNaive = groupColors(1, :);
 colorContinual = groupColors(2, :);
 
 f = figure('Color', 'w', 'Name', 'Chinese Fig44GH divergence correlations');
 f.Units = 'centimeters';
-f.Position(3:4) = [12.4, 8];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 12.4, 8];
-f.PaperSize = [12.4, 8];
+f.Position(3:4) = [17, 8];
 
 layout = tiledlayout(f, 1, 2, 'TileSpacing','loose', 'Padding', 'tight');
 
@@ -48,13 +45,8 @@ statsG = iPlotFirstSessionHitRateVsDivergence(axG, dataG, colorNaive, colorConti
 
 axH = nexttile(layout, 2);
 statsH = iPlotReactivationVsDivergence(axH, dataH, colorContinual);
-
-for axItem = [axG, axH]
-	if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar)
-		axItem.Toolbar.Visible = 'off';
-	end
-end
-
+xlabel(layout,'1s divergence');
+title(layout,'Continual 💡💧 first block');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44GH_FirstSessionHitRateDivergence_Reactivation.svg');
 fprintf('Wrote: %s\n', svgPath);
 
@@ -64,12 +56,6 @@ fprintf('Continual mice: %d\n', statsG.NContinual);
 fprintf('Spearman rho=%.3f, p=%.4g\n', statsG.Rho, statsG.PValue);
 fprintf('\n=== Fig44GH / panel H ===\n');
 fprintf('n=%d, rho=%.3f, p=%.4g\n', statsH.N, statsH.Rho, statsH.PValue);
-
-assignin('base', 'Fig44GH_FirstSessionData', dataG);
-assignin('base', 'Fig44GH_FirstSessionStats', statsG);
-assignin('base', 'Fig44GH_ReactivationData', dataH);
-assignin('base', 'Fig44GH_ReactivationStats', statsH);
-
 function stats = iPlotFirstSessionHitRateVsDivergence(ax, Data, colorNaive, colorContinual)
 use = isfinite(Data.Divergence) & isfinite(Data.HitRate);
 if nnz(use) < 3
@@ -90,19 +76,17 @@ hold(ax, 'on');
 box(ax, 'off');
 ax.FontSize = 12;
 ax.LineWidth = 2;
-hNaive = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), 5, colorNaive, 'o', 'filled', 'LineWidth', 0.2);
-hContinual = scatter(ax, Data.Divergence(maskContinual), Data.HitRate(maskContinual), 5, colorContinual, 'o', 'filled', 'LineWidth', 0.2);
+hNaive = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), 5, colorNaive, 'o');
+hContinual = scatter(ax, Data.Divergence(maskContinual), Data.HitRate(maskContinual), 5, colorContinual, 'o');
 fitP = polyfit(xAll, yAll, 1);
 xFit = [min(xAll), max(xAll)];
 yFit = polyval(fitP, xFit);
-plot(ax, xFit, yFit, '-', 'Color', 'k', 'LineWidth', 2);
-xlabel(ax, 'Divergence', 'FontSize', 12);
-ylabel(ax, 'First block hit rate', 'FontSize', 12);
-legendHandle = legend(ax, [hNaive, hContinual], {'Naive', 'Continual'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
-legendHandle.FontSize = 12;
-legendHandle.Box = 'off';
-iText(ax, 0.97, 0.97, iPLabel(pValue), 'Units', 'normalized', ...
-	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
+plot(ax, xFit, yFit, '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine');
+    ylabel(ax, '💡💧 first block hit rate');
+    legendHandle = legend(ax, [hNaive, hContinual], {'Naive', 'Continual'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
+    legendHandle.FontSize = 12;
+    legendHandle.Box = 'off';
+    iSLabel(ax, 0.97, 0.97, rho, pValue);
 grid(ax, 'off');
 
 stats = table("G", rho, pValue, nnz(maskNaive), nnz(maskContinual), ...
@@ -121,23 +105,21 @@ hold(ax, 'on');
 box(ax, 'off');
 ax.FontSize = 12;
 ax.LineWidth = 2;
-scatter(ax, x(use), y(use), 5, dotColor, 'o', 'filled', 'LineWidth', 0.2);
+scatter(ax, x(use), y(use), 5, dotColor, 'o');
 if nnz(use) >= 2 && std(x(use)) > 0
 	fitP = polyfit(x(use), y(use), 1);
 	xFit = [min(x(use)), max(x(use))];
 	yFit = polyval(fitP, xFit);
-	plot(ax, xFit, yFit, '-', 'Color', 'k', 'LineWidth', 2);
-end
-if std(x(use)) > 0 && std(y(use)) > 0
-	[rho, pValue] = corr(x(use), y(use), 'Type', 'Spearman');
-else
-	rho = NaN;
-	pValue = NaN;
-end
-xlabel(ax, 'Divergence', 'FontSize', 12);
-ylabel(ax, 'Reactivation', 'FontSize', 12);
-iText(ax, 0.97, 0.97, iPLabel(pValue), 'Units', 'normalized', ...
-	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
+plot(ax, xFit, yFit, '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine');
+   end
+   if std(x(use)) > 0 && std(y(use)) > 0
+   	[rho, pValue] = corr(x(use), y(use), 'Type', 'Spearman');
+   else
+   	rho = NaN;
+   	pValue = NaN;
+   end
+   ylabel(ax, 'Reactivation of 🔊 cells');
+   iSLabel(ax, 0.97, 0.97, rho, pValue);
 grid(ax, 'off');
 
 stats = table("H", rho, pValue, nnz(use), 'VariableNames', {'Panel','Rho','PValue','N'});
@@ -484,18 +466,17 @@ function [idx, ok] = iFindTimeIndex(xsSec, targetSec, tolSec)
 ok = isfinite(distance) && (distance <= tolSec);
 end
 
-function txt = iPLabel(pValue)
+function iSLabel(ax, x, y, rho, pValue)
 if ~isfinite(pValue)
-	txt = 'p = NaN';
+	pStr = 'p = NaN';
 elseif pValue < 0.001
-	txt = 'p < 0.001';
+	pStr = 'p < 0.001';
 elseif pValue < 0.01
-	txt = sprintf('p = %.3f', pValue);
+	pStr = sprintf('p = %.3f', pValue);
 else
-	txt = sprintf('p = %.2f', pValue);
+	pStr = sprintf('p = %.2f', pValue);
 end
-end
-
-function h = iText(varargin)
-h = builtin('text', varargin{:});
+labelStr = sprintf('Spearman ρ = %.2f\n%s', rho, pStr);
+text(ax, x, y, labelStr, 'Units', 'normalized', ...
+	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
 end

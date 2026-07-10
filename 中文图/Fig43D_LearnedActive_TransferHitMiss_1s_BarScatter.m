@@ -71,29 +71,23 @@ CompareGroup = table(["Hit", "Miss"], 'VariableNames', {'GroupPair'});
 iTagPValueObjects(optional);
 TransferLearning.Style.SetBarPValues(optional);
 ax = gca;
-ax.FontSize = 6;
-ax.FontName = 'Segoe UI Emoji';
-ax.LineWidth = 1;
 if isprop(ax.XAxis, 'LineWidth')
 	ax.XAxis.LineWidth = 1;
 	ax.YAxis.LineWidth = 1;
 end
-ylabel(ax, 'z-score');
+ylabel(ax, '1s z-score');
 ax.XTickLabel = {'Hit', 'Miss'};
+xlabel('💡💧');
 box(ax, 'off');
 grid(ax, 'off');
 
-hitMissColors = TransferLearning.GroupColors(["Hit", "Miss"]);
+hitMissColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
 colorHit = hitMissColors(1, :);
 colorMiss = hitMissColors(2, :);
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorHit; colorMiss];
-	Bars.BarWidth = 0.5;
-	Bars.LineWidth = 1;
-	Bars.BaseLine.LineWidth = 1;
 	Bars.EdgeColor = 'none';
-	Bars.FaceAlpha = 1;
 else
 	for ib = 1:numel(Bars)
 		if ib == 1
@@ -101,27 +95,13 @@ else
 		else
 			Bars(ib).FaceColor = colorMiss;
 		end
-		Bars(ib).FaceAlpha = 1;
-		Bars(ib).BarWidth = 0.5;
-		Bars(ib).LineWidth = 1;
-		Bars(ib).BaseLine.LineWidth = 1;
 		Bars(ib).EdgeColor = 'none';
 	end
 	end
 iStyleErrorBars(EB, hitMissColors);
-for ln = findobj(ax, 'Type', 'Line')'
-	ln.LineWidth = 1;
-end
 
 scatters = findobj(ax, 'Type', 'Scatter');
 for is = 1:numel(scatters)
-	scatters(is).LineWidth = 0.2;
-	if isprop(scatters(is), 'MarkerEdgeAlpha')
-		scatters(is).MarkerEdgeAlpha = 0.5;
-	end
-	if isprop(scatters(is), 'MarkerFaceAlpha')
-		scatters(is).MarkerFaceAlpha = 0.6;
-	end
 	xMean = mean(double(scatters(is).XData), 'omitnan');
 	if xMean < 1.5
 		scatters(is).MarkerFaceColor = colorHit;
@@ -132,36 +112,14 @@ for is = 1:numel(scatters)
 	end
 end
 
-allText = findall(f, 'Type', 'Text');
-for it = 1:numel(allText)
-	allText(it).FontSize = 6;
-end
-
-allAxes = findall(f, 'Type', 'Axes');
-for ia = 1:numel(allAxes)
-	allAxes(ia).FontSize = 6;
-end
-
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
-
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-if ~isfolder(outDirUNC)
-	mkdir(outDirUNC);
-end
-
 svgPath = '中文图Fig43D_LearnedActive_TransferHitMiss_1s_BarScatter.svg';
-title("🔊💧"+newline+"active cells");
+title("🔊 learned"+newline+"active cells");
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig43D sample counts ===\n');
 disp(sampleCounts);
 fprintf('Hit vs Miss BarScatterCompare P = %s\n', ...
 	TransferLearning.Style.iFormatPText(optional.MultiCompare.PValue(1)));
-
-assignin('base', 'Fig43D_NTATS1s', struct('TransferHit', vHit, 'TransferMiss', vMiss, 'Idx1', idx1, 'XsSec', xsSec, 'MaskPair', maskPair, 'SampleCounts', sampleCounts, 'BarScatterComparePValue', optional.MultiCompare.PValue(1)));
-
 function iTagPValueObjects(optional)
 if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
 	return;

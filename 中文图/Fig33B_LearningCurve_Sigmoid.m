@@ -69,7 +69,7 @@ transferBlocks50 = iPerMouseBlocksTo50(displayedTransfer);
 
 xMax = max([max(fitNaive.XObserved), max(fitTransfer.XObserved), max(x)]);
 xSummary = (1:xMax).';
-xFit = linspace(1, xMax, 200).';
+xFit = linspace(max(0, min(xSummary) - 1), max(xSummary) + 1, 200).';
 naiveFitCurve = iSigmoidFromParams(fitNaive.ParamRaw, xFit);
 transferFitCurve = iSigmoidFromParams(fitTransfer.ParamRaw, xFit);
 
@@ -88,9 +88,8 @@ f.PaperUnits = 'centimeters';
 f.PaperSize = [12, 8];
 f.PaperPositionMode = 'auto';
 
-curveColors = TransferLearning.GroupColors(["Naive","Continual"]);
-curveColorNaive = curveColors(1, :);
-curveColorTransfer = curveColors(2, :);
+curveColorNaive = TransferLearning.NaiveColor;
+curveColorTransfer = TransferLearning.ContinualColor;
 ax = axes(f);
 hold(ax, 'on');
 hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, naiveFitCurve, curveColorNaive);
@@ -134,11 +133,7 @@ text(ax, 4, textY, starStr, ...
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
-lgd = legend(ax, [hNaive(1), hNaive(2), hTransfer(1), hTransfer(2)], ...
-	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
-	'Location', 'southoutside', 'NumColumns', 2);
-lgd.Box = 'off';
-lgd.FontSize = 10;
+
 
 allAxes = findall(f, 'Type', 'axes');
 for axItem = reshape(allAxes, 1, [])
@@ -146,7 +141,7 @@ for axItem = reshape(allAxes, 1, [])
 		axItem.Toolbar.Visible = 'off';
 	end
 end
-
+title('All mice');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig33B_LearningCurve_Sigmoid.svg');
 
 %% Per-mouse blocks-to-50% bar
@@ -155,26 +150,13 @@ blocks50Transfer = transferBlocks50.BlocksTo50;
 blocks50Naive = blocks50Naive(isfinite(blocks50Naive));
 blocks50Transfer = blocks50Transfer(isfinite(blocks50Transfer));
 
-edgeColorsBar = TransferLearning.GroupColors(["Naive","Continual"]);
+edgeColorsBar = [TransferLearning.NaiveColor; TransferLearning.ContinualColor];
 f2 = figure( 'Name', 'Fig33B per-mouse slope');
 f2.Units = 'centimeters';
-f2.Position(3:4) = [4, 3];
-f2.PaperUnits = 'centimeters';
-f2.PaperSize = [4, 3];
-f2.PaperPositionMode = 'auto';
-
-tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-nexttile;
+f2.Position(3:4) = [4, 4];
 [~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({blocks50Naive(:), blocks50Transfer(:)}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
 ax2 = gca;
-delete(findobj(ax2, 'Type', 'Scatter'));
-ax2.FontSize = 12;
-ax2.LineWidth = 2;
-if isprop(ax2.XAxis, 'LineWidth')
-	ax2.XAxis.LineWidth = 2;
-	ax2.YAxis.LineWidth = 2;
-end
-ax2.Color = 'none';
+
 ax2.XTickLabel = {};
 legend(ax2, 'off');
 if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
@@ -210,10 +192,6 @@ fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R
 fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 fprintf('Per-mouse blocks-to-50%% bar P (BarScatterCompare) = %s\n', TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
-
-assignin('base', 'Fig33B_AllSessions', allSessions);
-assignin('base', 'Fig33B_NaiveBlocksTo50', naiveBlocks50);
-assignin('base', 'Fig33B_TransferBlocksTo50', transferBlocks50);
 
 % ====== Local functions ======
 
@@ -404,7 +382,7 @@ function hOut = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanVec, semVec, x
 	semObs(~isfinite(semObs)) = 0;
 	hE = errorbar(ax, xObs, meanObs, semObs, 'o', 'Color', curveColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', curveColor, ...
 		'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
-	hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2);
+	hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
 	hOut = [hE, hP];
 end
 

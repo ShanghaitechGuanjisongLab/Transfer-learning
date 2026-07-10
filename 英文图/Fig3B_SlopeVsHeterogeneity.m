@@ -12,100 +12,90 @@ CellT = iCellLayerTable(DS_T, "Transfer");
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
-if ~ok1s
-    error('Fig3C:No1s', 'Cannot find sample close to 1s in time axis.');
-end
+if ~ok1s, error('Fig3C:No1s', 'Cannot find sample close to 1s in time axis.'); end
+%% 
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 colorN = groupColors(1,:);
 colorT = groupColors(2,:);
 
-f = figure('Color', 'w', 'Name', 'Fig3C Slope vs Response heterogeneity by layer');
-f.Units = 'centimeters';
-f.Position(3:4) = [12, 8];
-f.PaperUnits = 'centimeters';
-f.PaperSize = [12, 8];
-
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
-xlabel(tl, 'Response heterogeneity', 'FontSize', 12);
-hLegend = gobjects(2, 1);
-axAll = gobjects(numel(layers), 1);
-dataParts = cell(numel(layers), 1);
-
+% --- Pre-compute all data by layer ---
 [SessUsedN, miceNAll, slopeNAll] = iNaiveSlopeData(DS_LAB, DS_LAI);
 [SessUsedT, miceTAll, slopeTAll] = iSingleDatasetSlopeData(DS_T, "Transfer", "Final");
 
+layerData = cell(numel(layers), 1);
 for iL = 1:numel(layers)
-    layerName = layers(iL);
-    layerLabel = layerLabels(iL);
+    layerName = layers(iL); layerLabel = layerLabels(iL);
     [sdNAll, nCellNAll] = iNaiveHeterogeneityByLayer(SessUsedN, miceNAll, DS_LAB, DS_LAI, CellLAB, CellLAI, idx1s, layerName);
     [sdTAll, nCellTAll] = iSingleDatasetHeterogeneityByLayer(SessUsedT, miceTAll, DS_T, CellT, idx1s, layerName);
     [slopeN, sdN, miceN, nCellN] = iKeepFiniteLayerData(miceNAll, slopeNAll, sdNAll, nCellNAll);
     [slopeT, sdT, miceT, nCellT] = iKeepFiniteLayerData(miceTAll, slopeTAll, sdTAll, nCellTAll);
 
-    slopeAll = [slopeN; slopeT];
-    sdAll = [sdN; sdT];
-    nCellAll = [nCellN; nCellT];
-    mouseAll = [miceN; miceT];
+    slopeAll = [slopeN; slopeT]; sdAll = [sdN; sdT];
+    nCellAll = [nCellN; nCellT]; mouseAll = [miceN; miceT];
     groupAll = [repmat("Naive", numel(miceN), 1); repmat("Transfer", numel(miceT), 1)];
     use = isfinite(slopeAll) & isfinite(sdAll);
-    dataParts{iL} = table(repmat(layerLabel, nnz(use), 1), groupAll(use), mouseAll(use), nCellAll(use), sdAll(use), slopeAll(use), ...
-        'VariableNames', {'Layer','Group','Mouse','NCells','Heterogeneity','Slope'});
+    maskN = use & (groupAll == "Naive"); maskT = use & (groupAll == "Transfer");
     if nnz(use) >= 3 && std(sdAll(use)) > 0 && std(slopeAll(use)) > 0
         [rho, p] = corr(sdAll(use), slopeAll(use), 'Type', 'Spearman');
     else
-        rho = NaN;
-        p = NaN;
+        rho = NaN; p = NaN;
     end
     pLabel = "p = " + MATLAB.SignificantFixedpoint(p, 2);
 
-    ax = nexttile(tl, iL);
-    hold(ax, 'on');
-    ax.FontSize = 12;
-    ax.LineWidth = 2;
-    box(ax, 'off');
-
-    maskN = use & (groupAll == "Naive");
-    maskT = use & (groupAll == "Transfer");
-    hN = scatter(ax, sdAll(maskN), slopeAll(maskN), 10, colorN, 'o', 'filled', 'LineWidth', 0.2);
-    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 'o', 'filled', 'LineWidth', 0.2);
-    if iL == 1
-        hLegend = [hN; hT];
-        ylabel(ax, 'Learning slope', 'FontSize', 12);
-    else
-        ax.YAxis.Visible = 'off';
-    end
-    if nnz(use) >= 2 && std(sdAll(use)) > 0
-        fitP = polyfit(sdAll(use), slopeAll(use), 1);
-        xFit = [min(sdAll(use)), max(sdAll(use))];
-        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', 'k', 'LineWidth', 2);
-    end
-
-    title(ax, layerLabel, 'FontSize', 12);
-    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
-    axAll(iL) = ax;
+    % Run optional assertions on computed data
+    iAssertSharedMouseSlopesConsistent(... 
+        table(repmat(layerLabel, nnz(use), 1), groupAll(use), mouseAll(use), nCellAll(use), sdAll(use), slopeAll(use), ...
+        'VariableNames', {'Layer','Group','Mouse','NCells','Heterogeneity','Slope'}));
 
     fprintf('\n=== Fig342B / English Fig3C %s ===\n', layerLabel);
     fprintf('Naive n = %d mice, %d cells\n', nnz(maskN), round(sum(nCellAll(maskN), 'omitnan')));
     fprintf('Continual n = %d mice, %d cells\n', nnz(maskT), round(sum(nCellAll(maskT), 'omitnan')));
     fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
+
+    layerData{iL} = struct('slopeAll',slopeAll,'sdAll',sdAll,'use',use,'maskN',maskN,'maskT',maskT,'pLabel',pLabel,'layerLabel',layerLabel);
+end
+%% 
+
+% --- Plotting ---
+f = figure('Color', 'w', 'Name', 'Fig3C Slope vs Response heterogeneity by layer');
+f.Units = 'centimeters'; f.Position(3:4) = [12, 8];
+f.PaperUnits = 'centimeters'; f.PaperSize = [12, 8];
+
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
+xlabel(tl, 'Response heterogeneity');
+hLegend = gobjects(2, 1);
+axAll = gobjects(numel(layers), 1);
+
+for iL = 1:numel(layers)
+    d = layerData{iL};
+    ax = nexttile(tl, iL); hold(ax, 'on'); box(ax, 'off');
+
+    hN = scatter(ax, d.sdAll(d.maskN), d.slopeAll(d.maskN), [], colorN);
+    hT = scatter(ax, d.sdAll(d.maskT), d.slopeAll(d.maskT), [], colorT);
+    if iL == 1
+        hLegend = [hN; hT]; ylabel(ax, 'Learning slope');
+    else
+        ax.YAxis.Visible = 'off';
+    end
+    if nnz(d.use) >= 2 && std(d.sdAll(d.use)) > 0
+        fitP = polyfit(d.sdAll(d.use), d.slopeAll(d.use), 1);
+        xFit = [min(d.sdAll(d.use)), max(d.sdAll(d.use))];
+        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine');
+    end
+    title(ax, d.layerLabel, 'FontSize', 12);
+    text(ax, 0.97, 0.97, d.pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+    axAll(iL) = ax;
 end
 
 iUnifyYLimits(axAll(:));
-fig3CDataTable = vertcat(dataParts{:});
-assignin('base', 'Fig3C_SlopeVsHeterogeneity_Data', fig3CDataTable);
-iAssertSharedMouseSlopesConsistent(fig3CDataTable);
-
-lgd = legend(hLegend, {'Naive', 'Continual'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Naive', 'Continual'}, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
-if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = 'English_Fig3C_SlopeVsHeterogeneity.svg';
+svgPath = 'English_Fig3B_SlopeVsHeterogeneity.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
-iUnifyYLimits(axAll(:));
-print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 function [SessUsed, miceAll, slopeAll] = iNaiveSlopeData(DS_LAB, DS_LAI)

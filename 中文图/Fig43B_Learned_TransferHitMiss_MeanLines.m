@@ -73,51 +73,32 @@ f.PaperSize = [9, 8];
 
 ax = axes(f);
 hold(ax, 'on');
-ax.FontSize = 12;
-ax.FontName = 'Segoe UI Emoji';
 
-lineColors = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ContinualColor];
-lineStyles = ["-"; "-"; ":"];
+lineColors = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ColorB];
 
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Y, E, 0.2, ...
 	X=repmat(xsPlot(:), 1, 3), ...
 	EdgeColors=lineColors, ...
-	Ax=ax, ...
-	LineStyles=lineStyles);
+	Ax=ax);
 
-xline(ax, 0, '--', 'LineWidth', 2);
-xline(ax, 1, '--', 'LineWidth', 2);
+xline(ax, 0, '--');
+xline(ax, 1, '--');
 
 box(ax, 'off');
 grid(ax, 'off');
-xlabel(ax, 'Time', 'FontSize', 12);
-ylabel(ax, 'z-score', 'FontSize', 12);
+xlabel(ax, 'Time');
+ylabel(ax, 'z-score');
 ax.XTick = [0 1];
 ax.XTickLabel = {"🔊/💡", "💧"};
 
 lg = legend(Patches, ["🔊Learned", "💡Hit", "💡Miss"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box', 'off');
-lg.FontSize = 12;
-
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
-
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-if ~isfolder(outDirUNC)
-	mkdir(outDirUNC);
-end
-
+title('🔊 learned active cells');
 svgPath = '中文图Fig43B_Learned_TransferHitMiss_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== Fig43B sample counts ===\n');
 disp(sampleCounts);
-
-assignin('base', 'Fig43B_MeanLines_Y', Y);
-assignin('base', 'Fig43B_MeanLines_SEM', E);
-assignin('base', 'Fig43B_nCells', nCells);
-assignin('base', 'Fig43B_SampleCounts', sampleCounts);
 
 
 function X = iGetNtats3D(S)

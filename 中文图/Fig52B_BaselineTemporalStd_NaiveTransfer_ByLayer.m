@@ -25,7 +25,6 @@ end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["MOp2/3"; "MOp5"];
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 LAB = TransferLearning.LightAudioBaseline();
@@ -91,7 +90,7 @@ for iL = 1:numel(layers)
 		fprintf('  BarScatterCompare on figure: PValue=%.5g PText="%s"\n', ...
 			optional.MultiCompare.PValue, optional.MultiCompare.PText.String);
 	end
-	iStyleTile(ax, bars, errorBars, optional, groupColors(1, :), groupColors(2, :), iL == numel(layers), layerLabels(iL));
+	iStyleTile(ax, bars, errorBars, optional, TransferLearning.NaiveColor,TransferLearning.ContinualColor, iL == numel(layers), layerLabels(iL));
 end
 
 if ~isfolder(outDirUNC)

@@ -38,10 +38,6 @@ f.PaperSize = [4, 8];
 
 ax = axes(f);
 hold(ax,'on');
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
-ax.LineWidth = 1;
 
 p = NaN;
 if nnz(mask) >= 4
@@ -49,18 +45,16 @@ if nnz(mask) >= 4
 end
 
 Y = [hit(mask), miss(mask)];
-hitColor = TransferLearning.ColorA;
+hitColor = TransferLearning.ContinualColor;
 missColor = TransferLearning.ColorB;
-plot(ax, Y', '-', 'LineWidth', 1, 'Color', [0, 0, 0]);
+plot(ax, Y', '-', 'Color', [0, 0, 0]);
 scatter(ax, ones(nnz(mask),1), hit(mask), 15, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', hitColor);
 scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, missColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', missColor);
 set(ax, 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 grid(ax,'off');
 box(ax,'off');
-ax.FontSize = 6;
-ax.FontName = 'Segoe UI Emoji';
-ylabel(ax, 'Reactivation', 'FontSize', 6);
-title(ax, '💡💧', 'FontSize', 6, 'FontWeight', 'normal');
+ylabel(ax, '🔊 learned cells reactivation');
+xlabel(ax, '💡💧');
 
 yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = max(max(hit(mask)), max(miss(mask))) + 0.08 * yrange;

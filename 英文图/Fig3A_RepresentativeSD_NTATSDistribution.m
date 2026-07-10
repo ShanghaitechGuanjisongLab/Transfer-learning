@@ -254,8 +254,6 @@ fprintf('Wrote: %s\n', cbSvgName);
 %% ===== 6) Export representative histogram SVG (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-pairColorArray = TransferLearning.GroupColors(["HighRH", "LowRH"]);
-pairColors = {pairColorArray(1,:); pairColorArray(2,:)};
 v = vals{repPairIdx, repSessIdx};
 
 fh = figure('Color', 'w');
@@ -266,8 +264,7 @@ ax = axes(fh);
 hold(ax, 'on');
 
 histogram(ax, v, binEdges, 'Normalization', 'probability', ...
-	'FaceColor', TransferLearning.ContinualColor, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-xline(ax, mean(v), '--', 'Color', pairColors{repPairIdx}, 'LineWidth', 1);
+	'FaceColor', TransferLearning.ContinualColor, 'EdgeColor', 'none');
 
 xlim(ax, [-1, 1]);
 ax.XTick = [-1, 0, 1];
@@ -282,16 +279,15 @@ grid(ax, 'off');
 
 text(ax, 0.97, 0.95, sprintf('RH=%.2f', sdVals(repPairIdx, repSessIdx)), ...
 	'Units', 'normalized', 'HorizontalAlignment', 'right', ...
-	'VerticalAlignment', 'top', 'FontSize', 6, 'FontWeight', 'bold');
-title(ax, 'A representative continual block', 'FontSize', 6, 'FontWeight', 'normal');
+	'VerticalAlignment', 'top', 'FontWeight', 'bold');
+title(ax, 'A representative continual block');
 
-xlabel(ax, 'z-score', 'FontSize', 6);
-ylabel(ax, {'Prop. of'; 'cells'}, 'FontSize', 6);
+xlabel(ax, 'z-score');
+ylabel(ax, {'Prop. of'; 'cells'});
 
-svgN = 'English_Fig3B_Hist_Representative.svg';
+svgN = 'English_Fig3A_Hist_Representative.svg';
 TransferLearning.ExportStandardFigure(fh, 1, svgN);
 fprintf('Wrote: %s\n', svgN);
-close(fh);
 
 %% ===== Local functions =====
 

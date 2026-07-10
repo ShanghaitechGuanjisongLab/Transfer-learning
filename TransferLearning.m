@@ -43,13 +43,18 @@ classdef(Abstract)TransferLearning
 				Scale (1,1) double {mustBePositive}
 				FileName {mustBeTextScalar}
 			end
-			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
-			ScatterAxPadding(Fig);
-			
-			RetuneTaggedPLines(Fig);
-			
+			TransferLearning.ApplyStandardExportStyle(Fig, Scale);
 			SvgPath=TransferLearning.StandardFigureSvgPath(FileName);
 			print(Fig, SvgPath, '-dsvg');
+		end
+		function ApplyStandardExportStyle(Fig, Scale)
+			arguments
+				Fig (1,1) matlab.ui.Figure
+				Scale (1,1) double {mustBePositive}
+			end
+			TransferLearning.Style.ApplyStandardFigureStyle(Fig, Scale);
+			ScatterAxPadding(Fig);
+			RetuneTaggedPLines(Fig);
 		end
 		function SvgPath=ExportStandardFigureTransparent(Fig, Scale, FileName)
 			arguments
@@ -160,14 +165,17 @@ function RetuneTaggedPLines(Fig)
 for Ax=findall(Fig,Type='axes').'
 	allKids = findall(Ax);
 	[numberedPairs, legacyPLines, legacyPTexts] = iClassifyPValueTags(allKids);
-	% Numbered tags: pair by matching suffix
-	for iP = 1:numel(numberedPairs)
-		MATLAB.Graphics.PLineRetune(numberedPairs(iP).PLine, numberedPairs(iP).PText);
-	end
-	% Legacy unnumbered tags: fall back to geometry-based ordering
+
+	% Collect all PLine/PText handles across both numbered and legacy pairs
+	allPLines = vertcat(numberedPairs.PLine);
+	allPTexts = vertcat(numberedPairs.PText);
 	if ~isempty(legacyPLines) && ~isempty(legacyPTexts)
 		[pLines, pTexts] = OrderTaggedPValuePairs(Ax, legacyPLines, legacyPTexts);
-		MATLAB.Graphics.PLineRetune(pLines, pTexts);
+		allPLines = [allPLines; pLines(:)];
+		allPTexts = [allPTexts; pTexts(:)];
+	end
+	if ~isempty(allPLines)
+		MATLAB.Graphics.PLineRetune(allPLines, allPTexts);
 	end
 end
 end

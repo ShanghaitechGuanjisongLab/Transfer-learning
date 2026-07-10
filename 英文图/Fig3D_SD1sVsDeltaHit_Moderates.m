@@ -236,8 +236,7 @@ fprintf('Wrote: %s\n', cbSvgName);
 %% ===== 6) Export 2 histogram SVGs (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-histColorArray = TransferLearning.GroupColors(["Continual", "Naive"]);
-pairColors = {histColorArray(1, :); histColorArray(2, :)};
+pairColors = {TransferLearning.ContinualColor; TransferLearning.NaiveColor};
 histTitles = ["Continual", "Naive"];
 
 histFigs = gobjects(1, 2);
@@ -284,10 +283,9 @@ end
 MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
 
 for iS = 1:2
-	svgN = sprintf('English_Fig3E_Hist_%s.svg', sessTags(iS));
+	svgN = sprintf('English_Fig3D_Hist_%s.svg', sessTags(iS));
 	TransferLearning.ExportStandardFigure(histFigs(iS), 1, svgN);
 	fprintf('Wrote: %s\n', svgN);
-	close(histFigs(iS));
 end
 
 %% ===== Local functions =====

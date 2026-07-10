@@ -63,31 +63,34 @@ f = figure('Color', 'w', 'Name', 'Fig33A Extreme mouse learning');
 f.Units = 'centimeters'; f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters'; f.PaperSize = [12, 8]; f.PaperPositionMode = 'auto';
 
-curveColors = TransferLearning.GroupColors(["Naive","Continual"]);
+curveColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 ax = axes(f); hold(ax, 'on');
 
 % Naive (lowest slope)
 xN = double(naiveSess.Session(:)); yN = double(naiveSess.Performance(:));
-xFitN = linspace(min(xN), max(xN), 200)';
-scatter(ax, xN, yN, 36, curveColors(1,:), 'o', 'filled', 'DisplayName', 'Naive');
-hFitN = plot(ax, xFitN, iSigmoidFromFixedLowerParams(fitN.ParamRaw, xFitN), '-', 'Color', curveColors(1,:), 'LineWidth', 2.2, 'DisplayName', 'Naive Sigmoid');
+hN = scatter(ax, xN, yN, 50, curveColors(1,:), 'o');
 
 % Continual (highest slope)
 xT = double(tranSess.Session(:)); yT = double(tranSess.Performance(:));
-xFitT = linspace(min(xT), max(xT), 200)';
-scatter(ax, xT, yT, 36, curveColors(2,:), 'o', 'filled', 'DisplayName', 'Continual');
-hFitT = plot(ax, xFitT, iSigmoidFromFixedLowerParams(fitT.ParamRaw, xFitT), '-', 'Color', curveColors(2,:), 'LineWidth', 2.2, 'DisplayName', 'Continual Sigmoid');
+hT = scatter(ax, xT, yT, 50, curveColors(2,:), 'o');
 
-xlabel(ax, 'Block', 'FontSize', 12); ylabel(ax, 'Hit rate', 'FontSize', 12);
+% Shared sigmoid fit X range: data min-1 to max+1
+xFit = linspace(min([xN; xT]) - 1, max([xN; xT]) + 1, 200)';
+plot(ax, xFit, iSigmoidFromFixedLowerParams(fitN.ParamRaw, xFit), '-', ...
+	'Color', curveColors(1,:), 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
+plot(ax, xFit, iSigmoidFromFixedLowerParams(fitT.ParamRaw, xFit), '-', ...
+	'Color', curveColors(2,:), 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
+
+xlabel(ax, 'Block', 'FontSize', 12); ylabel(ax, 'Hit rate');
 ax.FontSize = 12; ax.LineWidth = 2; ax.Color = 'none';
 box(ax, 'off'); grid(ax, 'off'); title(ax, '');
 
-lgd = legend(ax, 'Location', 'southoutside', 'NumColumns', 2, 'Box', 'off', 'FontSize', 10);
-
-allAxes = findall(f, 'Type', 'axes');
-for axItem = reshape(allAxes, 1, []), if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar), axItem.Toolbar.Visible = 'off'; end, end
+legend(ax, [hN, hT], {'Naive', 'Continual'}, 'Location', 'best', 'Box', 'off');
 title('Representative mice');
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig33A_ExtremeMouseScatterFit.svg');
+TransferLearning.ApplyStandardExportStyle(f, 2);
+ax.YTick(ax.YTick<0-eps|ax.YTick>1+eps)=[];
+svgPath = TransferLearning.StandardFigureSvgPath('中文图Fig33A_ExtremeMouseScatterFit.svg');
+print(f, svgPath, '-dsvg');
 
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== 中文图33A ===\n');

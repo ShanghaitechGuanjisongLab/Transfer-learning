@@ -1,4 +1,4 @@
-﻿% English Fig2J: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
+% English Fig2J: DREADD hM4D(Gi) non-specific inhibition vs mCherry control
 %
 % v6 Panel J: DREADD MOp 全局抑制（学习曲线 + 首会话命中率）
 % Shared behavior-session helpers: TransferLearning.BehaviorSessions
@@ -79,20 +79,20 @@ end
 
 meanCells = cellfun(@(v) double(v(:))', SummaryPlot.MeanCurve, 'UniformOutput', false);
 semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', false);
+%% 
 
 % n per group is intentionally NOT shown in legend (match request)
 
 % --- 5) Plot learning curve (like English Fig1B)
-f = figure('Color','w', 'Name', 'English Fig2J DREADD Learning curve');
+f = figure('Name', 'English Fig2J DREADD Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
-try, f.PaperPositionMode = 'auto'; catch, end
 ax = axes(f);
 hold(ax,'on');
-title(ax, 'Non-specific MOp inhibition', 'FontSize', 12, 'FontWeight', 'normal');
+title(ax, 'Non-specific MOp inhibition');
 
 % Reference palette from 范例 SVGs: Control=#e60012, Experimental=#0070c0
-edgeColors = TransferLearning.FigurePalette(2);
+edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -144,25 +144,14 @@ catch
 end
 
 ax.FontSize = 12;
-xlabel(ax, 'Session', 'FontSize', 12);
-ylabel(ax, 'Hit rate', 'FontSize', 12);
+xlabel(ax, 'Session');
+ylabel(ax, 'Hit rate');
 ylim(ax, [0 1]);
 box(ax, 'off');
 grid(ax, 'off');
-
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 svgLC = 'English_Fig2J_DREADD_LearningCurve.svg';
-try
-	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-catch
-end
-try
-	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
 	svgLC = TransferLearning.ExportStandardFigure(f, 2, svgLC);
 	fprintf('Wrote: %s\n', svgLC);
-catch ME
-	warning(ME.identifier, 'Export failed: %s', ME.message);
-end
 
 % --- 6) First transfer session hit-rate bar compare
 perMouse = TransferLearning.BehaviorSessions.iPerMouseTable(Sess);
@@ -196,7 +185,7 @@ ax2.XTick = [];
 legend(ax2, 'off');
 
 	% Bar styling – reference palette from 范例 SVGs
-	palette2 = TransferLearning.FigurePalette(2);
+	palette2 = [TransferLearning.ContinualColor;TransferLearning.ColorB];
 	colorA = palette2(1,:);
 	colorB = palette2(2,:);
 if isscalar(Bars2)
