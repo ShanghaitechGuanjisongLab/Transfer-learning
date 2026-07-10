@@ -75,10 +75,19 @@ classdef(Abstract)TransferLearning
 			exportgraphics(Fig, SvgPath, 'ContentType', 'vector', 'BackgroundColor', 'none');
 		end
 		function SvgPath=StandardFigureSvgPath(FileName)
-			arguments
-				FileName {mustBeTextScalar}
+			OutDir=fullfile(['\\Data-Server-2\个人数据\',getenv('USERNAME')],char(datetime('now','Format','yyyyMM')));
+			FileName=char(FileName);
+			[parentDir,Name,Ext]=fileparts(FileName);
+			if isempty(FileName) || isempty(Name) || ~isempty(parentDir) || ~isempty(regexp(FileName,'[<>:"/\\|?*]','once'))
+				error('TransferLearning:InvalidExportFileName', 'ExportStandardFigure expects a .svg file name only, not a path: %s', FileName);
 			end
-			SvgPath=iBuildStandardSvgPath(FileName);
+			if ~strcmpi(Ext,'.svg')
+				error('TransferLearning:InvalidExportFileName', 'ExportStandardFigure expects a .svg file name: %s', FileName);
+			end
+			if ~isfolder(OutDir)
+				mkdir(OutDir);
+			end
+			SvgPath=fullfile(OutDir,[Name,Ext]);
 		end
 		function DrawCueWaterLines(Ax)
 			if nargin
@@ -271,21 +280,6 @@ for iLine=1:numel(pLines)
 	orderedPTexts(iLine)=pTexts(remainingTextIndices(nearestIndex));
 	remainingTextIndices(nearestIndex)=[];
 end
-end
-function SvgPath=iBuildStandardSvgPath(FileName)
-OutDir=fullfile('\\Data-Server-2\个人数据\张天夫',char(datetime('now','Format','yyyyMM')));
-FileName=char(FileName);
-[parentDir,Name,Ext]=fileparts(FileName);
-if isempty(FileName) || isempty(Name) || ~isempty(parentDir) || ~isempty(regexp(FileName,'[<>:"/\\|?*]','once'))
-	error('TransferLearning:InvalidExportFileName', 'ExportStandardFigure expects a .svg file name only, not a path: %s', FileName);
-end
-if ~strcmpi(Ext,'.svg')
-	error('TransferLearning:InvalidExportFileName', 'ExportStandardFigure expects a .svg file name: %s', FileName);
-end
-if ~isfolder(OutDir)
-	mkdir(OutDir);
-end
-SvgPath=fullfile(OutDir,[Name,Ext]);
 end
 function MB=iMOpBaseline
 MB=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\MOp全钙.v4.mat");
