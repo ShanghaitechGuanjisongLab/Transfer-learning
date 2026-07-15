@@ -138,9 +138,8 @@ fprintf('Fig52C old-task sign groups: n=%d mice, %d cells (positive=%d, negative
 fprintf('Fig52C new-task sign groups: n=%d mice, %d cells (positive=%d, negative=%d), signrank p=%.4g\n', ...
 	nnz(vPN2), sum(nCellsPerMouse(vPN2)), sum(nNewPosCellsPerMouse(vPN2)), sum(nNewNegCellsPerMouse(vPN2)), pPN2);
 
-signColors = TransferLearning.GroupColors(["Negative", "Positive"]);
-colorNeg = signColors(1,:);
-colorPos = signColors(2,:);
+colorNeg = TransferLearning.ColorA;
+colorPos = TransferLearning.ColorB;
 colorFit = [0, 0, 0];
 fs = 6;
 barWidth = 0.5;

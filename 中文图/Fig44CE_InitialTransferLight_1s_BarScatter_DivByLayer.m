@@ -9,10 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
-colorNaive = groupColors(1, :);
-colorContinual = groupColors(2, :);
-barColors = [colorNaive; colorContinual];
+barColors = [TransferLearning.NaiveColor; TransferLearning.ContinualColor];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 xs = TransferLearning.Xs;

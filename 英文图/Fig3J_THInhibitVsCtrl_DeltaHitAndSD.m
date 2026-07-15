@@ -43,7 +43,7 @@ f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-palette2 = [TransferLearning.ContinualColor; TransferLearning.ColorA];
+palette2 = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 colorA = palette2(1,:);
 colorB = palette2(2,:);
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});

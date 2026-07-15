@@ -14,7 +14,7 @@ dataset = UniExp.DataSet(datasetPath);
 
 groupOrder = ["Control", "MOp"];
 groupLabels = ["Control", "cFos"];
-edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
+edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
 
 trialRows = iBuildFirstTrainingUnitTrials(dataset, groupOrder);
 if isempty(trialRows)

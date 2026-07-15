@@ -20,15 +20,10 @@ fprintf('TH decrease 0~1s: %.3f; 1~3s: %.3f\n', ...
 
 f = figure('Color', 'w', 'Name', '中文图63C learned-active calcium bars');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.Position(3:4) = [4, 8];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-layoutTitle = title(layout, 'L5 🔊💧 active cells', 'FontSize', 6, 'FontWeight', 'normal');
-layoutTitle.FontName = 'Segoe UI Emoji';
+layoutTitle = title(layout, 'L5 🔊 active');
 
 axTop = nexttile(layout, 1);
 [~, optLate, barsLate, ebLate] = UniExp.BarScatterCompare({Data.Ctrl.LateMean(:), Data.TH.LateMean(:)}, compareGroup, AsteriskThreshold=0.05, CapSize=0.5);
@@ -45,19 +40,13 @@ fprintf('=== 6.3C bottom (decrease 0~1 vs 1~3): %s ===\n', TransferLearning.Styl
 iRetunePValues(optDecrease);
 
 svgPath = '中文图Fig63C_THInhibitVsCtrl_LearnedActiveBars.svg';
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'Fig63C_Data', Data);
 
 function iStyleTile(ax, bars, errorBars, xTickLabels, titleText, yLabelText)
 ax.FontSize = 6;
 ax.LineWidth = 1;
 ax.Color = 'none';
-if isprop(ax.XAxis, 'LineWidth')
-	ax.XAxis.LineWidth = 1;
-	ax.YAxis.LineWidth = 1;
-end
 ax.XAxis.Visible = 'on';
 ax.XTick = [1 2];
 ax.XTickLabel = xTickLabels;
@@ -65,13 +54,10 @@ ax.XTickLabelRotation = 0;
 box(ax, 'off');
 grid(ax, 'off');
 legend(ax, 'off');
-ylabel(ax, yLabelText, 'FontSize', 6);
-title(ax, titleText, 'FontSize', 6, 'FontWeight', 'normal');
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
+ylabel(ax, yLabelText);
+title(ax, titleText);
 
-barColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
+barColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 iStyleBars(bars, barColors(1:2, :));
 for iE = 1:height(errorBars)
 	eb = errorBars.Object(iE);

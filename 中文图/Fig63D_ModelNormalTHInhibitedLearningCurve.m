@@ -10,10 +10,10 @@ thInhibitedPerformance = Fig5556Data.Performance.THOff;
 SigmoidStats = Fig5556Data.Sigmoid.Fig383D;
 summary = iLearningCurveSummary(normalPerformance, thInhibitedPerformance);
 xSummary = (1:size(summary.Mean, 1)).';
-xFit = linspace(1, max(xSummary), 200).';
+xFit = linspace(max(0, min(xSummary) - 1), max(xSummary) + 1, 200).';
 normalFitCurve = iSigmoidFromFit(SigmoidStats.FitA, xFit);
 thInhibitedFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
-curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
+curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 anovaTable = iBuildGroupAnovaTableFromMatrices(normalPerformance, thInhibitedPerformance, ["Normal", "TH"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
 anovaTable7 = anovaTable(anovaTable.Block <= 7, :);
@@ -66,11 +66,10 @@ PText=text(ax, 4, textY, starStr, ...
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
-lgd = legend(ax, [hNormal(1), hNormal(2), hTH(1), hTH(2)], ...
-	{'Normal Mean ± SEM', 'Normal Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
-	'Location', 'southoutside', 'NumColumns', 2);
+lgd = legend(ax, [hNormal(1), hTH(1)], {'Normal', 'TH inhibited'}, 'Location', 'southeast');
 lgd.Box = 'off';
 lgd.FontSize = 10;
+lgd.AutoUpdate = false;
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
@@ -128,7 +127,7 @@ semObs = semVec(useObs);
 semObs(~isfinite(semObs)) = 0;
 hE = errorbar(ax, xObs, meanObs, semObs, 'o', 'Color', curveColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', curveColor, ...
 	'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
-hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2);
+hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
 hOut = [hE, hP];
 end
 

@@ -8,14 +8,11 @@ Params = Fig5556Data.Params;
 Cond = Fig5556Data.Cond;
 
 MechanismData = iBuildMechanismData(Params, Cond, Fig5556Data.ConditionNames, Fig5556Data.ConditionSeedValues);
+%% 
 [fig, Stats] = iPlotFig56ABCD(MechanismData);
 svgName = '中文图Fig55ABCD_ModelMechanismSummary.svg';
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'Fig56ABCD_ModelMechanismData', MechanismData);
-assignin('base', 'Fig56ABCD_ModelMechanismStats', Stats);
-assignin('base', 'Fig56ABCD_ModelMechanismSvgPath', svgPath);
 
 function Data = iBuildMechanismData(Params, Cond, conditionNames, conditionSeedValues)
 conditionNames = string(conditionNames);
@@ -158,7 +155,7 @@ row.PositiveProjectionDeltaI = NaN;
 end
 
 function [fig, Stats] = iPlotFig56ABCD(Data)
-palette = TransferLearning.GroupColors(["Naive", "Continual"]);
+palette = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 preFormalTable = Data.PreFormalTable;
 unitTable = Data.UnitTable;

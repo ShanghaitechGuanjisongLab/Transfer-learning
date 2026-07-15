@@ -6,9 +6,8 @@ end
 classNames = ["EE", "EI", "IE", "II"];
 classTitles = ["E→E", "E→I", "I→E", "I→I"];
 legendLabels = {'Naive', 'CueA learned'};
-groupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
-naiveColor = groupColors(1, :);
-afterPretrainColor = groupColors(2, :);
+naiveColor = TransferLearning.NaiveColor;
+afterPretrainColor = TransferLearning.LearnedColor;
 binEdges = iSharedBinEdges(WeightValues, classNames);
 
 fig = figure('Color', 'w', 'Name', 'Fig54A pre-formal connection weight distributions');

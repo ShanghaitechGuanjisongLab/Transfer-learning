@@ -17,7 +17,7 @@ else
 	xsSec = double(xs);
 end
 baseMask = xsSec >= -3 & xsSec < 0;
-plotMask = xsSec >= 0 & xsSec <= 3;
+plotMask = xsSec >= -1 & xsSec <= 3;
 earlyMask = xsSec >= 0 & xsSec < 1;
 lateMask = xsSec >= 1 & xsSec <= 3;
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);

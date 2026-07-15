@@ -34,7 +34,7 @@ layerLabels = ["L2/3", "L5"];
 cellTypeLabels = ["E", "I"];
 groupFields = ["Normal", "THInhibited"];
 groupLabels = ["Normal", "TH inhibited"];
-groupColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
+groupColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 
 fig = figure('Color', 'w', 'Name', 'Fig63E layer and neuron type heterogeneity bars');
 fig.Units = 'centimeters';

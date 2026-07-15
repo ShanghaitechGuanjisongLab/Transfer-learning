@@ -128,17 +128,17 @@ wZ = nTrials * sZ;
     uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 6, 'FontColor', [0.1 0.1 0.85], 'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
 
     pause(1);
-    pngName = sprintf('English_Fig3H_Volshow_%s.png', sessInfo(iS).label);
+    pngName = sprintf('English_Fig3I_Volshow_%s.png', sessInfo(iS).label);
     exportapp(fig, fullfile(outDirUNC, pngName));
     fprintf('Wrote: %s\n', pngName);
 end
 
-cbSvgName = 'English_Fig3H_Volshow_Colorbar.svg';
+cbSvgName = 'English_Fig3I_Volshow_Colorbar.svg';
 iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
 fprintf('Wrote: %s\n', cbSvgName);
 
 binEdges = linspace(-1, 1, 41);
-histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorA];
+histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 histColors = {histColorArray(1,:), histColorArray(2,:)};
 histTitles = ["Control", "TH inhibited"];
 histFigs = gobjects(1, 2);
@@ -155,7 +155,6 @@ for iS = 1:2
     ax.Toolbar.Visible = 'off';
     hold(ax, 'on');
     hHist = histogram(ax, vals{iS}, binEdges, 'Normalization', 'probability', 'FaceColor', histColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-    xline(ax, mean(vals{iS}), '--', 'Color', [0.3 0.3 0.3], 'LineWidth', 1);
     xlim(ax, [-1 1]);
     ax.XTick = [-1 0 1];
     ax.FontSize = 6;
@@ -185,7 +184,7 @@ for iS = 1:2
     ylim(histAxes(iS), [yl(1), yl(2) * 1.20]);
 end
 for iS = 1:2
-    svgName = sprintf('English_Fig3H_Hist_%s.svg', sessInfo(iS).label);
+    svgName = sprintf('English_Fig3I_Hist_%s.svg', sessInfo(iS).label);
     TransferLearning.ExportStandardFigure(histFigs(iS), 1, svgName);
     fprintf('Wrote: %s\n', svgName);
 end

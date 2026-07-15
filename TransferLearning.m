@@ -75,7 +75,7 @@ classdef(Abstract)TransferLearning
 			exportgraphics(Fig, SvgPath, 'ContentType', 'vector', 'BackgroundColor', 'none');
 		end
 		function SvgPath=StandardFigureSvgPath(FileName)
-			OutDir=fullfile(['\\Data-Server-2\个人数据\',getenv('USERNAME')],char(datetime('now','Format','yyyyMM')));
+			OutDir=fullfile('\\Data-Server-2\个人数据',getenv('USERNAME'),char(datetime('now','Format','yyyyMM')));
 			FileName=char(FileName);
 			[parentDir,Name,Ext]=fileparts(FileName);
 			if isempty(FileName) || isempty(Name) || ~isempty(parentDir) || ~isempty(regexp(FileName,'[<>:"/\\|?*]','once'))

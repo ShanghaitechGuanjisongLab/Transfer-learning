@@ -1,7 +1,5 @@
 % English Fig3I: TH/Ctrl per-mouse sigmoid slope vs Response heterogeneity
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-
 CtrlDS = TransferLearning.AudioLightBaseline();
 THDS = TransferLearning.THInhibit();
 CtrlCell = iCellLayerTable(CtrlDS, "Ctrl");
@@ -13,11 +11,12 @@ if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 if ~ok1s
     error('Fig3I:No1s', 'Cannot find sample close to 1s in time axis.');
 end
+%% 
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
 colorC = TransferLearning.ContinualColor;
-colorT = TransferLearning.ColorA;
+colorT = TransferLearning.ColorB;
 
 f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl sigmoid slope vs Response heterogeneity');
 f.Units = 'centimeters';
@@ -66,21 +65,22 @@ for iL = 1:numel(layers)
 
     maskC = use & (groupAll == "Ctrl");
     maskT = use & (groupAll == "TH");
-    hC = scatter(ax, sdAll(maskC), slopeAll(maskC), 10, colorC, 'o', 'filled', 'LineWidth', 0.2);
-    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), 10, colorT, 'o', 'filled', 'LineWidth', 0.2);
+    hC = scatter(ax, sdAll(maskC), slopeAll(maskC), [], colorC);
+    hT = scatter(ax, sdAll(maskT), slopeAll(maskT), [], colorT);
     if iL == 1
         hLegend = [hC; hT];
-        ylabel(ax, 'Learning slope', 'FontSize', 12);
+        ylabel(ax, 'Learning slope');
     else
         ax.YAxis.Visible = 'off';
     end
     if nnz(use) >= 2 && std(sdAll(use)) > 0
         fitP = polyfit(sdAll(use), slopeAll(use), 1);
         xFit = [min(sdAll(use)), max(sdAll(use))];
-        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', 'k', 'LineWidth', 2);
+        xFit = [min(sdAll(use)), max(sdAll(use))];
+        plot(ax, xFit, polyval(fitP, xFit), '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine');
     end
-    title(ax, layerLabels(iL), 'FontSize', 12);
-    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
+    title(ax, layerLabels(iL));
+    text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
     axAll(iL) = ax;
 
     fprintf('\n=== Fig3I %s ===\n', layerLabels(iL));
@@ -93,10 +93,9 @@ end
 
 MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
 
-lgd = legend(hLegend, {'Ctrl', 'TH'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Ctrl', 'TH'}, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
-if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 svgPath = 'English_Fig3I_THCtrl_SlopeVsHeterogeneity.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);

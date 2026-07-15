@@ -1,6 +1,6 @@
 % Fig54C model-simulated Naive/Continual learning curve with sigmoid fits.
 
-svgName = '中文图Fig54C_ModelNaiveContinualLearningCurve.svg';
+
 iEnsureTransferLearningProject();
 
 run(fullfile(fileparts(mfilename('fullpath')), 'Fig5556_LoadSharedModelData.m'));
@@ -12,10 +12,10 @@ SigmoidStats = Fig5556Data.Sigmoid.Fig54C;
 
 summary = iLearningCurveSummary(naivePerformance, continualPerformance);
 xSummary = (1:size(summary.Mean, 1)).';
-xFit = linspace(1, max(xSummary), 200).';
+xFit = linspace(max(0, min(xSummary) - 1), max(xSummary) + 1, 200).';
 naiveFitCurve = iSigmoidFromFit(SigmoidStats.FitA, xFit);
 continualFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
-curveColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+curveColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
 anovaTable = iBuildGroupAnovaTableFromMatrices(naivePerformance, continualPerformance, ["Naive", "Continual"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
 anovaTable7 = anovaTable(anovaTable.Block <= 7, :);
@@ -67,12 +67,7 @@ text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12,AffectAutoLimits=true);
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
-
-lgd = legend(ax, [hNaive(1), hNaive(2), hContinual(1), hContinual(2)], ...
-	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Continual Mean ± SEM', 'Continual Sigmoid'}, ...
-	'Location', 'southoutside', 'NumColumns', 2);
-lgd.Box = 'off';
-lgd.FontSize = 10;
+legend(ax, [hNaive(1), hContinual(1)], {'Naive', 'Continual'}, 'Location', 'southeast', 'Box', 'off');
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
@@ -82,6 +77,7 @@ fprintf('Fig54C Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 iPrintPermutationResult('Fig54C', SigmoidStats);
 iAssertSigmoidSlopeSignificant('Fig54C', SigmoidStats, Params.TransferHighestAlpha, fig);
 title('Cue B');
+svgName = '中文图Fig54C_ModelNaiveContinualLearningCurve.svg';
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
@@ -125,7 +121,7 @@ semObs = semVec(useObs);
 semObs(~isfinite(semObs)) = 0;
 hE = errorbar(ax, xObs, meanObs, semObs, 'o', 'Color', curveColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', curveColor, ...
 	'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
-hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2);
+hP = plot(ax, xFit, fitCurve, '-', 'Color', curveColor, 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
 hOut = [hE, hP];
 end
 

@@ -101,7 +101,7 @@ try, f.PaperPositionMode = 'auto'; catch, end
 ax = axes(f);
 hold(ax,'on');
 
-edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
+edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 for p = Patches(:)'
@@ -134,8 +134,7 @@ text(ax, 4, textY, starStr, ...
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
-labels = cellstr(displayGroups);
-lg = legend(ax, Patches(1:2), labels, 'Location', 'southeastoutside');
+lg = legend(ax, Patches(1:2), {'No gaps', '7 day gap'}, 'Location', 'southeastoutside');
 
 lg.FontSize = 12;
 lg.Title.String = '💡💧';
@@ -185,18 +184,17 @@ f2.Position(3:4) = [4, 4];
 [~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 ax2 = gca;
 ax2.XTick = 1:2;
-ax2.XTickLabel = cellstr(displayGroups);
+ax2.XTickLabel = {};
 iTagRetunablePValues(Opt2);
 TransferLearning.Style.SetBarPValues(Opt2);
 iStyleBars(Bars2, edgeColors(1,:), edgeColors(2,:));
 iStyleErrorBars(ErrorBars2, edgeColors);
 
-ylabel(ax2, 'Hit rate', 'FontSize', 12);
-title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
+ylabel(ax2, 'Hit rate');
+title(ax2, 'First block');
 box(ax2, 'off');
 
 svgFS = 'English_Fig2M_Vacation7_FirstSessionHitRate.svg';
-if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar), ax2.Toolbar.Visible = 'off'; end
 
 svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
 fprintf('Wrote: %s (p=%.4g)\n', svgFS, pFS);
@@ -210,12 +208,6 @@ fprintf('First-block mice: Control n = %d, Gap n = %d\n', nFirstControlMice, nFi
 fprintf('Cells n = N/A (behavior-only panel)\n');
 fprintf('Learning curve LME Group p = %.6g\n', pCurve);
 fprintf('First-block hit-rate ranksum p = %.6g\n', pFS);
-
-assignin('base', 'English_Fig2M_Sessions', Sess);
-assignin('base', 'English_Fig2M_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2M_LearningCurveP', pCurve);
-assignin('base', 'English_Fig2M_FirstSessionP', pFS);
-assignin('base', 'English_Fig2M_SampleCounts', sampleCounts);
 
 function iStyleBars(barsObj, colorControl, colorGap)
 if isscalar(barsObj)

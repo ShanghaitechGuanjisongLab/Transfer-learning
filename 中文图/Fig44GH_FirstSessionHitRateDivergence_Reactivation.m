@@ -36,7 +36,7 @@ colorContinual = groupColors(2, :);
 
 f = figure('Color', 'w', 'Name', 'Chinese Fig44GH divergence correlations');
 f.Units = 'centimeters';
-f.Position(3:4) = [17, 8];
+f.Position(3:4) = [12.4, 8];
 
 layout = tiledlayout(f, 1, 2, 'TileSpacing','loose', 'Padding', 'tight');
 
@@ -46,7 +46,6 @@ statsG = iPlotFirstSessionHitRateVsDivergence(axG, dataG, colorNaive, colorConti
 axH = nexttile(layout, 2);
 statsH = iPlotReactivationVsDivergence(axH, dataH, colorContinual);
 xlabel(layout,'1s divergence');
-title(layout,'Continual 💡💧 first block');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44GH_FirstSessionHitRateDivergence_Reactivation.svg');
 fprintf('Wrote: %s\n', svgPath);
 
@@ -476,7 +475,7 @@ elseif pValue < 0.01
 else
 	pStr = sprintf('p = %.2f', pValue);
 end
-labelStr = sprintf('Spearman ρ = %.2f\n%s', rho, pStr);
+labelStr = sprintf('Sp. ρ = %.2f\n%s', rho, pStr);
 text(ax, x, y, labelStr, 'Units', 'normalized', ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
 end

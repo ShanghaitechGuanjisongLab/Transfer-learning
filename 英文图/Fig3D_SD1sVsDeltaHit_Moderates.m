@@ -255,7 +255,6 @@ for iS = 1:2
 
 	histogram(ax, v, binEdges, 'Normalization', 'probability', ...
 		'FaceColor', pairColors{iS}, 'FaceAlpha', 0.7, 'EdgeColor', 'none');
-	xline(ax, mean(v), '--', 'Color', pairColors{iS}, 'LineWidth', 1);
 
 	xlim(ax, [-1, 1]);
 	ax.XTick = [-1, 0, 1];

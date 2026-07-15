@@ -44,6 +44,7 @@ for iL = 1:numel(layers)
         rho = NaN; p = NaN;
     end
     pLabel = "p = " + MATLAB.SignificantFixedpoint(p, 2);
+    rhoLabel = "Spearman ρ = " + sprintf('%.3f', rho);
 
     % Run optional assertions on computed data
     iAssertSharedMouseSlopesConsistent(... 
@@ -55,7 +56,7 @@ for iL = 1:numel(layers)
     fprintf('Continual n = %d mice, %d cells\n', nnz(maskT), round(sum(nCellAll(maskT), 'omitnan')));
     fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
-    layerData{iL} = struct('slopeAll',slopeAll,'sdAll',sdAll,'use',use,'maskN',maskN,'maskT',maskT,'pLabel',pLabel,'layerLabel',layerLabel);
+    layerData{iL} = struct('slopeAll',slopeAll,'sdAll',sdAll,'use',use,'maskN',maskN,'maskT',maskT,'pLabel',pLabel,'rhoLabel',rhoLabel,'layerLabel',layerLabel);
 end
 %% 
 
@@ -87,15 +88,18 @@ for iL = 1:numel(layers)
     end
     title(ax, d.layerLabel, 'FontSize', 12);
     text(ax, 0.97, 0.97, d.pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+    text(ax, 0.97, 0.03, d.rhoLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
     axAll(iL) = ax;
 end
 
-iUnifyYLimits(axAll(:));
 lgd = legend(hLegend, {'Naive', 'Continual'}, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 svgPath = 'English_Fig3B_SlopeVsHeterogeneity.svg';
-svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
+TransferLearning.ApplyStandardExportStyle(f, 2);
+MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
+svgPath = TransferLearning.StandardFigureSvgPath(svgPath);
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 function [SessUsed, miceAll, slopeAll] = iNaiveSlopeData(DS_LAB, DS_LAI)
@@ -177,18 +181,6 @@ badRows = (maxSlope - minSlope) > 1e-9 .* max(1, max(abs(maxSlope), abs(minSlope
 if any(badRows)
     badText = mouseIds(badRows) + ": " + string(minSlope(badRows)) + " vs " + string(maxSlope(badRows));
     error('Fig3C:LayerSlopeMismatch', 'Shared mice have inconsistent slopes across layer tiles.\n%s', char(strjoin(badText, newline)));
-end
-end
-
-function iUnifyYLimits(axList)
-axList = axList(isgraphics(axList, 'axes'));
-if numel(axList) < 2
-    return;
-end
-yLimMat = vertcat(axList.YLim);
-commonYLim = [min(yLimMat(:, 1)), max(yLimMat(:, 2))];
-for iAx = 1:numel(axList)
-    ylim(axList(iAx), commonYLim);
 end
 end
 

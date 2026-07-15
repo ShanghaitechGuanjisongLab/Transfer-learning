@@ -53,6 +53,7 @@ fprintf('Ctrl: %.3f ± %.3f (n=%d)\n', mean(xCtrl5), std(xCtrl5) / sqrt(numel(xC
 fprintf('TH:   %.3f ± %.3f (n=%d)\n', mean(xTH5), std(xTH5) / sqrt(numel(xTH5)), numel(xTH5));
 fprintf('Learned-audio active cells: Ctrl=%d, TH=%d\n', ctrlCells5, thCells5);
 fprintf('Reactivation comparison: Spearman rho is not applicable.\n');
+%% 
 
 f = figure('Color', 'w', 'Name', 'Fig62B TH first-session reactivation');
 f.Units = 'centimeters';
@@ -117,7 +118,7 @@ end
 title(ax, titleText, 'FontSize', 6, 'FontWeight', 'normal');
 
 colorCtrl = TransferLearning.ContinualColor;
-colorTH = TransferLearning.ColorA;
+colorTH = TransferLearning.ColorB;
 if isscalar(bars)
 	bars.FaceColor = 'flat';
 	nBars = numel(bars.YData);

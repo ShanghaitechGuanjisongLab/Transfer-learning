@@ -47,14 +47,13 @@ end
 
 scatterColor = TransferLearning.ColorA;
 fitColor = [0, 0, 0];
-scatter(ax, x(use), y(use), 8, scatterColor, 'filled', ...
-	'MarkerEdgeColor', scatterColor, 'LineWidth', 0.2);
+scatter(ax, x(use), y(use), [], scatterColor);
 
 if nnz(use) >= 2 && std(x(use), 'omitnan') > 0
 	b = polyfit(x(use), y(use), 1);
 	xFit = [min(x(use)), max(x(use))];
 	yFit = polyval(b, xFit);
-	plot(ax, xFit, yFit, '-', 'Color', fitColor, 'LineWidth', 1, 'HandleVisibility','off');
+	plot(ax, xFit, yFit, '-', 'Color', fitColor, 'LineWidth', 1, 'Tag', 'TransferLearningSupplementalLine');
 end
 
 [rho, p] = iSpearman(x(use), y(use));

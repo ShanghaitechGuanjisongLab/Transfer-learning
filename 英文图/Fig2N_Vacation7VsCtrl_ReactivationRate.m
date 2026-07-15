@@ -151,7 +151,7 @@ f.PaperSize = [3, 4];
 
 Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
-barColors =[TransferLearning.ContinualColor;TransferLearning.ColorA];
+barColors =[TransferLearning.ContinualColor;TransferLearning.ColorB];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 Options = cell(2, 1);
 
@@ -183,19 +183,6 @@ svgPath = svgName;
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 
-%% ===== 6) Save to workspace =====
-reactSampleCounts = table(["Control"; "Gap"], [numel(xReactCtrl); numel(xReactV7)], [nReactCellsCtrl; nReactCellsV7], ...
-	'VariableNames', {'Group','NMouse','NLearnedActiveCell'});
-divSampleCounts = table(["Control"; "Gap"], [numel(xDivCtrl); numel(xDivV7)], [nDivCellsCtrl; nDivCellsV7], ...
-	'VariableNames', {'Group','NMouse','NCell'});
-assignin('base', 'English_Fig2N_R', R);
-assignin('base', 'English_Fig2N_pReact', pReact);
-assignin('base', 'English_Fig2N_DivCtrl', xDivCtrl);
-assignin('base', 'English_Fig2N_DivVac7', xDivV7);
-assignin('base', 'English_Fig2N_pDiv', pDiv);
-assignin('base', 'English_Fig2N_ReactivationSampleCounts', reactSampleCounts);
-assignin('base', 'English_Fig2N_DivergenceSampleCounts', divSampleCounts);
-
 %% ===== Local functions =====
 
 function iStyleAxes(ax, showX)
@@ -207,7 +194,7 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 ax.XTick = [1 2];
 if showX
-	ax.XTickLabel = {'Ctrl', 'Gap'};
+	ax.XTickLabel = {'No gaps', '7d gap'};
 else
 	ax.XTickLabel = {};
 end

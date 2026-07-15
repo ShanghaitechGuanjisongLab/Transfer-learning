@@ -54,7 +54,7 @@ sessions7 = groupSessions(groupSessions.Session <= 7, :);
 groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
 
 xSummary = (1:max([max(fitCtrl.XObserved), max(fitTH.XObserved), max(x)])).';
-xFit = linspace(1, max(xSummary), 200).';
+xFit = linspace(max(0, min(xSummary) - 1), max(xSummary) + 1, 200).';
 ctrlFitCurve = iSigmoidFromParams(fitCtrl.ParamRaw, xFit);
 thFitCurve = iSigmoidFromParams(fitTH.ParamRaw, xFit);
 
@@ -74,7 +74,7 @@ f.PaperSize = [12, 8];
 f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
-curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorA];
+curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
 hCtrl = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, ctrlFitCurve, curveColors(1, :));
 hTH = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFit, thFitCurve, curveColors(2, :));
 
@@ -118,9 +118,7 @@ yt = yticks(ax);
 xlim([0,20]);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
-lgd = legend(ax, [hCtrl(1), hCtrl(2), hTH(1), hTH(2)], ...
-	{'Control Mean ± SEM', 'Control Sigmoid', 'TH Mean ± SEM', 'TH Sigmoid'}, ...
-	'Location', 'southeast');
+lgd = legend(ax, [hCtrl(1), hTH(1)], {'Control', 'TH'}, 'Location', 'southeast');
 lgd.Box = 'off';
 lgd.FontSize = 10;
 lgd.AutoUpdate=false;
@@ -405,7 +403,7 @@ function hOut = iPlotGroupMeanErrorbars(ax, xSummary, meanCurve, semCurve, xFit,
 		'LineWidth', 1.5, ...
 		'CapSize', 4, ...
 		'LineStyle', 'none');
-	fitHandle = plot(ax, xFit, fitCurve, '-', 'Color', lineColor, 'LineWidth', 2.2);
+	fitHandle = plot(ax, xFit, fitCurve, '-', 'Color', lineColor, 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
 	hOut = [dataHandle, fitHandle];
 end
 

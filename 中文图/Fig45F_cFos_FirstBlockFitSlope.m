@@ -69,14 +69,14 @@ fig.PaperUnits = 'centimeters';
 fig.PaperSize = [12, 8];
 fig.PaperPositionMode = 'auto';
 
-curveColors = [TransferLearning.ContinualColor;TransferLearning.ColorA];
+curveColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
 axisHandle = axes(fig);
 hold(axisHandle, 'on');
 hControl = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFitCurve, meanMatOut(:,1), semMatOut(:,1), controlFitCurvePlot, curveColors(1, :));
 hCFos = iPlotGroupMeanErrorbarsSingleAx(axisHandle, xFitCurve, meanMatOut(:,2), semMatOut(:,2), cfosFitCurvePlot, curveColors(2, :));
 
-ylabel(axisHandle, 'Hit rate', 'FontSize', 12);
-xlabel(axisHandle, 'Block', 'FontSize', 12);
+ylabel(axisHandle, 'Hit rate');
+xlabel(axisHandle, 'Block');
 axisHandle.FontSize = 12;
 axisHandle.LineWidth = 2;
 axisHandle.Color = 'none';
@@ -98,32 +98,27 @@ end
 max7Control = max(meanMatOut(1:min(7, end), 1), [], 'omitnan');
 max7CFos = max(meanMatOut(1:min(7, end), 2), [], 'omitnan');
 yTop7 = max(max7Control, max7CFos);
-yl = ylim(axisHandle); yrange = yl(2) - yl(1);
+yl = ylim(axisHandle); 
+yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.2 * yrange;
-plot(axisHandle, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+plot(axisHandle, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1, 'Tag', 'PLine_1');
+if groupP7 < 0.001
+	starStr = '＊＊＊＊';
+else
+	starStr = TransferLearning.Style.iFormatPText(groupP7); 
+end
 text(axisHandle, 4, textY, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12,AffectAutoLimits=true);
-yt = yticks(axisHandle);
-yticks(axisHandle, yt(yt <= 1 + 1e-6));
-
-legend(axisHandle, [hControl(1), hControl(2), hCFos(1), hCFos(2)], ...
-	{'Control Mean ± SEM', 'Control Sigmoid', 'cFos Mean ± SEM', 'cFos Sigmoid'}, ...
-	'FontSize', 10, 'Location', 'southoutside', 'NumColumns', 2, 'Box', 'off');
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'Tag', 'PText_1', AffectAutoLimits=true);
 title(axisHandle, '');
 box(axisHandle, 'off');
 grid(axisHandle, 'off');
 
-allAxes = findall(fig, 'Type', 'axes');
-for axisItem = reshape(allAxes, 1, [])
-	if isprop(axisItem, 'Toolbar') && ~isempty(axisItem.Toolbar)
-		axisItem.Toolbar.Visible = 'off';
-	end
-end
-
-svgName = '中文图Fig45F_cFos_FirstBlockFitSlope.svg';
-svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
+TransferLearning.ApplyStandardExportStyle(fig, 2);
+yt = yticks(axisHandle);
+yticks(axisHandle, yt(yt <= 1 + 1e-6));
+svgPath = TransferLearning.StandardFigureSvgPath('中文图Fig45F_cFos_FirstBlockFitSlope.svg');
+print(fig, svgPath, '-dsvg');
 
 fitTable = table;
 fitTable.Group = displayGroup(:);
@@ -164,12 +159,6 @@ fprintf('Permutation slope difference (cFos - Control): %.4f\n', permResult.Obse
 fprintf('Permutation significance p-value (two-sided) = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
 fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
-
-assignin('base', 'Fig334G_BlockSigmoid_AllSessions', allSessions);
-assignin('base', 'Fig334G_BlockSigmoid_FitTable', fitTable);
-assignin('base', 'Fig334G_BlockSigmoid_Summary', summaryTable);
-assignin('base', 'Fig334G_BlockSigmoid_Permutation', permResult);
-
 function sessions = iBuildLightWaterBlockSessions(dataset, groupOrder)
 mouseGroup = iBuildMouseGroupTable(dataset, groupOrder);
 blocks = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(dataset, false);
@@ -336,7 +325,7 @@ meanObserved = meanCurve(xObserved);
 semObserved = semCurve(xObserved);
 semObserved(~isfinite(semObserved)) = 0;
 hError = errorbar(axisHandle, xObserved, meanObserved, semObserved, 'o', 'Color', lineColor, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', lineColor, 'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
-hFit = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.2);
+hFit = plot(axisHandle, xFit, yFit, '-', 'Color', lineColor, 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
 hOut = [hError, hFit];
 end
 
