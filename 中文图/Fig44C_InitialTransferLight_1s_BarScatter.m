@@ -1,10 +1,10 @@
-% Chinese Fig44C: initial vs continual LightWater 1 s z-score and active fraction.
+% Chinese Fig44C: initial vs Transfer LightWater 1 s z-score and active fraction.
 
 Data = TransferLearning.PrepareFig44CEData();
 barColors = Data.GroupColors;
 compareGroup = Data.CompareGroup;
 
-f = figure('Color', 'w', 'Name', 'Chinese Fig44C Initial/Continual LightWater 1s bars');
+f = figure('Color', 'w', 'Name', 'Chinese Fig44C Initial/Transfer LightWater 1s bars');
 f.Units = 'centimeters';
 f.Position(3:4) = [4, 8];
 f.PaperUnits = 'centimeters';
@@ -21,7 +21,7 @@ iStyleBarPanel(axZ, optZ, barsZ, errZ, barColors, 'z-score', '1 s z-score');
 [pTop, tTop] = iExtractFirstPValueAndText(optZ);
 
 axActive = nexttile(layout, 2);
-[~, optActive, barsActive, errActive] = UniExp.BarScatterCompare({double(Data.ActiveNaive(:)), double(Data.ActiveContinual(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, optActive, barsActive, errActive] = UniExp.BarScatterCompare({double(Data.ActiveNaive(:)), double(Data.ActiveTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optActive);
 iStyleBarPanel(axActive, optActive, barsActive, errActive, barColors, 'Active fraction', 'Active fraction');
 ylim(axActive, [0, max(0.1, axActive.YLim(2))]);
@@ -36,16 +36,16 @@ end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44C_InitialTransferLight_1s_BarScatter.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-fprintf('\n=== Fig44C initial/continual LightWater bars ===\n');
+fprintf('\n=== Fig44C initial/Transfer LightWater bars ===\n');
 fprintf('Naive 1s z-score: %d mice, %d cells\n', Data.InitialStats.MouseCount, Data.InitialStats.CellCount);
-fprintf('Continual 1s z-score: %d mice, %d cells\n', Data.TransferStats.MouseCount, Data.TransferStats.CellCount);
+fprintf('Transfer 1s z-score: %d mice, %d cells\n', Data.TransferStats.MouseCount, Data.TransferStats.CellCount);
 fprintf('Top (1 s z-score): BarScatterCompare PValue=%.6g, PText="%s"\n', pTop, tTop);
 fprintf('Bottom (active fraction): BarScatterCompare PValue=%.6g, PText="%s"\n', pBottom, tBottom);
 
-assignin('base', 'Fig44C_NTATS1s', struct('Initial', Data.VInitial, 'Continual', Data.VTransfer, ...
-	'XsSec', Data.XsSec, 'ActiveNaive', Data.ActiveNaive, 'ActiveContinual', Data.ActiveContinual, ...
+assignin('base', 'Fig44C_NTATS1s', struct('Initial', Data.VInitial, 'Transfer', Data.VTransfer, ...
+	'XsSec', Data.XsSec, 'ActiveNaive', Data.ActiveNaive, 'ActiveTransfer', Data.ActiveTransfer, ...
 	'PTop', pTop, 'PBottom', pBottom, 'PTextTop', tTop, 'PTextBottom', tBottom, ...
-	'InitialStats', Data.InitialStats, 'ContinualStats', Data.TransferStats));
+	'InitialStats', Data.InitialStats, 'TransferStats', Data.TransferStats));
 
 function iStyleBarPanel(ax, optional, bars, errorBars, colors, yLabelText, titleText)
 iTagPValueObjects(optional);
@@ -65,7 +65,7 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 ax.XAxis.Visible = 'on';
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Continual'};
+ax.XTickLabel = {'Naive', 'Transfer'};
 legend(ax, 'off');
 ylabel(ax, yLabelText, 'FontName', 'Arial', 'FontSize', 6);
 title(ax, titleText, 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');

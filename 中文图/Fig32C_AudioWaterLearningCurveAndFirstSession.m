@@ -64,9 +64,8 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 hold(ax,'on');
 
-displayGroups = ["Naive","Continual"];
-edgeColors = TransferLearning.GroupColors(displayGroups);
-cueTitleColor = TransferLearning.ColorA;
+displayGroups = ["Naive","Transfer"];
+edgeColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -102,8 +101,6 @@ end
 lg.FontSize = 12;
 lg.Box = 'off';
 lg.Title.String = '🔊💧';
-lg.Title.FontSize = 12;
-lg.Title.Color = cueTitleColor;
 
 xlabel(ax, 'Block', 'FontSize', 12);
 ylabel(ax, 'Hit rate', 'FontSize', 12);
@@ -186,7 +183,7 @@ svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig
 fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== Fig32C first-block bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
-fprintf('Continual mice n = %d\n', numel(tranFirst));
+fprintf('Transfer mice n = %d\n', numel(tranFirst));
 fprintf('First-block bar P (BarScatterCompare): %s\n', ...
 	TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 

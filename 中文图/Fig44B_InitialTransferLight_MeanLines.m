@@ -36,36 +36,23 @@ E = [std(XInitial, 0, 1, 'omitnan')' std(XTransfer, 0, 1, 'omitnan')'] ./ sqrt(m
 f = figure('Color', 'w', 'Name', '中文图332B 初始/迁移光水均值线');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 12, 8];
-f.PaperSize = [12, 8];
 
 ax = axes(f);
 hold(ax, 'on');
-ax.FontSize = 12;
-ax.FontName = 'Segoe UI Emoji';
-ax.LineWidth = 2;
-ax.XAxis.LineWidth = 2;
-ax.YAxis.LineWidth = 2;
 
-lineColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+lineColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Y, E, 0.2, ...
 	X=repmat(xsPlot(:), 1, 2), ...
 	EdgeColors=lineColors, ...
-	Ax=ax, ...
-	LineStyles=["-"; "-"]);
-for p = Patches(:)'
-	p.LineWidth = 2;
-end
+	Ax=ax);
 
-xline(ax, 0, '--k', 'LineWidth', 2);
-xline(ax, 1, '--k', 'LineWidth', 2);
+xline(ax, 0, '--');
+xline(ax, 1, '--');
 box(ax, 'off');
 grid(ax, 'off');
-xlabel(ax, 'Time', 'FontSize', 12);
-ylabel(ax, 'z-score', 'FontSize', 12);
+xlabel(ax, 'Time');
+ylabel(ax, 'z-score');
 ticks = ax.XTick;
 labels = string(ax.XTickLabel);
 for i = 1:numel(ticks)
@@ -77,25 +64,13 @@ for i = 1:numel(ticks)
 end
 ax.XTickLabel = labels;
 
-lg = legend(Patches, ["Naive", "Continual"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box', 'off');
-lg.FontSize = 12;
+lg = legend(Patches, ["Naive", "Transfer"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches));
 
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
-
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-if ~isfolder(outDirUNC)
-	mkdir(outDirUNC);
-end
 svgPath = '中文图Fig44B_InitialTransferLight_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Fig332B Naive: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
-fprintf('Fig332B Continual: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
-
-assignin('base', 'Fig332B_InitialTransfer_Mean', Y);
-assignin('base', 'Fig332B_InitialTransfer_SEM', E);
+fprintf('Fig332B Transfer: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
 
 function [G, stats] = iQueryInitialLightAll()
 LAB = TransferLearning.LightAudioBaseline();

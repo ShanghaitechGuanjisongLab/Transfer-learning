@@ -1,4 +1,4 @@
-% Combined Chinese Fig44C/E: initial-vs-continual 1 s bars and divergence-by-layer bars.
+% Combined Chinese Fig44C/E: initial-vs-Transfer 1 s bars and divergence-by-layer bars.
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -9,7 +9,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-barColors = [TransferLearning.NaiveColor; TransferLearning.ContinualColor];
+barColors = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 xs = TransferLearning.Xs;
@@ -40,18 +40,18 @@ vInitial = vInitial(isfinite(vInitial));
 vTransfer = vTransfer(isfinite(vTransfer));
 
 activeNaive = iActiveMask(XInitial, idx1sZ, baseMask, kSigma);
-activeContinual = iActiveMask(XTransfer, idx1sZ, baseMask, kSigma);
+activeTransfer = iActiveMask(XTransfer, idx1sZ, baseMask, kSigma);
 nNaive = size(XInitial, 1);
-nContinual = size(XTransfer, 1);
+nTransfer = size(XTransfer, 1);
 nNaiveActive = sum(activeNaive);
-nContinualActive = sum(activeContinual);
+nTransferActive = sum(activeTransfer);
 
 sampleRate = 8;
 idx1sDiv = 4 * sampleRate;
 sources = {
 	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline(), 'Group', "Naive", 'StartPhase', "Naive")
 	builtin('struct', 'Name', "LAInterspersed", 'DS', TransferLearning.LAInterspersed(), 'Group', "Naive", 'StartPhase', "Naive")
-	builtin('struct', 'Name', "AudioLightBaseline", 'DS', TransferLearning.AudioLightBaseline(), 'Group', "Continual", 'StartPhase', "Transfer")
+	builtin('struct', 'Name', "AudioLightBaseline", 'DS', TransferLearning.AudioLightBaseline(), 'Group', "Transfer", 'StartPhase', "Transfer")
 };
 
 divRows = cell(numel(sources), 1);
@@ -73,34 +73,31 @@ divSummary = table(mouseU, groupU, aggL23, aggL5, aggCellL23, aggCellL5, ...
 	'VariableNames', {'Mouse','Group','DivL23','DivL5','NCellL23','NCellL5'});
 
 maskNaiveL23 = divSummary.Group == "Naive" & isfinite(divSummary.DivL23);
-maskContinualL23 = divSummary.Group == "Continual" & isfinite(divSummary.DivL23);
+maskTransferL23 = divSummary.Group == "Transfer" & isfinite(divSummary.DivL23);
 maskNaiveL5 = divSummary.Group == "Naive" & isfinite(divSummary.DivL5);
-maskContinualL5 = divSummary.Group == "Continual" & isfinite(divSummary.DivL5);
+maskTransferL5 = divSummary.Group == "Transfer" & isfinite(divSummary.DivL5);
 
 naiveL23 = divSummary.DivL23(maskNaiveL23);
-continualL23 = divSummary.DivL23(maskContinualL23);
+TransferL23 = divSummary.DivL23(maskTransferL23);
 naiveL5 = divSummary.DivL5(maskNaiveL5);
-continualL5 = divSummary.DivL5(maskContinualL5);
+TransferL5 = divSummary.DivL5(maskTransferL5);
 
 nCellNaiveL23 = iSumFinite(divSummary.NCellL23(maskNaiveL23));
-nCellContinualL23 = iSumFinite(divSummary.NCellL23(maskContinualL23));
+nCellTransferL23 = iSumFinite(divSummary.NCellL23(maskTransferL23));
 nCellNaiveL5 = iSumFinite(divSummary.NCellL5(maskNaiveL5));
-nCellContinualL5 = iSumFinite(divSummary.NCellL5(maskContinualL5));
+nCellTransferL5 = iSumFinite(divSummary.NCellL5(maskTransferL5));
 
-if isempty(naiveL23) || isempty(continualL23) || isempty(naiveL5) || isempty(continualL5)
+if isempty(naiveL23) || isempty(TransferL23) || isempty(naiveL5) || isempty(TransferL5)
 	error('Fig44CE:InsufficientDivergenceData', 'At least one LightWater layer comparison is empty.');
 end
 %% 
 
-f = figure('Color', 'w', 'Name', 'Chinese Fig44CE Initial/Continual LightWater bars');
+f = figure('Color', 'w', 'Name', 'Chinese Fig44CE Initial/Transfer LightWater bars');
 f.Units = 'centimeters';
 f.Position(3:4) = [4, 16];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 4, 16];
-f.PaperSize = [4, 16];
+f.
 
-layout = tiledlayout(f, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+layout = tiledlayout(f, 4, 1, 'TileSpacing','tight', 'Padding', 'tight');
 
 axZ = nexttile(layout, 1);
 [~, optZ, barsZ, errZ] = UniExp.BarScatterCompare({double(vInitial(:)), double(vTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
@@ -109,52 +106,36 @@ iStyleBarPanel(axZ, optZ, barsZ, errZ, barColors, 'z-score', '1 s z-score');
 [pCTop, tCTop] = iExtractFirstPValueAndText(optZ);
 
 axActive = nexttile(layout, 2);
-[~, optActive, barsActive, errActive] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeContinual(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, optActive, barsActive, errActive] = UniExp.BarScatterCompare({double(activeNaive(:)), double(activeTransfer(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optActive);
 iStyleBarPanel(axActive, optActive, barsActive, errActive, barColors, 'Active fraction', 'Active fraction');
 ylim(axActive, [0, max(0.1, axActive.YLim(2))]);
 [pCBottom, tCBottom] = iExtractFirstPValueAndText(optActive);
 
 axL23 = nexttile(layout, 3);
-[~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(naiveL23(:)), double(continualL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(naiveL23(:)), double(TransferL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optL23);
 iStyleBarPanel(axL23, optL23, barsL23, errL23, barColors, 'Divergence', 'Layer 2/3');
 [pETop, tETop] = iExtractFirstPValueAndText(optL23);
 
 axL5 = nexttile(layout, 4);
-[~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(naiveL5(:)), double(continualL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(naiveL5(:)), double(TransferL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optL5);
 iStyleBarPanel(axL5, optL5, barsL5, errL5, barColors, 'Divergence', 'Layer 5');
 [pEBottom, tEBottom] = iExtractFirstPValueAndText(optL5);
 
-for axItem = [axZ, axActive, axL23, axL5]
-	if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar)
-		axItem.Toolbar.Visible = 'off';
-	end
-end
-
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44CE_InitialTransferLight_1s_BarScatter_DivByLayer.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-fprintf('\n=== Fig44CE initial/continual LightWater bars ===\n');
+fprintf('\n=== Fig44CE initial/Transfer LightWater bars ===\n');
 fprintf('Naive 1s z-score: %d mice, %d cells\n', initialStats.MouseCount, initialStats.CellCount);
-fprintf('Continual 1s z-score: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
+fprintf('Transfer 1s z-score: %d mice, %d cells\n', transferStats.MouseCount, transferStats.CellCount);
 fprintf('C-top (1 s z-score): BarScatterCompare PValue=%.6g, PText="%s"\n', pCTop, tCTop);
 fprintf('C-bottom (active fraction): BarScatterCompare PValue=%.6g, PText="%s"\n', pCBottom, tCBottom);
-fprintf('E-top (Layer 2/3 divergence): Naive %d mice, %d cells; Continual %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
-	nnz(maskNaiveL23), nCellNaiveL23, nnz(maskContinualL23), nCellContinualL23, pETop, tETop);
-fprintf('E-bottom (Layer 5 divergence): Naive %d mice, %d cells; Continual %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
-	nnz(maskNaiveL5), nCellNaiveL5, nnz(maskContinualL5), nCellContinualL5, pEBottom, tEBottom);
-
-assignin('base', 'Fig44CE_NTATS1s', struct('Initial', vInitial, 'Continual', vTransfer, 'Idx0', idx0s, 'Idx1', idx1sZ, ...
-	'XsSec', xsSec, 'ActiveNaive', activeNaive, 'ActiveContinual', activeContinual, ...
-	'PC_Top', pCTop, 'PC_Bottom', pCBottom, 'PE_Top', pETop, 'PE_Bottom', pEBottom, ...
-	'TC_Top', tCTop, 'TC_Bottom', tCBottom, 'TE_Top', tETop, 'TE_Bottom', tEBottom, ...
-	'InitialStats', initialStats, 'ContinualStats', transferStats));
-assignin('base', 'Fig44CE_DivergenceTable', divTable);
-assignin('base', 'Fig44CE_DivergenceSummary', divSummary);
-assignin('base', 'Fig44CE_pL23', pETop);
-assignin('base', 'Fig44CE_pL5', pEBottom);
+fprintf('E-top (Layer 2/3 divergence): Naive %d mice, %d cells; Transfer %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
+	nnz(maskNaiveL23), nCellNaiveL23, nnz(maskTransferL23), nCellTransferL23, pETop, tETop);
+fprintf('E-bottom (Layer 5 divergence): Naive %d mice, %d cells; Transfer %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
+	nnz(maskNaiveL5), nCellNaiveL5, nnz(maskTransferL5), nCellTransferL5, pEBottom, tEBottom);
 
 function [G, stats] = iQueryInitialLightAll()
 LAB = TransferLearning.LightAudioBaseline();
@@ -485,25 +466,11 @@ iStyleErrorBars(ErrorBars, colors);
 end
 
 function iStyleAxes(ax, yLabelText, titleText)
-ax.FontName = 'Arial';
-ax.FontSize = 6;
-ax.LineWidth = 1;
-if isprop(ax.XAxis, 'LineWidth')
-	ax.XAxis.LineWidth = 1;
-	ax.YAxis.LineWidth = 1;
-end
-ax.XAxis.Visible = 'on';
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Continual'};
-legend(ax, 'off');
-ylabel(ax, yLabelText, 'FontName', 'Arial', 'FontSize', 6);
-title(ax, titleText, 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');
+ax.XTickLabel = {'Naive', 'Transfer'};
+ylabel(ax, yLabelText);
+title(ax, titleText);
 box(ax, 'off');
-grid(ax, 'off');
-for textItem = findobj(ax, 'Type', 'Text')'
-	textItem.FontName = 'Arial';
-	textItem.FontSize = 6;
-end
 end
 
 function iStyleBars(Bars, colorA, colorB)

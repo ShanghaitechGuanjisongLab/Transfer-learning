@@ -67,9 +67,8 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 hold(ax,'on');
 
-displayGroups = ["Naive","Continual"];
-edgeColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
-cueTitleColor = TransferLearning.ColorB;
+displayGroups = ["Naive","Transfer"];
+edgeColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -187,7 +186,7 @@ svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig
 fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== Fig32B first-block bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveFirst));
-fprintf('Continual mice n = %d\n', numel(tranFirst));
+fprintf('Transfer mice n = %d\n', numel(tranFirst));
 fprintf('First-block bar P (BarScatterCompare): %s\n', ...
 	TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 

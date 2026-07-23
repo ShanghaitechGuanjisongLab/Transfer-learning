@@ -17,7 +17,7 @@ classdef(Abstract)TransferLearning
 		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
 		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
 		NaiveColor=[0.6249    0.2188    0.9830];
-		ContinualColor=[0.9386    0.4672    0.0384];
+		TransferColor=[0.9386    0.4672    0.0384];
 		ColorA=[0.0547    0.0818    0.0163];
 		ColorB=[0.0796    0.7324    0.0000];
 		LearnedColor=[0.0547    0.0818    0.0163];

@@ -1,4 +1,4 @@
-% Fig33A: Extreme-mouse LightWater naive (lowest slope) vs continual (highest slope)
+% Fig33A: Extreme-mouse LightWater naive (lowest slope) vs Transfer (highest slope)
 % scatter + sigmoid fits on a single axis (like Fig33B)
 %
 % Shares data loading with Fig33B. Applies carry-forward + truncation rule:
@@ -63,14 +63,14 @@ f = figure('Color', 'w', 'Name', 'Fig33A Extreme mouse learning');
 f.Units = 'centimeters'; f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters'; f.PaperSize = [12, 8]; f.PaperPositionMode = 'auto';
 
-curveColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+curveColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 ax = axes(f); hold(ax, 'on');
 
 % Naive (lowest slope)
 xN = double(naiveSess.Session(:)); yN = double(naiveSess.Performance(:));
 hN = scatter(ax, xN, yN, 50, curveColors(1,:), 'o');
 
-% Continual (highest slope)
+% Transfer (highest slope)
 xT = double(tranSess.Session(:)); yT = double(tranSess.Performance(:));
 hT = scatter(ax, xT, yT, 50, curveColors(2,:), 'o');
 
@@ -85,7 +85,7 @@ xlabel(ax, 'Block', 'FontSize', 12); ylabel(ax, 'Hit rate');
 ax.FontSize = 12; ax.LineWidth = 2; ax.Color = 'none';
 box(ax, 'off'); grid(ax, 'off'); title(ax, '');
 
-legend(ax, [hN, hT], {'Naive', 'Continual'}, 'Location', 'best', 'Box', 'off');
+legend(ax, [hN, hT], {'Naive', 'Transfer'}, 'Location', 'best', 'Box', 'off');
 title('Representative mice');
 TransferLearning.ApplyStandardExportStyle(f, 2);
 ax.YTick(ax.YTick<0-eps|ax.YTick>1+eps)=[];
@@ -95,7 +95,7 @@ print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 fprintf('\n=== 中文图33A ===\n');
 fprintf('Naive lowest-slope mouse: %s, slope=%.4f\n', mouseMinN, fitN.Slope);
-fprintf('Continual highest-slope mouse: %s, slope=%.4f\n', mouseMaxT, fitT.Slope);
+fprintf('Transfer highest-slope mouse: %s, slope=%.4f\n', mouseMaxT, fitT.Slope);
 
 % ====== Local functions ======
 

@@ -8,7 +8,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-groupColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+groupColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 xs = TransferLearning.Xs;
 if ~isduration(xs)
 	xs = seconds(xs);
@@ -37,14 +37,14 @@ vInitial = vInitial(isfinite(vInitial));
 vTransfer = vTransfer(isfinite(vTransfer));
 
 activeNaive = iActiveMask(XInitial, idx1sZ, baseMask, kSigma);
-activeContinual = iActiveMask(XTransfer, idx1sZ, baseMask, kSigma);
+activeTransfer = iActiveMask(XTransfer, idx1sZ, baseMask, kSigma);
 
 sampleRate = 8;
 idx1sDiv = 4 * sampleRate;
 sources = {
 	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline(), 'Group', "Naive", 'StartPhase', "Naive")
 	builtin('struct', 'Name', "LAInterspersed", 'DS', TransferLearning.LAInterspersed(), 'Group', "Naive", 'StartPhase', "Naive")
-	builtin('struct', 'Name', "AudioLightBaseline", 'DS', TransferLearning.AudioLightBaseline(), 'Group', "Continual", 'StartPhase', "Transfer")
+	builtin('struct', 'Name', "AudioLightBaseline", 'DS', TransferLearning.AudioLightBaseline(), 'Group', "Transfer", 'StartPhase', "Transfer")
 };
 
 divRows = cell(numel(sources), 1);
@@ -66,21 +66,21 @@ divSummary = table(mouseU, groupU, aggL23, aggL5, aggCellL23, aggCellL5, ...
 	'VariableNames', {'Mouse','Group','DivL23','DivL5','NCellL23','NCellL5'});
 
 maskNaiveL23 = divSummary.Group == "Naive" & isfinite(divSummary.DivL23);
-maskContinualL23 = divSummary.Group == "Continual" & isfinite(divSummary.DivL23);
+maskTransferL23 = divSummary.Group == "Transfer" & isfinite(divSummary.DivL23);
 maskNaiveL5 = divSummary.Group == "Naive" & isfinite(divSummary.DivL5);
-maskContinualL5 = divSummary.Group == "Continual" & isfinite(divSummary.DivL5);
+maskTransferL5 = divSummary.Group == "Transfer" & isfinite(divSummary.DivL5);
 
 naiveL23 = divSummary.DivL23(maskNaiveL23);
-continualL23 = divSummary.DivL23(maskContinualL23);
+TransferL23 = divSummary.DivL23(maskTransferL23);
 naiveL5 = divSummary.DivL5(maskNaiveL5);
-continualL5 = divSummary.DivL5(maskContinualL5);
+TransferL5 = divSummary.DivL5(maskTransferL5);
 
 nCellNaiveL23 = iSumFinite(divSummary.NCellL23(maskNaiveL23));
-nCellContinualL23 = iSumFinite(divSummary.NCellL23(maskContinualL23));
+nCellTransferL23 = iSumFinite(divSummary.NCellL23(maskTransferL23));
 nCellNaiveL5 = iSumFinite(divSummary.NCellL5(maskNaiveL5));
-nCellContinualL5 = iSumFinite(divSummary.NCellL5(maskContinualL5));
+nCellTransferL5 = iSumFinite(divSummary.NCellL5(maskTransferL5));
 
-if isempty(naiveL23) || isempty(continualL23) || isempty(naiveL5) || isempty(continualL5)
+if isempty(naiveL23) || isempty(TransferL23) || isempty(naiveL5) || isempty(TransferL5)
 	error('Fig44CE:InsufficientDivergenceData', 'At least one LightWater layer comparison is empty.');
 end
 
@@ -93,21 +93,21 @@ data.TransferStats = transferStats;
 data.VInitial = vInitial;
 data.VTransfer = vTransfer;
 data.ActiveNaive = activeNaive;
-data.ActiveContinual = activeContinual;
+data.ActiveTransfer = activeTransfer;
 data.DivergenceTable = divTable;
 data.DivergenceSummary = divSummary;
 data.NaiveL23 = naiveL23;
-data.ContinualL23 = continualL23;
+data.TransferL23 = TransferL23;
 data.NaiveL5 = naiveL5;
-data.ContinualL5 = continualL5;
+data.TransferL5 = TransferL5;
 data.MaskNaiveL23 = maskNaiveL23;
-data.MaskContinualL23 = maskContinualL23;
+data.MaskTransferL23 = maskTransferL23;
 data.MaskNaiveL5 = maskNaiveL5;
-data.MaskContinualL5 = maskContinualL5;
+data.MaskTransferL5 = maskTransferL5;
 data.NCellNaiveL23 = nCellNaiveL23;
-data.NCellContinualL23 = nCellContinualL23;
+data.NCellTransferL23 = nCellTransferL23;
 data.NCellNaiveL5 = nCellNaiveL5;
-data.NCellContinualL5 = nCellContinualL5;
+data.NCellTransferL5 = nCellTransferL5;
 end
 
 function [G, stats] = iQueryInitialLightAll()

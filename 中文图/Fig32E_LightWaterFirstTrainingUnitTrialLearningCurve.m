@@ -72,7 +72,7 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 hold(ax,'on');
 
-edgeColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+edgeColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 for p = patches(:)'
@@ -93,16 +93,15 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
-text(ax, 4, textY, starStr, ...
+text(ax, 4, textY, '＊', ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
 if numel(patches) >= 2
-	lg = legend(ax, patches(1:2), {'Naive', 'Continual'}, 'Location', 'southeastoutside');
+	lg = legend(ax, patches(1:2), {'Naive', 'Transfer'}, 'Location', 'southeastoutside');
 else
-	lg = legend(ax, {'Naive', 'Continual'}, 'Location', 'southeastoutside');
+	lg = legend(ax, {'Naive', 'Transfer'}, 'Location', 'southeastoutside');
 end
 lg.FontSize = 12;
 lg.Box = 'off';
@@ -189,7 +188,7 @@ svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig
 fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== Fig32E last-10-trials bar ===\n');
 fprintf('Naive mice n = %d\n', numel(naiveLast10));
-fprintf('Continual mice n = %d\n', numel(tranLast10));
+fprintf('Transfer mice n = %d\n', numel(tranLast10));
 fprintf('Last-10-trials bar P (BarScatterCompare): %s\n', ...
 	TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
