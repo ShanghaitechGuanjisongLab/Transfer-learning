@@ -17,7 +17,7 @@ if ~exist('UniExp.DataSet','class')
 end
 
 CtrlDS = TransferLearning.AudioLightBaseline();
-THDS = TransferLearning.THInhibit();
+
 
 ctrlSessions = iBuildFig3GSessions(CtrlDS, "Ctrl");
 thSessions = iBuildFig3GSessions(THDS, "TH");

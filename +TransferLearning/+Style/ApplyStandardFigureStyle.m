@@ -61,7 +61,7 @@ end
 function iSetLegendBoxesOff(Fig)
 legends = findall(Fig, '-isa', 'matlab.graphics.illustration.Legend');
 for iL = 1:numel(legends)
-	legends(iL).Box = 'off';
+	legends(iL).EdgeColor = 'none';
 end
 end
 

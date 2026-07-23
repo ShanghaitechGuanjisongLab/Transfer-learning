@@ -1,4 +1,4 @@
-﻿% English Fig1C (merged from Fig1D + Fig1M): growth slope + extreme slope mice curves
+% English Fig1C (merged from Fig1D + Fig1M): growth slope + extreme slope mice curves
 %
 % This script outputs TWO SVG figures, both labeled as panel C:
 %   1) Growth slope comparison (formerly Fig1D)
@@ -159,9 +159,8 @@ for eb = ErrorBars.Object(:)'
 	eb.LineWidth = 2;
 end
 
-palette2 = TransferLearning.FigurePalette(2);
-colorNaive = palette2(1,:);
-colorTrans = palette2(2,:);
+colorNaive = TransferLearning.NaiveColor;
+colorTrans = TransferLearning.ContinualColor;
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorNaive; colorTrans];

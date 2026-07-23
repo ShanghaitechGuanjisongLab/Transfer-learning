@@ -53,6 +53,7 @@ nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performance', 'Session', 'Group', 'Mouse');
 sessions7 = allSessions(allSessions.Session <= 7, :);
 groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
+%% 
 
 f = figure('Color','w', 'Name', 'Fig32B LightWater learning curve');
 f.Units = 'centimeters';
@@ -91,7 +92,7 @@ textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
 if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
 text(ax, 4, textY, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top',FontName='Arial');
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 

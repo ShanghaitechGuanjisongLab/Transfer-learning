@@ -66,10 +66,6 @@ end
 f = figure('Color', 'w', 'Name', '中文图331B 三条均值线');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 9, 8];
-f.PaperSize = [9, 8];
 
 ax = axes(f);
 hold(ax, 'on');
@@ -92,7 +88,7 @@ ylabel(ax, 'z-score');
 ax.XTick = [0 1];
 ax.XTickLabel = {"🔊/💡", "💧"};
 
-lg = legend(Patches, ["🔊Learned", "💡Hit", "💡Miss"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box', 'off');
+lg = legend(Patches, ["🔊Learned", "💡Hit", "💡Miss"], 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches));
 title('🔊 learned active cells');
 svgPath = '中文图Fig43B_Learned_TransferHitMiss_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);

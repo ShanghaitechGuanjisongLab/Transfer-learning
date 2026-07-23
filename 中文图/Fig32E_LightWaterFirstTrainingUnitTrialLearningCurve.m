@@ -93,16 +93,16 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-text(ax, 4, textY, '＊', ...
+if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
+text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
-labels = cellstr(displayGroups);
 if numel(patches) >= 2
-	lg = legend(ax, patches(1:2), labels, 'Location', 'southeastoutside');
+	lg = legend(ax, patches(1:2), {'Naive', 'Continual'}, 'Location', 'southeastoutside');
 else
-	lg = legend(ax, labels, 'Location', 'southeastoutside');
+	lg = legend(ax, {'Naive', 'Continual'}, 'Location', 'southeastoutside');
 end
 lg.FontSize = 12;
 lg.Box = 'off';
@@ -134,13 +134,12 @@ summaryCurve.PMixedEffect(:) = curveP;
 assignin('base', 'Fig32E_LightWaterFirstTrainingUnitTrial_Raw', trialRows);
 assignin('base', 'Fig32E_LightWaterFirstTrainingUnitTrial_Summary', summaryCurve);
 
-firstTrial = trialRows(trialRows.Trial == 1, :);
-naiveFirst = double(firstTrial.Behavior(firstTrial.Group == "Naive"));
-tranFirst  = double(firstTrial.Behavior(firstTrial.Group == "Transfer"));
-naiveFirst = naiveFirst(isfinite(naiveFirst));
-tranFirst  = tranFirst(isfinite(tranFirst));
+% 后10个trial：每鼠取最后10试次的平均命中率
+[naiveLast10, tranLast10] = iLast10TrialsPerMouse(trialRows);
+naiveLast10 = naiveLast10(isfinite(naiveLast10));
+tranLast10  = tranLast10(isfinite(tranLast10));
 
-f2 = figure('Color','none', 'Name', 'Fig32E LightWater first-trial performance');
+f2 = figure('Color','none', 'Name', 'Fig32E LightWater last-10-trials performance');
 f2.Units = 'centimeters';
 pos2 = f2.Position;
 pos2(3:4) = [4,4];
@@ -151,7 +150,7 @@ f2.PaperPositionMode = 'auto';
 
 tiledlayout(1,1,'TileSpacing','tight','Padding','tight');
 nexttile;
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveFirst, tranFirst}, UniExp.Flags.empty, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({naiveLast10, tranLast10}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
 ax2 = gca;
 delete(findobj(ax2, 'Type', 'Scatter'));
 ax2.FontSize = 12;
@@ -180,26 +179,26 @@ TransferLearning.Style.SetBarPValues(optional2);
 iStyleBars(bars2, edgeColors(1,:), edgeColors(2,:));
 iKeepUpperErrorBarOnly(ax2, errorBars2, bars2, edgeColors(1,:), edgeColors(2,:));
 ylabel(ax2, 'Hit rate', 'FontSize', 12);
-title(ax2, 'First trial', 'FontSize', 12, 'FontWeight', 'normal');
+title(ax2, 'Last 10 trials', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32E_LightWater_FirstTrialPerformance.svg');
+svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig32E_LightWater_Last10TrialsPerformance.svg');
 fprintf('Wrote: %s\n', svgPath2);
-fprintf('\n=== Fig32E first-trial bar ===\n');
-fprintf('Naive mice n = %d\n', numel(naiveFirst));
-fprintf('Continual mice n = %d\n', numel(tranFirst));
-fprintf('First-trial bar P (BarScatterCompare): %s\n', ...
+fprintf('\n=== Fig32E last-10-trials bar ===\n');
+fprintf('Naive mice n = %d\n', numel(naiveLast10));
+fprintf('Continual mice n = %d\n', numel(tranLast10));
+fprintf('Last-10-trials bar P (BarScatterCompare): %s\n', ...
 	TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
-nFirst = max(numel(naiveFirst), numel(tranFirst));
-firstTrialTable = table(nan(nFirst,1), nan(nFirst,1), 'VariableNames', {'NaiveFirst','TransferFirst'});
-firstTrialTable.NaiveFirst(1:numel(naiveFirst)) = naiveFirst(:);
-firstTrialTable.TransferFirst(1:numel(tranFirst)) = tranFirst(:);
-firstTrialTable.BarPValue = repmat(optional2.MultiCompare.PValue(1), nFirst, 1);
-assignin('base', 'Fig32E_LightWater_FirstTrial', firstTrialTable);
+nLast10 = max(numel(naiveLast10), numel(tranLast10));
+last10Table = table(nan(nLast10,1), nan(nLast10,1), 'VariableNames', {'NaiveLast10','TransferLast10'});
+last10Table.NaiveLast10(1:numel(naiveLast10)) = naiveLast10(:);
+last10Table.TransferLast10(1:numel(tranLast10)) = tranLast10(:);
+last10Table.BarPValue = repmat(optional2.MultiCompare.PValue(1), nLast10, 1);
+assignin('base', 'Fig32E_LightWater_Last10Trials', last10Table);
 
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 T = iQueryLightWaterTrialsAll(DS);
@@ -527,4 +526,24 @@ end
 function out = iEmptyTrialTable()
 out = table(string.empty(0,1), NaT(0,1), nan(0,1), nan(0,1), strings(0,1), strings(0,1), nan(0,1), ...
 	'VariableNames', {'Mouse','DateTime','Behavior','TrialIndex','Source','Group','Trial'});
+end
+
+function [naiveAvg, tranAvg] = iLast10TrialsPerMouse(T)
+naiveAvg = []; tranAvg = [];
+T = sortrows(T, {'Group','Mouse','DateTime','Trial'});
+mice = unique(string(T.Mouse), 'stable');
+for iM = 1:numel(mice)
+	m = mice(iM);
+	R = T(T.Mouse == m, :);
+	if height(R) < 10
+		continue;
+	end
+	last10 = R(max(1, end-9):end, :);
+	grp = string(R.Group(1));
+	if grp == "Naive"
+		naiveAvg(end+1,1) = mean(double(last10.Behavior), 'omitnan');
+	else
+		tranAvg(end+1,1) = mean(double(last10.Behavior), 'omitnan');
+	end
+end
 end

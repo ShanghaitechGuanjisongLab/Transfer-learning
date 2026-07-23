@@ -349,8 +349,6 @@ clim(ax, [-vAbs, vAbs]);
 
 cb = colorbar(ax, 'eastoutside');
 cb.Position = [0.50, 0.08, 0.22, 0.84];
-cb.Ticks = [-vAbs, 0, vAbs];
-cb.TickLabels = {sprintf('%.2f', -vAbs), '0', sprintf('%.2f', vAbs)};
 cb.Label.String = 'z-score';
 cb.FontSize = 6;
 cb.Box = 'off';
