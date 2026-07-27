@@ -90,7 +90,7 @@ for iL = 1:numel(layers)
 		fprintf('  BarScatterCompare on figure: PValue=%.5g PText="%s"\n', ...
 			optional.MultiCompare.PValue, optional.MultiCompare.PText.String);
 	end
-	iStyleTile(ax, bars, errorBars, optional, TransferLearning.NaiveColor,TransferLearning.ContinualColor, iL == numel(layers), layerLabels(iL));
+	iStyleTile(ax, bars, errorBars, optional, TransferLearning.NaiveColor,TransferLearning.TransferColor, iL == numel(layers), layerLabels(iL));
 end
 
 if ~isfolder(outDirUNC)
@@ -228,7 +228,7 @@ function iStyleTile(ax, bars, errorBars, optional, colorNaive, colorTransfer, sh
 	end
 	ax.XTick = [1 2];
 	if showXTick
-		ax.XTickLabel = {'Naive', 'Continual'};
+		ax.XTickLabel = {'Naive', 'Transfer'};
 	else
 		ax.XTickLabel = {'', ''};
 	end

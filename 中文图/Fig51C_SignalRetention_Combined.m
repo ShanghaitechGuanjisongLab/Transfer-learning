@@ -140,7 +140,7 @@ fprintf('Fig52C new-task sign groups: n=%d mice, %d cells (positive=%d, negative
 
 colorNeg = TransferLearning.ColorA;
 colorPos = TransferLearning.ColorB;
-colorFit = [0, 0, 0];
+colorFit = TransferLearning.ColorA;
 fs = 6;
 barWidth = 0.5;
 capHalfWidth = barWidth / 4;
@@ -163,8 +163,8 @@ sY = BM;
 
 axE = axes(f, 'Position', [sX sY sW sH]);
 hold(axE, 'on');
-sc = scatter(axE, awAll, lwAll, 1, colorNeg, 'LineWidth', 0.2, 'MarkerFaceAlpha', 0.05, MarkerEdgeAlpha=0.05, Marker='.');
-set(sc, 'MarkerEdgeColor', colorNeg, 'MarkerFaceColor', colorNeg);
+sc = scatter(axE, awAll, lwAll, 1, TransferLearning.ColorB, 'LineWidth', 0.2, 'MarkerFaceAlpha', 0.05, MarkerEdgeAlpha=0.05, Marker='.');
+set(sc, 'MarkerEdgeColor',TransferLearning.ColorB, 'MarkerFaceColor',TransferLearning.ColorB);
 xline(axE, 0, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.4);
 yline(axE, 0, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.4);
 pf = polyfit(awAll, lwAll, 1);

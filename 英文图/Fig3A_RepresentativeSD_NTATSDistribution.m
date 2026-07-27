@@ -181,9 +181,9 @@ globalMin = min(v2);
 globalMax = max(v2);
 fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
 
-% ===== Volshow: shared cbrt clim with Fig3E =====
-vAbs = 5.823;
-fprintf('--- Shared cbrt clim with Fig3E: [%.3f, %.3f] ---\n', -vAbs, vAbs);
+% ===== Volshow: symmetric cbrt clim from data range =====
+vAbs = sqrt(max(abs(globalMin), abs(globalMax)));
+fprintf('--- Symmetric cbrt clim from data range: [%.3f, %.3f] ---\n', -vAbs, vAbs);
 
 nMap = 256;
 nHalf = nMap / 2;
@@ -243,7 +243,7 @@ uilabel(fig, 'Text', 'Z: Trial', 'FontSize', 6, 'FontColor', [0.1 0.1 0.85], ...
 	'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
 
 pause(1);
-pngName = 'English_Fig3B_Volshow_Representative.png';
+pngName = 'English_Fig3A_Volshow_Representative.png';
 exportapp(fig, fullfile(outDirUNC, pngName));
 fprintf('Wrote: %s\n', pngName);
 
@@ -264,7 +264,7 @@ ax = axes(fh);
 hold(ax, 'on');
 
 histogram(ax, v, binEdges, 'Normalization', 'probability', ...
-	'FaceColor', TransferLearning.ContinualColor, 'EdgeColor', 'none');
+	'FaceColor', TransferLearning.TransferColor, 'EdgeColor', 'none');
 
 xlim(ax, [-1, 1]);
 ax.XTick = [-1, 0, 1];
@@ -280,7 +280,7 @@ grid(ax, 'off');
 text(ax, 0.97, 0.95, sprintf('RH=%.2f', sdVals(repPairIdx, repSessIdx)), ...
 	'Units', 'normalized', 'HorizontalAlignment', 'right', ...
 	'VerticalAlignment', 'top', 'FontWeight', 'bold');
-title(ax, 'A representative continual block');
+title(ax, 'A representative transfer block');
 
 xlabel(ax, 'z-score');
 ylabel(ax, {'Prop. of'; 'cells'});

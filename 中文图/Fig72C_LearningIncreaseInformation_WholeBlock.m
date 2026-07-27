@@ -1,4 +1,4 @@
-﻿% 中文图72C：学习增加信息量（whole-block）
+% 中文图72C：学习增加信息量（whole-block）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -11,7 +11,7 @@ end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 barPhases = ["NaiveAudio", "LearnedAudio", "NaiveLight", "LearnedLight", "TransferLight"];
-barLabels = {"Naive 🔊💧", "Learned 🔊💧", "Naive 💡💧", "Learned 💡💧", "Continual 💡💧"};
+barLabels = {"Naive 🔊💧", "Learned 🔊💧", "Naive 💡💧", "Learned 💡💧", "Transfer 💡💧"};
 compareGroup = table([1, 2; 3, 4; 3, 5], 'VariableNames', "GroupPair");
 barColors = iPhaseColors(barPhases);
 
@@ -149,8 +149,8 @@ function color = iPhaseColor(phaseName)
 		color = TransferLearning.NaiveColor;
 	elseif contains(phaseName, "Learned")
 		color = TransferLearning.LearnedColor;
-	elseif contains(phaseName, "Transfer") || contains(phaseName, "Continual")
-		color = TransferLearning.ContinualColor;
+	elseif contains(phaseName, "Transfer") || contains(phaseName, "Transfer")
+		color = TransferLearning.TransferColor;
 	else
 		color = TransferLearning.GroupColors(string(phaseName));
 	end

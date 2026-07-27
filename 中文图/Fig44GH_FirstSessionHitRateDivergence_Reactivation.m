@@ -20,7 +20,7 @@ naiveA = iCollectNaiveFirstSessionData(LAB, "LightAudioBaseline", strings(0, 1),
 badNaiveLai = iFindMiceWithAudioWaterInPhase(LAI, "Naive");
 naiveB = iCollectNaiveFirstSessionData(LAI, "LAInterspersed", badNaiveLai, idx0, idx1s);
 dataG = [naiveA; naiveB; iCollectTransferFirstSessionData(ALB, idx0, idx1s)];
-dataG.Group = categorical(string(dataG.Group), ["Naive", "Continual"]);
+dataG.Group = categorical(string(dataG.Group), ["Naive", "Transfer"]);
 
 reactivationTable = iBuildTransferReactivationTable(ALB);
 if isempty(reactivationTable)
@@ -30,9 +30,9 @@ divergenceH = iBuildTransferDivergenceTable(ALB, string(reactivationTable.Mouse)
 dataH = outerjoin(reactivationTable(:, {'Mouse','DateTimeTransfer','Reactivation'}), divergenceH, 'Keys', 'Mouse', 'MergeKeys', true, 'Type', 'left');
 %% 
 
-groupColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+groupColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 colorNaive = groupColors(1, :);
-colorContinual = groupColors(2, :);
+colorTransfer = groupColors(2, :);
 
 f = figure('Color', 'w', 'Name', 'Chinese Fig44GH divergence correlations');
 f.Units = 'centimeters';
@@ -41,21 +41,21 @@ f.Position(3:4) = [12.4, 8];
 layout = tiledlayout(f, 1, 2, 'TileSpacing','loose', 'Padding', 'tight');
 
 axG = nexttile(layout, 1);
-statsG = iPlotFirstSessionHitRateVsDivergence(axG, dataG, colorNaive, colorContinual);
+statsG = iPlotFirstSessionHitRateVsDivergence(axG, dataG, colorNaive, colorTransfer);
 
 axH = nexttile(layout, 2);
-statsH = iPlotReactivationVsDivergence(axH, dataH, colorContinual);
+statsH = iPlotReactivationVsDivergence(axH, dataH, colorTransfer);
 xlabel(layout,'1s divergence');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44GH_FirstSessionHitRateDivergence_Reactivation.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 fprintf('\n=== Fig44GH / panel G ===\n');
 fprintf('Naive mice: %d\n', statsG.NNaive);
-fprintf('Continual mice: %d\n', statsG.NContinual);
+fprintf('Transfer mice: %d\n', statsG.NTransfer);
 fprintf('Spearman rho=%.3f, p=%.4g\n', statsG.Rho, statsG.PValue);
 fprintf('\n=== Fig44GH / panel H ===\n');
 fprintf('n=%d, rho=%.3f, p=%.4g\n', statsH.N, statsH.Rho, statsH.PValue);
-function stats = iPlotFirstSessionHitRateVsDivergence(ax, Data, colorNaive, colorContinual)
+function stats = iPlotFirstSessionHitRateVsDivergence(ax, Data, colorNaive, colorTransfer)
 use = isfinite(Data.Divergence) & isfinite(Data.HitRate);
 if nnz(use) < 3
 	error('Fig44GH:TooFewPanelGPoints', 'Too few valid mice for panel G correlation.');
@@ -69,27 +69,27 @@ end
 [rho, pValue] = corr(xAll, yAll, 'Type', 'Spearman');
 
 maskNaive = use & (string(Data.Group) == "Naive");
-maskContinual = use & (string(Data.Group) == "Continual");
+maskTransfer = use & (string(Data.Group) == "Transfer");
 
 hold(ax, 'on');
 box(ax, 'off');
 ax.FontSize = 12;
 ax.LineWidth = 2;
 hNaive = scatter(ax, Data.Divergence(maskNaive), Data.HitRate(maskNaive), 5, colorNaive, 'o');
-hContinual = scatter(ax, Data.Divergence(maskContinual), Data.HitRate(maskContinual), 5, colorContinual, 'o');
+hTransfer = scatter(ax, Data.Divergence(maskTransfer), Data.HitRate(maskTransfer), 5, colorTransfer, 'o');
 fitP = polyfit(xAll, yAll, 1);
 xFit = [min(xAll), max(xAll)];
 yFit = polyval(fitP, xFit);
 plot(ax, xFit, yFit, '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine');
     ylabel(ax, '💡💧 first block hit rate');
-    legendHandle = legend(ax, [hNaive, hContinual], {'Naive', 'Continual'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
+    legendHandle = legend(ax, [hNaive, hTransfer], {'Naive', 'Transfer'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
     legendHandle.FontSize = 12;
     legendHandle.Box = 'off';
     iSLabel(ax, 0.97, 0.97, rho, pValue);
 grid(ax, 'off');
 
-stats = table("G", rho, pValue, nnz(maskNaive), nnz(maskContinual), ...
-	'VariableNames', {'Panel','Rho','PValue','NNaive','NContinual'});
+stats = table("G", rho, pValue, nnz(maskNaive), nnz(maskTransfer), ...
+	'VariableNames', {'Panel','Rho','PValue','NNaive','NTransfer'});
 end
 
 function stats = iPlotReactivationVsDivergence(ax, Data, dotColor)
@@ -147,7 +147,7 @@ for iM = 1:numel(mice)
 	end
 	dateTime = min(Tm.DateTime);
 	sessionTable = sortrows(Tm(Tm.DateTime == dateTime, :), 'TrialIndex');
-	rows{iM} = iFirstSessionRow(DS, mouseName, dateTime, sessionTable, "Continual", idx0, idx1s);
+	rows{iM} = iFirstSessionRow(DS, mouseName, dateTime, sessionTable, "Transfer", idx0, idx1s);
 end
 out = vertcat(rows{:});
 end

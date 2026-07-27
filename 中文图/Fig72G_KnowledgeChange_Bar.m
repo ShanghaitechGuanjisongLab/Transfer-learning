@@ -16,7 +16,7 @@ Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx);
 usageKeys = {'Unused old', 'Newly learned'};
 usageLabels = {'Unused old', 'Newly learned'};
 transitionKeys = {'NaiveToLearned', 'LearnedToTransfer', 'TransferToFinal', 'LearnedToFinal'};
-transitionLabels = {'Naive→Learned', 'Learned→Continual start', 'Continual start→Continual learned', 'Learned→Continual learned'};
+transitionLabels = {'Naive→Learned', 'Learned→T-start', 'T-start→T-learned', 'Learned→T-learned'};
 transitionPhasePairs = ["NaiveLight", "LearnedLight"; "LearnedAudio", "TransferLight"; "TransferLight", "FinalLight"; "LearnedAudio", "FinalLight"];
 transitionColors = iTransitionColors(transitionPhasePairs);
 compareGroup = table(table(["NaiveToLearned", "LearnedToTransfer"; "NaiveToLearned", "LearnedToTransfer"], ["Unused old", "Unused old"; "Newly learned", "Newly learned"], 'VariableNames', {'Pair', 'Usage'}), 'VariableNames', {'GroupPair'});
@@ -102,12 +102,10 @@ function color = iPhaseColor(phaseName)
 		color = TransferLearning.NaiveColor;
 	elseif contains(phaseName, "Learned")
 		color = TransferLearning.LearnedColor;
-	elseif contains(phaseName, "Transfer") || contains(phaseName, "Continual")
-		color = TransferLearning.ContinualColor;
+	elseif contains(phaseName, "Transfer")
+		color = TransferLearning.TransferColor;
 	elseif contains(phaseName, "Final")
-		color = TransferLearning.ColorA;
-	else
-		color = TransferLearning.GroupColors(phaseName);
+		color = TransferLearning.ColorB;
 	end
 end
 

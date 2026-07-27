@@ -1,4 +1,4 @@
-% 中文图46C：7天间隔声水Learned+光水Continual两泳道热图（不分hit/miss）
+% 中文图46C：7天间隔声水Learned+光水Transfer两泳道热图（不分hit/miss）
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -68,7 +68,7 @@ climHighAbs = sqrt(abs(max(posV, 0)));
 CLim = [-climLowAbs, climHighAbs];
 
 % Panel sample counts
-panelNames = ["Learned"; "Continual"];
+panelNames = ["Learned"; "Transfer"];
 sampleMasks = [activeMask, activeMask];
 if istable(S) && any(strcmp(S.Properties.VariableNames, 'CellUID'))
 	activeCellUID = uint64(S.CellUID(activeMask));
@@ -87,7 +87,7 @@ f.PaperPosition = [0, 0, 9, 8];
 f.PaperSize = [9, 8];
 
 Layout = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
-subTitles = ["Learned", "Continual"];
+subTitles = ["Learned", "Transfer"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...

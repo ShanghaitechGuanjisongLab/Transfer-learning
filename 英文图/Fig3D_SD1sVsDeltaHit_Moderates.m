@@ -141,7 +141,7 @@ for iS = 1:2
 	fprintf('  %s: n=%d cells, Response heterogeneity=%.3f\n', sessInfo(iS).label, numel(vals{iS}), sdVals(iS));
 end
 
-fprintf('Fig342C stats: representative Naive n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; representative Continual n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; correlation/significance test not applicable.\n', ...
+fprintf('Fig342C stats: representative Naive n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; representative Transfer n=1 mouse (%s), %d cells, Response heterogeneity=%.3f; correlation/significance test not applicable.\n', ...
 	sessInfo(2).mouse, numel(vals{2}), sdVals(2), sessInfo(1).mouse, numel(vals{1}), sdVals(1));
 
 %% ===== 5) Export 2 volshow PNGs =====
@@ -160,8 +160,9 @@ for iS = 1:2
 end
 fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
 
-vAbs = 5.823;
-fprintf('--- Shared cbrt clim with Fig3B: [%.3f, %.3f] ---\n', -vAbs, vAbs);
+% ===== Volshow: symmetric cbrt clim from combined data range of both blocks =====
+vAbs = sqrt(max(abs(globalMin), abs(globalMax)));
+fprintf('--- Symmetric cbrt clim from combined data range: [%.3f, %.3f] ---\n', -vAbs, vAbs);
 
 nMap = 256;
 nHalf = nMap / 2;
@@ -223,21 +224,21 @@ for iS = 1:2
 		'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
 
 	pause(1);
-	pngName = sprintf('English_Fig3E_Volshow_%s.png', sessTags(iS));
+	pngName = sprintf('English_Fig3D_Volshow_%s.png', sessTags(iS));
 	exportapp(fig, fullfile(outDirUNC, pngName));
 	drawnow;
 	fprintf('Wrote: %s\n', pngName);
 end
 
-cbSvgName = 'English_Fig3E_Volshow_Colorbar.svg';
+cbSvgName = 'English_Fig3D_Volshow_Colorbar.svg';
 iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
 fprintf('Wrote: %s\n', cbSvgName);
 
 %% ===== 6) Export 2 histogram SVGs (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-pairColors = {TransferLearning.ContinualColor; TransferLearning.NaiveColor};
-histTitles = ["Continual", "Naive"];
+pairColors = {TransferLearning.TransferColor; TransferLearning.NaiveColor};
+histTitles = ["Transfer", "Naive"];
 
 histFigs = gobjects(1, 2);
 histAxes = gobjects(1, 2);
@@ -600,10 +601,7 @@ clim(ax, [-vAbs, vAbs]);
 
 cb = colorbar(ax, 'eastoutside');
 cb.Position = [0.50, 0.08, 0.22, 0.84];
-cb.Ticks = [-vAbs, 0, vAbs];
-cb.TickLabels = {sprintf('%.2f', -vAbs), '0', sprintf('%.2f', vAbs)};
 cb.Label.String = 'z-score';
-cb.FontSize = 6;
 cb.Box = 'off';
 
 TransferLearning.ExportStandardFigureTransparent(cbFig, 3, svgName);

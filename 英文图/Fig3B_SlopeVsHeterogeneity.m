@@ -17,7 +17,7 @@ if ~ok1s, error('Fig3C:No1s', 'Cannot find sample close to 1s in time axis.'); e
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-groupColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+groupColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 colorN = groupColors(1,:);
 colorT = groupColors(2,:);
 
@@ -53,7 +53,7 @@ for iL = 1:numel(layers)
 
     fprintf('\n=== Fig342B / English Fig3C %s ===\n', layerLabel);
     fprintf('Naive n = %d mice, %d cells\n', nnz(maskN), round(sum(nCellAll(maskN), 'omitnan')));
-    fprintf('Continual n = %d mice, %d cells\n', nnz(maskT), round(sum(nCellAll(maskT), 'omitnan')));
+    fprintf('Transfer n = %d mice, %d cells\n', nnz(maskT), round(sum(nCellAll(maskT), 'omitnan')));
     fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
     layerData{iL} = struct('slopeAll',slopeAll,'sdAll',sdAll,'use',use,'maskN',maskN,'maskT',maskT,'pLabel',pLabel,'rhoLabel',rhoLabel,'layerLabel',layerLabel);
@@ -92,7 +92,7 @@ for iL = 1:numel(layers)
     axAll(iL) = ax;
 end
 
-lgd = legend(hLegend, {'Naive', 'Continual'}, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Naive', 'Transfer'}, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 svgPath = 'English_Fig3B_SlopeVsHeterogeneity.svg';

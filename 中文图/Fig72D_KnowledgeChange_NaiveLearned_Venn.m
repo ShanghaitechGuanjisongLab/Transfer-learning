@@ -13,9 +13,9 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 queryXlsx = '\\Data-Server-2\个人数据\张天夫\202512\尝试查询表.xlsx';
 Data = Fig72_GlobalKnowledgeChangeCache(queryXlsx);
 
-iPlotKnowledgeVenn(Data.PairStats(1, :), '中文图72D Knowledge change Naive to Learned', [6, 8], '中文图Fig72D_KnowledgeChange_NaiveLearned_Venn.svg');
+iPlotKnowledgeVenn(Data.PairStats(1, :), "Naive 💡💧", "Learned 💡💧", "Naive→Learned", '中文图72D Knowledge change Naive to Learned', [6, 8], '中文图Fig72D_KnowledgeChange_NaiveLearned_Venn.svg');
 
-function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
+function iPlotKnowledgeVenn(pairRow, leftLegend, rightLegend, transitionLabel, figureName, figSizeCm, svgPath)
 	f = figure('Color', 'w', 'Name', figureName);
 	f.Units = 'centimeters';
 	f.Position(3:4) = figSizeCm;
@@ -39,8 +39,8 @@ function iPlotKnowledgeVenn(pairRow, figureName, figSizeCm, svgPath)
 			Texts(iText).FontSize = 12;
 		end
 	end
-	title(ax, pairRow.Transition, 'FontSize', 12, 'FontWeight', 'normal');
-	lgd = legend(Circles(1:2), {char(pairRow.LeftLegend), char(pairRow.RightLegend)}, 'Location', 'northoutside', 'Box', 'off', 'FontSize', 12);
+	title(ax, transitionLabel, 'FontSize', 12, 'FontWeight', 'normal');
+	lgd = legend(Circles(1:2), {char(leftLegend), char(rightLegend)}, 'Location', 'northoutside', 'Box', 'off', 'FontSize', 12);
 	lgd.FontName = 'Segoe UI Emoji';
 	allText = findall(f, 'Type', 'Text');
 	for iText = 1:numel(allText)
@@ -57,8 +57,8 @@ function color = iPhaseColor(phaseName)
 		color = TransferLearning.NaiveColor;
 	elseif contains(phaseName, "Learned")
 		color = TransferLearning.LearnedColor;
-	elseif contains(phaseName, "Transfer") || contains(phaseName, "Continual")
-		color = TransferLearning.ContinualColor;
+	elseif contains(phaseName, "Transfer") || contains(phaseName, "Transfer")
+		color = TransferLearning.TransferColor;
 	elseif contains(phaseName, "Final")
 		color = TransferLearning.ColorA;
 	else

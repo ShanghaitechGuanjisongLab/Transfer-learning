@@ -60,8 +60,8 @@ for iLabel = 1:numel(legendLabels)
 		colors(iLabel, :) = TransferLearning.NaiveColor;
 	elseif contains(label, "Learned")
 		colors(iLabel, :) = TransferLearning.LearnedColor;
-	elseif contains(label, "Continual")
-		colors(iLabel, :) = TransferLearning.ContinualColor;
+	elseif contains(label, "Transfer")
+		colors(iLabel, :) = TransferLearning.TransferColor;
 	else
 		fallbackIndex = fallbackIndex + 1;
 		colors(iLabel, :) = fallbackColors(1 + mod(fallbackIndex - 1, size(fallbackColors, 1)), :);

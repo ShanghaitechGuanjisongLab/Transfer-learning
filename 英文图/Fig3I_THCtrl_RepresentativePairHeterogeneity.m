@@ -78,7 +78,20 @@ fprintf('Representative panel only: significance p and correlation rho are not a
 
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 
-vAbs = 5.823;
+% ===== Volshow: symmetric cbrt clim from combined data range of both blocks =====
+globalMin = Inf; globalMax = -Inf;
+for iS = 1:2
+	rd_i = rawData{iS};
+	v_i = rd_i(isfinite(rd_i));
+	if ~isempty(v_i)
+		globalMin = min(globalMin, min(v_i));
+		globalMax = max(globalMax, max(v_i));
+	end
+end
+fprintf('Global clim (true range, both blocks): [%.3f, %.3f]\n', globalMin, globalMax);
+vAbs = sqrt(max(abs(globalMin), abs(globalMax)));
+fprintf('--- Symmetric cbrt clim from combined data range: [%.3f, %.3f] ---\n', -vAbs, vAbs);
+
 nMap = 256;
 nHalf = nMap / 2;
 blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
@@ -138,7 +151,7 @@ iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
 fprintf('Wrote: %s\n', cbSvgName);
 
 binEdges = linspace(-1, 1, 41);
-histColorArray = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+histColorArray = [TransferLearning.TransferColor; TransferLearning.ColorB];
 histColors = {histColorArray(1,:), histColorArray(2,:)};
 histTitles = ["Control", "TH inhibited"];
 histFigs = gobjects(1, 2);

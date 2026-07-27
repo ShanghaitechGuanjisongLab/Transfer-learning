@@ -143,8 +143,10 @@ switch string(valueName)
         color = TransferLearning.LearnedColor;
     case "NaiveLight"
         color = TransferLearning.NaiveColor;
-    case {"TransferLightHit", "TransferLightMiss"}
-        color = TransferLearning.ContinualColor;
+    case "TransferLightHit"
+		color = TransferLearning.TransferColor;
+	case "TransferLightMiss"
+		color = TransferLearning.ColorB;
     otherwise
         color = TransferLearning.GroupColors(string(valueName));
 end

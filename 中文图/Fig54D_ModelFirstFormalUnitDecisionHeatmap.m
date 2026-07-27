@@ -16,7 +16,7 @@ Params = Fig5556Data.Params;
 Cond = Fig5556Data.Cond;
 FormalRunInfo = Fig5556Data.HeatmapRunInfo;
 
-[PretrainFullCellHeatmapData, PretrainRunInfo] = iBuildContinualPretrainCueAHeatmapData(Params, Cond, FormalRunInfo);
+[PretrainFullCellHeatmapData, PretrainRunInfo] = iBuildTransferPretrainCueAHeatmapData(Params, Cond, FormalRunInfo);
 FullCellHeatmapData = iBuildThreeColumnFullCellHeatmapData(PretrainFullCellHeatmapData, FormalFullCellHeatmapData);
 RunInfo = [PretrainRunInfo; iRelabelFormalRunInfo(FormalRunInfo)];
 
@@ -44,13 +44,13 @@ assignin('base', 'Fig54D_ModelDecisionHeatmapSvgPath', svgPath);
 function HeatmapData = iBuildThreeColumnFullCellHeatmapData(PretrainFullCellHeatmapData, FormalFullCellHeatmapData)
 HeatmapData = FormalFullCellHeatmapData;
 HeatmapData.ConditionNames = ["TransferPretrainCueA", "NaiveFormalCueB", "TransferFormalCueB"];
-HeatmapData.DisplayNames = ["Naive CueA", "Naive CueB", "Continual CueB"];
+HeatmapData.DisplayNames = ["Naive CueA", "Naive CueB", "Transfer CueB"];
 HeatmapData.ConditionData = {PretrainFullCellHeatmapData.ConditionData{1}; FormalFullCellHeatmapData.ConditionData{1}; FormalFullCellHeatmapData.ConditionData{2}};
 HeatmapData.NaiveCueA = HeatmapData.ConditionData{1};
 HeatmapData.NaiveCueB = HeatmapData.ConditionData{2};
-HeatmapData.ContinualCueB = HeatmapData.ConditionData{3};
+HeatmapData.TransferCueB = HeatmapData.ConditionData{3};
 HeatmapData.Naive = HeatmapData.NaiveCueB;
-HeatmapData.Continual = HeatmapData.ContinualCueB;
+HeatmapData.Transfer = HeatmapData.TransferCueB;
 end
 
 function RunInfo = iRelabelFormalRunInfo(FormalRunInfo)
@@ -62,11 +62,11 @@ transferRows = RunInfo.Condition == "Transfer";
 RunInfo.Condition(naiveRows) = "NaiveFormalCueB";
 RunInfo.DisplayName(naiveRows) = "Naive CueB";
 RunInfo.Condition(transferRows) = "TransferFormalCueB";
-RunInfo.DisplayName(transferRows) = "Continual CueB";
+RunInfo.DisplayName(transferRows) = "Transfer CueB";
 RunInfo = sortrows(RunInfo, {'Condition','Mouse'});
 end
 
-function [HeatmapData, RunInfo] = iBuildContinualPretrainCueAHeatmapData(Params, Cond, FormalRunInfo)
+function [HeatmapData, RunInfo] = iBuildTransferPretrainCueAHeatmapData(Params, Cond, FormalRunInfo)
 transferRows = FormalRunInfo(string(FormalRunInfo.Condition) == "Transfer", :);
 transferRows = sortrows(transferRows, 'Mouse');
 if height(transferRows) ~= Params.NumMice
@@ -225,13 +225,13 @@ end
 
 if numel(HeatmapData.ConditionData) == 2
 	HeatmapData.Naive = HeatmapData.ConditionData{1};
-	HeatmapData.Continual = HeatmapData.ConditionData{2};
+	HeatmapData.Transfer = HeatmapData.ConditionData{2};
 elseif numel(HeatmapData.ConditionData) == 3
 	HeatmapData.NaiveCueA = HeatmapData.ConditionData{1};
 	HeatmapData.NaiveCueB = HeatmapData.ConditionData{2};
-	HeatmapData.ContinualCueB = HeatmapData.ConditionData{3};
+	HeatmapData.TransferCueB = HeatmapData.ConditionData{3};
 	HeatmapData.Naive = HeatmapData.NaiveCueB;
-	HeatmapData.Continual = HeatmapData.ContinualCueB;
+	HeatmapData.Transfer = HeatmapData.TransferCueB;
 end
 HeatmapData.NumCellsPerMouse = Params.NL5RewardRecv + Params.NL5Read;
 HeatmapData.NumCells = sum(l5Mask);
@@ -257,12 +257,12 @@ HeatmapData.Iterations = [0, 1];
 
 if numel(HeatmapData.ConditionData) == 2
 	HeatmapData.Naive = HeatmapData.ConditionData{1};
-	HeatmapData.Continual = HeatmapData.ConditionData{2};
+	HeatmapData.Transfer = HeatmapData.ConditionData{2};
 elseif numel(HeatmapData.ConditionData) == 3
 	HeatmapData.NaiveCueA = HeatmapData.ConditionData{1};
 	HeatmapData.NaiveCueB = HeatmapData.ConditionData{2};
-	HeatmapData.ContinualCueB = HeatmapData.ConditionData{3};
+	HeatmapData.TransferCueB = HeatmapData.ConditionData{3};
 	HeatmapData.Naive = HeatmapData.NaiveCueB;
-	HeatmapData.Continual = HeatmapData.ContinualCueB;
+	HeatmapData.Transfer = HeatmapData.TransferCueB;
 end
 end

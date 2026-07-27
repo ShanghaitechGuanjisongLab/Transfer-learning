@@ -1,4 +1,4 @@
-% Fig56ABCD model mechanism summary for Naive vs Continual CueB training.
+% Fig56ABCD model mechanism summary for Naive vs Transfer CueB training.
 
 
 iEnsureTransferLearningProject();
@@ -17,10 +17,10 @@ fprintf('Wrote: %s\n', svgPath);
 function Data = iBuildMechanismData(Params, Cond, conditionNames, conditionSeedValues)
 conditionNames = string(conditionNames);
 naiveSeedValues = conditionSeedValues(:, conditionNames == "Naive");
-continualSeedValues = conditionSeedValues(:, conditionNames == "Transfer");
+TransferSeedValues = conditionSeedValues(:, conditionNames == "Transfer");
 naiveCond = Cond(Cond.Name == "Naive", :);
-continualCond = Cond(Cond.Name == "Transfer", :);
-if height(naiveCond) ~= 1 || height(continualCond) ~= 1
+TransferCond = Cond(Cond.Name == "Transfer", :);
+if height(naiveCond) ~= 1 || height(TransferCond) ~= 1
 	error('Fig56ABCD:MissingCondition', 'Expected one Naive and one Transfer condition row.');
 end
 
@@ -30,9 +30,9 @@ preFormalRows = cell(numMice, 1);
 unitRows = cell(numMice, 1);
 parfor mouseIndex = 1:numMice
 	[preNaive, unitsNaive] = iRunConditionDiagnostics(Params, naiveCond, "Naive", naiveSeedValues(mouseIndex), mouseIndex, false);
-	[preContinual, unitsContinual] = iRunConditionDiagnostics(Params, continualCond, "Continual", continualSeedValues(mouseIndex), mouseIndex, true);
-	preFormalRows{mouseIndex} = [preNaive; preContinual];
-	unitRows{mouseIndex} = [unitsNaive; unitsContinual];
+	[preTransfer, unitsTransfer] = iRunConditionDiagnostics(Params, TransferCond, "Transfer", TransferSeedValues(mouseIndex), mouseIndex, true);
+	preFormalRows{mouseIndex} = [preNaive; preTransfer];
+	unitRows{mouseIndex} = [unitsNaive; unitsTransfer];
 end
 
 Data = struct();
@@ -155,7 +155,7 @@ row.PositiveProjectionDeltaI = NaN;
 end
 
 function [fig, Stats] = iPlotFig56ABCD(Data)
-palette = [TransferLearning.NaiveColor;TransferLearning.ContinualColor];
+palette = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 preFormalTable = Data.PreFormalTable;
 unitTable = Data.UnitTable;
@@ -172,14 +172,14 @@ layout = tiledlayout(fig, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 axConnection = nexttile(layout, 1);
 connectionNaive = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Naive"));
-connectionContinual = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Continual"));
-[connectionPValue, connectionStats, ~] = iPlotBarComparison(axConnection, {connectionNaive, connectionContinual}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-beh."]);
+connectionTransfer = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Transfer"));
+[connectionPValue, connectionStats, ~] = iPlotBarComparison(axConnection, {connectionNaive, connectionTransfer}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-beh."]);
 
 axActivity = nexttile(layout, 2);
 firstUnitTable = unitTable(unitTable.Unit == 1 & unitTable.DidSimulate, :);
 activityNaive = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Naive"));
-activityContinual = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Continual"));
-[activityPValue, activityStats, ~] = iPlotBarComparison(axActivity, {activityNaive, activityContinual}, compareGroup, palette, "Activity", ["L5E", "non-behavior"]);
+activityTransfer = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Transfer"));
+[activityPValue, activityStats, ~] = iPlotBarComparison(axActivity, {activityNaive, activityTransfer}, compareGroup, palette, "Activity", ["L5E", "non-behavior"]);
 
 axNoise = nexttile(layout, 3);
 noiseLabelPosition = [0.96, 0.91; 0.96, 0.74];
@@ -207,8 +207,8 @@ end
 function [pValue, stats, optional] = iPlotBarComparison(ax, dataCell, compareGroup, palette, yLabelText, titleText)
 axes(ax);
 naiveValues = dataCell{1};
-continualValues = dataCell{2};
-pValue = ranksum(naiveValues, continualValues);
+TransferValues = dataCell{2};
+pValue = ranksum(naiveValues, TransferValues);
 [~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optional);
 fprintf('\n=== Fig55ABCD "%s" BarScatterCompare ===\n', titleText);
@@ -217,7 +217,7 @@ if isfield(optional, 'MultiCompare') && ismember('PText', optional.MultiCompare.
 end
 iStyleBarTile(ax, bars, errorBars, optional, palette, titleText);
 ylabel(ax, yLabelText);
-stats = table(["Naive"; "Continual"], [numel(naiveValues); numel(continualValues)], [mean(naiveValues, 'omitnan'); mean(continualValues, 'omitnan')], [iSem(naiveValues); iSem(continualValues)], ...
+stats = table(["Naive"; "Transfer"], [numel(naiveValues); numel(TransferValues)], [mean(naiveValues, 'omitnan'); mean(TransferValues, 'omitnan')], [iSem(naiveValues); iSem(TransferValues)], ...
 	'VariableNames', {'Condition','N','Mean','Sem'});
 end
 
@@ -232,17 +232,17 @@ iAddLineEndLabels(ax, meanMat, palette, labelPosition, labelAlignment);
 pValues = nan(3, 1);
 for unitIndex = 1:3
 	naiveValues = iFiniteValues(unitTable.(metricName)(unitTable.Condition == "Naive" & unitTable.Unit == unitIndex & unitTable.DidSimulate));
-	continualValues = iFiniteValues(unitTable.(metricName)(unitTable.Condition == "Continual" & unitTable.Unit == unitIndex & unitTable.DidSimulate));
-	if numel(naiveValues) >= 2 && numel(continualValues) >= 2
-		pValues(unitIndex) = ranksum(naiveValues, continualValues);
+	TransferValues = iFiniteValues(unitTable.(metricName)(unitTable.Condition == "Transfer" & unitTable.Unit == unitIndex & unitTable.DidSimulate));
+	if numel(naiveValues) >= 2 && numel(TransferValues) >= 2
+		pValues(unitIndex) = ranksum(naiveValues, TransferValues);
 	end
 end
 stats = table((1:3)', countMat(:, 1), countMat(:, 2), meanMat(:, 1), meanMat(:, 2), semMat(:, 1), semMat(:, 2), meanMat(:, 2) - meanMat(:, 1), pValues, ...
-	'VariableNames', {'Unit','NaiveN','ContinualN','NaiveMean','ContinualMean','NaiveSem','ContinualSem','ContinualMinusNaive','PValue'});
+	'VariableNames', {'Unit','NaiveN','TransferN','NaiveMean','TransferMean','NaiveSem','TransferSem','TransferMinusNaive','PValue'});
 end
 
 function [meanMat, semMat, countMat] = iUnitMeanSem(unitTable, metricName)
-conditionList = ["Naive", "Continual"];
+conditionList = ["Naive", "Transfer"];
 meanMat = nan(3, numel(conditionList));
 semMat = nan(3, numel(conditionList));
 countMat = zeros(3, numel(conditionList));
@@ -274,7 +274,7 @@ ax.FontSize = 12;
 ax.LineWidth = 0.5;
 ax.TickDir = 'out';
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Continual'};
+ax.XTickLabel = {'Naive', 'Transfer'};
 ax.XTickLabelRotation = 25;
 iSetTitle(ax, titleText);
 box(ax, 'off');
@@ -312,7 +312,7 @@ ylim(ax, [0, max([currentYLim(2), yLimitMax, eps])]);
 end
 
 function iAddLineEndLabels(ax, meanMat, palette, labelPosition, labelAlignment)
-conditionLabels = ["Naive", "Continual"];
+conditionLabels = ["Naive", "Transfer"];
 for conditionIndex = 1:numel(conditionLabels)
 	y = meanMat(:, conditionIndex);
 	lastIndex = find(isfinite(y), 1, 'last');
@@ -454,10 +454,10 @@ end
 function iPrintLineStats(labelText, stats)
 fprintf('\n=== Fig56ABCD %s ===\n', labelText);
 for rowIndex = 1:height(stats)
-	fprintf('unit %d: Naive %.6g ± %.6g (n=%d), Continual %.6g ± %.6g (n=%d), diff %.6g, p %.6g\n', ...
+	fprintf('unit %d: Naive %.6g ± %.6g (n=%d), Transfer %.6g ± %.6g (n=%d), diff %.6g, p %.6g\n', ...
 		stats.Unit(rowIndex), stats.NaiveMean(rowIndex), stats.NaiveSem(rowIndex), stats.NaiveN(rowIndex), ...
-		stats.ContinualMean(rowIndex), stats.ContinualSem(rowIndex), stats.ContinualN(rowIndex), ...
-		stats.ContinualMinusNaive(rowIndex), stats.PValue(rowIndex));
+		stats.TransferMean(rowIndex), stats.TransferSem(rowIndex), stats.TransferN(rowIndex), ...
+		stats.TransferMinusNaive(rowIndex), stats.PValue(rowIndex));
 end
 end
 

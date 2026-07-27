@@ -1,4 +1,4 @@
-﻿if ~exist('UniExp.DataSet', 'class')
+if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
 	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
@@ -19,7 +19,7 @@ if isempty(idxCue)
 	error('Fig71A:NoCueIndex', 'Cannot find the first nonnegative sample as cue onset.');
 end
 
-rows = iQueryContinualLightRows(MB);
+rows = iQueryTransferLightRows(MB);
 [repBlock, blockScores] = iSelectRepresentativeBlock(rows, MB, idxNeg3, idxCue);
 [cellTrialTimes, trialOrder, cellUIDs] = iBuildCellTrialTimes(rows(uint64(rows.BlockUID) == repBlock.BlockUID, :), idxCue);
 
@@ -66,7 +66,7 @@ ax.XTick = -3:1:0;
 ax.XTickLabel = {'-3', '-2', '-1', '💡'};
 xlabel(ax, 'Time(s)');
 ylabel(ax, 'PC1');
-title(ax, 'Continual💡');
+title(ax, 'Transfer💡');
 
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -88,7 +88,7 @@ assignin('base', 'Fig71A_TrialPc1', trialPc1);
 assignin('base', 'Fig71A_TrialOrder', trialOrder);
 assignin('base', 'Fig71A_CellUID', cellUIDs);
 
-function rows = iQueryContinualLightRows(MB)
+function rows = iQueryTransferLightRows(MB)
 query = table("TransferLight", "LightWater", "Transfer", "声光无穿插", {[]}, ...
 	'VariableNames', {'GroupName', 'Stimulus', 'Phase', 'Paradigm', 'Behavior'});
 groupNts = MB.QueryNTS(query, ExtraColumns=["Mouse", "BlockUID", "TrialRI"]);
@@ -141,7 +141,7 @@ blockInfo.Mouse = string(blockInfo.Mouse);
 	valid = isfinite(blockScores.MeanLog2Ratio) & isfinite(blockScores.MeanStdNeg3) & isfinite(blockScores.MeanStd0);
 	blockScores = blockScores(valid, :);
 	if isempty(blockScores)
-		error('Fig71A:NoRepresentativeBlock', 'No valid Continual LightWater block was found.');
+		error('Fig71A:NoRepresentativeBlock', 'No valid Transfer LightWater block was found.');
 	end
 	blockScores = sortrows(blockScores, {'MeanLog2Ratio', 'MeanStdNeg3', 'MeanStd0'}, {'descend', 'descend', 'ascend'});
 	repBlock = blockScores(1, :);

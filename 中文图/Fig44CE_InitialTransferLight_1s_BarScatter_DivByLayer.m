@@ -95,7 +95,6 @@ end
 f = figure('Color', 'w', 'Name', 'Chinese Fig44CE Initial/Transfer LightWater bars');
 f.Units = 'centimeters';
 f.Position(3:4) = [4, 16];
-f.
 
 layout = tiledlayout(f, 4, 1, 'TileSpacing','tight', 'Padding', 'tight');
 
@@ -467,7 +466,7 @@ end
 
 function iStyleAxes(ax, yLabelText, titleText)
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Transfer'};
+ax.XTickLabel = {'Naive', '  Transfer'};%Transfer前缀空格用来规避MATLAB的自动排版bug
 ylabel(ax, yLabelText);
 title(ax, titleText);
 box(ax, 'off');

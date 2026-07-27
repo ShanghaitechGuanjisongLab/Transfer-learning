@@ -20,9 +20,9 @@ function Cache = iBuildCache()
 	groupNts = MB.QueryNTS(infoQuery, ExtraColumns="TrialRI");
 	xSec = iXsSeconds(25);
 	phaseNames = ["LearnedAudio", "NaiveLight", "TransferLightHit", "TransferLightMiss"];
-	legendLabels = ["Learned", "Naive", "Continual hit", "Continual miss"];
-	barLabels = ["Learned", "Naive", "C-hit", "C-miss"];
-	phaseColors = [TransferLearning.LearnedColor; TransferLearning.NaiveColor; TransferLearning.ColorA; TransferLearning.ColorB];
+	legendLabels = ["Learned", "Naive", "Transfer hit", "Transfer miss"];
+	barLabels = ["Learned", "Naive", "T-hit", "T-miss"];
+	phaseColors = [TransferLearning.LearnedColor; TransferLearning.NaiveColor; TransferLearning.TransferColor; TransferLearning.ColorB];
 	phaseLineStyles = ["-"; "-"; "-"; "-"];
 	compareGroup = table(["NaiveLight", "TransferLightHit"; "NaiveLight", "LearnedAudio"; "TransferLightHit", "TransferLightMiss"], 'VariableNames', {'GroupPair'});
 

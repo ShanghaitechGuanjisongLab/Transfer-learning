@@ -13,5 +13,5 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 Data = Fig71_ConvergenceInheritanceCache();
 chanceText = "(Chance overlap " + MATLAB.SignificantFixedpoint(Data.ChanceOverlap * 100, 2) + "%)";
 
-Fig71_PlotConvergenceVenn(Data.LTMatrix, Data.LTTags, ["Learned 🔊💧", "Continual Hit 💡💧"], ["Overlap of highly"; "convergent cells"], chanceText, ...
+Fig71_PlotConvergenceVenn(Data.LTMatrix, Data.LTTags, ["Learned 🔊💧", "Transfer Hit 💡💧"], ["Overlap of highly"; "convergent cells"], chanceText, ...
 	'中文图71G highly convergent overlap venn', [6, 8], '中文图Fig71G_HighlyConvergentOverlap_Venn.svg');

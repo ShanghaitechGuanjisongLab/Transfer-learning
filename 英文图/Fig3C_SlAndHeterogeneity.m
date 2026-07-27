@@ -49,7 +49,7 @@ f.Position(3:4) = [4,8];
 t = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 title(t, sprintf('Response\nheterogeneity'));
 
-barColors = [TransferLearning.NaiveColor;TransferLearning.ContinualColor;TransferLearning.LearnedColor];
+barColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor;TransferLearning.LearnedColor];
 CompareGroup = table([1 2; 3 2], 'VariableNames', {'GroupPair'});
 
 for iL = 1:numel(layers)
@@ -104,7 +104,7 @@ for iL = 1:numel(layers)
 	if iL == 1
 		ax.XTickLabel = {};
 	else
-		ax.XTickLabel = {'Naive💡', 'Continual💡', 'Learned🔊'};
+		ax.XTickLabel = {'Naive💡', 'Transfer💡', 'Learned🔊'};
 	end
 	ylabel(ax, layerLabel);
 	if isscalar(Bars)
