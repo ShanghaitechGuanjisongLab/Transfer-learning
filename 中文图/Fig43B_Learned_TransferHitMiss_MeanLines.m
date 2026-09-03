@@ -70,7 +70,7 @@ f.Position(3:4) = [9, 8];
 ax = axes(f);
 hold(ax, 'on');
 
-lineColors = [TransferLearning.LearnedColor; TransferLearning.ContinualColor; TransferLearning.ColorB];
+lineColors = [TransferLearning.LearnedColor; TransferLearning.TransferColor; TransferLearning.ColorB];
 
 Patches = MATLAB.Graphics.MultiShadowedLines( ...
 	Y, E, 0.2, ...

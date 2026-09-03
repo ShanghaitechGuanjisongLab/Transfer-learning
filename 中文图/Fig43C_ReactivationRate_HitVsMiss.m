@@ -45,7 +45,7 @@ if nnz(mask) >= 4
 end
 
 Y = [hit(mask), miss(mask)];
-hitColor = TransferLearning.ContinualColor;
+hitColor = TransferLearning.TransferColor;
 missColor = TransferLearning.ColorB;
 plot(ax, Y', '-', 'Color', [0, 0, 0]);
 scatter(ax, ones(nnz(mask),1), hit(mask), 15, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', hitColor);

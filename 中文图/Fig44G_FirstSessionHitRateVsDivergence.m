@@ -26,9 +26,9 @@ naive = [naiveA; naiveB];
 transfer = iCollectTransferFirstSessionData(ALB, idx0, idx1s);
 
 Data = [naive; transfer];
-Data.Group = categorical(string(Data.Group), ["Naive", "Continual"]);
+Data.Group = categorical(string(Data.Group), ["Naive", "Transfer"]);
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
 colorNaive = groupColors(1, :);
 colorTransfer = groupColors(2, :);
 colorFit = TransferLearning.ColorA;
@@ -47,7 +47,7 @@ xl = xlabel(tl, 'Divergence');
 xl.FontSize = 12;
 
 Stats = table("All", nan, nan, nan, nan, ...
-	'VariableNames', {'Panel', 'Rho', 'PValue', 'NNaive', 'NContinual'});
+	'VariableNames', {'Panel', 'Rho', 'PValue', 'NNaive', 'NTransfer'});
 
 use = isfinite(Data.Divergence) & isfinite(Data.HitRate);
 if nnz(use) < 3
@@ -62,7 +62,7 @@ end
 [rho, p] = corr(xAll, yAll, 'Type', 'Spearman');
 
 maskNaive = use & (string(Data.Group) == "Naive");
-maskTran = use & (string(Data.Group) == "Continual");
+maskTran = use & (string(Data.Group) == "Transfer");
 
 ax = nexttile(tl, 1);
 hold(ax, 'on');
@@ -84,7 +84,7 @@ xFit = [min(xAll), max(xAll)];
 yFit = polyval(fitP, xFit);
 hFit = plot(ax, xFit, yFit, '-', 'Color', colorFit, 'LineWidth', 2);
 
-lgd = legend(ax, [hN, hT], {'Naive', 'Continual'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
+lgd = legend(ax, [hN, hT], {'Naive', 'Transfer'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
 lgd.FontSize = 12;
 lgd.Box = 'off';
 
@@ -94,11 +94,11 @@ iText(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
 Stats.Rho(1) = rho;
 Stats.PValue(1) = p;
 Stats.NNaive(1) = nnz(maskNaive);
-Stats.NContinual(1) = nnz(maskTran);
+Stats.NTransfer(1) = nnz(maskTran);
 
 fprintf('\n=== Fig333D All cells ===\n');
 fprintf('Naive mice: %d\n', nnz(maskNaive));
-fprintf('Continual mice: %d\n', nnz(maskTran));
+fprintf('Transfer mice: %d\n', nnz(maskTran));
 fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 
 svgPath = '中文图Fig44G_FirstSessionHitRateVsDivergence.svg';
@@ -132,7 +132,7 @@ for i = 1:numel(mice)
 	end
 	dt = min(Tm.DateTime);
 	Ts = sortrows(Tm(Tm.DateTime == dt, :), 'TrialIndex');
-	Rows{i} = iSessionRows(DS, m, dt, Ts, "Continual", idx0, idx1s);
+	Rows{i} = iSessionRows(DS, m, dt, Ts, "Transfer", idx0, idx1s);
 	end
 out = vertcat(Rows{:});
 end

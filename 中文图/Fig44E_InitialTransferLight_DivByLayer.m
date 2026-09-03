@@ -1,10 +1,11 @@
-% Chinese Fig44E: initial vs continual LightWater divergence by layer.
+% Chinese Fig44E: initial vs Transfer LightWater divergence by layer.
 
 Data = TransferLearning.PrepareFig44CEData();
 barColors = Data.GroupColors;
 compareGroup = Data.CompareGroup;
+%% 
 
-f = figure('Color', 'w', 'Name', 'Chinese Fig44E Initial/Continual LightWater divergence');
+f = figure('Color', 'w', 'Name', 'Chinese Fig44E Initial/Transfer LightWater divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [4, 8];
 f.PaperUnits = 'centimeters';
@@ -15,13 +16,13 @@ f.PaperSize = [4, 8];
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 axL23 = nexttile(layout, 1);
-[~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(Data.NaiveL23(:)), double(Data.ContinualL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, optL23, barsL23, errL23] = UniExp.BarScatterCompare({double(Data.NaiveL23(:)), double(Data.TransferL23(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optL23);
 iStyleBarPanel(axL23, optL23, barsL23, errL23, barColors, 'Divergence', 'Layer 2/3');
 [pTop, tTop] = iExtractFirstPValueAndText(optL23);
 
 axL5 = nexttile(layout, 2);
-[~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(Data.NaiveL5(:)), double(Data.ContinualL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
+[~, optL5, barsL5, errL5] = UniExp.BarScatterCompare({double(Data.NaiveL5(:)), double(Data.TransferL5(:))}, UniExp.Flags.empty, compareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 1);
 TransferLearning.Style.SetBarPValues(optL5);
 iStyleBarPanel(axL5, optL5, barsL5, errL5, barColors, 'Divergence', 'Layer 5');
 [pBottom, tBottom] = iExtractFirstPValueAndText(optL5);
@@ -35,11 +36,11 @@ end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图Fig44E_InitialTransferLight_DivByLayer.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-fprintf('\n=== Fig44E initial/continual LightWater divergence ===\n');
-fprintf('Top (Layer 2/3 divergence): Naive %d mice, %d cells; Continual %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
-	nnz(Data.MaskNaiveL23), Data.NCellNaiveL23, nnz(Data.MaskContinualL23), Data.NCellContinualL23, pTop, tTop);
-fprintf('Bottom (Layer 5 divergence): Naive %d mice, %d cells; Continual %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
-	nnz(Data.MaskNaiveL5), Data.NCellNaiveL5, nnz(Data.MaskContinualL5), Data.NCellContinualL5, pBottom, tBottom);
+fprintf('\n=== Fig44E initial/Transfer LightWater divergence ===\n');
+fprintf('Top (Layer 2/3 divergence): Naive %d mice, %d cells; Transfer %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
+	nnz(Data.MaskNaiveL23), Data.NCellNaiveL23, nnz(Data.MaskTransferL23), Data.NCellTransferL23, pTop, tTop);
+fprintf('Bottom (Layer 5 divergence): Naive %d mice, %d cells; Transfer %d mice, %d cells; BarScatterCompare PValue=%.6g, PText="%s"\n', ...
+	nnz(Data.MaskNaiveL5), Data.NCellNaiveL5, nnz(Data.MaskTransferL5), Data.NCellTransferL5, pBottom, tBottom);
 
 assignin('base', 'Fig44E_DivergenceTable', Data.DivergenceTable);
 assignin('base', 'Fig44E_DivergenceSummary', Data.DivergenceSummary);
@@ -66,7 +67,7 @@ if isprop(ax.XAxis, 'LineWidth')
 end
 ax.XAxis.Visible = 'on';
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Continual'};
+ax.XTickLabel = {'Naive', '  Transfer'};
 legend(ax, 'off');
 ylabel(ax, yLabelText, 'FontName', 'Arial', 'FontSize', 6);
 title(ax, titleText, 'FontName', 'Arial', 'FontSize', 6, 'FontWeight', 'normal');
