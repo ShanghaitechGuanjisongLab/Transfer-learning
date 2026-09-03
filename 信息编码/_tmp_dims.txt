@@ -1,0 +1,17 @@
+Xtr=60x771x16 Xnaive=30x771x16 okTr=60
+iT=9 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=9 lin OK
+iT=10 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=10 lin OK
+iT=11 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=11 lin OK
+iT=12 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=12 lin OK
+iT=13 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=13 lin OK
+iT=14 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=14 lin OK
+iT=15 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=15 lin OK
+iT=16 FtrOK(bal)=60x771 Xnaive=30x771
+  iT=16 lin OK

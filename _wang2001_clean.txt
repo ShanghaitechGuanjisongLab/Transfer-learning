@@ -1,0 +1,2733 @@
+﻿
+
+
+
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 
+
+http://tins.trends.com      0166-2236/01/$  see front matter © 2001 Elsevier Science Ltd. All rights reserved.   PII: S0166-22 36\(00\1868-3 455
+
+Review
+
+
+51Ignatowski, T.A. 
+etal. 
+
+\(1999\) Brain-derived 
+TNF
+
+
+
+mediates neuropathic pain. 
+
+Brain Res.
+841,
+
+7077
+
+
+52Solari, R. 
+etal. 
+
+\(1994\) Receptor mediated
+endocytosis and intracellular fate of interleukin 1.
+
+Biochem. Pharmacol.
+
+47, 93101
+
+53Ramer, M.S. 
+etal.
+---- STREAM 2 END ----
+ 
+
+\(1998\) Spinal nerve lesion-
+induced mechanoallodynia and adrenergic
+
+sprouting in sensory ganglia are attenuated in 
+interleukin-6 knockout mice. 
+Pain
+
+78, 115121 
+
+54Covey, W.C. 
+etal. 
+
+\(2000\) Brain-derived TNFalpha:
+
+involvement in neuroplastic changes implicated
+
+in the conscious perception of persistent pain.
+
+Brain Res.
+
+859, 113122 
+55DeLeo, J.A. 
+etal. 
+
+\(2000\ransgenic expression of 
+
+
+TNF by astrocytes increases mechanical allodynia in
+a mouse neuropathy model. 
+NeuroReport
+
+
+11, 599602 
+
+
+56Sweitzer, S.M. 
+etal. 
+
+IL1ra and sTNFr reduce
+
+mechanical allodynia and spinal cytokine 
+
+expression in a model of neuropathic pain.
+
+
+Neuroscience
+
+
+\(in press\)
+57Laughlin, T.M. 
+etal. 
+
+\(2000\) Cytokine involvement
+in dynorphin-induced allodynia. 
+---- STREAM 4 END ----
+
+Pain
+
+
+84, 159167
+58Tadano, T. 
+etal. 
+
+\(1999\) Induction of nociceptive
+
+
+responses by intrathecal injection of interleukin-1
+
+in mice. 
+
+Life Sci.
+
+
+65, 255261
+59Arruda, J.L. 
+etal. 
+
+\(2000\Antibody and IgG 
+
+attenuates mechanical allodynia in a
+mononeuropathy model in the rat: potential role
+
+
+of immune modulation in neuropathic pain. 
+Brain
+Res.
+
+
+879, 216225
+
+
+60Murphy, P.G. 
+etal. 
+
+\(1999\) Endogenous
+interleukin-6 contributes to hypersensitivity to
+cutaneous stimuli and changes in neuropeptides
+associated with chronic nerve constriction in mice.
+
+
+Eur. J. Neurosci. 
+
+11, 22432253 
+
+61Watkins, L.R. 
+etal. 
+
+\(1999\) Dynamic regulation of
+
+
+the proinflammatory cytokine, interleukin-1 beta:
+molecular biology for non-molecular biologists.
+---- STREAM 5 END ----
+
+
+Life Sci.
+
+65, 449481
+
+62Watkins, L.R. 
+etal. 
+
+Glial proinflammatory
+cytokines mediate exaggerated pain states:
+
+implications for clinical pain. In 
+Immune
+
+Mechanisms of Pain & Analgesia
+\(Machelska, H.
+and Stein, C., eds\), Landes Biosciences 
+\(in press\)
+63DeLeo, J.A. 
+etal. 
+
+\(1996\) Interleukin \(IL\)-6
+
+mediated hyperalgesia/allodynia and increased
+
+spinal IL-6 in a rat mononeuropathy model.
+
+
+J.Interferon Cytokine Res. 
+
+16, 695700
+
+64Tyor, W.R. 
+etal. 
+
+\(1992\) Cytokine expression in the
+
+
+brain during the acquired immunodeficiency
+syndrome. 
+
+Ann. Neurol.
+
+
+31, 349360
+
+65VanLeeuwen, R. 
+etal. 
+
+\(1996\) Evaluation of safety
+
+and efficacy of 3TC \(lamivudine\ 
+
+asymptomatic or mildly symptomatic human
+
+immunodeficiency virus infection: a phaseI/II
+---- STREAM 6 END ----
+ 
+study.  
+
+J. Infect. Dis.
+
+171, 11661171 
+
+
+66Watkins, L.R. and Maier, S.F. \(1997\ the missing brain: arguments for a role of brain-
+
+to-spinal cord pathways in pain facilitation.
+
+
+Behav. Brain Sci. 
+20, 469
+
+67Chacur, M. 
+etal. 
+
+Anew model of sciatic 
+inflammatory neuritis \(SIN\): induction of
+
+unilateral and bilateral mechanical allodynia
+
+following acute unilateral peri-sciatic immune
+activation in rats. 
+Pain
+
+\(in press\)
+
+68Watkins, L. 
+
+et al. 
+Spinal cord glia: new players in
+pain. 
+Pain
+
+\(in press\)
+
+Review
+Synaptic reverberation underlying mnemonic persistent activity 
+
+Xiao-Jing Wang 
+
+
+Afundamental ability of the brain is to actively hold an item of information on-linein short-term memory. The
+---- STREAM 7 END ----
+ 
+stored information can be a sensory stimulus that
+guides a prospective action, such as a delayed
+perceptual decision or a delayed behavioral response.
+It can also be an item retrieved from long-term
+memory, for example when the memory of a face is 
+activated and used in the visual search of a friend in a
+crowd. The obligatory physical process underlying
+active \(working\) memory is persistent neural activity
+that is sustained internally in the brain, rather than
+driven by inputs from the external world. Persistent
+activity provides the cellular basis of a central neural
+mechanism, as postulated by Hebb, to account for the
+delay, between stimulation and response, that seems 
+so characteristic of thought1
+
+. In order for a neuralpersistent activity to subserve working memory, it must be stimulus-selective, and therefore information-
+specific. Moreover, it must be able to be turned on and 
+switched off rapidly \(
+
+
+
+100ms\ 
+
+For 30 years, persistent activity in the cortex has
+been documented by numerous unit recordings from
+behaving monkeys during working memory tasks
+\(Box1\ 
+activity arise in a neural network? Can we explain
+persistent activity in terms of the biophysics of
+
+neurons and synapses, and circuit connectivity?
+
+---- STREAM 8 END ----
+
+Recent experiments and computational modeling have
+been devoted to these mechanistic questions; these
+studies have led to new insights into the cellular basis
+of mnemonic neural activity in behaving animals.
+
+
+Reverberatory excitation:how localized can it be? 
+
+
+The central idea is that recurrent excitatory loops 
+within a neural network can sustain a persistent
+
+activity in the absence of external inputs 
+1,2
+
+. To test 
+this hypothesis, a key issue is to identify the crucial
+and minimum anatomical substrate for
+reverberation. In the neocortex, several scenarios are
+conceivable.
+
+
+Thalamocortical loop 
+
+
+Persistent activity can arise from a large neural
+network that involves subcortical systems, through
+
+
+Stimulus-specific persistent neural activity is the neural process underlying active \(working\.Since its discovery 30 years ago,mnemonic activity 
+has been hypothesized to be sustained by synaptic reverberation in a recurrent 
+circuit.Recently,experimental and modeling work has begun to test the
+---- STREAM 9 END ----
+ 
+reverberation hypothesis at the cellular level.Moreover,theory has been 
+developed to describe memory storage of an analog stimulus \(such as spatial 
+location or eye position\in terms of continuous bump attractors and line 
+
+attractors.This review summarizes new studies,and discusses insights and 
+
+predictions from biophysically based models.The stability of a working 
+memory network is recognized as a serious problem;stability can be achieved 
+if reverberation is largely mediated by NMDA receptors at recurrent synapses. 
+
+Xiao-Jing Wang 
+
+
+Volen Center for Complex 
+Systems, Brandeis 
+
+
+University, 415 South 
+
+Street, Waltham, 
+
+
+MA02254-9110, USA. 
+
+
+e-mail: xjwang@ 
+
+brandeis.edu
+---- STREAM 10 END ----
+
+
+
+
+
+
+reciprocal excitation between the cortex and
+thalamus, or via the corticostriatothalamocortical
+loop \(Fig.1a\ 
+the delay period of a memory task, thalamic3
+and
+caudate4
+
+neurons show an elevated persistent
+activity; whereas the output neurons from basal 
+ganglia show a sustained inhibition5
+
+. It is unknown
+whether the subcortical mnemonic activities are a
+mere reflection of persistent cortical inputs. To 
+answer this question, it would be interesting to see
+whether cortical persistent activity survives the
+disruption of the closed loop, for example, by lesioning 
+the thalamocortical pathway. 
+
+
+Reciprocal loop between cortical areas 
+
+
+It is also possible that persistent activity is
+maintained by reciprocal loops between cortical areas,
+such as between the prefrontal cortex \(PFC\) and the
+posterior parietal cortex, or between the PFC and the
+inferotemporal cortex \(Fig.1b\ 
+present in all these areas \(Box1\, to date 
+
+there is no convincing evidence that such a loop is
+
+necessary for the generation of persistent activity. In 
+an object-working-memory experiment using
+
+intervening stimuli \(distractors\), stimulus-specific
+
+mnemonic activity has been shown to be easily
+disrupted by distractors in inferotemporal neurons,
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+456
+
+Review
+Box1.Persistent activity as neural correlate of working memory 
+Cortical memory neurons that show persistent activity are typically recorded during a delayed 
+response task, in which a monkey is required to 
+retain the information of a sensory cue across a
+delay period between the stimulus and behavioral
+response. Memory cells were first found, and seem 
+to be especially abundant, in the prefrontal cortex 
+
+\(PFC\)
+ae
+
+. The crucial role of the PFC in working
+
+memory is also supported by lesion 
+f,g 
+
+and brain
+
+
+imaging studiesh
+
+. However, neural persistent 
+activity is a widespread phenonemon in 
+association cortices, including the posterior 
+parietal cortex 
+ik
+
+, and the inferotemporal cortex 
+l,m.
+
+
+According to the type of sensory stimulus that is
+encoded for storage, one can distinguish three
+kinds of working memory. 
+Discrete working memory 
+FigureIa shows a delayed match-to-sample 
+experiment, in which the behavioral response 
+
+
+depends on the memory of one of the two items
+
+\(the stimulus color, red or green\ 
+
+
+inferotemporal neuron displays elevated activity 
+
+
+through the entire delay period \(16 s\h is 
+
+
+selective to the color red. Such tasks engage a 
+working memory circuit in which the stored 
+information is a categorical feature of the stimulus
+or an object \(a face, color or word\, the 
+items form a discrete collection, and a given 
+neuron or neural assembly is selective to one or a 
+
+
+few items.
+
+
+Spatial working memory 
+FigureIb illustrates a delayed oculomotor 
+experiment, in which a saccadic eye movement is 
+guided by the memory of a spatial stimulus. In this 
+case, the stored information is spatial location,
+
+
+which is an analog quantity. Neurons in the 
+
+
+dorsolateral PFC display persistent delay activity 
+
+
+that is spatially selective. The memory field of a 
+
+
+cell is characterized by a smooth tuning curve, 
+peaked at a preferred spatial cue, which is different from cell to 
+
+cell. The memory of a given spatial location is stored by the 
+neural population in the form of a spatially localized persistent 
+
+firing pattern, or a bump attractor. Bump states are common to 
+
+
+
+++++++++
+50
+
+TRENDS in Neurosciences
+
+
+Ð
+15
+Ð
+10
+Ð
+5051015202530 SDelayM 
+Target direction \( 
+
+\)
+20
+40225
+
+
+271890GreenSpikes/s 
+Firing rate \(Hz\ 30
+100901802700 Time \(s\)
+Ð
+15
+Ð
+10
+Ð
+5051015202530 
+271890RedSpikes/s Time \(s\)
+\(a\)
+SDelayM 
+
+Ð
+1012345 30 Hz
+10 Hz22 Hz28 Hz
+30 Hz34 Hz14 Hz26 Hz10 Hz22 Hz8 Hz
+18 Hz34 Hz22 Hz26 Hz
+18 Hz14 Hz
+\(b\\(c\ 
+0
+38Time \(s\)6Spikes \(Hz\ 
+10152025303540 
+6
+33Stimulus frequency \(Hz\ Spikes \(Hz\ 
+
+
+
+Fig.I. 
+
+Three types of working memory encoding. \(a\Discrete working memory. In a delayed match 
+\(M\S\vity for the color 
+red \(but not green\6 s. Redrawn, with permission, from 
+Fuster and Jervey l
+. \(b\. In a delayed saccade experiment, a prefrontal 
+neuron shows persistent activity that is tuned to a preferred location of a visual cue. Upper panel: 
+rasters and cumulative spike histogram for a preferred cue; lower panel: spatial tuning curve of 
+delay period activity. Redrawn, with permission, from Funahashi  etal. c
+\(c\Parametric working 
+memory. In a delayed somatosensory discrimination task, a neuron in the inferior convexity shows 
+persistent activity with a firing rate proportional to the cue frequency. Upper panel: rasters. Cue 
+stimulus frequency indicated on the left, comparison stimulus frequency indicated on the right. 
+Middle panel: trial-averaged firing rates as a function of time. Lower panel: mean firing rates, 
+averaged across the entire delay period, as a function of the cue frequency. Redrawn, with 
+permission, from Romo  
+et al.e
+---- STREAM 11 END ----
+
+
+
+
+
+
+but not in PFC neurons6
+
+. This result suggests that a 
+neural circuit within PFC is by itself capable of
+
+sustaining a stimulus-selective persistent activity. 
+
+
+Recurrent local cortical network 
+
+
+The third view is that persistent activity can be 
+
+produced locally within a cortical area \(Fig.1c\ 
+particular, Goldman-Rakic \(1995\ 
+columnarly organized cortical network model for the
+PFC, in which persistent activity arises from
+
+reverberatory excitation, and stimulus selectivity is
+
+formed by recurrent inhibition7
+
+. This proposal is
+
+consistent with the anatomical and
+electrophysiological data that show extensivehorizontal excitatory connections in the PFC,
+especially in layer II/III \(Refs 810\, 
+prefrontal synapses display short-term plasticity on a
+
+time scale of 0.110s \(Refs 11,12\ 
+
+contribute to increase the synaptic efficacy
+transiently during a reverberatory activity. 
+
+
+Intrinsic cellular bistability
+
+
+Finally, feedback excitation could originate from 
+
+regenerative membrane dynamics of single neurons 
+\(Fig.1d\oltage- and Ca 2
+
+
+
+-gated ion channels could
+
+in principle generate bistability between a resting
+
+state and an active state sustained by a plateau
+potential
+13,14
+
+. Activation of relevant ion currents 
+\(such as a Ca2
+
+
+
+-activated cation current ICan
+\) could
+require neuromodulatory signals such as
+acetylcholine
+15
+
+. Even if single cells are not bistable,
+the behavior of a cortical network is always the result
+of the interplay between intrinsic cellular properties
+
+and synaptic mechanisms
+16.
+
+
+Experiments and biophysical modeling on the
+
+neural basis of persistent activity have so far been 
+
+focused on the scenario of reverberation within a
+brain area. The present article will be confined to
+synaptic mechanisms in a local recurrent network.
+
+
+Attractor paradigm for persistent activity 
+
+
+Since the 1970s, it has been proposed that delay
+activity patterns can be theoretically described by
+dynamical attractors
+1721
+
+. In this framework, a
+
+working memory network displays multiple attractor
+
+states, each of which stores the memory of a specific
+stimulus by a unique persistent firing pattern. The
+
+emergence of persistent attractor states requires that
+
+excitatory connections in a recurrent network are
+sufficiently strong. It is only recently, beginning with 
+the work by Amit and colleagues, that attractor 
+
+network models have been implemented with
+
+realistic models of cortical neurons and synapses
+2227.
+
+
+Figure2 illustrates the biophysics of an attractor 
+
+network. In an object-working-memory model by 
+Amit and Brunel
+22
+
+, subpopulations of neurons are
+selective to different object stimuli. When the
+strength of excitatory connections between neurons
+within each subpopulation is increased beyond a
+
+critical threshold, persistent activity appears as an
+
+all-or-none phenomenon \(Fig.2a,b\ 
+threshold, only the spontaneous state exists. Above 
+
+the threshold, the spontaneous activity state is still 
+
+dynamically stable to small perturbations, because at
+low firing rates excitation is effectively counteracted 
+
+by feedback inhibition \(Fig.2c\, if a 
+
+stimulus generates a transient high activity in a 
+neural subpopulation, now recurrent reverberation is
+sufficiently powerful to drive this group of cells to
+
+escapefrom the spontaneous state. Ahigher firing 
+activity leads to an even larger recurrent synaptic 
+
+excitation, which becomes sufficient to sustain a
+
+persistent active state after the stimulus is
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+457
+
+Review
+
+
+
+neural circuits that encode directional or spatial information, such as head- direction cellsn
+
+and place cellso.
+
+
+
+Parametric working memory 
+FigureIc shows a delayed somatosensory discrimination task, in which the 
+monkey was trained to compare and discriminate the frequencies of two 
+vibrotactile stimuli separated by a delay period. Here, the encoded
+information is the cue frequency, again an analog quantity. PFC cells in the 
+inferior convexity show persistent activity that varies monotonically with 
+the cue frequency. Presumably, there is a continuous range of persistent 
+
+activity rates that vary in proportion to the stimulus parameter. Therefore, 
+
+the stimulus is encoded by a rate code continuum: not by what neurons
+
+
+show delay period activity, but by the firing rates at which they fire. A 
+
+
+similar monotonic encoding scheme is used by oculomotor neurons for 
+memory of the current eye position p.
+
+References 
+
+
+aFuster, J. and Alexander, G. \(1971\. 
+
+Science
+
+
+173, 652654
+
+bKubota, K. and Niki, H. \(1971\ 
+
+performance in monkeys. 
+J. Neurophysiol.
+
+
+34, 337347
+
+cFunahashi, S.  
+etal. 
+
+\(1989\s dorsolateral 
+prefrontal cortex. 
+J. Neurophysiol.
+
+
+61, 331349
+
+
+dRanier, G.  
+
+et al
+
+. \(1998\) Memory fields of neurons in the primate prefrontal cortex. 
+
+Proc.
+
+
+Natl. Acad. Sci. U. S. A.
+
+95, 1500815013
+
+eRomo, R.  
+etal. 
+
+\(1999\) Neuronal correlates of parametric working memory in the
+prefrontal cortex. 
+Nature
+
+
+399, 470473
+fFuster, J. \(1988\ 
+
+The Prefrontal Cortex
+. \(2nd edn\), Raven Press
+gGoldman-Rakic, P. \(1987\ behavior by representational knowledge. In  
+
+Handbook of Physiology
+
+\(Plum, F. and 
+
+Mountcastle, V., eds\American Physiological Society 
+
+hDEsposito, M.  
+etal. 
+
+\(1998\) Functional MRI studies of spatial and non-spatial working
+memory.  
+
+Cognit. Brain Res.
+7, 113
+
+iGnadt, J.W. and Andersen, R.A. \(1988\ posterior parietal cortex of macaque. 
+
+Exp. Brain Res. 
+
+
+70, 216220
+
+jColby, C.L.  
+etal. 
+
+
+\(1996\isual, presaccadic, and cognitive activation of single neurons in 
+
+monkey lateral intraparietal area. 
+
+J. Neurophysiol.
+
+76, 28412852
+
+kChafee, M.V. and Goldman-Rakic, P.S. \(1998\ 
+area 8a and posterior parietal area 7ip related to memory guided saccades.
+
+
+J.Neurophysiol. 
+
+
+79, 29192940
+
+lFuster, J.M. and Jervey, J.P. \(1981\ behaviorally relevant features of visual stimuli. 
+
+Science
+
+
+212, 952955
+
+mMiyashita, Y. and Chang, H.S. \(1988\ 
+in the primate temporal cortex. 
+Nature
+
+
+331, 6870
+
+
+nTaube, J.S. \(1998\ direction. 
+
+Prog. Neurobiol.
+
+
+55, 132
+oSamsonovich, A. and McNaughton, B.L. \(1997\ 
+
+in a continuous attractor neural network model. 
+
+J. Neurosci.
+
+17, 59005920
+
+pRobinson, D.A. \(1989\ 
+
+
+Annu. Rev. Neurosci. 
+
+
+12, 3345
+---- STREAM 12 END ----
+
+
+
+
+
+
+withdrawn. The firing rate is eventually stabilized by negative feedback \(Fig.2c\As a result, a stable 
+attractor of persistent activity with an elevated firing
+
+rate is realized, that coexists with the stable
+spontaneous state \(Fig.2c\ 
+
+that control the firing rates in a working memory
+
+network remain to be identified. Among possible 
+
+contributors are outward ion currents in the cell,
+
+feedback inhibition, short-term synaptic depression, 
+and saturation of the synaptic drive at high
+frequencies
+24.
+
+These simulations of biologically based models
+
+clearly show that quantitative differences in
+
+
+intrinsic connections between cortical networks 
+
+\(e.g. association areas versus primary sensory areas\)
+
+can lead to qualitatively different behaviors \(with 
+
+or without persistent activity\Aprediction  
+
+from attractor models is that persistent activity
+
+depends on the strength of recurrent excitation 
+
+in an abrupt manner, so that mnemonic activity 
+could disappear suddenly when excitatory synaptic
+
+transmission is gradually reduced by
+
+pharmacological means.
+
+
+Spatial working memory and bump attractors 
+
+
+Another major issue concerns the circuit architecture
+
+that gives rise to stimulus selectivity of persistent 
+neural activity. Structured excitatory connectivity 
+
+could arise from a columnar organization
+7,28
+or
+
+
+through Hebbian long-term plasticity
+21
+
+. For spatial
+
+working memory, such as in the delayed oculomotor 
+experiment of Funahashi 
+etal. 
+
+29
+
+\(Box1\ 
+encodes a cue location and stores its memory in the
+form of a bump attractor, which is a spatially 
+localized persistent activity pattern. Such bump
+attractorsnaturally arise from a network 
+connectivity where the strength of synaptic coupling
+between two pyramidal neurons decreases with the
+difference in their preferred cues
+14,18,3034
+. Figure3a 
+illustrates a bump attractor network model of spiking 
+
+
+neurons for spatial working memory
+25
+
+. In the model,
+
+the persistent bump state is sustained by recurrent 
+
+synaptic excitation within a local group of pyramidal
+cells. The spatial tuning is sculptured by synaptic
+inhibition from interneurons, in agreement with
+physiological data
+35
+
+. Stable bump attractors typically
+
+require that lateral inhibition is spatially more
+
+widespread than excitation, with interneurons
+showing a broader tuning curve compared with
+pyramidal cells \(Fig.3b\ 
+
+their targets.In a spatial working memory model, a localized
+
+persistent activity pattern tends to drift randomly as
+
+a diffusion process during the delay period 14,25
+. This is
+
+because there is a continuous family of bump
+
+attractors\(each encoding a potential location\ 
+
+noise induces drifts between them. Interestingly, 
+psychophysical studies have shown that the accuracy
+
+of the memory-guided saccade decreases with the
+delay duration in a way similar to diffusion 36,37
+. It
+would be interesting to see whether random drifts do
+occur in PFC neurons during working memory, and 
+whether they correlate with quantitative errors in the
+memory-guided saccades, and thus short-term
+memory decay in behaving animals.
+Bump attractors are of general interest to diverse
+neural systems \(Box1\, persistent 
+activity in head-direction cells is crucially dependent 
+
+on subcortical structures, where excitatory collaterals
+seem to be scarce
+38
+
+. The circuit mechanisms
+
+underlying persistent activity of head-direction cells
+remain to be elucidated in future experiments and
+
+model studies
+33,39.
+
+
+Parametric working memory and line attractors 
+
+
+Persistent activity with monotonic stimulus tuning
+\(Box1\ 
+
+architecture, which is still not understood. At a 
+
+phenomenological level, there is certain similarity
+between prefrontal delay activity with monotonic
+tuning
+40
+
+and neural integratorsthat store the short- 
+
+term memory of eye position. During eye fixation, 
+
+oculomotor neurons display persistent activity, with 
+
+the firing rate varying in proportion to the current eye
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+458
+
+Review
+
+
+
+
+
+
+
+TRENDS in Neurosciences2.5 s
+
+
+
+
+
+
+
+
+
+
+\(a\)\(c\)\(d\)\(b\)
+50
+mV3 Hz20 Hz3 Hz Striatum GPi/SNrGlutamate
+Glutamate
+Glutamate
+GABAGABAPrefrontal
+Parietal 
+Cortex 
+
+
+Thalamus 
+
+
+
+
+
+Vm  ICa/ICan
+
+
+
+
+
+
+
+
+
+Inferior 
+temporal \(TE\)
+
+
+
+Fig.1. 
+
+
+Various scenarios for the anatomical substrate of excitatory reverberation in the cortex. \(a\A 
+closed thalamocortical loop and/or corticostriatothalamiccortical circuit. In the latter case, cortical 
+
+
+excitation of the caudate nucleus leads to an inhibition of the output from the cells of the basal ganglia 
+
+
+and thus a disinhibition of thalamic neurons, which in turn send increased excitation back to the 
+
+cortex. Abbreviations: GPi, internal segment of the globus pallidus; SNr, substantia nigra pars 
+
+reticulata. \(b\Reciprocal interactions between two cortical areas, prefrontal and posterior cortices 
+\(respectively prefrontal and inferotemporal cortices\resp. object\. 
+\(c\Excitatory recurrent collaterals within a local circuit. \(d\Intrinsic regenerative dynamics of single 
+neurons. Positive feedback between membrane depolarization/spike discharges and active inward 
+
+
+currents \(voltage-gated I 
+Ca/Ca2
+
+
+
+-gated I 
+Can
+\sistent activity that outlasts a transient 
+
+
+input current pulse \(J. Tegnér and X-J. Wang, unpublished\ 
+---- STREAM 13 END ----
+
+
+
+
+
+position
+41
+
+. Based on the idea of synaptic
+
+reverberation, Seung and colleagues
+42
+
+constructed a
+
+HodgkinHuxley-type conductance model of neural
+
+integrators \(Fig.4\ 
+
+individual cells are proportional to the eye position,
+
+when they are plotted against each other in a firing 
+rate space, they always fall on a straight line. Each 
+eye position is encoded by a unique set of persistent 
+firing rates of neurons, corresponding to a particular
+
+point on this line attractor 
+43
+
+. Tank and colleagues 
+investigated neural integrators experimentally in a
+goldfish preparation. Using intracellular recording
+from the behaving animal, it was shown that an
+increase in the persistent firing rate is correlated with
+
+a step change in the membrane potential as a result of
+
+network inputs, consistent with a synaptic
+
+reverberation mechanism
+44.
+
+
+Line attractors require fine tuning of network
+
+parameters. When parameters such as the synaptic 
+strengths deviate from the precisely tuned values, 
+persistency deteriorates, and neural activity decays
+
+or increases during fixation. It is unclear how such
+
+fine-tuning of parameters could be realized by
+
+biological mechanisms. The problem of robustness
+also exists for attractor networks of spatial working
+
+memory. Acontinuum of bump attractors assumes 
+
+that the network is homogeneous, so that any activity 
+pattern that is displaced spatially leads to another
+activity pattern of the same shape but peaked at a
+
+different location14,25,30,33
+. Amajor challenge is to 
+understand how such a recurrent network could still
+function in the presence of network heterogeneity. 
+
+
+NMDA receptors and the stability of a memory network 
+
+
+An emergent notion from recent model studies is that 
+
+working memory behavior is usually easier to realize
+and is more stable, if the networks recurrent synapses are primarily mediated by the slow and
+voltage-gated NMDAreceptors \(NMDARs\ 
+
+reasons are several fold. First, the slow dynamics of
+I
+NMDA
+could be crucial to stabilize a working memory
+network. Negative feedback processes, such as
+
+inhibition and synaptic depression, are typically
+slower than the AMPAreceptor \(AMPAR\ 
+synaptic transmission. For example, the AMPAR- 
+
+mediated EPSCs \(Refs 45,46\) are about three times
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+459
+
+Review
+
+
+TRENDS in Neurosciences
+
+
+
+07Time \(s\)100
+203040506070SampleMatch+R 
+I
+\(a\)
+\(b\)\(c\)
+543211.92.02.12.22.3 Synaptic strength relative to a baseline 100
+20304050Threshold
+
+Sensory stimulus Memory erasure 
+\(behavioral response/reward signal\ Firing rate \(Hz\ 
+Firing rate \(Hz\ Persistent activity
+Spontaneousactivity
+Background inputRecurrentinhibitionRecurrentexcitation Rate
+controlPersistent state \(30 Hz\)
+Spontaneous state\(3 Hz\)
+
+
+
+Fig.2. 
+
+
+Attractor paradigm for persistent activity. \(a\Delayed match-to- 
+sample simulation of an object working memory model
+22
+. Neural
+
+
+subpopulations \(labeled 1 to 5\ve to different stimuli. 
+
+
+Average activity from each neural group is plotted below the 
+
+
+rastergram. Inhibitory \(I\k. In the 
+simulation, the shown stimulus triggers persistent activity in a 
+
+
+pyramidal cell group \(red\Hz, but not in other pyramidal 
+
+
+groups. Delay period activity is switched off by a transient excitatory 
+
+
+input generating a brief surge of activity in all neurons. Adapted, with 
+
+
+permission, from Ref.65. \(b\Dependence of network activity on the 
+strength of recurrent synaptic connectivity. Solid lines: spontaneous 
+
+state and persistent memory state; dashed line: unstable states. There 
+
+is a critical threshold of synaptic strength, above which persistent 
+
+activity appears abruptly as an all-or-none phenomenon. The example 
+
+in \(a\responds to the parameter indicated by the asterisk. 
+
+\(c\Illustration of the biophysics underlying an attractor dynamics. An 
+
+attractor is a neural firing state that is stable to perturbations: when a 
+small input perturbs the network to a lower or higher activity level, 
+there is a restoring force to bring the network back to the attractor 
+state. In this case, the spontaneous state is stabilized from below by 
+background inputs, and from above by feedback synaptic inhibition. 
+The persistent activity state is stabilized from below by excitatory 
+reverberation, and from above by various negative feedback rate 
+control mechanisms. A transient sensory stimulus can switch the 
+network from the spontaneous state to the memory state, and a 
+behavioral response or reward signal can turn the network off and 
+erase the memory. 
+---- STREAM 14 END ----
+
+
+
+
+
+
+faster than the GABAA
+
+receptor-mediated IPSCs 
+\(Refs 47,48\). Synaptic depression has a decay time
+constant of 200500ms or longer 49,50
+. Asystem with 
+
+fast-positive and slow-negative feedback is
+
+dynamically unstable. Persistent activity is often
+
+disrupted in the middle of a delay period, and thereby
+
+the memory is lost24,25
+. Such instability does not occur, 
+if excitation is sufficiently slow compared with
+negative feedbacks, that is, when recurrent synapses
+are primarily mediated by NMDAreceptors 24,25
+. In
+this case, persistent activity is stable even in the
+presence of network oscillations, typically in the
+gamma frequency range24,25.
+
+
+Second, the slow decay time of I NMDA
+could be
+
+required for robust behavior of a memory network
+with continuous attractors. In the case of line
+
+attractor model for the oculomotor integrators,Seung
+43
+
+pointed out that if the strength of feedback
+excitation 
+w
+
+
+is mistuned from the desired value  
+w
+
+
+* by
+
+a small amount, 
+
+w
+
+\(
+w
+
+w
+
+*\)/
+w
+
+
+*, then mnemonic
+activity can no longer persist indefinitely. Instead, it 
+will decay with a time constant of 
+
+
+syn
+/
+
+w
+
+
+, where
+
+
+syn
+is the decay time constant of the recurrent
+
+synaptic current. For example, if memory storage
+requires 
+
+
+
+5s, then with AMPAsynapses \( 
+
+
+syn
+
+
+
+5ms\ 
+
+w
+
+
+would need to be extremely precisely tuned
+\(
+
+w
+
+
+0.001
+
+
+
+
+0.1%\synapses 
+\(
+
+
+syn
+
+
+
+100ms\ 
+
+
+w
+
+
+0.02
+
+
+2%.
+
+Third, the voltage-dependent gating of NMDAR-
+mediated currents INMDA
+could contribute to trigger 
+
+mnemonic activity selectively in a subgroup of 
+
+neurons for a particular memory item
+23
+
+. The idea is
+that, during stimulus presentation, those cells
+activated by the stimulus are more depolarized than
+the rest of the network. Therefore the magnesium
+block of NMDAreceptor channels are differentially 
+removed in these cells, resulting in an enhanced
+
+synaptic reverberation and persistent activity within
+
+this group of neurons.Fourth, the slow NMDAR unbinding to glutamate 
+could lead to a saturation of the steady-state INMDA
+with repetitive stimulation at high frequencies. This
+
+saturation curtails the explosive positive feedback
+
+between neural firing and synaptic drive in a
+recurrent network. Therefore it can help to control the
+
+firing rate in a persistent activity state
+24
+. 
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+460
+
+Review
+
+
+
+
+
+TRENDS in Neurosciences3600
+Neuron
+label \(O\)CDR20 Hz 
+\(a\)\(b\)
+1 s
+\(i\\(ii\ 090180270360
+20 Hz10Delay activity Cue location \(O\)090180270360
+20 Hz10Cue location \(O\)
+
+
+
+Fig.3. 
+
+
+Bump attractors for spatial working memory, as shown in a 
+
+
+cortical network model of the Funahashi experiment 29
+. \(a\Spatio- 
+
+temporal raster of the pyramidal cell population in a delayed saccade
+
+simulation. Abscissa: time, ordinate: neurons \(labeled by their
+
+preferred cues\ 
+The elevated and localized neural activity is triggered by the cue 
+stimulus at 180°, and persists during the delay period. On the right is 
+shown the spatial profile, where the average firing rate during the  
+
+
+delay period is plotted versus the  preferred cue of the neuron. In 
+another trial, a different cue would elicit another bump attractor of the 
+
+
+same spatial shape, peaked at a different location \(see movie at 
+
+
+http://www.wanglab.brandeis.edu/movie/spatial_wm.html\b\Tuning 
+
+
+curves of delay period activity for a pyramidal neuron \(i\ 
+
+
+interneuron \(ii\ 
+
+
+permission, from Ref.25. 
+---- STREAM 15 END ----
+
+
+
+
+
+
+Taken together, these results suggest that a 
+reverberatory circuit would be much more stable, and
+working memory function more robust, if recurrent
+excitation is primarily mediated by NMDAreceptors. 
+
+
+NMDA:AMPA ratio,dopamine modulation and schizophrenia 
+
+
+The role of NMDARs in working memory can betested in both 
+invivo 
+and 
+invitro 
+
+experiments. In a
+
+working memory experiment, Shima and Tanji 
+51
+
+found that delay period activity in the motor cortex
+
+was more effectively abolished by iontophoresis of
+
+NMDAR antagonists compared with AMPAR 
+
+antagonists, indicating a predominant role of NMDA
+
+receptors in delay period activity. To confirm this 
+result it would be worthwhile to carry out further
+studies using a similar approach, especially on PFC 
+
+neurons.
+
+The prediction that the NMDA:AMPAratio at 
+recurrent synapses should be high in a memory
+network can be tested using 
+in vitro
+experiments. In
+models, the precise NMDA:AMPAratio required for 
+stability depends on the details and parameters. The
+general proposal is that a network with stronger
+recurrent connectivity should show a higherNMDA:AMPAratio at its intrinsic synapses. Presently, available data indicate that the 
+NMDA:AMPAratio is area- and pathway- 
+specific
+5256
+
+. The PFC has the highest mRNA
+expression for the NMDAR subunits among cortical
+areas of the human brain
+57
+
+, but the NMDA:AMPA 
+
+ratio at intrinsic excitatory synapses of PFC remains
+
+to be quantitatively determined.
+It should be noted that what is important for
+persistent activity is not unitary EPSCs at resting
+potential, but the ratio of the average NMDAand 
+AMPAsynaptic currents during repetitive neural 
+discharges. This ratio could be boosted at high firing
+frequencies in several ways. First, a large
+depolarization reduces magnesium block of INMDA
+, so
+that the peak INMDA:IAMPA 
+ratio is increased
+58
+
+. Second,
+there is evidence that during sustained activity, an 
+increase in the intracellular Na
+
+
+concentration
+
+enhances NMDAR but not AMPAR currents 
+59
+
+. Third,
+NMDARs have a 100-fold higher affinity for glutamate
+binding compared with AMPARs, thus extrasynaptic 
+NMDARs are more likely to be activated by glutamate
+spillover during persistent activity
+60
+
+, leading to a
+larger effective NMDA:AMPAratio. 
+The NMDA:AMPAratio can also be enhanced by 
+
+neuromodulation. In particular, dopamine has been 
+
+shown to differentially enhance NMDAR EPSCs via
+D1 and D5 receptors, while slightly reducing non-
+NMDAEPSCs in layer 5 PFC neurons 
+61
+
+. This result,
+if confirmed, is especially interesting, given the
+importance of dopamine regulation of the prefrontal
+
+lobe. Experiments on behaving animals showed that
+working memory performance is modulated by the D1
+but not the D2 class of dopamine receptors 
+62.
+
+
+Dopamine modulation might be important to enhance
+the signal-to-noiseratio and the robustness of 
+
+memory storage in the presence of behaviorally
+
+irrelevant intervening stimuli26,27,6365.
+
+
+The notion that reverberation is crucially 
+
+dependent on NMDAreceptors, if proven correct, 
+
+has potential clinical implications. On the one hand 
+there is strong evidence that working memory
+deficits in schizophrenia are associated with 
+abnormal function of the frontal lobe66,67
+
+. On the
+
+other, working memory dysfunction can be induced 
+
+by drugs that block NMDAreceptors 68
+. Postmortem
+
+studies showed significant alterations of NMDAR
+expression69
+, but did not reveal abnormality in the
+AMPAR level 70
+
+, in the PFC of schizophrenics. An 
+
+intriguing possibility is that working memory
+dysfunction results from an abnormally low 
+
+
+NMDA:AMPAratio at recurrent synapses which, 
+
+according to our model studies, would give rise to 
+
+dynamical instability of the mnemonic cortical
+
+circuit. Moreover, because dopamine D1 receptors 
+selectively modulate the NMDAR current, the well- 
+documented link between dysfunction of the
+
+dopamine system and working memory deficits in
+
+schizophrenia could be explained in part through
+
+the NMDAR pathway. 
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+461
+
+Review
+
+
+
+TRENDS in Neurosciences
+
+\(a\)\(b\)
+
+Vestibular Excit. burst 
+Inhib. burst Eye position
+1 sÐ 100 mVÐ 10
+
+10080
+60
+40
+200Rate \(Hz\)01020 E \(
+
+\)3040 
+
+
+
+Fig.4. 
+
+Line attractor in a 
+
+conductance-based
+
+
+memory model of 
+oculomotor control.
+\(a\Persistent changes of 
+
+
+neural activity and eye 
+
+
+position induced by 
+transient inputs from
+
+
+excitatory and inhibitory
+burst neurons. Each 
+transient burst causes a 
+
+
+persistent change in 
+activity of integrator 
+
+
+neurons during interburst 
+
+
+intervals. \(b\Threshold 
+
+
+linear encoding of eye
+
+
+position: firing rates of
+
+
+persistent activity of 
+integrator neurons as
+
+
+function of eye position
+
+during fixation. Adapted,
+
+with permission, from 
+
+Ref.42. 
+
+Acknowledgements 
+
+I thank P. Miller, J. Tegnér 
+and A. Compte for help 
+
+with the figures and for
+
+
+comments on the paper. I 
+
+also thank D. Tank for 
+
+stimulating discussions;
+N. Brunel, J. Lisman and 
+
+G. Turrigiano for a critical 
+
+reading of the
+
+manuscript. This work
+
+was supported by the NSF 
+\(IBN-9733006\ 
+Alfred P. Sloan 
+Foundation. 
+---- STREAM 16 END ----
+
+
+
+
+
+
+Concluding remarks 
+
+
+Excitatory reverberation is a leading candidatemechanism for mnemonic persistent activity. Recent 
+
+work on the biophysics of reverberatory networks has
+
+led to two significant advances. First, attractor models
+
+were constructed with realistic neurons and synapses. 
+
+Thus, it is possible for the first time to directly
+compare a model with cellular neurophysiology. These 
+models have led to specific predictions and questions
+\(Box2\ 
+reach of available experimental techniques. Second,
+the attractor paradigm has now been extended to
+memory networks that encode an analog stimulus, in
+the form of bump attractorsor line attractors. It was recognized that reverberatory networks tend
+to be dynamically unstable, but stability can be
+achieved if recurrent excitation is primarily mediated
+
+by the slow NMDAreceptors. This hypothesis remains 
+
+to be tested experimentally. The idea should also be 
+challenged theoretically, by exploring alternative 
+biological mechanisms \(such as heterogeneity\) that
+could stabilize a memory circuit without NMDA
+receptors. Arelated issue is the robustness of memory 
+
+networks with a continuous family of attractors, which 
+
+in existing models typically require fine-tuning of
+parameters with unrealistic precision. Ultimately, the 
+problem of robustness needs to be solved by adaptive
+biological mechanisms
+71.
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+462
+
+Review
+
+Recent theoretical models have raised several neurophysiological 
+questions that can be investigated experimentally. Answers to these 
+
+questions will help to elucidate the mechanisms of neural persistent 
+
+activity. 
+
+
+What is the minimum anatomical substrate of a reverberatory circuit capable of persistent neural activity? 
+Is persistent activity primarily sustained by synaptic reverberation, or by bistable dynamics of single neurons?
+What is the NMDA:AMPA ratio at recurrent synapses of association cortices, especially in the prefrontal cortex? 
+
+
+How does this ratio depend on the frequency of repetitive stimulation and on neuromodulation?
+
+What are the negative feedback mechanisms responsible for the rate 
+control in a working memory network?
+Is delay period activity asynchronous between neurons, or does it display partial network synchrony and coherent oscillations? 
+Is delay period activity more sensitive to NMDAR antagonists compared 
+with AMPAR antagonists? 
+
+Does persistent activity disappear in an abrupt fashion, with a graded 
+block of NMDAR and AMPAR channels, as predicted by the attractor 
+model?
+
+How significant are drifts of persistent activity during working memory? Are drifts random or systematic over trials? 
+What are the biological mechanisms underlying the robustness of a 
+
+memory network with a continuum of persistent activity patterns? 
+
+
+Box2.Outstanding questions 
+References 
+
+
+1Hebb, D.O. \(1949\ 
+Organization of Behavior 
+,
+
+Wiley 
+
+2Lorente de Nó, R. \(1933\estibulo-ocular reflex 
+arc. 
+
+
+Arch. Neurol. Psychiatry
+
+30, 245291
+
+3Fuster, J.M. and Alexander, G.E. \(1973\ changes in cells of the nucleus medialis dorsalis
+
+associated with delayed response behavior.  
+Brain
+Res. 
+
+
+61, 7991
+
+4Hikosaka, O.  
+etal. 
+
+\(1989\) Functional properties of
+
+monkey caudate neurons. III. Activities related to 
+
+expectation of target and reward. 
+
+J. Neurophysiol.
+
+
+61, 814832
+
+5Hikosaka, O. and Wurtz, R.H. \(1983\isual and oculomotor functions of monkey substantia nigra
+
+pars reticulata. III. Memory-contingent visual
+
+and saccade responses. 
+J. Neurophysiol.
+49,
+
+12681284
+
+
+6Miller, E.K.  
+
+etal. 
+
+\(1996\) Neural mechanisms of
+
+visual working memory in prefrontal cortex of the
+macaque. 
+
+
+J. Neurosci.
+
+16, 51545167
+
+7Goldman-Rakic, P.S. \(1995\ working memory.  
+
+Neuron
+
+
+14, 477485
+8Levitt, B.  
+etal. 
+
+\(1993\opography of pyramidal 
+
+neuron intrinsic connections in macaque monkey
+
+prefrontal cortex \(areas 9 and 46\). 
+J. Comp.
+Neurol.
+
+
+338, 360376
+
+9Kritzer, M.F. and Goldman-Rakic, P.S. \(1995\ Intrinsic circuit organization of the major layers
+
+and sublayers of the dorsolateral prefrontal cortex
+
+in the rhesus monkey.  
+J. Comp. Neurol
+
+. 359,
+
+131143
+
+
+10González-Burgos, G.  
+etal. 
+
+\(2000\) Horizontal
+synaptic connections in monkey prefrontal cortex:
+an 
+invitro 
+
+electrophysiological study.  
+Cereb.
+Cortex
+
+
+10, 8292
+
+
+11Hirsch, J.C. and Crépel, F. \(1990\ 
+changes in synaptic efficacy in rat prefrontal
+neurons 
+
+invitro 
+
+. 
+
+
+J. Physiol.
+
+427, 3149
+12Hempel, C.M.  
+etal. 
+
+\(2000\) Multiple forms of
+short-term plasticity at excitatory synapses in rat
+medial prefrontal cortex. 
+
+
+J. Neurophysiol.
+83,
+
+30313041
+
+13Marder, E.  
+etal. 
+
+\(1996\) Memory from the
+
+dynamics of intrinsic membrane currents. 
+Proc.
+
+Natl. Acad. Sci. U. S. A.
+
+93, 1348213486
+14Camperi, M. and Wang, X-J. \(1998\Amodel of 
+visuospatial short-term memory in prefrontal
+
+
+cortex: recurrent network and cellular bistability. 
+
+J. Comput. Neurosci.
+
+
+5, 383405
+
+15Haj-Dahmane, S.and Andrade, R. \(1998\ 
+mechanism of the slow afterdepolarization 
+
+
+induced by muscarinic receptor activation in rat
+prefrontal cortex. 
+J. Neurophysiol.
+
+
+80, 11971210 
+
+
+16Sanchez-Vives, M. and McCormick, D.A. \(2000\ Cellular and network mechanisms of rhythmic
+recurrent activity in neocortex. 
+Nat. Neurosci. 
+3,
+
+10271034
+
+
+17Wilson, H. and Cowan, J. \(1973\Amathematical theory of the functional dynamics of cortical and
+thalamic nervous tissue. 
+Kybernetik
+
+13, 55-80 
+
+18Amari, S. \(1977\ 
+lateral-inhibition type neural fields. 
+Biol. Cybern.
+
+
+
+27, 7787
+19Hopfield, J.J. \(1982\ 
+
+physical systems with emergent collective
+
+computational abilities. 
+
+Proc. Natl. Acad. Sci.
+
+U.S. A. 
+
+
+79, 25542558
+
+
+20Zipser, D.  
+etal. 
+
+\(1993\Aspiking network model of 
+
+short-term active memory.  
+
+
+J. Neurosci.
+
+13,
+34063420
+
+21Amit, D.J. \(1995\ reintegrated: local reverberations as internal 
+representations. 
+
+Behav. Brain Sci. 
+
+18, 617626
+
+22Amit, D.J. and Brunel, N. \(1997\ 
+spontaneous activity and local structured activity
+during delay periods in the cerebral cortex. 
+Cereb.
+Cortex
+
+7, 237252
+23Lisman, J.E.  
+etal. 
+
+\(1998\Arole for NMDA- 
+receptor channels in working memory.  
+Nat.
+
+Neurosci.
+
+
+1, 273275
+24Wang, X-J. \(1999\ persistent activity: the importance of NMDA 
+
+
+receptors to working memory.  
+
+J. Neurosci.
+
+19,
+95879603
+
+25Compte, A.  
+etal. 
+
+\(2000\) Synaptic mechanisms and
+network dynamics underlying spatial working
+memory in a cortical network model. 
+Cereb.
+Cortex
+
+10, 910923
+26Durstewitz, D.  
+etal. 
+
+\(2000\) Dopamine-mediated
+
+stabilization of delay-period activity in a network
+model of prefrontal cortex. 
+
+J. Neurophysiol.
+83,
+17331750
+
+27Durstewitz, D. \(2000\ 
+models of working memory.  
+Nat. Neurosci.
+3,
+
+11841191 
+
+
+28Gilbert, C.D. \(1993\, architecture, and functional dynamics of visual cortex. 
+Cereb.
+Cortex 
+
+
+3, 373386
+
+29Funahashi, S.  
+etal. 
+
+\(1989\ 
+
+visual space in the monkeys dorsolateral 
+prefrontal cortex. 
+J. Neurophysiol.
+
+61, 331349
+
+30Ben-Yishai, R. 
+etal. 
+
+\(1995\) Theory of orientation
+
+
+tuning in visual cortex. 
+Proc. Natl. Acad. Sci.
+
+U.S.A. 
+
+
+92, 38443848
+
+31Somers, D.C.  
+etal. 
+
+\(1995\An emergent model of 
+
+
+orientation selectivity in cat visual cortical simple
+cells. 
+
+
+J. Neurosci.
+
+15, 54485465
+
+32Douglas, R.J.  
+etal. 
+
+\(1995\) Recurrent excitation in
+
+neocortical circuits. 
+
+Science
+
+
+269, 981985
+33Zhang, K. \(1996\ 
+
+orientation by the intrinsic dynamics of the head-
+direction cell ensembles: a theory.  
+
+J. Neurosci.
+
+16,
+
+21122126 
+---- STREAM 17 END ----
+
+
+
+
+
+
+34Hahnloser, R.H.R.  
+etal. 
+
+\(2000\) Digital selection
+and analogue amplification coexist in a cortex-
+
+inspired silicon circuit. 
+Nature
+
+
+405, 947951
+
+35Rao, S.G.  
+
+
+et al.
+
+\(1999\) Isodirectional tuning of
+
+adjacent interneurons and pyramidal cells during
+working memory: evidence for microcolumnar
+organization in PFC. 
+J. Neurophysiol.
+81,
+
+19031916
+
+36White, J.M.  
+etal. 
+
+\(1994\) Saccades to remembered
+
+target locations: and analysis of systematic and
+
+
+variable errors. 
+
+Vis. Res. 
+
+34, 7992
+37Ploner, C.J.  
+etal. 
+
+\(1998\emporal limits of spatial 
+
+working memory in humans. 
+
+Eur. J. Neurosci. 
+
+10,
+
+794797
+
+
+38Sharp, P.E.  
+etal. 
+
+\(2001\) The anatomical and
+
+computational basis of the rat head direction cell
+signal. 
+
+
+Trends Neurosci. 
+
+
+24, 289294
+39Rubin, J.  
+etal. 
+
+\(2001\) Localized bumps of activity
+
+sustained by inhibition in a two-layer thalamic 
+network. 
+
+J. Comput. Neurosci.
+\(in press\)
+
+40Romo, R.  
+etal. 
+
+\(1999\ 
+parametric working memory in the prefrontal
+cortex. 
+Nature
+
+
+399, 470474
+
+41Robinson, D.A. \(1989\ 
+
+
+Annu. Rev. Neurosci. 
+
+
+12, 3345
+
+42Seung, H.S.  
+etal. 
+
+\(2000\) Stability of the memory of
+
+eye position in a recurrent network of
+conductance-based model neurons. 
+
+Neuron
+
+26,
+
+259271
+
+
+43Seung, H.S. \(1996\ still. 
+
+Proc. Natl. Acad. Sci. U. S. A.
+93,
+
+1333913344
+
+44Aksay, E.  
+etal. 
+\(2001\) 
+Invivo 
+
+intracellular
+
+recording and perturbation of persistent activity
+
+in a neural integrator.  
+Nat. Neurosci. 
+
+
+4, 184-193
+
+45Hestrin, S.  
+etal. 
+
+\(1990\) Mechanisms generating
+the time course of dual component excitatory
+
+
+synaptic currents recorded in hippocampal slices.
+
+
+Neuron 
+
+
+5, 247253
+46Hestrin, S. \(1993\ channels mediate fast excitatory synaptic
+
+
+currents in inhibitory and excitatory cortical
+
+neurons. 
+Neuron
+
+
+11, 10831091 
+
+47Salin, P.A. and Prince, D.A. \(1996\ 
+GABAA
+
+receptor mediated inhibitory currents in
+
+adult rat somatosensory cortex. 
+
+J. Neurophysiol.
+
+
+75, 15731588
+48Xiang, Z.  
+etal 
+
+. \(1998\) GABA
+A
+
+
+receptor mediated
+currents in interneurons and pyramidal cells of
+rat visual cortex. 
+
+J. Physiol. 
+
+506, 715730
+49Abbott, L.F.  
+etal. 
+
+\(1997\) Synaptic depression and
+cortical gain control. 
+
+Science 
+
+
+275, 220224
+
+50Tsodyks, M.V. and Markram, H. \(1997\ 
+neural code between neocortical pyramidal
+
+neurons depends on neurotransmitter release
+probability.  
+
+Proc. Natl. Acad. Sci. U. S. A.
+94,
+
+719723
+
+51Shima, K. and Tanji, J. \(1998\ 
+
+NMDAand non-NMDAreceptors in the neuronal 
+responses of the primary motor cortex to input 
+from the supplementary motor area and
+somatosensory cortex: studies of task-performing 
+monkeys. 
+
+Jpn. J. Physiol.
+
+48, 275290
+
+52Daw, N.W.  
+etal. 
+
+\(1993\) The role of NMDA
+receptors in information processing. 
+Annu. Rev. 
+Neurosci.
+
+
+16, 207222
+
+53Rivadulla, C.  
+etal. 
+
+
+\(2001\) Specific roles of NMDA
+and AMPAreceptors in direction-selective and 
+spatial phase-selective responses in visual cortex.
+
+
+J. Neurosci.
+
+21, 17101719
+
+54Markram, H.  
+etal. 
+
+\(1997\) Physiology and
+
+anatomy of synaptic connections between thick
+
+tufted pyramidal neurones in the developing rat
+neocortex. 
+
+J. Physiol.
+
+
+500, 409440
+
+55Feldmeyer, D.  
+
+
+et al.
+\(1999\) Reliable synaptic
+
+connections between pairs of excitatory layer 4
+
+
+neurones within a single barrelof developing 
+
+rat somatosensory cortex. 
+
+
+J. Physiol.
+521,
+169190
+
+
+56Fleidervish, I.A.  
+etal. 
+
+\(1998\) Functionally distinct
+NMDAreceptors mediate horizontal connectivity 
+
+within layer 4 of mouse barrel cortex. 
+
+Neuron
+
+21,
+10551065
+
+57Scherzer, C.R.  
+etal. 
+
+\(1998\) Expression of
+N-methyl-D
+
+-aspartate receptor subunit mRNAs
+inthe human brain: hippocampus and cortex. 
+
+J.Comp. Neurol. 
+
+390, 7590
+
+58Collingridge, G.L.  
+etal. 
+
+\(1988\) Frequency-
+dependent N-methyl-D
+
+-aspartate receptor- 
+
+mediated synaptic transmission in rat
+hippocampus. 
+
+J. Physiol.
+
+399, 301312
+59Yu, X-M. and Salter, M.W. \(1998\ NMDA-receptor currents by intracellular sodium.
+
+Nature
+
+396, 469474
+60Kullmann, D.M. and Asztely, F. \(1998\ 
+Extrasynaptic glutamate spillover in the
+
+hippocampus: evidence and implications. 
+
+Trends 
+Neurosci. 
+
+
+21, 814
+
+
+61Seamans, J.K.  
+etal. 
+
+\(2001\) Dopamine D1/D5
+
+receptor modulation of excitatory synaptic inputs
+
+to layer V prefrontal cortex neurons. 
+Proc. Natl.
+Acad. Sci. U. S. A.
+
+98, 301306
+62Arnsten, A.F.T. \(1998\ 
+of prefrontal cortical cognitive function. 
+
+Trends 
+
+
+Cognit. Sci. 
+
+
+2, 436447
+
+
+63Servan-Schreiber, D.  
+etal. 
+
+\(1990\network 
+
+model of catecholamine effects: gain, signal-to- 
+
+noise ratio, and behavior.  
+
+Science
+
+
+249, 892895
+
+64Yang, C.R. and Seamans, J.K. \(1996\ 
+
+D1 receptor actions in layers V-VI rat prefrontal 
+
+cortex neurons 
+invitro 
+
+: modulation of dendritic-
+
+somatic signal integration.  
+
+J. Neurosci.
+
+16,
+19221935
+
+65Brunel, N. and Wang, X-J. \(2001\ 
+neuromodulation in a cortical network model of
+object working memory dominated by recurrent 
+inhibition. 
+
+J. Comput. Neurosci.
+\(in press\)
+
+66Goldman-Rakic, P.S. \(1994\orking memory 
+dysfunction in schizophrenia. 
+J. Neuropsychiatry
+
+Clin. Neurosci.
+6, 348357
+
+67Weinberger, D.R. and Berman, K.F. \(1996\ 
+Prefrontal function in schizophrenia: confounds
+and controversies. 
+Philos. Trans. R. Soc. London 
+
+
+Ser. B 
+
+
+351, 14951503
+
+68Krystal, J.H.  
+etal. 
+
+\(1994\) Subanesthetic effects of
+the noncompetitive NMDAantagonist, ketamine, 
+
+in humans. Psychotomimetic, perceptual,
+cognitive, and neuroendocrine responses. 
+
+Arch.
+
+
+Gen. Psychiatry
+
+
+51, 199214
+69Akbarian, S.  
+etal. 
+
+\(1996\) Selective alterations in
+
+
+gene expression for NMDAreceptor subunits in 
+prefrontal cortex of schizophrenics. 
+
+J. Neurosci.
+
+
+
+16, 1930
+
+70Healy, D.J.  
+etal. 
+
+\(1998\Areceptor binding 
+
+and subunit mRNAexpression in prefrontal 
+cortex and striatum of elderly schizophrenics.
+
+Neuropsychopharmacology
+
+
+19, 278286
+
+71Turrigiano, G. \(1999\ 
+
+neuronal networks: the more things change, the
+
+more they stay the same. 
+
+
+Trends Neurosci. 
+
+22,
+
+221227
+
+
+TRENDSin Neurosciences  
+
+Vol.24 No.8  August 2001 http://tins.trends.com 
+463
+
+Review
+
+Letters to the Editor 
+
+Express your views in  
+Trends in Neurosciences 
+Interesting? Contentious? Controversial?  The Editor welcomes correspondence from readers of  Trends in Neurosciences  on any articles published. Please state 
+clearly whether or not you would like your letter to be considered for publication. 
+Letters intended for publication must not exceed 750 words, and will be sent to the author of the original article for their response; both the letter and response will be published together.   Please note: submission does not guarantee publication. 
+
+Please send your letter to the editor \(Siân Lewis\ 
+tins@current-trends.com 
+---- STREAM 18 END ----

@@ -36,6 +36,7 @@ tMaskFull  = (xs >= -1) & (xs <= 1);
 tMaskTrain = (xs >= 0) & (xs <= 1);
 tIdxFull   = find(tMaskFull);
 tIdxTrain  = find(tMaskTrain);
+tIdxTrainInFull = find(ismember(tIdxFull, tIdxTrain));
 nTfull     = numel(tIdxFull);
 nTtrain    = numel(tIdxTrain);
 fprintf('=== Encoding heatmap: choice vs stimulus ===\n');
@@ -133,9 +134,21 @@ for iM = 1:nMice
         end
     end
 
-    % Max-normalize MI per cell
-    miBehNorm = miBeh ./ max(miBeh, [], 2, 'omitnan');
-    miCueNorm = miCue ./ max(miCue, [], 2, 'omitnan');
+    % Max-normalize MI per cell within 0-1s training window
+    % This avoids a pre-stimulus noise peak in [-1,1] s inflating the denominator
+    % and attenuating the true training-window encoding strength.
+    miBehNorm = nan(size(miBeh));
+    miCueNorm = nan(size(miCue));
+    for iC = 1:nCell
+        denomB = max(miBeh(iC, tIdxTrainInFull), [], 'omitnan');
+        denomC = max(miCue(iC, tIdxTrainInFull), [], 'omitnan');
+        if ~isnan(denomB) && denomB > 0
+            miBehNorm(iC, :) = miBeh(iC, :) ./ denomB;
+        end
+        if ~isnan(denomC) && denomC > 0
+            miCueNorm(iC, :) = miCue(iC, :) ./ denomC;
+        end
+    end
 
     % Store
     res = struct();
@@ -413,7 +426,7 @@ imagesc(ax2,tVec,1:nTotal2,allCue2);
 colormap(ax2,iBlueBlackRedCmap()); caxis(ax2,[0 1]);
 cb=colorbar(ax2); cb.Label.String='Norm. info';
 xlabel(ax2,'Time (s)');
-title(ax2,sprintf('Stimulus (sig cells, N=%d)',nTotal),'FontSize',9,'FontWeight','normal');
+title(ax2,sprintf('Stimulus (sig cells, N=%d)',nTotal2),'FontSize',9,'FontWeight','normal');
 xline(ax2,0,'--','Color',[0.7 0.7 0.7],'LineWidth',0.5); xline(ax2,1,'--','Color',[0.7 0.7 0.7],'LineWidth',0.5);
 ax2.FontSize=8; box(ax2,'off'); ylim(ax2,ylim(ax1));
 cumC=0;
