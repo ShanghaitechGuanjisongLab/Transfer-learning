@@ -261,6 +261,118 @@ out3 = fullfile(prjRoot,'信息编码','_figcheck','Attractor_FixedSubspace.png'
 exportgraphics(f3, out3, 'Resolution', 200); fprintf('Saved: %s\n', out3);
 savefig(f3, fullfile(prjRoot,'信息编码','_figcheck','Attractor_FixedSubspace.fig'));
 
+%% ============ (4) miss 稳定性检验：完全不稳定 vs 仅仅不在解码轴上 ============
+% 问题：解码器读不到 miss（读出平坦）有两种对立解释：
+%   (a) miss 试次各自乱跑（"各有各的失败"）→ miss 类内离散度 > hit，且 > 随机子集；
+%   (b) miss 整齐地待在一种稳定的替代态（休息/抑制态）→ 离散度与 hit 相当。
+% 方法：固定训练域子空间（rPC=5 主轴，同第(3)部分），把训练域与 Transfer 的试次
+% 都投影进去，计算两类各自的类内平均径向离散度（LOO 无偏校正，抵消样本量差异）：
+%   ratio = disp(miss)/disp(hit)。
+% 置换零：同一批试次内打乱 hit/miss 标签重采样 ratio（Nperm 次）→ "miss 是否比
+% 随机等量子集更分散"。另在解码轴 DV（1 维 wCh 投影）上做同样比较。
+Nperm4 = 200; rng(456);
+ratioFX = nan(2, nH);    % 行: 1=训练域 2=Transfer; 固定子空间(rPC维)
+pRatioFX = nan(2, nH);
+ratioDV = nan(2, nH);    % 解码轴(1维)
+pRatioDV = nan(2, nH);
+sepMiss = nan(2, nH);    % miss 点到 hit 质心的距离 / 池离散度（偏离解码轴的程度）
+for k = 1:nH
+    i = iH(k);
+    Xaw = mean(S(i).Xc(:, S(i).topCh, winLate), 3);
+    muA = mean(Xaw, 1);
+    coefAw = pca(Xaw, 'NumComponents', rPC);
+    Xte = mean(S(i).Xtr(:, S(i).topCh, winLate), 3);
+    dat = {Xaw, S(i).yc; Xte, S(i).ytr};
+    proj = {Xaw, Xte};
+    for st = 1:2
+        Xs = dat{st,1}; y = dat{st,2};
+        gH = y==1; gM = y==0;
+        if sum(gH) < 3 || sum(gM) < 3; continue; end
+        % --- 固定子空间(rPC 维) ---
+        if st == 1;  Pproj = (Xs - muA)*coefAw; else; Pproj = (Xs - muA)*coefAw; end
+        rObs = iRadialDisp(Pproj(gM,:)) / iRadialDisp(Pproj(gH,:));
+        ratioFX(st,k) = rObs;
+        nR = nan(Nperm4,1);
+        for pIdx = 1:Nperm4
+            yp = y(randperm(numel(y)));
+            nR(pIdx) = iRadialDisp(Pproj(yp==0,:)) / iRadialDisp(Pproj(yp==1,:));
+        end
+        pRatioFX(st,k) = (sum(nR >= rObs) + 1) / (Nperm4 + 1);
+        % --- DV 解码轴(1 维) ---
+        DVst = Xs * S(i).wCh(S(i).topCh).';
+        rObs1 = iRadialDisp(DVst(gM)) / iRadialDisp(DVst(gH));
+        ratioDV(st,k) = rObs1;
+        nR1 = nan(Nperm4,1);
+        for pIdx = 1:Nperm4
+            yp = y(randperm(numel(y)));
+            nR1(pIdx) = iRadialDisp(DVst(yp==0)) / iRadialDisp(DVst(yp==1));
+        end
+        pRatioDV(st,k) = (sum(nR1 >= rObs1) + 1) / (Nperm4 + 1);
+        % --- miss 偏离解码吸引区的程度：miss 到 hit 质心距离 / 全试次半径 ---
+        cH = mean(Pproj(gH,:),1);
+        dMH = sqrt(sum((Pproj(gM,:) - cH).^2, 2));
+        dPool = sqrt(sum((Pproj - mean(Pproj,1)).^2, 2));
+        sepMiss(st,k) = mean(dMH) / (mean(dPool) + eps);
+    end
+end
+fprintf('\n=== (4) miss 稳定性：类内离散度 ratio=miss/hit（LOO 校正；固定子空间 %d 维）===\n', rPC);
+sNames4 = {'训练域(AW)','Transfer  '};
+for st = 1:2
+    rF = ratioFX(st,:); rD = ratioDV(st,:); ok = ~isnan(rF);
+    kM = sum(rF(ok) > 1); pS = 1 - binocdf(kM-1, sum(ok), 0.5);
+    fprintf('%s 子空间: ratio=%.2f±%.2f, miss更散 %d/%d 鼠 (sign p=%.3f), 置换 p<0.05 鼠=%d/%d\n', ...
+        sNames4{st}, nanmean(rF), nanstd(rF(ok))/sqrt(sum(ok)), kM, sum(ok), pS, ...
+        sum(pRatioFX(st,ok) < 0.05), sum(ok));
+    kM1 = sum(rD(ok) > 1); pS1 = 1 - binocdf(kM1-1, sum(ok), 0.5);
+    fprintf('%s 解码轴: ratio=%.2f±%.2f, miss更散 %d/%d 鼠 (sign p=%.3f), 置换 p<0.05 鼠=%d/%d\n', ...
+        sNames4{st}, nanmean(rD), nanstd(rD(ok))/sqrt(sum(ok)), kM1, sum(ok), pS1, ...
+        sum(pRatioDV(st,ok) < 0.05), sum(ok));
+    fprintf('%s miss→hit质心 偏移/池半径 = %.2f（>1 表示 miss 远离 hit 吸引区）\n', ...
+        sNames4{st}, nanmean(sepMiss(st,ok)));
+end
+% 代表鼠图：固定子空间 PC1-2，两阶段 hit/miss 散点 + 质心 + 类内半径圈
+[~,kR4] = max(ratioFX(2,:)); iR4 = iH(kR4);
+Xaw = mean(S(iR4).Xc(:, S(iR4).topCh, winLate), 3);
+muA = mean(Xaw,1); coefAw = pca(Xaw,'NumComponents',rPC);
+f4 = figure('Name','Miss stability check','Color','w','Position',[40 40 1300 460]);
+stTxt = {'训练域 AW','Transfer LW'};
+dat4 = {mean(S(iR4).Xc(:,S(iR4).topCh,winLate),3), S(iR4).yc; ...
+    mean(S(iR4).Xtr(:,S(iR4).topCh,winLate),3), S(iR4).ytr};
+for st = 1:2
+    Xs = dat4{st,1}; y = dat4{st,2}; gH = y==1; gM = y==0;
+    P = (Xs - muA)*coefAw;
+    ax = subplot(1,3,st); hold(ax,'on');
+    scatter(ax, P(gM,1), P(gM,2), 16, [0.85 0.33 0.10], 'filled', 'MarkerFaceAlpha', 0.55, 'DisplayName', 'miss');
+    scatter(ax, P(gH,1), P(gH,2), 16, [0.20 0.55 0.80], 'filled', 'MarkerFaceAlpha', 0.55, 'DisplayName', 'hit');
+    for g = 1:2
+        if g==1; sel=gM; c=[0.85 0.33 0.10]; else; sel=gH; c=[0.20 0.55 0.80]; end
+        ctr = mean(P(sel,1:2),1); rr = iRadialDisp(P(sel,1:2));
+        scatter(ax, ctr(1), ctr(2), 60, c, 'p', 'MarkerFaceColor', c, 'HandleVisibility','off');
+        rectangle(ax,'Position',[ctr(1)-rr ctr(2)-rr 2*rr 2*rr], ...
+            'Curvature',[1 1],'EdgeColor',c,'LineWidth',1.2,'LineStyle','--','HandleVisibility','off');
+    end
+    title(ax, sprintf('%s (%s)\ndisp ratio miss/hit=%.2f (perm p=%.3f)', ...
+        stTxt{st}, S(iR4).Mouse, ratioFX(st,kR4), pRatioFX(st,kR4)), 'FontSize', 8);
+    xlabel(ax,'train PC1'); ylabel(ax,'train PC2');
+    legend(ax,'Box','off','FontSize',6,'Location','northeast'); box(ax,'off'); ax.FontSize=7;
+end
+ax = subplot(1,3,3); hold(ax,'on');
+ok4 = ~isnan(ratioFX(1,:));
+for st = 1:2
+    scatter(ax, st*ones(sum(ok4),1)+0.12*(st-1)-0.06, ratioFX(st,ok4), 30, 'filled', 'markerFaceAlpha',0.6, 'DisplayName', sprintf('%s 子空间', sNames4{st}));
+end
+ok4b = ~isnan(ratioDV(1,:));
+for st = 1:2
+    scatter(ax, st*ones(sum(ok4b),1)+0.30*(st-1)-0.15, ratioDV(st,ok4b), 30, '^', 'filled', 'markerFaceAlpha',0.6, 'DisplayName', sprintf('%s 解码轴', sNames4{st}));
+end
+yline(ax,1,'--','Color',[0.5 0.5 0.5],'LineWidth',1,'DisplayName','ratio=1');
+set(ax,'XTick',1:2,'XTickLabel',{'训练域','Transfer'}); xlim(ax,[0.3 2.7]);
+ylabel(ax,'miss/hit 类内离散度比值'); title(ax,'跨鼠（圆=5维子空间，三角=解码轴）','FontSize',8);
+legend(ax,'Box','off','FontSize',6,'Location','northeast'); box(ax,'off'); ax.FontSize=7;
+out4 = fullfile(prjRoot,'信息编码','_figcheck','Attractor_MissStability.png');
+exportgraphics(f4, out4, 'Resolution', 200); fprintf('Saved: %s\n', out4);
+savefig(f4, fullfile(prjRoot,'信息编码','_figcheck','Attractor_MissStability.fig'));
+
 %% 综合图 3x3：吸引子检验汇总（单张输出）
 fC = figure('Name','Attractor combined','Color','w','Position',[30 30 1700 1320]);
 % ---- Row1: DV 分布直方图 ----
@@ -401,4 +513,20 @@ w=(m1-m0)./sp.^2;
 end
 function idx = iTopIdx(w, frac)
 [~,ord]=sort(abs(w),'descend'); idx=ord(1:max(1,round(frac*numel(w))));
+end
+function d = iRadialDisp(X)
+% 类内平均径向离散度（mean radial dispersion），LOO 无偏：
+% 每个点到（不含自身的）类内质心距离的均值。
+% 与"用包含自身的质心"相比，乘以 sqrt((n-2)/(n-1)) 的无偏系数近似，
+% 此处直接用 LOO 质心消除小样本偏差。样本<2 返回 NaN。
+X = X(~any(isnan(X),2), :);
+n = size(X,1);
+if n < 2; d = NaN; return; end
+d = 0;
+for i = 1:n
+    other = setdiff(1:n, i);
+    c = mean(X(other,:), 1);
+    d = d + sqrt(sum((X(i,:) - c).^2));
+end
+d = d / n;
 end

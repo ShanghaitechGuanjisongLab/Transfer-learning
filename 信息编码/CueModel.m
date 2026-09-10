@@ -1,4 +1,4 @@
-%% CueModel.m
+ %% CueModel.m
 % 钙信号能否编码 cue（听觉刺激）？— 仿 Runyan et al. 2017 解码框架
 %
 % 数据: AudioLightBaseline, AudioWater Learned 阶段
