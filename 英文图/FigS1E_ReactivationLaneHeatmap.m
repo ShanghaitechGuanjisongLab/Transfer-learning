@@ -1,4 +1,4 @@
-% 英文图1F：四泳道热图（Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater）
+% 英文图S1C：四泳道热图（Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater）
 %
 % 细胞排序：按1s处 Learned AudioWater 和 Transfer LightWater 中较小值降序
 % 活跃判定：在任一泳道（共4个）1s处 > baseline+3σ
@@ -59,7 +59,7 @@ G.TransferLight  = DS.QueryNTATS(qTransferLight,  UniExp.Flags.ZScore, 1:24, Uni
 
 % --- 3) Unify cells
 S = UniExp.NtatsCellStrip(G);
-assignin('base', 'Fig1F_CellStrip', S);
+assignin('base', 'FigS1E_CellStrip', S);
 
 laneOrder = ["NaiveAudioOnly", "NaiveLightOnly", "LearnedAudio", "TransferLight"];
 X = iGetNtats3D(S, laneOrder); % [nCell x nTime x 4]
@@ -81,8 +81,8 @@ if istable(S) && any(strcmp(S.Properties.VariableNames, 'CellUID'))
 else
 	activeCellUID = [];
 end
-assignin('base', 'Fig1F_ActiveMask', activeMask);
-assignin('base', 'Fig1F_ActiveCellUID', activeCellUID);
+assignin('base', 'FigS1E_ActiveMask', activeMask);
+assignin('base', 'FigS1E_ActiveCellUID', activeCellUID);
 
 X = X(activeMask, :, :);
 fprintf('Active cells: %d / %d\n', sum(activeMask), numel(activeMask));
@@ -114,12 +114,12 @@ CLim = [-climLowAbs, climHighAbs];
 %% 
 
 % --- 7) Plot
-f = figure('Color', 'w', 'Name', 'English Fig1F Lane Heatmap');
+f = figure('Color', 'w', 'Name', 'English FigS1E Lane Heatmap');
 f.Units = 'centimeters';
 f.Position(3:4) = [12.0, 8.0]; % 120mm x 80mm
 
 Layout = tiledlayout(f, 1, 4, 'TileSpacing', 'none', 'Padding', 'tight');
-subTitles = ["", "", "100% hit", "Continual"];
+subTitles = ["", "", "100% hit", "Transfer"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...
@@ -199,12 +199,12 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 catch
 end
 
-svgName = "English_Fig1F_LaneHeatmap.svg";
+svgName = "English_FigS1E_ReactivationLaneHeatmap.svg";
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig1F_SortIdx', sortIdx);
-assignin('base', 'Fig1F_SortKey_Min1s', sortKey);
+assignin('base', 'FigS1E_SortIdx', sortIdx);
+assignin('base', 'FigS1E_SortKey_Min1s', sortKey);
 
 %% --- Local helpers
 

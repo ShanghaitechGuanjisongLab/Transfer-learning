@@ -1,10 +1,10 @@
-%[text] `舔水直方图：Naive/Learned Audiowater & Continual/Naive Lightwater 的
+%[text] `舔水直方图：Naive/Learned Audiowater & Transfer/Naive Lightwater 的
 % 舔水栅格图与概率直方图。`
 %
 % 分组情况：
 %   - Naive Audiowater: A2L_A.mat 每个小鼠第1次记录（声音→水）
 %   - Learned Audiowater: A2L_A.mat 每个小鼠第5次记录（声音→水）
-%   - Continual Lightwater: A2L_L.mat 第1次记录（光→水，从A2L连续训练）
+%   - Transfer Lightwater: A2L_L.mat 第1次记录（光→水，从A2L连续训练）
 %   - Naive Lightwater: L2A_L.mat 第1次记录（光→水）
 %
 % 每组输出两张图：
@@ -40,7 +40,7 @@ end
 % 颜色（Nature-style 协调色系，避开黑/灰以免与坐标轴混同）
 NAIVE_COLOR         = [0.000, 0.447, 0.741];  % Naive Audiowater — 蓝
 LEARNED_COLOR       = [0.835, 0.369, 0.000];  % Learned Audiowater — 朱红
-CONTINUAL_COLOR     = [0.000, 0.620, 0.451];  % Continual Lightwater — 绿
+TRANSFER_COLOR     = [0.000, 0.620, 0.451];  % Transfer Lightwater — 绿
 NAIVE_LIGHT_COLOR   = [0.494, 0.184, 0.556];  % Naive Lightwater — 紫
 
 fprintf('输出目录: %s\n', outDirUNC);
@@ -90,11 +90,11 @@ probFileLA   = fullfile(outDirUNC, 'Fig2B_LearnedAudiowater_LickProb.svg');
 iPlotRaster(dataLA, LEARNED_COLOR, 'Learned Audiowater', rasterFileLA, TIME_WINDOW, nLA);
 iPlotLickProb(dataLA, LEARNED_COLOR, 'Learned Audiowater', probFileLA, TIME_WINDOW, BIN_WIDTH, nLA, commonYMax);
 
-fprintf('\n[3/4] Continual Lightwater\n');
-rasterFileCL = fullfile(outDirUNC, 'Fig1C_ContinualLightwater_Raster.svg');
-probFileCL   = fullfile(outDirUNC, 'Fig2C_ContinualLightwater_LickProb.svg');
-iPlotRaster(dataCL, CONTINUAL_COLOR, 'Continual Lightwater', rasterFileCL, TIME_WINDOW, nCL);
-iPlotLickProb(dataCL, CONTINUAL_COLOR, 'Continual Lightwater', probFileCL, TIME_WINDOW, BIN_WIDTH, nCL, commonYMax);
+fprintf('\n[3/4] Transfer Lightwater\n');
+rasterFileCL = fullfile(outDirUNC, 'Fig1C_TransferLightwater_Raster.svg');
+probFileCL   = fullfile(outDirUNC, 'Fig2C_TransferLightwater_LickProb.svg');
+iPlotRaster(dataCL, TRANSFER_COLOR, 'Transfer Lightwater', rasterFileCL, TIME_WINDOW, nCL);
+iPlotLickProb(dataCL, TRANSFER_COLOR, 'Transfer Lightwater', probFileCL, TIME_WINDOW, BIN_WIDTH, nCL, commonYMax);
 
 fprintf('\n[4/4] Naive Lightwater\n');
 rasterFileNL = fullfile(outDirUNC, 'Fig1D_NaiveLightwater_Raster.svg');

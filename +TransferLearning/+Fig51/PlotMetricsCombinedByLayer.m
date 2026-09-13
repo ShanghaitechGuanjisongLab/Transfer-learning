@@ -12,7 +12,7 @@ if numel(metricFields) ~= numel(panelLabels) || numel(metricFields) ~= numel(yLa
 	error('Fig51:MetricSpecSizeMismatch', 'Metric, panel, and ylabel arrays must have the same length.');
 end
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 layerNames = ["MOp2/3", "MOp5"];
 layerLabels = ["MOp2/3", "MOp5"];
 compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
@@ -54,16 +54,16 @@ end
 function [dataCell, summaryTbl] = iMetricDataForLayer(Data, metricField, layerName)
 M = Data.Metrics(Data.Metrics.ZLayer == layerName, :);
 naiveVals = double(M.(metricField)(M.Group == "Naive"));
-continualVals = double(M.(metricField)(M.Group == "Continual"));
+transferVals = double(M.(metricField)(M.Group == "Transfer"));
 naiveVals = naiveVals(isfinite(naiveVals));
-continualVals = continualVals(isfinite(continualVals));
-if isempty(naiveVals) || isempty(continualVals)
+transferVals = transferVals(isfinite(transferVals));
+if isempty(naiveVals) || isempty(transferVals)
 	error('Fig51:EmptyMetricLayer', 'Metric %s for %s is empty.', char(metricField), char(layerName));
 end
-dataCell = {naiveVals, continualVals};
-pValue = ranksum(naiveVals, continualVals);
-summaryTbl = table(layerName, mean(naiveVals), mean(continualVals), numel(naiveVals), numel(continualVals), pValue, ...
-	'VariableNames', {'ZLayer', 'NaiveMean', 'ContinualMean', 'NaiveN', 'ContinualN', 'PValue'});
+dataCell = {naiveVals, transferVals};
+pValue = ranksum(naiveVals, transferVals);
+summaryTbl = table(layerName, mean(naiveVals), mean(transferVals), numel(naiveVals), numel(transferVals), pValue, ...
+	'VariableNames', {'ZLayer', 'NaiveMean', 'TransferMean', 'NaiveN', 'TransferN', 'PValue'});
 end
 
 function iStyleAxes(ax, yLabelText, panelLabel, showLegend, showXLabels)
@@ -75,7 +75,7 @@ ax.TickDir = 'out';
 ax.XLim = [0.5, 2.5];
 ax.XTick = [1, 2];
 if showXLabels
-	ax.XTickLabel = {'Naive', 'Continual'};
+	ax.XTickLabel = {'Naive', 'Transfer'};
 else
 	ax.XTickLabel = {'', ''};
 end
@@ -92,8 +92,8 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 end
 if showLegend
 	hNaive = plot(ax, nan, nan, 's', 'MarkerFaceColor', TransferLearning.NaiveColor, 'MarkerEdgeColor', 'none', 'DisplayName', 'Naive');
-	hContinual = plot(ax, nan, nan, 's', 'MarkerFaceColor', TransferLearning.ContinualColor, 'MarkerEdgeColor', 'none', 'DisplayName', 'Continual');
-	legend(ax, [hNaive, hContinual], {'Naive', 'Continual'}, 'Location', 'northoutside', 'Orientation', 'horizontal', 'Box', 'off', 'FontSize', 6);
+	hTransfer = plot(ax, nan, nan, 's', 'MarkerFaceColor', TransferLearning.TransferColor, 'MarkerEdgeColor', 'none', 'DisplayName', 'Transfer');
+	legend(ax, [hNaive, hTransfer], {'Naive', 'Transfer'}, 'Location', 'northoutside', 'Orientation', 'horizontal', 'Box', 'off', 'FontSize', 6);
 end
 end
 

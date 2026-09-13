@@ -81,7 +81,7 @@ xlabel('💡💧');
 box(ax, 'off');
 grid(ax, 'off');
 
-hitMissColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
+hitMissColors = [TransferLearning.TransferColor;TransferLearning.ColorB];
 colorHit = hitMissColors(1, :);
 colorMiss = hitMissColors(2, :);
 if isscalar(Bars)

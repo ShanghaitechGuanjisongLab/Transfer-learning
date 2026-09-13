@@ -64,11 +64,10 @@ catch
 end
 
 ax1 = nexttile(Layout, 1);
-palette2 = TransferLearning.FigurePalette(2);
-iPlotPcaOnAxes(ax1, G_audioOnly_plot, "Naive🔊", originSec, palette2(1,:));
+iPlotPcaOnAxes(ax1, G_audioOnly_plot, "Naive🔊", originSec, TransferLearning.NaiveColor);
 
 ax2 = nexttile(Layout, 2);
-iPlotPcaOnAxes(ax2, G_learn_plot, "🔊💧100%", originSec, palette2(2,:));
+iPlotPcaOnAxes(ax2, G_learn_plot, "🔊💧100%", originSec, TransferLearning.LearnedColor);
 
 % Unify axis ranges across tiles
 try

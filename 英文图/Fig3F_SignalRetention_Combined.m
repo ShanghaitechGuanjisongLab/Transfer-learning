@@ -138,10 +138,9 @@ fprintf('Left   (split by LW sign): LW+ AW=%.4f+/-%.4f, LW- AW=%.4f+/-%.4f, p=%.
 	mean(meanAW_LWneg(vPN2)), std(meanAW_LWneg(vPN2))/sqrt(sum(vPN2)), pPN2);
 
 %% ===== PLOT =====
-palette3 = TransferLearning.FigurePalette(3);
-colorPos = palette3(1,:);
-colorNeg = palette3(2,:);
-colorFit = palette3(3,:);
+colorPos = TransferLearning.HeatmapPositive;
+colorNeg = TransferLearning.HeatmapNegative;
+colorFit = [0.5 0.5 0.5];
 fs = 6;
 
 %% 

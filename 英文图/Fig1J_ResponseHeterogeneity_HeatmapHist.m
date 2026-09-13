@@ -1,4 +1,4 @@
-% 英文图3E：代表性单会话 3D 热图 + 细胞间 1s z-score 分布
+% 英文图1J：代表性单会话 3D 热图 + 细胞间 1s z-score 分布（Naive vs Transfer）
 %
 % Transfer: 选择响应异质性（SD@1s，[-1,1]细胞）最大的会话
 % Naive:    选择响应异质性最小的会话
@@ -224,13 +224,13 @@ for iS = 1:2
 		'Position', [5, 12, 200, 16], 'BackgroundColor', 'none');
 
 	pause(1);
-	pngName = sprintf('English_Fig3D_Volshow_%s.png', sessTags(iS));
+	pngName = sprintf('English_Fig1J_Volshow_%s.png', sessTags(iS));
 	exportapp(fig, fullfile(outDirUNC, pngName));
 	drawnow;
 	fprintf('Wrote: %s\n', pngName);
 end
 
-cbSvgName = 'English_Fig3D_Volshow_Colorbar.svg';
+cbSvgName = 'English_Fig1J_Volshow_Colorbar.svg';
 iExportVolshowColorbarSVG(vAbs, blueWhiteRed, cbSvgName);
 fprintf('Wrote: %s\n', cbSvgName);
 
@@ -283,7 +283,7 @@ end
 MATLAB.Graphics.UnifyAxesLims(histAxes(:), @ylim);
 
 for iS = 1:2
-	svgN = sprintf('English_Fig3D_Hist_%s.svg', sessTags(iS));
+	svgN = sprintf('English_Fig1J_Hist_%s.svg', sessTags(iS));
 	TransferLearning.ExportStandardFigure(histFigs(iS), 1, svgN);
 	fprintf('Wrote: %s\n', svgN);
 end

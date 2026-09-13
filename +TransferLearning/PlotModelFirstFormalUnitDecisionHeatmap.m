@@ -14,7 +14,7 @@ if isfield(HeatmapData, 'ConditionData')
 	end
 	laneData = cat(3, laneCells{:});
 else
-	laneData = cat(3, HeatmapData.Naive.MedianDelta, HeatmapData.Continual.MedianDelta);
+	laneData = cat(3, HeatmapData.Naive.MedianDelta, HeatmapData.Transfer.MedianDelta);
 end
 displayNames = iDisplayNames(HeatmapData, size(laneData, 3));
 sortedLaneData = nan(size(laneData));

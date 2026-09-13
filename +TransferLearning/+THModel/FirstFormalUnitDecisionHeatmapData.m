@@ -4,7 +4,7 @@ arguments
 	Cond table
 	seedValues (:, 2) double {mustBeInteger, mustBePositive}
 	conditionNames (1, 2) string = ["Naive", "Transfer"]
-	displayNames (1, 2) string = ["Naive", "Continual"]
+	displayNames (1, 2) string = ["Naive", "Transfer"]
 end
 
 numMice = Params.NumMice;
@@ -88,7 +88,7 @@ HeatmapData.NumCellsPerMouse = Params.NL23L5;
 HeatmapData.NumCells = numMice * Params.NL23L5;
 HeatmapData.ConditionData = conditionData;
 HeatmapData.Naive = conditionData{1};
-HeatmapData.Continual = conditionData{2};
+HeatmapData.Transfer = conditionData{2};
 
 infoRows = vertcat(mouseInfoRows{:});
 RunInfo = struct2table(infoRows(:));

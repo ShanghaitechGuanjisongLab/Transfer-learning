@@ -1,4 +1,4 @@
-﻿% 中文图342G：响应异质性 vs 路程/直线距离（全细胞，Naive/Continual 分色）
+% 中文图342G：响应异质性 vs 路程/直线距离（全细胞，Naive/Transfer 分色）
 
 if ~exist('TransferLearning', 'class') || ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -99,9 +99,9 @@ if isempty(Data)
 	error('Fig342G:NoMatchedRows', 'No matched rows between heterogeneity and PathOverDirect.');
 end
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 colorNaive = groupColors(1, :);
-colorContinual = groupColors(2, :);
+colorTransfer = groupColors(2, :);
 
 f = figure('Color', 'w', 'Name', '中文图342G Response heterogeneity vs Path/direct');
 f.Units = 'centimeters';
@@ -113,7 +113,7 @@ f.PaperSize = [4.5, 4.0];
 
 tl = tiledlayout(f, 1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
 Stats = table(nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), nan(1,1), ...
-	'VariableNames', {'Rho', 'PValue', 'NAll', 'NNaive', 'NContinual', 'NCellsAll', 'NCellsNaive', 'NCellsContinual'});
+	'VariableNames', {'Rho', 'PValue', 'NAll', 'NNaive', 'NTransfer', 'NCellsAll', 'NCellsNaive', 'NCellsTransfer'});
 
 use = isfinite(Data.PathOverDirect) & isfinite(Data.ResponseHeterogeneity);
 if nnz(use) < 3
@@ -123,10 +123,10 @@ R = Data(use, :);
 x = double(R.PathOverDirect);
 y = double(R.ResponseHeterogeneity);
 maskNaive = string(R.Group) == "Naive";
-maskContinual = string(R.Group) == "Continual";
+maskTransfer = string(R.Group) == "Transfer";
 [rho, p] = corr(x, y, 'Type', 'Spearman');
 nCellsNaive = sum(R.NCells(maskNaive), 'omitnan');
-nCellsContinual = sum(R.NCells(maskContinual), 'omitnan');
+nCellsTransfer = sum(R.NCells(maskTransfer), 'omitnan');
 nCellsAll = sum(R.NCells, 'omitnan');
 
 ax = nexttile(tl, 1);
@@ -141,7 +141,7 @@ if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 end
 
 scatter(ax, x(maskNaive), y(maskNaive), 14, colorNaive, 'o', 'filled', 'LineWidth', 0.2);
-scatter(ax, x(maskContinual), y(maskContinual), 14, colorContinual, 'o', 'filled', 'LineWidth', 0.2);
+scatter(ax, x(maskTransfer), y(maskTransfer), 14, colorTransfer, 'o', 'filled', 'LineWidth', 0.2);
 if numel(x) >= 2 && std(x, 0, 'omitnan') > 0
 	fitP = polyfit(x, y, 1);
 	xFit = [min(x), max(x)];
@@ -152,7 +152,7 @@ builtin('text', ax, 0.95, 0.95, iPLabel(p), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
 builtin('text', ax, 0.95, 0.87, 'Naive', 'Units', 'normalized', 'Color', colorNaive, ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
-builtin('text', ax, 0.95, 0.79, 'Continual', 'Units', 'normalized', 'Color', colorContinual, ...
+builtin('text', ax, 0.95, 0.79, 'Transfer', 'Units', 'normalized', 'Color', colorTransfer, ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 6);
 title(ax, 'All cells', 'FontSize', 6, 'FontWeight', 'normal');
 hold(ax, 'off');
@@ -164,14 +164,14 @@ Stats.Rho(1) = rho;
 Stats.PValue(1) = p;
 Stats.NAll(1) = height(R);
 Stats.NNaive(1) = nnz(maskNaive);
-Stats.NContinual(1) = nnz(maskContinual);
+Stats.NTransfer(1) = nnz(maskTransfer);
 Stats.NCellsAll(1) = nCellsAll;
 Stats.NCellsNaive(1) = nCellsNaive;
-Stats.NCellsContinual(1) = nCellsContinual;
+Stats.NCellsTransfer(1) = nCellsTransfer;
 
 fprintf('\n=== Fig342G All cells ===\n');
 fprintf('Naive mice: %d, cells: %d\n', nnz(maskNaive), round(nCellsNaive));
-fprintf('Continual mice: %d, cells: %d\n', nnz(maskContinual), round(nCellsContinual));
+fprintf('Transfer mice: %d, cells: %d\n', nnz(maskTransfer), round(nCellsTransfer));
 fprintf('Total cells: %d\n', round(nCellsAll));
 fprintf('Spearman ρ=%.3f, p=%.4g\n', rho, p);
 

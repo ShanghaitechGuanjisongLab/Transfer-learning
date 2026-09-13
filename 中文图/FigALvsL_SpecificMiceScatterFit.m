@@ -78,7 +78,7 @@ f.PaperPositionMode = 'auto';
 
 % 使用项目统一色板
 colorAL = TransferLearning.NaiveColor;      % 紫 — AL Light (A2L)
-colorL  = TransferLearning.ContinualColor;  % 橙 — LA Light (L2A)
+colorL  = TransferLearning.TransferColor;  % 橙 — LA Light (L2A)
 
 ax = axes(f);
 hold(ax, 'on');

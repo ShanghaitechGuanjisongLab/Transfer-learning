@@ -74,7 +74,7 @@ f.PaperSize = [12, 8];
 f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
-curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+curveColors = [TransferLearning.TransferColor; TransferLearning.ColorB];
 hCtrl = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, ctrlFitCurve, curveColors(1, :));
 hTH = iPlotGroupMeanErrorbars(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFit, thFitCurve, curveColors(2, :));
 
@@ -124,7 +124,7 @@ lgd.FontSize = 10;
 lgd.AutoUpdate=false;
 
 svgName = "中文图Fig61B_THInhibitVsCtrl_SigmoidSlope.svg";
-title('💡💧 continual');
+title('💡💧 transfer');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 
 fitTable = table;

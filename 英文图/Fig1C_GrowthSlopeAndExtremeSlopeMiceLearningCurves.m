@@ -160,7 +160,7 @@ for eb = ErrorBars.Object(:)'
 end
 
 colorNaive = TransferLearning.NaiveColor;
-colorTrans = TransferLearning.ContinualColor;
+colorTrans = TransferLearning.TransferColor;
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	Bars.CData = [colorNaive; colorTrans];

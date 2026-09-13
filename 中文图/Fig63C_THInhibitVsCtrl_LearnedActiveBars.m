@@ -57,7 +57,7 @@ legend(ax, 'off');
 ylabel(ax, yLabelText);
 title(ax, titleText);
 
-barColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+barColors = [TransferLearning.TransferColor; TransferLearning.ColorB];
 iStyleBars(bars, barColors(1:2, :));
 for iE = 1:height(errorBars)
 	eb = errorBars.Object(iE);

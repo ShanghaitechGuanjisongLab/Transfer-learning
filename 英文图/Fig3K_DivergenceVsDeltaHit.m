@@ -80,14 +80,13 @@ box(ax, 'off');
 grid(ax, 'off');
 ax.FontSize = 6;
 
-palette2 = TransferLearning.FigurePalette(2);
-scatter(ax, x(mask), y(mask), 5, palette2(2,:), 'LineWidth', 0.2);
+scatter(ax, x(mask), y(mask), 5, TransferLearning.TransferColor, 'LineWidth', 0.2);
 
 if nnz(mask) >= 2 && std(x(mask)) > 0
 	pFit = polyfit(x(mask), y(mask), 1);
 	xFit = [min(x(mask)) max(x(mask))];
 	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', palette2(1,:));
+	plot(ax, xFit, yFit, '-', 'LineWidth', 1, 'Color', TransferLearning.TransferColor);
 end
 
 xlabel(ax, 'Reactivation');

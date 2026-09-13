@@ -1,12 +1,13 @@
-% newSlopeVsHeterogeneity: Fig3C mice, Fig1B sigmoid slope, Fig3C heterogeneity
+% Fig1H_SlopeVsHeterogeneity (formerly newSlopeVsHeterogeneity):
+% Fig3C mice, Fig1B sigmoid slope, Fig3C heterogeneity
 
-outDirUNC = '\\Data-Server-2\个人数据\杨青宁\202604';
-svgName = 'newSlopeVsHeterogeneity.svg';
-scriptCopyName = 'newSlopeVsHeterogeneity.m';
+outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
+svgName = 'English_Fig1H_SlopeVsHeterogeneity.svg';
+scriptCopyName = 'Fig1H_SlopeVsHeterogeneity.m';
 dataCsvName = 'newSlopeVsHeterogeneity_Data.csv';
 statsCsvName = 'newSlopeVsHeterogeneity_Stats.csv';
 naiveDataCsvName = 'newSlopeVsHeterogeneity_NaiveData.csv';
-transferDataCsvName = 'newSlopeVsHeterogeneity_ContinualData.csv';
+transferDataCsvName = 'newSlopeVsHeterogeneity_TransferData.csv';
 
 naiveMouseAllow = ["vtf0030"; "yqn0022"; "yqn0044"; "yqn0404"; "yqn0440"; "yqn1001"; "yqn1002"; "yqn1013"; "yqn2003"; "yqn2005"; "yqn3000"; "yqn3001"; "yqn3002"];
 transferMouseAllow = ["vtf0233"; "vtf0352"; "vtf0353"; "vtf0354"; "vtf1233"; "yqn0133"; "yqn0411"; "yqn1018"];
@@ -51,11 +52,11 @@ end
 naiveAnchors = ["Naive", "Learned"];
 transferAnchors = ["Transfer", "Final"];
 
-naiveA = iLightWaterSessionsByMouse(LAB, "LightAudioBaseline", true, naiveAnchors(1), naiveAnchors(2));
-naiveB = iLightWaterSessionsByMouse(LAPB, "LAPureBehavior", false, naiveAnchors(1), naiveAnchors(2));
-naiveC = iLightWaterSessionsByMouse_LAInterspersed(LAI, "LAInterspersed", false, naiveAnchors(1), naiveAnchors(2));
-transferA = iLightWaterSessionsByMouse(ALB, "AudioLightBaseline", true, transferAnchors(1), transferAnchors(2));
-transferB = iLightWaterSessionsByMouse(ALPB, "ALPureBehavior", false, transferAnchors(1), transferAnchors(2));
+naiveA = iLightWaterBlocksByMouse(LAB, "LightAudioBaseline", true, naiveAnchors(1), naiveAnchors(2));
+naiveB = iLightWaterBlocksByMouse(LAPB, "LAPureBehavior", false, naiveAnchors(1), naiveAnchors(2));
+naiveC = iLightWaterBlocksByMouse_LAInterspersed(LAI, "LAInterspersed", false, naiveAnchors(1), naiveAnchors(2));
+transferA = iLightWaterBlocksByMouse(ALB, "AudioLightBaseline", true, transferAnchors(1), transferAnchors(2));
+transferB = iLightWaterBlocksByMouse(ALPB, "ALPureBehavior", false, transferAnchors(1), transferAnchors(2));
 
 naiveSess = [naiveA; naiveB; naiveC];
 transferSess = [transferA; transferB];
@@ -65,29 +66,28 @@ transferSess.Group(:) = "Transfer";
 iAssertNoCrossSourceDuplicateMice(naiveSess, "Naive");
 iAssertNoCrossSourceDuplicateMice(transferSess, "Transfer");
 
-allSessions = [naiveSess; transferSess];
-iAssertNoMouseAppearsInMultipleGroups(allSessions);
-allSessions = sortrows(allSessions, ["Group", "Mouse", "DateTime"]);
-allSessions = iAddSessionIndex(allSessions);
+allBlocks = [naiveSess; transferSess];
+iAssertNoMouseAppearsInMultipleGroups(allBlocks);
+allBlocks = sortrows(allBlocks, ["Group", "Mouse", "DateTime"]);
+allBlocks = iAddBlockIndex(allBlocks);
 
-keepNaive = string(allSessions.Group) == "Naive" & ismember(string(allSessions.Mouse), naiveMouseAllow);
-keepTransfer = string(allSessions.Group) == "Transfer" & ismember(string(allSessions.Mouse), transferMouseAllow);
-allSessions = allSessions(keepNaive | keepTransfer, :);
-if isempty(allSessions)
-	error('newSlopeVsHeterogeneity:EmptySelectedSessions', 'No selected Fig3C mice remained after applying the allow list.');
+keepNaive = string(allBlocks.Group) == "Naive" & ismember(string(allBlocks.Mouse), naiveMouseAllow);
+keepTransfer = string(allBlocks.Group) == "Transfer" & ismember(string(allBlocks.Mouse), transferMouseAllow);
+allBlocks = allBlocks(keepNaive | keepTransfer, :);
+if isempty(allBlocks)
+	error('newSlopeVsHeterogeneity:EmptySelectedBlocks', 'No selected Fig3C mice remained after applying the allow list.');
 end
 
-sigmoidFitTable = iFitSigmoidPerMouse(allSessions);
+sigmoidFitTable = iFitSigmoidPerMouse(allBlocks);
 if isempty(sigmoidFitTable)
 	error('newSlopeVsHeterogeneity:NoSigmoidFits', 'No per-mouse sigmoid fit could be computed.');
 end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-palette3 = TransferLearning.FigurePalette(3);
-colorN = palette3(1,:);
-colorT = palette3(2,:);
-colorFit = palette3(3,:);
+colorN = TransferLearning.NaiveColor;
+colorT = TransferLearning.TransferColor;
+colorFit = [0.5 0.5 0.5];
 
 dataParts = cell(numel(layers), 1);
 statsRows = table();
@@ -161,7 +161,7 @@ for iL = 1:numel(layers)
 end
 
 MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
-lgd = legend(hLegend, {'Naive', 'Continual'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
+lgd = legend(hLegend, {'Naive', 'Transfer'}, 'FontSize', 12, 'Box', 'off', 'Orientation', 'horizontal');
 lgd.Layout.Tile = 'south';
 
 if ~isfolder(outDirUNC)
@@ -178,6 +178,10 @@ for ax = reshape(allAxes, 1, [])
 		ax.Toolbar.Visible = 'off';
 	end
 end
+% ExportStandardFigure 的 ScatterAxPadding 会把轴限重置为 auto，拆掉已统一的轴限；
+% 因此先结算一次导出样式（padding 生效），再统一轴限，导出时不再触发重算。
+TransferLearning.ApplyStandardExportStyle(f, 2);
+MATLAB.Graphics.UnifyAxesLims(axAll(:), @ylim);
 svgTempPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 if ~strcmpi(svgTempPath, svgPath)
 	copyfile(svgTempPath, svgPath);
@@ -202,7 +206,7 @@ assignin('base', 'newSlopeVsHeterogeneity_Data', dataTable);
 assignin('base', 'newSlopeVsHeterogeneity_Stats', statsRows);
 assignin('base', 'newSlopeVsHeterogeneity_SigmoidFit', sigmoidFitTable);
 assignin('base', 'newSlopeVsHeterogeneity_NaiveData', naiveDataTable);
-assignin('base', 'newSlopeVsHeterogeneity_ContinualData', transferDataTable);
+assignin('base', 'newSlopeVsHeterogeneity_TransferData', transferDataTable);
 
 function dataL = iBuildLayerData(layerName, layerLabel, sigmoidFitTable, LAB, LAI, ALB, CellLAB, CellLAI, CellALB, idx1s, naiveMouseAllow, transferMouseAllow)
 	[sdNaive, miceNaive] = iNaiveHeterogeneityByLayer(LAB, LAI, CellLAB, CellLAI, idx1s, layerName, naiveMouseAllow);
@@ -235,11 +239,11 @@ function dataOut = iJoinSlopeAndHeterogeneity(sigmoidFitTable, mice, sdVec, grou
 end
 
 function [sdVec, miceKept] = iNaiveHeterogeneityByLayer(LAB, LAI, CellLAB, CellLAI, idx1s, layerName, mouseAllow)
-	Sess = iGatherNaiveSessions_Fig3C(LAB, LAI);
-	Sess = iExcludeAudioWaterSessions_Fig3C(Sess, LAB, LAI);
-	Sess = iExcludeCeilingSessions_Fig3C(Sess);
+	Sess = iGatherNaiveBlocks_Fig3C(LAB, LAI);
+	Sess = iExcludeAudioWaterBlocks_Fig3C(Sess, LAB, LAI);
+	Sess = iExcludeCeilingBlocks_Fig3C(Sess);
 	Sess = Sess(ismember(string(Sess.Mouse), mouseAllow), :);
-	[SessUsed, miceAll] = iKeepAnalyzedSessions_Fig3C(Sess);
+	[SessUsed, miceAll] = iKeepAnalyzedBlocks_Fig3C(Sess);
 	if isempty(SessUsed)
 		sdVec = [];
 		miceKept = string.empty(0, 1);
@@ -265,7 +269,7 @@ function [sdVec, miceKept] = iNaiveHeterogeneityByLayer(LAB, LAI, CellLAB, CellL
 	if isempty(rawParts)
 		sdAll = nan(numel(miceAll), 1);
 	else
-		medTbl = iPerSessionCellMedianTable(vertcat(rawParts{:}), idx1s, layerName, true);
+		medTbl = iPerBlockCellMedianTable(vertcat(rawParts{:}), idx1s, layerName, true);
 		sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, true);
 	end
 	keep = isfinite(sdAll);
@@ -274,12 +278,12 @@ function [sdVec, miceKept] = iNaiveHeterogeneityByLayer(LAB, LAI, CellLAB, CellL
 end
 
 function [sdVec, miceKept] = iTransferHeterogeneityByLayer(ALB, CellALB, idx1s, layerName, mouseAllow)
-	Sess = iLightWaterSessions_Fig3C(ALB);
+	Sess = iLightWaterBlocks_Fig3C(ALB);
 	Sess = iKeepPureLW_NoMustWarn_Fig3C(ALB, Sess);
 	Sess = iKeepPhaseRange_Fig3C(ALB, Sess, "Transfer", "Final");
-	Sess = iExcludeCeilingSessions_Fig3C(Sess);
+	Sess = iExcludeCeilingBlocks_Fig3C(Sess);
 	Sess = Sess(ismember(string(Sess.Mouse), mouseAllow), :);
-	[SessUsed, miceAll] = iKeepAnalyzedSessions_Fig3C(Sess);
+	[SessUsed, miceAll] = iKeepAnalyzedBlocks_Fig3C(Sess);
 	if isempty(SessUsed)
 		sdVec = [];
 		miceKept = string.empty(0, 1);
@@ -290,7 +294,7 @@ function [sdVec, miceKept] = iTransferHeterogeneityByLayer(ALB, CellALB, idx1s, 
 		sdAll = nan(numel(miceAll), 1);
 	else
 		rawTbl = iAttachLayer(rawTbl, CellALB);
-		medTbl = iPerSessionCellMedianTable(rawTbl, idx1s, layerName, false);
+		medTbl = iPerBlockCellMedianTable(rawTbl, idx1s, layerName, false);
 		sdAll = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, false);
 	end
 	keep = isfinite(sdAll);
@@ -298,7 +302,7 @@ function [sdVec, miceKept] = iTransferHeterogeneityByLayer(ALB, CellALB, idx1s, 
 	miceKept = miceAll(keep);
 end
 
-function [SessUsed, mice] = iKeepAnalyzedSessions_Fig3C(Sess)
+function [SessUsed, mice] = iKeepAnalyzedBlocks_Fig3C(Sess)
 	if isempty(Sess)
 		SessUsed = Sess;
 		mice = string.empty(0, 1);
@@ -354,7 +358,7 @@ function fitTable = iFitSigmoidPerMouse(T)
 		mouseTable = T(mouseRows, :);
 		mouseTable = sortrows(mouseTable, 'DateTime');
 		groupPerMouse(iMouse) = string(mouseTable.Group(1));
-		finiteRows = isfinite(double(mouseTable.Session)) & isfinite(double(mouseTable.Performance));
+		finiteRows = isfinite(double(mouseTable.Block)) & isfinite(double(mouseTable.Performance));
 		mouseTable = mouseTable(finiteRows, :);
 		if height(mouseTable) < 2
 			continue;
@@ -383,15 +387,16 @@ end
 
 function fitOut = iFitSigmoidCurve(T, groupName)
 	T = sortrows(T, {'Mouse','DateTime'});
-	xObs = double(T.Session(:));
+	xObs = double(T.Block(:));
 	yObs = double(T.Performance(:));
 	use = isfinite(xObs) & isfinite(yObs);
 	xObs = xObs(use);
 	yObs = yObs(use);
 	if isempty(xObs)
-		error('newSlopeVsHeterogeneity:NoDataForGroup', 'No valid session data for group %s.', char(groupName));
+		error('newSlopeVsHeterogeneity:NoDataForGroup', 'No valid block data for group %s.', char(groupName));
 	end
-	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); log(max(median(xObs), 1))];
+	% midpoint 不作约束（可为负），故用恒等而非 log/exp
+	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); max(median(xObs), 1)];
 	obj = @(p) sum((yObs - iSigmoidFromParams(p, xObs)).^2, 'omitnan');
 	opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
 	p = fminsearch(obj, p0, opt);
@@ -426,7 +431,7 @@ function [lower, upper, slope, midpoint] = iDecodeSigmoidParams(p)
 	lower = 1 ./ (1 + exp(-p(1)));
 	upper = 1;
 	slope = exp(p(2));
-	midpoint = exp(p(3));
+	midpoint = p(3);
 end
 
 function y = iLogit(x)
@@ -434,23 +439,23 @@ function y = iLogit(x)
 	y = log(x ./ (1 - x));
 end
 
-function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
+function out = iLightWaterBlocksByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 	T = iQueryLightWaterBehaviorAll(DS);
 	if isempty(T)
 		out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), ...
-			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 		return;
 	end
 	T.Mouse = string(T.Mouse);
 	T.DateTime = iNormalizeDateTime(T.DateTime);
-	T = iSessionizeByDateTime(T);
-	T = iSelectSessionsBetweenPhases(T, startPhase, endPhase);
+	T = iBlockizeByDateTime(T);
+	T = iSelectBlocksBetweenPhases(T, startPhase, endPhase);
 	T.Source = repmat(string(sourceName), height(T), 1);
 	T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
-	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 end
 
-function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imagingCohort, startPhase, endPhase)
+function out = iLightWaterBlocksByMouse_LAInterspersed(DS, sourceName, imagingCohort, startPhase, endPhase)
 	if string(startPhase) == "Naive" || string(endPhase) == "Naive"
 		badMice = iFindMiceWithAudioWaterInPhase(DS, "Naive");
 	else
@@ -459,7 +464,7 @@ function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imaging
 	T = iQueryLightWaterBehaviorAll(DS);
 	if isempty(T)
 		out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), ...
-			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 		return;
 	end
 	T.Mouse = string(T.Mouse);
@@ -467,11 +472,11 @@ function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imaging
 		T = T(~ismember(T.Mouse, badMice), :);
 	end
 	T.DateTime = iNormalizeDateTime(T.DateTime);
-	T = iSessionizeByDateTime(T);
-	T = iSelectSessionsBetweenPhases(T, startPhase, endPhase);
+	T = iBlockizeByDateTime(T);
+	T = iSelectBlocksBetweenPhases(T, startPhase, endPhase);
 	T.Source = repmat(string(sourceName), height(T), 1);
 	T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
-	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 end
 
 function T = iQueryLightWaterBehaviorAll(DS)
@@ -489,7 +494,7 @@ function T = iQueryLightWaterBehaviorAll(DS)
 	T = T(T.Stimulus == "LightWater", :);
 end
 
-function S = iSelectSessionsBetweenPhases(S, startPhase, endPhase)
+function S = iSelectBlocksBetweenPhases(S, startPhase, endPhase)
 	startPhase = string(startPhase);
 	endPhase = string(endPhase);
 	if isempty(S)
@@ -525,7 +530,7 @@ function badMice = iFindMiceWithAudioWaterInPhase(DS, phaseName)
 	end
 end
 
-function S = iSessionizeByDateTime(T)
+function S = iBlockizeByDateTime(T)
 	useBehavior = ismember('Behavior', string(T.Properties.VariableNames));
 	if ~ismember('Phase', T.Properties.VariableNames)
 		T.Phase = repmat(missing, height(T), 1);
@@ -545,11 +550,11 @@ function S = iSessionizeByDateTime(T)
 	[G, mouseList, dtList] = findgroups(T.Mouse, T.DateTime);
 	perf = splitapply(@(x) mean(x, 'omitnan'), val, G);
 	nBlocks = splitapply(@(x) sum(isfinite(x)), val, G);
-	phaseSession = splitapply(@(x) iPickSessionPhase(x), string(T.Phase), G);
-	S = table(mouseList, dtList, perf, nBlocks, phaseSession, 'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession','Phase'});
+	phaseBlock = splitapply(@(x) iPickBlockPhase(x), string(T.Phase), G);
+	S = table(mouseList, dtList, perf, nBlocks, phaseBlock, 'VariableNames', {'Mouse','DateTime','Performance','NBlocksInBlock','Phase'});
 end
 
-function ph = iPickSessionPhase(phases)
+function ph = iPickBlockPhase(phases)
 	phases = string(phases);
 	phases = phases(~ismissing(phases) & phases ~= "");
 	if isempty(phases)
@@ -602,12 +607,12 @@ function iAssertNoMouseAppearsInMultipleGroups(T)
 	end
 end
 
-function T = iAddSessionIndex(T)
+function T = iAddBlockIndex(T)
 	T.Mouse = string(T.Mouse);
 	T = sortrows(T, {'Group','Mouse','DateTime'});
 	[G, ~] = findgroups(T.Group, T.Mouse);
 	sessCell = splitapply(@(x) {(1:numel(x))'}, T.DateTime, G);
-	T.Session = vertcat(sessCell{:});
+	T.Block = vertcat(sessCell{:});
 end
 
 function S = iCellLayerTable(DS, sourceName)
@@ -631,7 +636,7 @@ function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
 	ok = isfinite(d) && (d <= tolSec);
 end
 
-function medTbl = iPerSessionCellMedianTable(rawTbl, idx1s, layerName, hasSource)
+function medTbl = iPerBlockCellMedianTable(rawTbl, idx1s, layerName, hasSource)
 	mask = string(rawTbl.ZLayer) == string(layerName);
 	rawTbl = rawTbl(mask, :);
 	if isempty(rawTbl)
@@ -696,7 +701,7 @@ function sdVec = iPerMouseResponseHeterogeneity(SessUsed, medTbl, miceAll, hasSo
 	end
 end
 
-function Sess = iLightWaterSessions_Fig3C(DS)
+function Sess = iLightWaterBlocks_Fig3C(DS)
 	blockVars = string(DS.Blocks.Properties.VariableNames);
 	if any(blockVars == "MustWarn")
 		Blocks = DS.Blocks(:, {'BlockUID','DateTime','MustWarn'});
@@ -777,7 +782,7 @@ function SessOut = iKeepPhaseRange_Fig3C(DS, SessIn, phaseStart, phaseEnd)
 	SessOut = SessOut(keep, :);
 end
 
-function AllSess = iGatherNaiveSessions_Fig3C(LAB, LAI)
+function AllSess = iGatherNaiveBlocks_Fig3C(LAB, LAI)
 	AllSess = table(strings(0,1), NaT(0,1), nan(0,1), strings(0,1), 'VariableNames', {'Mouse','DateTime','Performance','Source'});
 	for iDS = 1:2
 		if iDS == 1
@@ -851,7 +856,7 @@ function AllSess = iGatherNaiveSessions_Fig3C(LAB, LAI)
 	AllSess = AllSess(ia, :);
 end
 
-function AllSess = iExcludeAudioWaterSessions_Fig3C(AllSess, LAB, LAI)
+function AllSess = iExcludeAudioWaterBlocks_Fig3C(AllSess, LAB, LAI)
 	keep = true(height(AllSess), 1);
 	for i = 1:height(AllSess)
 		if AllSess.Source(i) == "LAB"
@@ -866,7 +871,7 @@ function AllSess = iExcludeAudioWaterSessions_Fig3C(AllSess, LAB, LAI)
 	AllSess = AllSess(keep, :);
 end
 
-function SessOut = iExcludeCeilingSessions_Fig3C(SessIn)
+function SessOut = iExcludeCeilingBlocks_Fig3C(SessIn)
 	SessOut = sortrows(SessIn, {'Mouse','DateTime'});
 	remove = false(height(SessOut), 1);
 	for m = unique(SessOut.Mouse)'

@@ -209,9 +209,8 @@ Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');
 yl.FontSize = 6;
 
-palette2 = TransferLearning.FigurePalette(2);
-colorNaive = palette2(1,:);
-colorLearn = palette2(2,:);
+colorNaive = TransferLearning.NaiveColor;
+colorLearn = TransferLearning.LearnedColor;
 
 % --- Top: NaiveAO vs LearnedAW (paired) ---
 nexttile(Layout, 1);
@@ -277,8 +276,8 @@ legend(ax2, 'off');
 box(ax2, 'off');
 grid(ax2, 'off');
 
-cInh = palette2(1,:);
-cNon = palette2(2,:);
+cInh = TransferLearning.LearnedColor;
+cNon = TransferLearning.ColorB;
 if isscalar(Bars2)
 	Bars2.FaceColor = 'flat';
 	Bars2.CData = [cInh; cNon];

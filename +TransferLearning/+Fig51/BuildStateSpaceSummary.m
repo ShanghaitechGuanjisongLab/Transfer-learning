@@ -24,8 +24,8 @@ end
 Specs = [ ...
 	builtin('struct', 'Group', "Naive", 'Source', "LAB", 'DS', TransferLearning.LightAudioBaseline(), 'StartPhase', "Naive", 'EndPhase', "Learned")
 	builtin('struct', 'Group', "Naive", 'Source', "LAI", 'DS', TransferLearning.LAInterspersed(), 'StartPhase', "Naive", 'EndPhase', "Learned")
-	builtin('struct', 'Group', "Continual", 'Source', "ALB", 'DS', TransferLearning.AudioLightBaseline(), 'StartPhase', "Transfer", 'EndPhase', "Final")
-	builtin('struct', 'Group', "Continual", 'Source', "ALI", 'DS', TransferLearning.ALInterspersed(), 'StartPhase', "Transfer", 'EndPhase', "Final")
+	builtin('struct', 'Group', "Transfer", 'Source', "ALB", 'DS', TransferLearning.AudioLightBaseline(), 'StartPhase', "Transfer", 'EndPhase', "Final")
+	builtin('struct', 'Group', "Transfer", 'Source', "ALI", 'DS', TransferLearning.ALInterspersed(), 'StartPhase', "Transfer", 'EndPhase', "Final")
 ];
 
 sessionParts = cell(numel(Specs), 1);
@@ -36,7 +36,7 @@ allSessions = vertcat(sessionParts{:});
 allSessions = sortrows(allSessions, {'Group', 'Mouse', 'DateTime'});
 
 iAssertNoCrossSourceDuplicateMice(allSessions(allSessions.Group == "Naive", :), "Naive");
-iAssertNoCrossSourceDuplicateMice(allSessions(allSessions.Group == "Continual", :), "Continual");
+iAssertNoCrossSourceDuplicateMice(allSessions(allSessions.Group == "Transfer", :), "Transfer");
 iAssertNoMouseAppearsInMultipleGroups(allSessions);
 
 stateRows = repmat(iEmptyMouseState(), 0, 1);
@@ -451,7 +451,7 @@ end
 
 function Rep = iSelectRepresentatives(MouseStates, idx1s, xsSec)
 naiveRows = MouseStates(string({MouseStates.Group})' == "Naive");
-	continualRows = MouseStates(string({MouseStates.Group})' == "Continual");
+	transferRows = MouseStates(string({MouseStates.Group})' == "Transfer");
 
 naiveHasSetback = arrayfun(@(s) height(s.SessionTable) >= 6 && iHasBehaviorSetback(s.SessionTable.Performance), naiveRows);
 naiveN = arrayfun(@(s) height(s.SessionTable), naiveRows);
@@ -487,19 +487,19 @@ for i = 1:numel(naiveRows)
 	end
 	end
 
-	continualIsIncreasing = arrayfun(@(s) height(s.SessionTable) >= 3 && iIsStrictlyIncreasing(s.SessionTable.Performance), continualRows);
-	continualN = arrayfun(@(s) height(s.SessionTable), continualRows);
-	minContinualN = min(continualN(continualIsIncreasing), [], 'omitnan');
-	if ~isfinite(minContinualN)
-		error('Fig51:NoContinualMouseIncreasing', 'No Continual mouse reaches criterion with at least 3 sessions and strictly increasing behavior.');
+	transferIsIncreasing = arrayfun(@(s) height(s.SessionTable) >= 3 && iIsStrictlyIncreasing(s.SessionTable.Performance), transferRows);
+	transferN = arrayfun(@(s) height(s.SessionTable), transferRows);
+	minTransferN = min(transferN(transferIsIncreasing), [], 'omitnan');
+	if ~isfinite(minTransferN)
+		error('Fig51:NoTransferMouseIncreasing', 'No Transfer mouse reaches criterion with at least 3 sessions and strictly increasing behavior.');
 	end
-	bestContinualScore = -inf;
-	bestContinualMouse = iEmptyMouseState();
-	bestContinualCellUID = uint64(0);
-	bestContinualSignals = [];
-	for i = 1:numel(continualRows)
-		st = continualRows(i);
-		if ~continualIsIncreasing(i) || height(st.SessionTable) ~= minContinualN
+	bestTransferScore = -inf;
+	bestTransferMouse = iEmptyMouseState();
+	bestTransferCellUID = uint64(0);
+	bestTransferSignals = [];
+	for i = 1:numel(transferRows)
+		st = transferRows(i);
+		if ~transferIsIncreasing(i) || height(st.SessionTable) ~= minTransferN
 			continue;
 		end
 		vals = squeeze(st.NTATS(:, idx1s, :));
@@ -513,23 +513,23 @@ for i = 1:numel(naiveRows)
 		inc = vals(:, end) - vals(:, 1);
 		inc(~monoMask) = -inf;
 		[cScore, cIdx] = max(inc);
-		if isfinite(cScore) && cScore > bestContinualScore
-			bestContinualScore = cScore;
-			bestContinualMouse = st;
-			bestContinualCellUID = st.CellUID(cIdx);
-			bestContinualSignals = squeeze(st.NTATS(cIdx, :, :))';
+		if isfinite(cScore) && cScore > bestTransferScore
+			bestTransferScore = cScore;
+			bestTransferMouse = st;
+			bestTransferCellUID = st.CellUID(cIdx);
+			bestTransferSignals = squeeze(st.NTATS(cIdx, :, :))';
 		end
 	end
 
-	if bestNaiveCellUID == 0 || bestContinualCellUID == 0
-		error('Fig51:NoRepresentative', 'Cannot find representative Naive/Continual cell pair for panel A.');
+	if bestNaiveCellUID == 0 || bestTransferCellUID == 0
+		error('Fig51:NoRepresentative', 'Cannot find representative Naive/Transfer cell pair for panel A.');
 	end
 
 	Rep = struct();
 	Rep.NaiveCell = struct('Mouse', bestNaiveMouse.Mouse, 'Source', bestNaiveMouse.Source, 'CellUID', bestNaiveCellUID, ...
 		'SessionTable', bestNaiveMouse.SessionTable, 'Signals', bestNaiveSignals, 'Points', bestNaiveMouse.Points, 'Explained', bestNaiveMouse.Explained);
-	Rep.ContinualCell = struct('Mouse', bestContinualMouse.Mouse, 'Source', bestContinualMouse.Source, 'CellUID', bestContinualCellUID, ...
-		'SessionTable', bestContinualMouse.SessionTable, 'Signals', bestContinualSignals, 'Points', bestContinualMouse.Points, 'Explained', bestContinualMouse.Explained);
+	Rep.TransferCell = struct('Mouse', bestTransferMouse.Mouse, 'Source', bestTransferMouse.Source, 'CellUID', bestTransferCellUID, ...
+		'SessionTable', bestTransferMouse.SessionTable, 'Signals', bestTransferSignals, 'Points', bestTransferMouse.Points, 'Explained', bestTransferMouse.Explained);
 	Rep.XsSec = xsSec;
 end
 

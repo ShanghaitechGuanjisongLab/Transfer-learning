@@ -37,7 +37,7 @@ fprintf('Wilcoxon rank-sum P = %.4g\n', p);
 
 %% --- 3. 绘图 (Nature 风格 bar + scatter) ---
 colorA = TransferLearning.NaiveColor;      % 紫
-colorL = TransferLearning.ContinualColor;  % 橙
+colorL = TransferLearning.TransferColor;  % 橙
 
 f = figure('Color', 'w', 'Name', 'FigALvsL Session4 bar');
 f.Units = 'centimeters';

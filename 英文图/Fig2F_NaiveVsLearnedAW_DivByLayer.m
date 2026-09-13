@@ -160,9 +160,8 @@ Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 yl = ylabel(Layout, 'Divergence');
 yl.FontSize = 6;
 
-palette2 = TransferLearning.FigurePalette(2);
-colorNaive = palette2(1,:);
-colorLearn = palette2(2,:);
+colorNaive = TransferLearning.NaiveColor;
+colorLearn = TransferLearning.LearnedColor;
 
 % --- Top tile: L2/3 ---
 nexttile(Layout, 1);

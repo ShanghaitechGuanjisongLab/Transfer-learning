@@ -118,8 +118,7 @@ for iS = 1:2
 end
 
 binEdges = linspace(-1, 1, 41);
-palette2 = TransferLearning.FigurePalette(2);
-histColors = {palette2(1,:), palette2(2,:)};
+histColors = {TransferLearning.TransferColor, TransferLearning.ColorB};
 histFigs = gobjects(1, 2);
 histAxes = gobjects(1, 2);
 for iS = 1:2

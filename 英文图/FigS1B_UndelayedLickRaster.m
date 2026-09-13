@@ -1,7 +1,7 @@
-% PPT14：光水首个训练单元 CD2 颜色图（上下双tile）
+% FigS1B (English, from Chinese Fig32D): first-block light-water trial lick CD2 color raster (top: Naive, bottom: Transfer)
 %
 % Top:     Naive —— LightAudioBaseline + LAInterspersed，Naive phase trial
-% Bottom:  Continual —— AudioLightBaseline，Transfer phase trial
+% Bottom:  Transfer —— AudioLightBaseline，Transfer phase trial
 %
 % 每鼠取首个含 LightWater trial 的 Naive/Transfer block；
 % 每个时间点的 CD2 值 rescale 到 [0,1]，映射到深绿→浅绿渐变。
@@ -29,9 +29,9 @@ blMask = xsSec >= -3 & xsSec < 0;
     {TransferLearning.AudioLightBaseline()}, "Transfer", winMask);
 
 fprintf('Naive: %d mice, %d trials\n', numel(naiveMice), size(naiveCD2,1));
-fprintf('Continual: %d mice, %d trials\n', numel(contMice), size(contCD2,1));
+fprintf('Transfer: %d mice, %d trials\n', numel(contMice), size(contCD2,1));
 
-%% --- Rescale CD2 到 [0,1]（Naive 和 Continual 统一缩放）---
+%% --- Rescale CD2 到 [0,1]（Naive 和 Transfer 统一缩放）---
 if ~isempty(naiveCD2) || ~isempty(contCD2)
     allVals = [];
     if ~isempty(naiveCD2), allVals = naiveCD2(:); end
@@ -51,7 +51,7 @@ nColors = 256;
 cmapGreen=MATLAB.ElMat.LinSpace([1,1,1],[0.5414	0.0000	0.8231],256,1);
 
 %% --- 绘图 ---
-f = figure('Color','w', 'Name','PPT14 CD2 color raster');
+f = figure('Color','w', 'Name','FigS1B first-block lick raster (CD2 color)');
 f.Units = 'centimeters';
 f.Position(3:4) = [9,8];
 
@@ -72,13 +72,13 @@ box(axTop,'off');
 xline(axTop, 0,'--', 'Color', xlineColor);
 xline(axTop, 1,'--', 'Color', xlineColor);
 
-% --- Bottom: Continual ---
+% --- Bottom: Transfer ---
 axBot = nexttile(layout, 2);
 if ~isempty(contCD2)
     imagesc(axBot, xsWin, 1:size(contCD2,1), contCD2);
     colormap(axBot, cmapGreen);
 end
-title(axBot, 'Continual');
+title(axBot, 'Transfer');
 xlim(axBot, [-1, 3]);
 box(axBot,'off');
 xline(axBot, 0,'--', 'Color', xlineColor);
@@ -96,7 +96,7 @@ cb.Label.String = 'Lick probability';
 
 TransferLearning.Style.ApplyStandardFigureStyle(f, 2);
 axBot.XTickLabels(ismember(axBot.XTick,[0,1])) = {'💡','💧'};
-svgPath = TransferLearning.StandardFigureSvgPath('中文图32D_CD2ColorRaster.svg');
+svgPath = TransferLearning.StandardFigureSvgPath('English_FigS1B_LickRaster.svg');
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 

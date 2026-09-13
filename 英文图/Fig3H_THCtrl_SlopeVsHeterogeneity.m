@@ -15,7 +15,7 @@ end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-colorC = TransferLearning.ContinualColor;
+colorC = TransferLearning.TransferColor;
 colorT = TransferLearning.ColorB;
 
 f = figure('Color', 'w', 'Name', 'Fig3I TH/Ctrl sigmoid slope vs Response heterogeneity');

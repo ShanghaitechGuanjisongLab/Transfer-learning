@@ -1,4 +1,4 @@
-% Fig33B: Naive vs Continual LightWater group learning curve + per-mouse slope bar
+% Fig33B: Naive vs Transfer LightWater group learning curve + per-mouse slope bar
 
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -89,7 +89,7 @@ f.PaperSize = [12, 8];
 f.PaperPositionMode = 'auto';
 
 curveColorNaive = TransferLearning.NaiveColor;
-curveColorTransfer = TransferLearning.ContinualColor;
+curveColorTransfer = TransferLearning.TransferColor;
 ax = axes(f);
 hold(ax, 'on');
 hNaive = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, naiveFitCurve, curveColorNaive);
@@ -150,7 +150,7 @@ blocks50Transfer = transferBlocks50.BlocksTo50;
 blocks50Naive = blocks50Naive(isfinite(blocks50Naive));
 blocks50Transfer = blocks50Transfer(isfinite(blocks50Transfer));
 
-edgeColorsBar = [TransferLearning.NaiveColor; TransferLearning.ContinualColor];
+edgeColorsBar = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 f2 = figure( 'Name', 'Fig33B per-mouse slope');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
@@ -186,9 +186,9 @@ fprintf('Wrote: %s\n', svgPath);
 fprintf('Wrote: %s\n', svgPath2);
 fprintf('\n=== 中文图33B ===\n');
 fprintf('Naive mice: %d\n', naiveMouseN);
-fprintf('Continual mice: %d\n', transferMouseN);
+fprintf('Transfer mice: %d\n', transferMouseN);
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
-fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
+fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
 fprintf('Two-way ANOVA Group P (all blocks) = %.4g\n', groupP);
 fprintf('Two-way ANOVA Group P (blocks 1-7) = %.4g\n', groupP7);
 fprintf('Per-mouse blocks-to-50%% bar P (BarScatterCompare) = %s\n', TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));

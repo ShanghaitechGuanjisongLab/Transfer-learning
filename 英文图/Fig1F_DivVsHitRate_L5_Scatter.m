@@ -1,4 +1,4 @@
-% 英文图2G：Divergence vs 首会话命中率 散点图 — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
+% 英文图1F：Divergence vs 首会话命中率 散点图 — 2×2 (L2/3 vs L5) × (Naive vs Transfer)
 %
 % 2×2 布局：行=层(L2/3, L5), 列=组(Naive, Transfer)
 % 关键发现：仅 Transfer L5 显著负相关
@@ -186,7 +186,7 @@ kTL5 = isfinite(T_DivL5) & isfinite(T_HR);
 fprintf('Transfer L5:   ρ=%+.3f p=%.4g n=%d\n', rhoTL5, pTL5, sum(kTL5));
 
 %% ===== 作图 (2×2 tiledlayout) =====
-f = figure('Color', 'w', 'Name', 'English Fig2G Div vs Hit Rate 2x2');
+f = figure('Color', 'w', 'Name', 'English Fig1F Div vs Hit Rate 2x2');
 f.Units = 'centimeters';
 f.Position(3:4) = [6, 4];
 f.PaperUnits = 'centimeters';
@@ -212,7 +212,7 @@ rhoVals  = [rhoNL23, rhoTL23; rhoNL5, rhoTL5];
 pVals    = [pNL23,   pTL23;   pNL5,   pTL5];
 colors   = {colorNaive, colorTransfer; colorNaive, colorTransfer};
 rowTitle  = ["L2/3", "L5"];
-colTitle  = ["Naive", "Continual"];
+colTitle  = ["Naive", "Transfer"];
 
 for iR = 1:2
 	for iC = 1:2
@@ -256,7 +256,7 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, "English_Fig2G_DivVsHitRate_L5.svg");
+svgPath = TransferLearning.ExportStandardFigure(f, 1, "English_Fig1F_DivVsHitRate_L5.svg");
 
 % Summary to workspace
 assignin('base', 'Fig2G_Transfer', table(T_Mouse, T_DivL23, T_DivL5, T_HR, ...

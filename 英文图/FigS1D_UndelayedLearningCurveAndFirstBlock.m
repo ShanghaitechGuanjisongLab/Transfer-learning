@@ -8,7 +8,8 @@
 % - 每只鼠内按 DateTime 排序，将 LightWater 的每个 DateTime 视为一个“会话”；
 %   若同一 DateTime 有多个 block，则对该会话内 block 的 Performance 取均值。
 % - 之后按每鼠会话序号对齐，计算组均值±SEM。
-% - 作图禁止 plot：使用 MATLAB.Graphics.MultiShadowedLines。
+% - 作图采用中文图31B 样式：errorbar 均值±SEM + 组水平 sigmoid 拟合曲线 +
+%   横跨 block 1–7 的 LME 组效应 p 线（用户 2026-09-13 指定）。
 %
 % 执行方式（硬性要求，不要忘）：
 % - 本文件必须保持为脚本（严禁改写成 function）。
@@ -20,7 +21,7 @@
 if ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
-	prjFile = fullfile(thisDir, '..', '..', 'Transferlearning.prj');
+	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
 	if exist(prjFile,'file')
 		matlab.project.loadProject(prjFile);
 	end
@@ -33,7 +34,7 @@ LAPB = TransferLearning.LAPureBehavior();       % 纯行为：光→声（LightW
 ALPB = TransferLearning.ALPureBehavior();       % 纯行为：声→光（LightWater 是 Transfer）
 LAI  = TransferLearning.LAInterspersed();       % 交替任务：含 Naive LightWater（需排除混入 AudioWater 的鼠）
 
-% --- 2) Query and sessionize (one row per mouse per session)
+% --- 2) Query and blockize (one row per mouse per block)
 % 注意：在这些数据库里 Phase 往往表示训练阶段：
 %   - Naive 组的后续 LightWater 会话通常标为 Learned
 %   - Transfer 组的后续 LightWater 会话通常标为 Final
@@ -43,12 +44,12 @@ LAI  = TransferLearning.LAInterspersed();       % 交替任务：含 Naive Light
 naiveAnchors = ["Naive","Learned"];      % Naive LightWater 轨迹锚点
 tranAnchors  = ["Transfer","Final"];     % Transfer LightWater 轨迹锚点
 
-naiveA = iLightWaterSessionsByMouse(LAB,  "LightAudioBaseline", true,  naiveAnchors(1), naiveAnchors(2)); %[output:7df7ef53]
-naiveB = iLightWaterSessionsByMouse(LAPB, "LAPureBehavior",     false, naiveAnchors(1), naiveAnchors(2));
-naiveC = iLightWaterSessionsByMouse_LAInterspersed(LAI, "LAInterspersed", false, naiveAnchors(1), naiveAnchors(2)); %[output:2a2e2127]
+naiveA = iLightWaterBlocksByMouse(LAB,  "LightAudioBaseline", true,  naiveAnchors(1), naiveAnchors(2)); %[output:7df7ef53]
+naiveB = iLightWaterBlocksByMouse(LAPB, "LAPureBehavior",     false, naiveAnchors(1), naiveAnchors(2));
+naiveC = iLightWaterBlocksByMouse_LAInterspersed(LAI, "LAInterspersed", false, naiveAnchors(1), naiveAnchors(2)); %[output:2a2e2127]
 
-tranA  = iLightWaterSessionsByMouse(ALB,  "AudioLightBaseline", true,  tranAnchors(1), tranAnchors(2)); %[output:53474e81]
-tranB  = iLightWaterSessionsByMouse(ALPB, "ALPureBehavior",     false, tranAnchors(1), tranAnchors(2));
+tranA  = iLightWaterBlocksByMouse(ALB,  "AudioLightBaseline", true,  tranAnchors(1), tranAnchors(2)); %[output:53474e81]
+tranB  = iLightWaterBlocksByMouse(ALPB, "ALPureBehavior",     false, tranAnchors(1), tranAnchors(2));
 
 naive = [naiveA; naiveB; naiveC];
 tran  = [tranA;  tranB];
@@ -59,72 +60,101 @@ tran.Group(:)  = "Transfer";
 iAssertNoCrossSourceDuplicateMice(naive, "Naive");
 iAssertNoCrossSourceDuplicateMice(tran,  "Transfer");
 
-allSessions = [naive; tran];
-iAssertNoMouseAppearsInMultipleGroups(allSessions);
-if isempty(allSessions)
-	warning('Fig3_1b:EmptyData', '%s', 'No LightWater blocks found.');
+allBlocks = [naive; tran];
+iAssertNoMouseAppearsInMultipleGroups(allBlocks);
+if isempty(allBlocks)
+	warning('FigS1D:EmptyData', '%s', 'No LightWater blocks found.');
 	SummaryCurve = table();
-	assignin('base', 'Fig3_1b_LearningCurve_Raw', allSessions);
-	assignin('base', 'Fig3_1b_LearningCurve_Summary', SummaryCurve);
+	assignin('base', 'FigS1D_LearningCurve_Raw', allBlocks);
+	assignin('base', 'FigS1D_LearningCurve_Summary', SummaryCurve);
 	return;
 end
 
-allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
-allSessions = iAddSessionIndex(allSessions);
+allBlocks = sortrows(allBlocks, ["Group","Mouse","DateTime"]);
+allBlocks = iAddBlockIndex(allBlocks);
 
 % --- 3) Build curves via UniExp.LearningSummarize (required)
-sessionForSummary = allSessions(:, ["Mouse","DateTime","Performance","Group"]);
-sessionForSummary.Group = string(sessionForSummary.Group);
-sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
+blockForSummary = allBlocks(:, ["Mouse","DateTime","Performance","Group"]);
+blockForSummary.Group = string(blockForSummary.Group);
+blockForSummary = sortrows(blockForSummary, ["Group","Mouse","DateTime"]);
 
-PValueLS = nan;
-[~, SummaryL] = evalc('UniExp.LearningSummarize(sessionForSummary)');
+[~, SummaryL] = evalc('UniExp.LearningSummarize(blockForSummary)');
 
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["Naive","Transfer"]);
-nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
+nMat = iComputeNByBlock(allBlocks, x, ["Naive","Transfer"]);
+
+% --- 3b) Group-level sigmoid fits (midpoint unconstrained, same spec as Fig1B) ---
+displayNaive = iFilterToDisplayedMice(allBlocks(string(allBlocks.Group) == "Naive", :));
+displayTransfer = iFilterToDisplayedMice(allBlocks(string(allBlocks.Group) == "Transfer", :));
+fitNaive = iFitSigmoidCurve(displayNaive, "Naive");
+fitTransfer = iFitSigmoidCurve(displayTransfer, "Transfer");
+
+% --- 3c) LME group effect over blocks 1-7 (for the p-line, as in Chinese Fig31B) ---
+blocks7 = allBlocks(allBlocks.Block <= 7, :);
+groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(blocks7, 'Performance', 'Block', 'Group', 'Mouse');
 %%
 
-% --- 4) Plot
-f = figure('Color','w', 'Name', 'Fig3.1b Learning curve (LightWater)'); %[output:5c266b7f]
+% --- 4) Plot（中文图31B 样式：errorbar 均值±SEM + 组水平 sigmoid + 1–7 block LME p 线）
+f = figure('Color','w', 'Name', 'FigS1D Undelayed learning curve (LightWater)'); %[output:5c266b7f]
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 8]; % 90mm x 80mm %[output:5c266b7f]
+f.Position(3:4) = [12, 8];
+f.PaperUnits = 'centimeters';
+f.PaperSize = [12, 8];
+f.PaperPositionMode = 'auto';
 ax = axes(f); %[output:5c266b7f]
 ax.FontSize = 12; %[output:5c266b7f]
+ax.LineWidth = 2;
+ax.Color = 'none';
 hold(ax,'on'); %[output:5c266b7f]
 axes(ax); %[output:5c266b7f]
 
-% Reference palette from 范例 SVGs: Naive=#e60012 (red), Transfer=#0070c0 (blue)
-EdgeColors = TransferLearning.FigurePalette(2);
+% Group colors: Naive vs Transfer (current named palette)
+colorNaive = TransferLearning.NaiveColor;
+colorTransfer = TransferLearning.TransferColor;
 
-% MultiShadowedLines 要求：若 Y 为矩阵则 X/Shadow 尺寸必须与 Y 相同。
-% 这里使用 cell 输入以适配不同组的有效长度（避免 NaN padding 影响绘图）。
-[yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
-Patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=EdgeColors(1:2,:)); %[output:5c266b7f]
+nBlocksPlot = height(meanMat);
+xSummary = x;
+xFit = linspace(1, nBlocksPlot, 200).';
+hNaiveMean = errorbar(ax, xSummary, meanMat(:, 1), semMat(:, 1), 'o', ...
+	'Color', colorNaive, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', colorNaive, ...
+	'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
+hTransferMean = errorbar(ax, xSummary, meanMat(:, 2), semMat(:, 2), 'o', ...
+	'Color', colorTransfer, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', colorTransfer, ...
+	'MarkerSize', 4.5, 'LineWidth', 1.5, 'CapSize', 4, 'LineStyle', 'none');
+hNaiveFit = plot(ax, xFit, iSigmoidFromParams(fitNaive.ParamRaw, xFit), '-', ...
+	'Color', colorNaive, 'LineWidth', 2.2);
+hTransferFit = plot(ax, xFit, iSigmoidFromParams(fitTransfer.ParamRaw, xFit), '-', ...
+	'Color', colorTransfer, 'LineWidth', 2.2);
 
-% --- 4b) Stats: draw significance bar at X=2 (在legend之前画，避免被包含在图例中)
-y1_at2 = meanMat(2, 1); % Naive at block 2
-y2_at2 = meanMat(2, 2); % Transfer at block 2
-yMid = (y1_at2 + y2_at2) / 2;
-yHalfLen = abs(y1_at2 - y2_at2) / 4; % 竖线长度减半
-	plot(ax, [2 2], [yMid - yHalfLen, yMid + yHalfLen], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off'); %[output:5c266b7f]
-	text(ax, 2.1, yMid, '*', 'FontSize', 12, ... %[output:5c266b7f]
-		'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'HandleVisibility', 'off'); %[output:5c266b7f]
+% --- 4b) LME p-line spanning blocks 1-7（同中文图31B；曲线本身画全部 block） ---
+max7 = min(7, nBlocksPlot);
+max7Naive = max(meanMat(1:max7, 1), [], 'omitnan');
+max7Transfer = max(meanMat(1:max7, 2), [], 'omitnan');
+yTop7 = max(max7Naive, max7Transfer);
+yl = ylim(ax); yrange = yl(2) - yl(1);
+yPLine = yTop7 + 0.08 * yrange;
+textY = yPLine + 0.1 * yrange;
+plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
+% 用户裁定（2026-09-13）：显著性只用星号，不再显示 p 值
+if groupP7 < 0.001, starStr = '＊＊＊'; elseif groupP7 < 0.01, starStr = '＊＊'; elseif groupP7 < 0.05, starStr = '＊'; else, starStr = 'n.s.'; end
+text(ax, 4, textY, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12, 'HandleVisibility', 'off');
+yt = yticks(ax);
+yticks(ax, yt(yt <= 1 + 1e-6));
 
-labels = {'Naive', 'Transfer'};
-    if numel(Patches) >= 2
-    	lg = legend(ax, Patches(1:2), labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches(1:2))); %[output:5c266b7f]
-		lg.FontSize = 12; %[output:5c266b7f]
-    else
-    	lg = legend(ax, labels, 'Location', 'best');
-		lg.FontSize = 12;
-    end
+% 扩展 y 上限避免 P 值标注遮挡
+yl_ = ylim(ax);
+ylim(ax, [yl_(1), yl_(2) + 0.12 * (yl_(2) - yl_(1))]);
 
-% Set legend title to emoji (remove figure main title)
-lg.Title.String = '💡💧'; %[output:5c266b7f]
+lg = legend(ax, [hNaiveMean, hNaiveFit, hTransferMean, hTransferFit], ...
+	{'Naive Mean ± SEM', 'Naive Sigmoid', 'Transfer Mean ± SEM', 'Transfer Sigmoid'}, ...
+	'Location', 'southoutside', 'NumColumns', 2);
+lg.Box = 'off';
+lg.FontSize = 10;
 
 xlabel(ax, 'Block', 'FontSize', 12); %[output:5c266b7f]
 ylabel(ax, 'Hit rate', 'FontSize', 12); %[output:5c266b7f]
-ylim(ax, [0 1]); %[output:5c266b7f]
+xlim(ax, [0.5, nBlocksPlot + 0.5]);
 box(ax, 'off'); %[output:5c266b7f]
 % title removed per user request
 
@@ -134,12 +164,19 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 
-svgPath = 'English_Fig1B_LearningCurve.svg';
+svgPath = 'English_FigS1D_UndelayedLearningCurve.svg';
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar) %[output:5c266b7f]
 	ax.Toolbar.Visible = 'off'; %[output:5c266b7f]
 end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath); %[output:5c266b7f]
 fprintf('Wrote: %s\n', svgPath); %[output:85d28524]
+%%
+fprintf('\n=== FigS1D sigmoid (group level) ===\n');
+fprintf('Naive  : slope=%.4f midpoint=%.4f R^2=%.4f (n=%d mice)\n', ...
+	fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared, numel(unique(string(displayNaive.Mouse))));
+fprintf('Transfer: slope=%.4f midpoint=%.4f R^2=%.4f (n=%d mice)\n', ...
+	fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared, numel(unique(string(displayTransfer.Mouse))));
+fprintf('LME Group P (blocks 1-7) = %.6g\n', groupP7);
 %%
 
 SummaryCurve = table;
@@ -150,13 +187,12 @@ SummaryCurve.NaiveSem = semMat(:,1);
 SummaryCurve.TransferSem = semMat(:,2);
 SummaryCurve.NaiveN = nMat(:,1);
 SummaryCurve.TransferN = nMat(:,2);
-SummaryCurve.PLearningSummarize(:) = PValueLS;
 
-assignin('base', 'Fig3_1b_LearningCurve_Raw', allSessions);
-assignin('base', 'Fig3_1b_LearningCurve_Summary', SummaryCurve);
+assignin('base', 'FigS1D_LearningCurve_Raw', allBlocks);
+assignin('base', 'FigS1D_LearningCurve_Summary', SummaryCurve);
 
-%% --- 6) First-session performance bar comparison (computed from allSessions)
-firstSess = allSessions(allSessions.Session == 1, :);
+%% --- 6) First-block performance bar comparison (computed from allBlocks)
+firstSess = allBlocks(allBlocks.Block == 1, :);
 naiveFirst = double(firstSess.Performance(string(firstSess.Group) == "Naive"));
 tranFirst  = double(firstSess.Performance(string(firstSess.Group) == "Transfer"));
 naiveFirst = naiveFirst(isfinite(naiveFirst));
@@ -171,7 +207,7 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 	% --- Plot (transparent background)
-	f2 = figure('Color','none', 'Name', 'English Fig1B First-session performance'); %[output:30387fc7]
+	f2 = figure('Color','none', 'Name', 'English FigS1D Undelayed first-block performance'); %[output:30387fc7]
 		f2.Units = 'centimeters';
 		pos2 = f2.Position;
 		pos2(3:4) = [4,4];
@@ -204,8 +240,8 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 		end
 	end
 
-	% Bar styling – reference palette from 范例 SVGs
-	palette2 = TransferLearning.FigurePalette(2);
+	% Bar styling – current named palette
+	palette2 = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 	colorNaive = palette2(1,:);
 	colorTrans = palette2(2,:);
 	if numel(Bars2) == 1
@@ -245,7 +281,7 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	box(ax2, 'off'); %[output:30387fc7]
 
 	% Export SVG (transparent)
-	svgPath2 = 'English_Fig1B_FirstSessionPerformance.svg';
+	svgPath2 = 'English_FigS1D_UndelayedFirstBlockBar.svg';
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
@@ -257,26 +293,26 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 end %[output:group:9039a271]
 
 %% --- local functions
-function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
+function out = iLightWaterBlocksByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 	T = iQueryLightWaterBehaviorAll(DS);
 	if isempty(T)
 		out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), ...
-			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 		return;
 	end
 
 	T.Mouse = string(T.Mouse);
 	T.DateTime = iNormalizeDateTime(T.DateTime);
 
-	T = iSessionizeByDateTime(T);
-	T = iSelectSessionsBetweenPhases(T, startPhase, endPhase);
+	T = iBlockizeByDateTime(T);
+	T = iSelectBlocksBetweenPhases(T, startPhase, endPhase);
 	T.Source = repmat(string(sourceName), height(T), 1);
 	T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
 
-	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 end
 
-function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imagingCohort, startPhase, endPhase)
+function out = iLightWaterBlocksByMouse_LAInterspersed(DS, sourceName, imagingCohort, startPhase, endPhase)
 	% 排除 Naive 阶段掺杂了 AudioWater 回合的鼠（整只鼠剔除）
 
 	% 混入判定只针对 Naive 阶段（需求：排除 Naive 会话中掺杂 AudioWater 的鼠）
@@ -289,7 +325,7 @@ function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imaging
 	T = iQueryLightWaterBehaviorAll(DS);
 	if isempty(T)
 		out = table(string.empty(0,1), NaT(0,1), nan(0,1), strings(0,1), false(0,1), nan(0,1), ...
-			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+			'VariableNames', {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 		return;
 	end
 
@@ -297,16 +333,16 @@ function out = iLightWaterSessionsByMouse_LAInterspersed(DS, sourceName, imaging
 	if ~isempty(badMice)
 		keep = ~ismember(T.Mouse, badMice);
 		T = T(keep, :);
-		fprintf('Fig3.1b: LAInterspersed excluded %d mice with AudioWater mixed into Naive phase.\n', numel(badMice));
+		fprintf('FigS1D: LAInterspersed excluded %d mice with AudioWater mixed into Naive phase.\n', numel(badMice));
 		fprintf('  Excluded mice: %s\n', char(strjoin(string(badMice), ', ')));
 	end
 
 	T.DateTime = iNormalizeDateTime(T.DateTime);
-	T = iSessionizeByDateTime(T);
-	T = iSelectSessionsBetweenPhases(T, startPhase, endPhase);
+	T = iBlockizeByDateTime(T);
+	T = iSelectBlocksBetweenPhases(T, startPhase, endPhase);
 	T.Source = repmat(string(sourceName), height(T), 1);
 	T.ImagingCohort = repmat(logical(imagingCohort), height(T), 1);
-	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInSession'});
+	out = T(:, {'Mouse','DateTime','Performance','Source','ImagingCohort','NBlocksInBlock'});
 end
 
 function dt = iNormalizeDateTime(dt)
@@ -333,13 +369,13 @@ function T = iQueryLightWaterBehaviorAll(DS)
 	end
 
 	if ~ismember('Stimulus', T.Properties.VariableNames)
-		error('Fig3_1b:MissingStimulus', 'TableQuery result lacks Stimulus; cannot enforce Stimulus=LightWater for %s.', class(DS));
+		error('FigS1D:MissingStimulus', 'TableQuery result lacks Stimulus; cannot enforce Stimulus=LightWater for %s.', class(DS));
 	end
 	T.Stimulus = string(T.Stimulus);
 	T = T(T.Stimulus == "LightWater", :);
 end
 
-function S = iSelectSessionsBetweenPhases(S, startPhase, endPhase)
+function S = iSelectBlocksBetweenPhases(S, startPhase, endPhase)
 	% 在每只鼠内，找到第一次 startPhase 会话作为锚点，然后纳入直到第一次 endPhase（含）为止的所有会话。
 	% endPhase 不存在时：纳入 startPhase 之后所有可用会话。
 	startPhase = string(startPhase);
@@ -381,8 +417,8 @@ function badMice = iFindMiceWithAudioWaterInPhase(DS, phaseName)
 end
 
 
-function S = iSessionizeByDateTime(T)
-	% Collapse within-session rows (trials/blocks) into one session.
+function S = iBlockizeByDateTime(T)
+	% Collapse within-block rows (trials/blocks) into one block.
 	% 如果存在 Behavior（trial-level 0/1），优先用它来计算会话内 LightWater 表现。
 	useBehavior = ismember('Behavior', string(T.Properties.VariableNames));
 	% 保留 Phase（用于锚点定位）；若没有 Phase，则置为空字符串。
@@ -407,14 +443,14 @@ function S = iSessionizeByDateTime(T)
 	[G, mouseKeys, dtKeys] = findgroups(T.Mouse, T.DateTime);
 	perf = splitapply(@(x) mean(x, 'omitnan'), val, G);
 	nBlocks = splitapply(@(x) sum(isfinite(x)), val, G);
-	phaseSession = splitapply(@(x) iPickSessionPhase(x), string(T.Phase), G);
+	phaseBlock = splitapply(@(x) iPickBlockPhase(x), string(T.Phase), G);
 
-	S = table(mouseKeys, dtKeys, perf, nBlocks, phaseSession, ...
-		'VariableNames', {'Mouse','DateTime','Performance','NBlocksInSession','Phase'});
+	S = table(mouseKeys, dtKeys, perf, nBlocks, phaseBlock, ...
+		'VariableNames', {'Mouse','DateTime','Performance','NBlocksInBlock','Phase'});
 end
 
-function ph = iPickSessionPhase(phases)
-	% phases: string array for blocks/trials within one session.
+function ph = iPickBlockPhase(phases)
+	% phases: string array for blocks/trials within one block.
 	phases = string(phases);
 	phases = phases(~ismissing(phases) & phases ~= "");
 	if isempty(phases)
@@ -443,7 +479,7 @@ function iAssertNoCrossSourceDuplicateMice(T, groupName)
 			srcs = unique(T.Source(T.Mouse == m));
 			msgLines(i) = m + ": " + strjoin(srcs, ",");
 		end
-		error('Fig3_1b:DuplicateMouseAcrossSources', ...
+		error('FigS1D:DuplicateMouseAcrossSources', ...
 			'Group %s has duplicated mice across sources (should not happen).\n%s', char(string(groupName)), char(strjoin(msgLines, newline)));
 	end
 end
@@ -464,29 +500,29 @@ function iAssertNoMouseAppearsInMultipleGroups(T)
 			gs = unique(T.Group(T.Mouse == m));
 			msgLines(i) = m + ": " + strjoin(gs, ",");
 		end
-		error('Fig3_1b:MouseInMultipleGroups', 'Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(msgLines, newline)));
+		error('FigS1D:MouseInMultipleGroups', 'Some mice appear in multiple groups (Naive/Transfer):\n%s', char(strjoin(msgLines, newline)));
 	end
 end
 
-function T = iAddSessionIndex(T)
-	% Add per-mouse session index based on DateTime ordering.
+function T = iAddBlockIndex(T)
+	% Add per-mouse block index based on DateTime ordering.
 	T.Mouse = string(T.Mouse);
 	T = sortrows(T, {'Group','Mouse','DateTime'});
 	[G, ~] = findgroups(T.Group, T.Mouse);
 	% splitapply 要求每组返回标量；这里返回 cell(1) 再拼接。
 	sessCell = splitapply(@(x) {(1:numel(x))'}, T.DateTime, G);
-	T.Session = vertcat(sessCell{:});
+	T.Block = vertcat(sessCell{:});
 end
 
-function [meanMat, semMat, x, nMat] = iComputeMeanSemBySession(T)
-	% Compute mean±SEM per session index across mice, separately for Naive/Transfer.
+function [meanMat, semMat, x, nMat] = iComputeMeanSemByBlock(T)
+	% Compute mean±SEM per block index across mice, separately for Naive/Transfer.
 	groups = ["Naive","Transfer"];
 	T.Group = string(T.Group);
-	T.Session = double(T.Session);
+	T.Block = double(T.Block);
 
 	maxN = 0;
 	for g = 1:numel(groups)
-		maxN = max(maxN, max(T.Session(T.Group == groups(g)), [], 'omitnan'));
+		maxN = max(maxN, max(T.Block(T.Group == groups(g)), [], 'omitnan'));
 	end
 	if ~isfinite(maxN) || isempty(maxN)
 		maxN = 0;
@@ -499,7 +535,7 @@ function [meanMat, semMat, x, nMat] = iComputeMeanSemBySession(T)
 	for g = 1:numel(groups)
 		rowsG = (T.Group == groups(g));
 		for s = 1:maxN
-			xv = double(T.Performance(rowsG & T.Session == s));
+			xv = double(T.Performance(rowsG & T.Block == s));
 			xv = xv(isfinite(xv));
 			nMat(s,g) = numel(xv);
 			if isempty(xv)
@@ -531,12 +567,12 @@ function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 		if isstruct(SummaryL)
 			SummaryL = struct2table(SummaryL);
 		else
-			error('Fig3_1b:InvalidLearningSummarizeOutput', 'LearningSummarize output must be table or struct.');
+			error('FigS1D:InvalidLearningSummarizeOutput', 'LearningSummarize output must be table or struct.');
 		end
 	end
 
 	if ~ismember('MeanCurve', SummaryL.Properties.VariableNames) || ~ismember('SemCurve', SummaryL.Properties.VariableNames)
-		error('Fig3_1b:MissingLearningSummarizeFields', 'LearningSummarize output lacks MeanCurve/SemCurve.');
+		error('FigS1D:MissingLearningSummarizeFields', 'LearningSummarize output lacks MeanCurve/SemCurve.');
 	end
 
 	meanCurve = SummaryL.MeanCurve;
@@ -550,7 +586,7 @@ function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 		meanCells = meanCurve(:);
 		semCells = semCurve(:);
 		if numel(semCells) ~= numel(meanCells)
-			error('Fig3_1b:LearningSummarizeCellMismatch', 'MeanCurve/SemCurve cell sizes mismatch.');
+			error('FigS1D:LearningSummarizeCellMismatch', 'MeanCurve/SemCurve cell sizes mismatch.');
 		end
 
 		if ~isempty(SummaryL.Properties.RowNames)
@@ -625,7 +661,7 @@ function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 		end
 
 		if isnumeric(meanCurve) && isnumeric(semCurve) && size(meanCurve,2) == numel(rn)
-			% 形如 (session x group)
+			% 形如 (block x group)
 			M = nan(size(meanCurve,1), numel(groupOrder));
 			S = nan(size(semCurve,1), numel(groupOrder));
 			for k = 1:numel(groupOrder)
@@ -658,19 +694,19 @@ function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 	x = (1:size(meanMat,1)).';
 end
 
-function nMat = iComputeNBySession(T, x, groups)
-	% 每组每个 Session 的样本量（以“该 session 有数据的鼠数”为准）
+function nMat = iComputeNByBlock(T, x, groups)
+	% 每组每个 Block 的样本量（以“该 block 有数据的鼠数”为准）
 	groups = string(groups);
 	x = double(x(:));
 	maxN = numel(x);
 	nMat = zeros(maxN, numel(groups));
 	T.Group = string(T.Group);
-	T.Session = double(T.Session);
+	T.Block = double(T.Block);
 
 	for g = 1:numel(groups)
 		rowsG = (T.Group == groups(g));
 		for s = 1:maxN
-			rowsS = rowsG & (T.Session == s) & isfinite(double(T.Performance));
+			rowsS = rowsG & (T.Block == s) & isfinite(double(T.Performance));
 			if ~any(rowsS)
 				nMat(s,g) = 0;
 			else
@@ -681,28 +717,28 @@ function nMat = iComputeNBySession(T, x, groups)
 end
 
 function out = iFitMixedEffectPValue(T)
-	% Fit LME: Performance ~ Session*Group + (1+Session|Mouse)
+	% Fit LME: Performance ~ Block*Group + (1+Block|Mouse)
 	out = struct('PGroup', nan, 'PInteraction', nan);
 	if isempty(T)
 		return;
 	end
-	use = isfinite(double(T.Performance)) & isfinite(double(T.Session));
+	use = isfinite(double(T.Performance)) & isfinite(double(T.Block));
 	if nnz(use) < 10
 		return;
 	end
 	Tbl = table;
 	Tbl.Performance = double(T.Performance(use));
-	Tbl.Session = double(T.Session(use));
+	Tbl.Block = double(T.Block(use));
 	Tbl.Group = categorical(string(T.Group(use)), ["Naive","Transfer"]);
 	Tbl.Mouse = categorical(string(T.Mouse(use)));
 
 	% 更稳健：避免随机斜率导致奇异/不收敛，从而 p=NaN
-	lme = fitlme(Tbl, 'Performance ~ Session*Group + (1|Mouse)');
+	lme = fitlme(Tbl, 'Performance ~ Block*Group + (1|Mouse)');
 	A = anova(lme);
-	% Terms might be named "Group" and "Session:Group"
+	% Terms might be named "Group" and "Block:Group"
 	if istable(A) && ismember('Term', A.Properties.VariableNames)
 		rowG = find(string(A.Term) == "Group", 1, 'first');
-		rowI = find(string(A.Term) == "Session:Group", 1, 'first');
+		rowI = find(string(A.Term) == "Block:Group", 1, 'first');
 		if ~isempty(rowG) && ismember('pValue', A.Properties.VariableNames)
 			out.PGroup = A.pValue(rowG);
 		end
@@ -715,10 +751,10 @@ end
 function [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat)
 	% Convert padded matrices into per-line column vectors.
 	if ~isnumeric(meanMat) || ~isnumeric(semMat)
-		error('Fig3_1b:InvalidCurveType', 'meanMat/semMat must be numeric matrices.');
+		error('FigS1D:InvalidCurveType', 'meanMat/semMat must be numeric matrices.');
 	end
 	if ~isequal(size(meanMat), size(semMat))
-		error('Fig3_1b:CurveSizeMismatch', 'meanMat and semMat must have the same size.');
+		error('FigS1D:CurveSizeMismatch', 'meanMat and semMat must have the same size.');
 	end
 
 	nLines = size(meanMat, 2);
@@ -740,6 +776,53 @@ function [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, se
 			xCells{j} = (1:last).';
 		end
 	end
+end
+
+function T = iFilterToDisplayedMice(T)
+	% 纳入条件（与 Fig1B 相同）：每鼠 ≥2 个 block 且 ≥2 个不同 Performance 值
+	T.Mouse = string(T.Mouse);
+	mice = unique(T.Mouse, 'stable');
+	keep = false(height(T), 1);
+	for i = 1:numel(mice)
+		r = T.Mouse == mice(i);
+		y = double(T.Performance(r));
+		y = y(isfinite(y));
+		if numel(y) >= 2 && numel(unique(y)) >= 2
+			keep(r) = true;
+		end
+	end
+	T = T(keep, :);
+end
+
+function fitOut = iFitSigmoidCurve(T, groupName)
+	T = sortrows(T, {'Mouse','DateTime'});
+	xObs = double(T.Block(:)); yObs = double(T.Performance(:));
+	use = isfinite(xObs) & isfinite(yObs); xObs = xObs(use); yObs = yObs(use);
+	if isempty(xObs), error('FigS1D:NoDataForGroup', 'No data for %s.', char(groupName)); end
+	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); max(median(xObs), 1)];
+	obj = @(p) sum((yObs - iSigmoidFromParams(p, xObs)).^2, 'omitnan');
+	opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
+	p = fminsearch(obj, p0, opt);
+	yHat = iSigmoidFromParams(p, xObs);
+	SSE = sum((yObs - yHat).^2, 'omitnan'); SST = sum((yObs - mean(yObs, 'omitnan')).^2, 'omitnan');
+	rSquared = NaN; if SST > 0, rSquared = 1 - SSE / SST; end
+	[lower, upper, slope, midpoint] = iDecodeSigmoidParams(p);
+	fitOut = struct; fitOut.Group = string(groupName); fitOut.ParamRaw = p;
+	fitOut.Lower = lower; fitOut.Upper = upper; fitOut.Slope = slope; fitOut.Midpoint = midpoint;
+	fitOut.SSE = SSE; fitOut.RSquared = rSquared; fitOut.XObserved = xObs; fitOut.YObserved = yObs;
+end
+
+function y = iSigmoidFromParams(p, x)
+	[lower, upper, slope, midpoint] = iDecodeSigmoidParams(p);
+	y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
+end
+
+function [lower, upper, slope, midpoint] = iDecodeSigmoidParams(p)
+	lower = 1 ./ (1 + exp(-p(1))); upper = 1; slope = exp(p(2)); midpoint = p(3);
+end
+
+function y = iLogit(x)
+	x = min(max(x, 1e-6), 1 - 1e-6); y = log(x ./ (1 - x));
 end
 
 %[appendix]{"version":"1.0"}

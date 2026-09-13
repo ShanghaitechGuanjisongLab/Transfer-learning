@@ -7,9 +7,9 @@ arguments
 	svgName (1,1) string
 end
 
-groupColors = TransferLearning.GroupColors(["Naive", "Continual"]);
+groupColors = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 colorNaive = groupColors(1, :);
-colorContinual = groupColors(2, :);
+colorTransfer = groupColors(2, :);
 
 f = figure('Color', 'w', 'Name', char(figName));
 f.Units = 'centimeters';
@@ -31,16 +31,16 @@ for iLayer = 1:2
 	end
 	M = Data.Metrics(Data.Metrics.ZLayer == zLayer, :);
 	naiveVals = double(M.(metricField)(M.Group == "Naive"));
-	continualVals = double(M.(metricField)(M.Group == "Continual"));
+	transferVals = double(M.(metricField)(M.Group == "Transfer"));
 	naiveVals = naiveVals(isfinite(naiveVals));
-	continualVals = continualVals(isfinite(continualVals));
-	if isempty(naiveVals) || isempty(continualVals)
+	transferVals = transferVals(isfinite(transferVals));
+	if isempty(naiveVals) || isempty(transferVals)
 		error('Fig51:EmptyMetricLayer', 'Metric %s for %s is empty.', char(metricField), char(zLayer));
 	end
 
 	ax = nexttile(Layout, iLayer);
 	axList(iLayer) = ax;
-	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, continualVals}, UniExp.Flags.empty, ...
+	[~, optional, Bars, ErrorBars] = UniExp.BarScatterCompare({naiveVals, transferVals}, UniExp.Flags.empty, ...
 		table([1 2], 'VariableNames', {'GroupPair'}), UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 	iTagPValueObjects(optional);
 	ax.FontSize = 6;
@@ -53,7 +53,7 @@ for iLayer = 1:2
 		ax.Toolbar.Visible = 'off';
 	end
 	ax.XTick = [1 2];
-	ax.XTickLabel = {'Naive', 'Continual'};
+	ax.XTickLabel = {'Naive', 'Transfer'};
 	if iLayer == 1
 		title(ax, 'MOp2/3', 'FontSize', 6, 'FontWeight', 'normal');
 		ax.XAxis.Visible = 'on';
@@ -66,11 +66,11 @@ for iLayer = 1:2
 	for pt = iFindPText(optional)'
 		pt.FontSize = 6;
 	end
-	iStyleBars(Bars, colorNaive, colorContinual);
-	iStyleErrorBars(ErrorBars, [colorNaive; colorContinual]);
+	iStyleBars(Bars, colorNaive, colorTransfer);
+	iStyleErrorBars(ErrorBars, [colorNaive; colorTransfer]);
 
-	row = table(zLayer, mean(naiveVals), mean(continualVals), numel(naiveVals), numel(continualVals), ...
-		'VariableNames', {'ZLayer', 'NaiveMean', 'ContinualMean', 'NaiveN', 'ContinualN'});
+	row = table(zLayer, mean(naiveVals), mean(transferVals), numel(naiveVals), numel(transferVals), ...
+		'VariableNames', {'ZLayer', 'NaiveMean', 'TransferMean', 'NaiveN', 'TransferN'});
 	summaryTbl = [summaryTbl; row]; %#ok<AGROW>
 	end
 
@@ -87,11 +87,11 @@ if isstruct(optional) && isfield(optional, 'MultiCompare') && istable(optional.M
 end
 end
 
-function iStyleBars(Bars, colorNaive, colorContinual)
+function iStyleBars(Bars, colorNaive, colorTransfer)
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
 	nBar = numel(Bars.YData);
-	Bars.CData = repmat([colorNaive; colorContinual], ceil(nBar / 2), 1);
+	Bars.CData = repmat([colorNaive; colorTransfer], ceil(nBar / 2), 1);
 	Bars.CData = Bars.CData(1:nBar, :);
 	Bars.BarWidth = 0.5;
 	Bars.LineWidth = 1;
@@ -103,7 +103,7 @@ if isscalar(Bars)
 else
 	if numel(Bars) >= 2
 		Bars(1).FaceColor = colorNaive;
-		Bars(2).FaceColor = colorContinual;
+		Bars(2).FaceColor = colorTransfer;
 		Bars(1).BarWidth = 0.5;
 		Bars(2).BarWidth = 0.5;
 		Bars(1).LineWidth = 1;

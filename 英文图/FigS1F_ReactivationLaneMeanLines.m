@@ -1,4 +1,4 @@
-﻿% 英文图1H：四泳道平均线图（与1F相同细胞集）
+% 英文图S1D：四泳道平均线图（与S1C相同细胞集）
 %
 % 四条线：Naive AudioOnly、Naive LightOnly、Learned AudioWater、Transfer LightWater
 % 细胞筛选：与1F相同，仅保留在 Learned AudioWater 和 Transfer LightWater 两阶段1s处均活跃的细胞
@@ -6,7 +6,7 @@
 % Naive 两条线使用虚线以区分阶段
 %
 % Execution:
-%   run('英文图/Fig1H_LaneMeanLines.m')
+%   run('英文图/FigS1F_ReactivationLaneMeanLines.m')
 
 
 DS = TransferLearning.AudioLightBaseline();
@@ -71,7 +71,7 @@ end
 %% 
 
 % --- 6) Plot
-f = figure('Color', 'w', 'Name', 'English Fig1H Lane Mean Lines');
+f = figure('Color', 'w', 'Name', 'English FigS1F Lane Mean Lines');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
@@ -122,12 +122,12 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 title(ax,'🔊💡 reactive cells', 'FontSize', 12, 'FontWeight', 'normal');
-svgName = "English_Fig1H_LaneMeanLines.svg";
+svgName = "English_FigS1F_ReactivationLaneMeanLines.svg";
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig1H_MeanLines_Y', Y);
-assignin('base', 'Fig1H_MeanLines_SEM', E);
+assignin('base', 'FigS1F_MeanLines_Y', Y);
+assignin('base', 'FigS1F_MeanLines_SEM', E);
 assignin('base', 'Fig1H_nCells', nCells);
 
 %% --- Local helpers

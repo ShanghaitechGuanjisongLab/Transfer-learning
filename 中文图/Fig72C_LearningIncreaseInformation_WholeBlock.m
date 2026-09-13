@@ -149,10 +149,12 @@ function color = iPhaseColor(phaseName)
 		color = TransferLearning.NaiveColor;
 	elseif contains(phaseName, "Learned")
 		color = TransferLearning.LearnedColor;
-	elseif contains(phaseName, "Transfer") || contains(phaseName, "Transfer")
+	elseif contains(phaseName, "Transfer")
 		color = TransferLearning.TransferColor;
+	elseif contains(phaseName, "Final")
+		color = TransferLearning.ColorA;
 	else
-		color = TransferLearning.GroupColors(string(phaseName));
+		error('Fig72C:UnknownPhase', 'No color defined for phase %s.', string(phaseName));
 	end
 end
 

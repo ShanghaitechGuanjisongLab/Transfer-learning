@@ -15,7 +15,7 @@ perMouseFitCsvName = 'Fig3C_LearningCurve_SigmoidPerMouseFit.csv';
 perMouseStatsTxtName = 'Fig3C_LearningCurve_SigmoidPerMouseStats.txt';
 
 naiveMouseAllow = ["vtf0030"; "yqn0022"; "yqn0044"; "yqn0404"; "yqn0440"; "yqn1001"; "yqn1002"; "yqn1013"; "yqn2003"; "yqn2005"; "yqn3000"; "yqn3001"; "yqn3002"];
-continualMouseAllow = ["vtf0233"; "vtf0352"; "vtf0353"; "vtf0354"; "vtf1233"; "yqn0133"; "yqn0411"; "yqn1018"];
+transferMouseAllow = ["vtf0233"; "vtf0352"; "vtf0353"; "vtf0354"; "vtf1233"; "yqn0133"; "yqn0411"; "yqn1018"];
 
 if ~exist('TransferLearning','class') || ~exist('UniExp.DataSet','class')
 	thisFile = mfilename('fullpath');
@@ -55,13 +55,13 @@ allSessions = [naiveUsed(:, {'Mouse','DateTime','Performance','Source','Group'})
 allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
 allSessions.Mouse = string(allSessions.Mouse);
 keepNaive = string(allSessions.Group) == "Naive" & ismember(allSessions.Mouse, naiveMouseAllow);
-keepContinual = string(allSessions.Group) == "Transfer" & ismember(allSessions.Mouse, continualMouseAllow);
-allSessions = allSessions(keepNaive | keepContinual, :);
+keepTransfer = string(allSessions.Group) == "Transfer" & ismember(allSessions.Mouse, transferMouseAllow);
+allSessions = allSessions(keepNaive | keepTransfer, :);
 if ~any(keepNaive)
 	error('Fig3C_Sigmoid:NoNaiveAfterFilter', 'No Naive mice remained after applying the fixed mouse list.');
 end
-if ~any(keepContinual)
-	error('Fig3C_Sigmoid:NoContinualAfterFilter', 'No Continual mice remained after applying the fixed mouse list.');
+if ~any(keepTransfer)
+	error('Fig3C_Sigmoid:NoTransferAfterFilter', 'No Transfer mice remained after applying the fixed mouse list.');
 end
 allSessions = iAddSessionIndex(allSessions);
 
@@ -76,7 +76,7 @@ sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
 nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
 fitNaive = iFitSigmoidCurve(displayedNaive, "Naive");
-fitTransfer = iFitSigmoidCurve(displayedTransfer, "Continual");
+fitTransfer = iFitSigmoidCurve(displayedTransfer, "Transfer");
 permResult = iPermutationTestSigmoidSlope(displayedNaive, displayedTransfer, 10000, 1);
 perMouseFitTable = iFitSigmoidPerMouse([displayedNaive; displayedTransfer]);
 perMouseStats = iComparePerMouseSigmoidSlope(perMouseFitTable);
@@ -90,12 +90,12 @@ f.Units = 'centimeters';
 f.Position(3:4) = [16, 10.5];
 t = tiledlayout(f, 1, 2, 'TileSpacing', 'loose', 'Padding', 'loose');
 
-palette = TransferLearning.FigurePalette(2);
+palette = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 axNaive = nexttile(t, 1);
 iPlotGroupMouseCurves(axNaive, displayedNaive, xFit, naiveFitCurve, palette(1,:), "Naive", fitNaive);
 
 axTransfer = nexttile(t, 2);
-iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, palette(2,:), "Continual", fitTransfer);
+iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, palette(2,:), "Transfer", fitTransfer);
 
 ylabel(axNaive, 'Hit rate', 'FontSize', 12);
 xlabel(axNaive, 'Block', 'FontSize', 12);
@@ -119,7 +119,7 @@ svgPath = fullfile(outDirUNC, svgName);
 exportgraphics(f, svgPath, 'ContentType', 'vector');
 
 fitTable = table;
-fitTable.Group = ["Naive"; "Continual"];
+fitTable.Group = ["Naive"; "Transfer"];
 fitTable.Lower = [fitNaive.Lower; fitTransfer.Lower];
 fitTable.Upper = [fitNaive.Upper; fitTransfer.Upper];
 fitTable.Slope = [fitNaive.Slope; fitTransfer.Slope];
@@ -130,9 +130,9 @@ writetable(fitTable, fullfile(outDirUNC, fitCsvName));
 
 permTable = table;
 permTable.ObservedNaiveSlope = permResult.ObservedNaiveSlope;
-permTable.ObservedContinualSlope = permResult.ObservedContinualSlope;
+permTable.ObservedTransferSlope = permResult.ObservedTransferSlope;
 permTable.ObservedNaiveLogSlope = permResult.ObservedNaiveLogSlope;
-permTable.ObservedContinualLogSlope = permResult.ObservedContinualLogSlope;
+permTable.ObservedTransferLogSlope = permResult.ObservedTransferLogSlope;
 permTable.ObservedLogSlopeDifference = permResult.ObservedDifference;
 permTable.PermutationPValue = permResult.PValue;
 permTable.PermutationCount = permResult.NPermutation;
@@ -146,11 +146,11 @@ writetable(perMouseFitTable, fullfile(outDirUNC, perMouseFitCsvName));
 summaryTable = table;
 summaryTable.Block = x(:);
 summaryTable.NaiveMean = meanMat(:,1);
-summaryTable.ContinualMean = meanMat(:,2);
+summaryTable.TransferMean = meanMat(:,2);
 summaryTable.NaiveSem = semMat(:,1);
-summaryTable.ContinualSem = semMat(:,2);
+summaryTable.TransferSem = semMat(:,2);
 summaryTable.NaiveN = nMat(:,1);
-summaryTable.ContinualN = nMat(:,2);
+summaryTable.TransferN = nMat(:,2);
 writetable(summaryTable, fullfile(outDirUNC, summaryCsvName));
 
 statsPath = fullfile(outDirUNC, statsTxtName);
@@ -161,10 +161,10 @@ end
 cleanupObj = onCleanup(@() fclose(fid));
 fprintf(fid, 'Fig3C sigmoid log-slope permutation test\n');
 fprintf(fid, 'Observed Naive slope: %.6f\n', permResult.ObservedNaiveSlope);
-fprintf(fid, 'Observed Continual slope: %.6f\n', permResult.ObservedContinualSlope);
+fprintf(fid, 'Observed Transfer slope: %.6f\n', permResult.ObservedTransferSlope);
 fprintf(fid, 'Observed Naive log-slope: %.6f\n', permResult.ObservedNaiveLogSlope);
-fprintf(fid, 'Observed Continual log-slope: %.6f\n', permResult.ObservedContinualLogSlope);
-fprintf(fid, 'Observed log-slope difference (Continual - Naive): %.6f\n', permResult.ObservedDifference);
+fprintf(fid, 'Observed Transfer log-slope: %.6f\n', permResult.ObservedTransferLogSlope);
+fprintf(fid, 'Observed log-slope difference (Transfer - Naive): %.6f\n', permResult.ObservedDifference);
 fprintf(fid, 'Permutation count: %d\n', permResult.NPermutation);
 fprintf(fid, 'Two-sided permutation p-value: %.6g\n', permResult.PValue);
 fprintf(fid, 'Null difference mean: %.6f\n', mean(permResult.PermutedDifference, 'omitnan'));
@@ -179,11 +179,11 @@ end
 cleanupPerMouse = onCleanup(@() fclose(fidPerMouse));
 fprintf(fidPerMouse, 'Fig3C per-mouse sigmoid slope comparison\n');
 fprintf(fidPerMouse, 'Naive mice fitted: %d\n', perMouseStats.NaiveCount);
-fprintf(fidPerMouse, 'Continual mice fitted: %d\n', perMouseStats.ContinualCount);
+fprintf(fidPerMouse, 'Transfer mice fitted: %d\n', perMouseStats.TransferCount);
 fprintf(fidPerMouse, 'Naive slope median: %.6f\n', perMouseStats.NaiveSlopeMedian);
-fprintf(fidPerMouse, 'Continual slope median: %.6f\n', perMouseStats.ContinualSlopeMedian);
+fprintf(fidPerMouse, 'Transfer slope median: %.6f\n', perMouseStats.TransferSlopeMedian);
 fprintf(fidPerMouse, 'Naive log-slope median: %.6f\n', perMouseStats.NaiveLogSlopeMedian);
-fprintf(fidPerMouse, 'Continual log-slope median: %.6f\n', perMouseStats.ContinualLogSlopeMedian);
+fprintf(fidPerMouse, 'Transfer log-slope median: %.6f\n', perMouseStats.TransferLogSlopeMedian);
 fprintf(fidPerMouse, 'Ranksum p on slope: %.6g\n', perMouseStats.SlopePValue);
 fprintf(fidPerMouse, 'Ranksum z on slope: %.6f\n', perMouseStats.SlopeZValue);
 fprintf(fidPerMouse, 'Ranksum p on log-slope: %.6g\n', perMouseStats.LogSlopePValue);
@@ -198,12 +198,12 @@ fprintf('Wrote: %s\n', statsPath);
 fprintf('Wrote: %s\n', fullfile(outDirUNC, perMouseFitCsvName));
 fprintf('Wrote: %s\n', perMouseStatsPath);
 fprintf('Naive mice used: %d\n', numel(unique(string(displayedNaive.Mouse))));
-fprintf('Continual mice used: %d\n', numel(unique(string(displayedTransfer.Mouse))));
+fprintf('Transfer mice used: %d\n', numel(unique(string(displayedTransfer.Mouse))));
 fprintf('Naive mouse list: %s\n', strjoin(unique(string(displayedNaive.Mouse), 'stable'), ', '));
-fprintf('Continual mouse list: %s\n', strjoin(unique(string(displayedTransfer.Mouse), 'stable'), ', '));
+fprintf('Transfer mouse list: %s\n', strjoin(unique(string(displayedTransfer.Mouse), 'stable'), ', '));
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
-fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
-fprintf('Permutation log-slope difference (Continual - Naive): %.4f\n', permResult.ObservedDifference);
+fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
+fprintf('Permutation log-slope difference (Transfer - Naive): %.4f\n', permResult.ObservedDifference);
 fprintf('Permutation two-sided p = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
 fprintf('Per-mouse ranksum p on slope = %.4g\n', perMouseStats.SlopePValue);
 fprintf('Per-mouse ranksum p on log-slope = %.4g\n', perMouseStats.LogSlopePValue);
@@ -212,7 +212,7 @@ assignin('base', 'Fig3C_Sigmoid_AllSessions', allSessions);
 assignin('base', 'Fig3C_Sigmoid_FitTable', fitTable);
 assignin('base', 'Fig3C_Sigmoid_Summary', summaryTable);
 assignin('base', 'Fig3C_Sigmoid_NaiveMice', naiveMice);
-assignin('base', 'Fig3C_Sigmoid_ContinualMice', contMice);
+assignin('base', 'Fig3C_Sigmoid_TransferMice', contMice);
 assignin('base', 'Fig3C_Sigmoid_Permutation', permResult);
 assignin('base', 'Fig3C_Sigmoid_PerMouseFit', perMouseFitTable);
 assignin('base', 'Fig3C_Sigmoid_PerMouseStats', perMouseStats);
@@ -636,7 +636,7 @@ function permOut = iPermutationTestSigmoidSlope(TNaive, TTransfer, nPermutation,
 		allMouseTables{numel(naiveMice) + i} = TTransfer(string(TTransfer.Mouse) == transferMice(i), :);
 	end
 	fitNaive = iFitSigmoidCurve(TNaive, "Naive");
-	fitTransfer = iFitSigmoidCurve(TTransfer, "Continual");
+	fitTransfer = iFitSigmoidCurve(TTransfer, "Transfer");
 	observedDiff = fitTransfer.LogSlope - fitNaive.LogSlope;
 	permDiff = nan(nPermutation, 1);
 	nNaive = numel(naiveMice);
@@ -653,9 +653,9 @@ function permOut = iPermutationTestSigmoidSlope(TNaive, TTransfer, nPermutation,
 	pValue = mean(abs(permDiff) >= abs(observedDiff));
 	permOut = struct;
 	permOut.ObservedNaiveSlope = fitNaive.Slope;
-	permOut.ObservedContinualSlope = fitTransfer.Slope;
+	permOut.ObservedTransferSlope = fitTransfer.Slope;
 	permOut.ObservedNaiveLogSlope = fitNaive.LogSlope;
-	permOut.ObservedContinualLogSlope = fitTransfer.LogSlope;
+	permOut.ObservedTransferLogSlope = fitTransfer.LogSlope;
 	permOut.ObservedDifference = observedDiff;
 	permOut.PermutedDifference = permDiff;
 	permOut.PValue = pValue;
@@ -715,20 +715,20 @@ end
 
 function statsOut = iComparePerMouseSigmoidSlope(fitTable)
 	naiveRows = string(fitTable.Group) == "Naive";
-	continualRows = string(fitTable.Group) == "Transfer";
+	transferRows = string(fitTable.Group) == "Transfer";
 	naiveSlope = fitTable.Slope(naiveRows);
-	continualSlope = fitTable.Slope(continualRows);
+	transferSlope = fitTable.Slope(transferRows);
 	naiveLogSlope = fitTable.LogSlope(naiveRows);
-	continualLogSlope = fitTable.LogSlope(continualRows);
-	[slopePValue, ~, slopeStats] = ranksum(naiveSlope, continualSlope);
-	[logSlopePValue, ~, logSlopeStats] = ranksum(naiveLogSlope, continualLogSlope);
+	transferLogSlope = fitTable.LogSlope(transferRows);
+	[slopePValue, ~, slopeStats] = ranksum(naiveSlope, transferSlope);
+	[logSlopePValue, ~, logSlopeStats] = ranksum(naiveLogSlope, transferLogSlope);
 	statsOut = struct;
 	statsOut.NaiveCount = nnz(naiveRows);
-	statsOut.ContinualCount = nnz(continualRows);
+	statsOut.TransferCount = nnz(transferRows);
 	statsOut.NaiveSlopeMedian = median(naiveSlope, 'omitnan');
-	statsOut.ContinualSlopeMedian = median(continualSlope, 'omitnan');
+	statsOut.TransferSlopeMedian = median(transferSlope, 'omitnan');
 	statsOut.NaiveLogSlopeMedian = median(naiveLogSlope, 'omitnan');
-	statsOut.ContinualLogSlopeMedian = median(continualLogSlope, 'omitnan');
+	statsOut.TransferLogSlopeMedian = median(transferLogSlope, 'omitnan');
 	statsOut.SlopePValue = slopePValue;
 	statsOut.SlopeZValue = slopeStats.zval;
 	statsOut.LogSlopePValue = logSlopePValue;

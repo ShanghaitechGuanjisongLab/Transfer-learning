@@ -10,8 +10,8 @@ Counts.Layer = iLayerCounts(Data, mouseStates);
 end
 
 function T = iRepresentativeCounts(Data, mouseStates)
-representativeGroups = ["Naive", "Continual"];
-representatives = [Data.Representative.NaiveCell, Data.Representative.ContinualCell];
+representativeGroups = ["Naive", "Transfer"];
+representatives = [Data.Representative.NaiveCell, Data.Representative.TransferCell];
 
 T = table(strings(0, 1), strings(0, 1), strings(0, 1), strings(0, 1), strings(0, 1), zeros(0, 1), zeros(0, 1), ...
 	'VariableNames', {'Panel','Group','GroupLabel','Mouse','Source','NMouse','NCell'});
@@ -24,7 +24,7 @@ end
 end
 
 function T = iLayerCounts(Data, mouseStates)
-groupNames = ["Naive", "Continual"];
+groupNames = ["Naive", "Transfer"];
 layerNames = ["MOp2/3", "MOp5"];
 
 T = table(strings(0, 1), strings(0, 1), strings(0, 1), strings(0, 1), zeros(0, 1), zeros(0, 1), ...

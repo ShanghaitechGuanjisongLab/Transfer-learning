@@ -162,13 +162,13 @@ hold off;
 
 xlabel('Session (day)', 'FontSize', 16, 'FontName', 'Arial');
 ylabel('Performance', 'FontSize', 16, 'FontName', 'Arial');
-legend({'Light (LA→Light)', 'Continual Light (AL→Light)'}, ...
+legend({'Light (LA→Light)', 'Transfer Light (AL→Light)'}, ...
 	'Location', 'southeast', 'Box', 'off', 'FontSize', 14);
 box off;
 set(gca, 'FontSize', 14, 'LineWidth', 1.2, 'TickDir', 'out');
 xlim([0.5, commonBlocks+0.5]);
 ylim([0, 1]);
-title('Light learning curves: Continual vs LA pre-exposed', ...
+title('Light learning curves: Transfer vs LA pre-exposed', ...
 	'FontSize', 12, 'FontWeight', 'normal', 'FontName', 'Arial');
 
 %% --- 7. 导出 SVG ---

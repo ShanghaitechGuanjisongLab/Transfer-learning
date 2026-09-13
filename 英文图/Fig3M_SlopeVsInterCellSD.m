@@ -16,10 +16,9 @@ end
 
 layers = ["MOp2/3"; "MOp5"];
 layerLabels = ["L2/3"; "L5"];
-palette3 = TransferLearning.FigurePalette(3);
-colorC = palette3(1,:);
-colorT = palette3(2,:);
-colorFit = palette3(3,:);
+colorC = TransferLearning.TransferColor;
+colorT = TransferLearning.ColorB;
+colorFit = [0.5 0.5 0.5];
 
 f = figure('Color', 'w', 'Name', 'Fig3M TH/Ctrl slope vs Response heterogeneity');
 f.Units = 'centimeters';

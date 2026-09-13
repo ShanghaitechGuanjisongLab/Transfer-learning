@@ -37,7 +37,7 @@ learnedActiveCells = R.NLearnedActive23 + R.NLearnedActive5;
 nCells = sum(learnedActiveCells(mask), 'omitnan');
 %% 
 
-f = figure('Color','w', 'Name','English Fig1J Reactivation Hit vs Miss');
+f = figure('Color','w', 'Name','English FigS1G Reactivation Hit vs Miss');
 f.Units = 'centimeters';
 f.Position(3:4) = [4.0, 8.0]; % 30mm x 40mm
 f.PaperUnits = 'centimeters';
@@ -93,7 +93,7 @@ if isfinite(p)
 	delete(S);
 end
 
-svgName = "English_Fig1J_ReactivationRate_HitVsMiss.svg";
+svgName = "English_FigS1G_ReactivationRate_HitVsMiss.svg";
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 

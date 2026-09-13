@@ -1,4 +1,4 @@
-% English Fig3D: Naive / Learned AudioWater / Transfer — response heterogeneity by layer
+% English Fig1I: Naive / Learned AudioWater / Transfer — response heterogeneity by layer
 %
 % Two vertical tiles comparing three cohorts:
 %   Top:    L2/3 response heterogeneity
@@ -120,7 +120,7 @@ end
 
 % --- Export
 if ~isfolder(outDirUNC), mkdir(outDirUNC); end
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig3C_DeltaHitAndHeterogeneity.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1I_ResponseHeterogeneity_ByLayer.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 %% ===== Local functions =====

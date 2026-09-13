@@ -84,7 +84,7 @@ if negIdx == posIdx
 	end
 end
 
-groupColors = TransferLearning.GroupColors(["Naive", "Learned"]);
+groupColors = [TransferLearning.NaiveColor; TransferLearning.LearnedColor];
 colorNaive = groupColors(1, :);
 colorLearned = groupColors(2, :);
 

@@ -93,7 +93,7 @@ f.PaperPosition = [0, 0, 9, 8.4];
 f.PaperSize = [9, 8.4];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
-palette2 = TransferLearning.FigurePalette(2);
+palette2 = [TransferLearning.TransferColor; TransferLearning.ColorB];
 
 ax1 = nexttile(layout, 1);
 hold(ax1, 'on');

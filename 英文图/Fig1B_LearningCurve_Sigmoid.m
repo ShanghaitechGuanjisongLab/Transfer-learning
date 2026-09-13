@@ -1,5 +1,6 @@
-% Fig A2L vs L: AL Light vs LA Light learning curve + sigmoid fit
-% 来自 A2L_L.mat (AL Light) 和 L2A_L.mat (LA Light)，用1-7天数据
+% Fig1B (English): AL Light vs LA Light learning curve + sigmoid fit
+% 来自 A2L_L.mat (AL Light, delayed: 1 s cue, water at cue+2.5 s) 和 L2A_L.mat (LA Light)，用1-7天数据
+% 统计口径（2026-09-13 用户裁定）：组间差异只引 blocks 1-7 线性混合模型 Group 效应 p；不做斜率置换检验
 
 %% --- 0. 项目加载 ---
 if ~exist('UniExp.DataSet','class')
@@ -22,7 +23,7 @@ dataRoot = '\\Data-Server-2\个人数据\杨青宁\202607\行为学';
 DataSetA2L = UniExp.DataSet(fullfile(dataRoot, 'A2L_L.mat'));
 DataSetL   = UniExp.DataSet(fullfile(dataRoot, 'L2A_L.mat'));
 
-%% --- 2. 提取会话表（每鼠每 session 一行） ---
+%% --- 2. 提取会话表（每鼠每 block 一行） ---
 % 尝试 TableQuery，兼容不同字段名
 varsTry = ["Mouse","DateTime","Performance"];
 try
@@ -39,7 +40,7 @@ catch
 end
 
 if isempty(SessA2L) || isempty(SessL)
-	error('FigA2LvsL:EmptyData', 'One or both datasets returned no sessions.');
+	error('Fig1B:EmptyData', 'One or both datasets returned no blocks.');
 end
 
 SessA2L.Mouse = string(SessA2L.Mouse);
@@ -47,49 +48,48 @@ SessL.Mouse   = string(SessL.Mouse);
 SessA2L.Group(:) = "AL_Light";
 SessL.Group(:)   = "LA_Light";
 
-allSessions = [SessA2L; SessL];
-allSessions = sortrows(allSessions, ["Group","Mouse","DateTime"]);
+allBlocks = [SessA2L; SessL];
+allBlocks = sortrows(allBlocks, ["Group","Mouse","DateTime"]);
 
-% 给每个 Mouse 加 Session 序号
-allSessions = iAddSessionIndex(allSessions);
+% 给每个 Mouse 加 Block 序号
+allBlocks = iAddBlockIndex(allBlocks);
 
-fprintf('AL Light: %d sessions, %d unique mice\n', ...
+fprintf('AL Light: %d blocks, %d unique mice\n', ...
 	height(SessA2L), numel(unique(SessA2L.Mouse)));
-fprintf('LA Light: %d sessions, %d unique mice\n', ...
+fprintf('LA Light: %d blocks, %d unique mice\n', ...
 	height(SessL),   numel(unique(SessL.Mouse)));
 
-% 限制到 Session 1-7
-allSessions7 = allSessions(allSessions.Session <= 7, :);
-if isempty(allSessions7)
-	error('FigA2LvsL:NoSessions1to7', 'No sessions in range 1-7.');
+% 限制到 Block 1-7
+allBlocks7 = allBlocks(allBlocks.Block <= 7, :);
+if isempty(allBlocks7)
+	error('Fig1B:NoBlocks1to7', 'No blocks in range 1-7.');
 end
 
-% 重新编号 Session（1-7 连续）
-allSessions7 = sortrows(allSessions7, ["Group","Mouse","DateTime"]);
-allSessions7 = iAddSessionIndex(allSessions7);
+% 重新编号 Block（1-7 连续）
+allBlocks7 = sortrows(allBlocks7, ["Group","Mouse","DateTime"]);
+allBlocks7 = iAddBlockIndex(allBlocks7);
 
 %% --- 3. UniExp.LearningSummarize ---
-sessionForSummary = allSessions7(:, ["Mouse","DateTime","Performance","Group"]);
-sessionForSummary.Group = string(sessionForSummary.Group);
-sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
-[~, SummaryL] = evalc('UniExp.LearningSummarize(sessionForSummary)');
+blockForSummary = allBlocks7(:, ["Mouse","DateTime","Performance","Group"]);
+blockForSummary.Group = string(blockForSummary.Group);
+blockForSummary = sortrows(blockForSummary, ["Group","Mouse","DateTime"]);
+[~, SummaryL] = evalc('UniExp.LearningSummarize(blockForSummary)');
 
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["AL_Light","LA_Light"]);
-nMat = iComputeNBySession(allSessions7, x, ["AL_Light","LA_Light"]);
+nMat = iComputeNByBlock(allBlocks7, x, ["AL_Light","LA_Light"]);
 
 %% --- 4. 提取用于 sigmoid 拟合的数据 ---
-displayedAL = iFilterToDisplayedMice(allSessions7(string(allSessions7.Group) == "AL_Light", :));
-displayedL  = iFilterToDisplayedMice(allSessions7(string(allSessions7.Group) == "LA_Light", :));
+displayedAL = iFilterToDisplayedMice(allBlocks7(string(allBlocks7.Group) == "AL_Light", :));
+displayedL  = iFilterToDisplayedMice(allBlocks7(string(allBlocks7.Group) == "LA_Light", :));
 
 fitAL = iFitSigmoidCurve(displayedAL, "AL_Light");
 fitL  = iFitSigmoidCurve(displayedL,  "LA_Light");
 
-%% --- 5. 置换检验 sigmoid slope ---
-permResult = iPermutationTestSigmoidSlope(displayedAL, displayedL, 10000, 1);
+%% --- 5. (已按用户要求取消斜率置换检验) ---
 
 %% --- 6. Two-way ANOVA ---
-groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions7, 'Performance', 'Session', 'Group', 'Mouse');
-fprintf('\n=== Two-way ANOVA (Group effect, all sessions 1-7) ===\n');
+groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(allBlocks7, 'Performance', 'Block', 'Group', 'Mouse');
+fprintf('\n=== Two-way ANOVA (Group effect, all blocks 1-7) ===\n');
 fprintf('Group P = %.6g\n', groupP);
 
 %% --- 7. 绘图 ---
@@ -107,7 +107,7 @@ meanMatOut(1:size(meanMat, 1), :) = meanMat;
 semMatOut(1:size(semMat, 1), :)  = semMat;
 nMatOut(1:size(nMat, 1), :)      = nMat;
 
-f = figure('Color', 'w', 'Name', 'FigA2LvsL Learning curve');
+f = figure('Color', 'w', 'Name', 'Fig1B Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
@@ -117,14 +117,15 @@ f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
 
-colorAL = TransferLearning.NaiveColor;
-colorL  = TransferLearning.TransferColor;
+% AL Light = audio→light transfer cohort; LA Light = light-only naïve cohort
+colorAL = TransferLearning.TransferColor;
+colorL  = TransferLearning.NaiveColor;
 
 hAL = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, alFitCurve, colorAL);
 hL  = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFit, lFitCurve, colorL);
 
 ylabel(ax, 'Hit rate', 'FontSize', 12);
-xlabel(ax, 'Session', 'FontSize', 12);
+xlabel(ax, 'Block', 'FontSize', 12);
 ax.FontSize = 12;
 ax.LineWidth = 2;
 ax.Color = 'none';
@@ -159,19 +160,19 @@ for axItem = reshape(allAxes, 1, [])
 	end
 end
 title('All mice');
-svgPath = TransferLearning.ExportStandardFigure(f, 2, '中文图FigA2LvsL_LearningCurve_Sigmoid.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1B_LearningCurve_Sigmoid.svg');
 
-%% --- 8. Per-mouse blocks-to-50% bar ---
-blocks50AL = iPerMouseBlocksTo50(displayedAL);
-blocks50L  = iPerMouseBlocksTo50(displayedL);
-blocks50AL = blocks50AL.BlocksTo50(isfinite(blocks50AL.BlocksTo50));
-blocks50L  = blocks50L.BlocksTo50(isfinite(blocks50L.BlocksTo50));
+%% --- 8. First-block hit rate bar ---
+sess1AL = displayedAL(displayedAL.Block == 1, :);
+sess1L  = displayedL(displayedL.Block == 1, :);
+firstAL = double(sess1AL.Performance); firstAL = firstAL(isfinite(firstAL));
+firstL  = double(sess1L.Performance);  firstL  = firstL(isfinite(firstL));
 
-edgeColorsBar = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
-f2 = figure('Name', 'FigA2LvsL per-mouse slope');
+edgeColorsBar = [TransferLearning.TransferColor; TransferLearning.NaiveColor];
+f2 = figure('Name', 'Fig1B first-block hit rate');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
-[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({blocks50AL(:), blocks50L(:)}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 1);
+[~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({firstAL(:), firstL(:)}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
 ax2.XTickLabel = {};
 legend(ax2, 'off');
@@ -189,13 +190,14 @@ end
 TransferLearning.Style.SetBarPValues(optional2);
 iStyleBars(bars2, edgeColorsBar(1,:), edgeColorsBar(2,:));
 iStyleErrorBars(errorBars2, edgeColorsBar);
-title(ax2, 'Blocks to 50% hit rate');
+ylabel(ax2, 'Hit rate', 'FontSize', 12);
+title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 grid(ax2, 'off');
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
-svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图FigA2LvsL_PerMouseSlopeBar.svg');
+svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, 'English_Fig1B_FirstBlockBar.svg');
 
 %% --- 9. 选代表鼠 ---
 % 对每组：找出与组 sigmoid 拟合曲线最匹配的单鼠
@@ -203,50 +205,50 @@ svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, '中文图Fig
 [bestL,  bestLstats]  = iFindBestRepresentativeMouse(displayedL);
 
 fprintf('\n=== 代表鼠 ===\n');
-fprintf('AL Light 组代表鼠: %s  (拟合误差 MSE=%.4f, nSessions=%d)\n', ...
-	bestAL, bestALstats.MSE, bestALstats.NSessions);
-fprintf('LA Light 组代表鼠: %s  (拟合误差 MSE=%.4f, nSessions=%d)\n', ...
-	bestL,  bestLstats.MSE,  bestLstats.NSessions);
+fprintf('AL Light 组代表鼠: %s  (拟合误差 MSE=%.4f, nBlocks=%d)\n', ...
+	bestAL, bestALstats.MSE, bestALstats.NBlocks);
+fprintf('LA Light 组代表鼠: %s  (拟合误差 MSE=%.4f, nBlocks=%d)\n', ...
+	bestL,  bestLstats.MSE,  bestLstats.NBlocks);
 
 %% --- 10. 输出统计 ---
-fprintf('\n=== FigA2LvsL Sigmoid ===\n');
+fprintf('\n=== Fig1B Sigmoid ===\n');
 fprintf('AL Light mice: %d\n', numel(unique(string(displayedAL.Mouse))));
 fprintf('LA Light mice: %d\n', numel(unique(string(displayedL.Mouse))));
 fprintf('AL sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', ...
 	fitAL.Lower, fitAL.Upper, fitAL.Slope, fitAL.Midpoint, fitAL.RSquared);
 fprintf('LA sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', ...
 	fitL.Lower, fitL.Upper, fitL.Slope, fitL.Midpoint, fitL.RSquared);
-fprintf('Permutation slope diff P = %.4g (%d permutations)\n', permResult.PValue, permResult.NPermutation);
-fprintf('Two-way ANOVA Group P (sessions 1-7) = %.6g\n', groupP);
+fprintf('Two-way ANOVA Group P (blocks 1-7) = %.6g\n', groupP);
+fprintf('First block: AL %.3f±%.3f (n=%d) vs LA %.3f±%.3f (n=%d)\n', ...
+	mean(firstAL), std(firstAL), numel(firstAL), mean(firstL), std(firstL), numel(firstL));
 fprintf('Wrote: %s\n', svgPath);
 fprintf('Wrote: %s\n', svgPath2);
-fprintf('Per-mouse blocks-to-50%% bar P (BarScatterCompare) = %s\n', TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
+fprintf('First-block bar P (BarScatterCompare, displayed) = %s\n', TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
-assignin('base', 'FigA2LvsL_AllSessions', allSessions7);
-assignin('base', 'FigA2LvsL_FitAL', fitAL);
-assignin('base', 'FigA2LvsL_FitL', fitL);
-assignin('base', 'FigA2LvsL_Permutation', permResult);
-assignin('base', 'FigA2LvsL_AnovaGroupP', groupP);
-assignin('base', 'FigA2LvsL_BestAL', bestAL);
-assignin('base', 'FigA2LvsL_BestL', bestL);
-assignin('base', 'FigA2LvsL_Blocks50AL', blocks50AL);
-assignin('base', 'FigA2LvsL_Blocks50L', blocks50L);
+assignin('base', 'Fig1B_AllBlocks', allBlocks7);
+assignin('base', 'Fig1B_FitAL', fitAL);
+assignin('base', 'Fig1B_FitL', fitL);
+assignin('base', 'Fig1B_AnovaGroupP', groupP);
+assignin('base', 'Fig1B_BestAL', bestAL);
+assignin('base', 'Fig1B_BestL', bestL);
+assignin('base', 'Fig1B_FirstBlockAL', firstAL);
+assignin('base', 'Fig1B_FirstBlockL', firstL);
 
 %% ===================== 本地函数 =====================
 
-function T = iAddSessionIndex(T)
+function T = iAddBlockIndex(T)
 	T.Mouse = string(T.Mouse);
 	T = sortrows(T, {'Group','Mouse','DateTime'});
 	[G, ~] = findgroups(T.Group, T.Mouse);
 	sessCell = splitapply(@(x) {(1:numel(x))'}, T.DateTime, G);
-	T.Session = vertcat(sessCell{:});
+	T.Block = vertcat(sessCell{:});
 end
 
 function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 	groupOrder = string(groupOrder);
 	if ~istable(SummaryL)
 		if isstruct(SummaryL), SummaryL = struct2table(SummaryL);
-		else, error('FigA2LvsL:InvalidLearningSummarizeOutput'); end
+		else, error('Fig1B:InvalidLearningSummarizeOutput'); end
 	end
 	meanCells = SummaryL.MeanCurve(:); semCells = SummaryL.SemCurve(:);
 	if ~isempty(SummaryL.Properties.RowNames), rn = string(SummaryL.Properties.RowNames);
@@ -274,13 +276,13 @@ function [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, groupOrder)
 	x = (1:maxLen).';
 end
 
-function nMat = iComputeNBySession(T, x, groups)
+function nMat = iComputeNByBlock(T, x, groups)
 	groups = string(groups); x = double(x(:)); nMat = zeros(numel(x), numel(groups));
-	T.Group = string(T.Group); T.Session = double(T.Session);
+	T.Group = string(T.Group); T.Block = double(T.Block);
 	for g = 1:numel(groups)
 		rowsG = (T.Group == groups(g));
 		for s = 1:numel(x)
-			rowsS = rowsG & (T.Session == s) & isfinite(double(T.Performance));
+			rowsS = rowsG & (T.Block == s) & isfinite(double(T.Performance));
 			if any(rowsS), nMat(s,g) = numel(unique(string(T.Mouse(rowsS)))); end
 		end
 	end
@@ -288,7 +290,7 @@ end
 
 function T = iFilterToDisplayedMice(T)
 	if isempty(T), return; end
-	rows = isfinite(double(T.Session)) & isfinite(double(T.Performance));
+	rows = isfinite(double(T.Block)) & isfinite(double(T.Performance));
 	shownMice = unique(string(T.Mouse(rows)), 'stable');
 	T = T(ismember(string(T.Mouse), shownMice), :);
 end
@@ -331,30 +333,12 @@ function iStyleErrorBars(errorBarsObj, colors)
 	end
 end
 
-function out = iPerMouseBlocksTo50(Sess)
-	if isempty(Sess), out = table(string.empty(0,1), nan(0,1), 'VariableNames', {'Mouse','BlocksTo50'}); return; end
-	Sess = sortrows(Sess, {'Mouse','DateTime'});
-	mice = unique(string(Sess.Mouse)); blocksVec = nan(numel(mice), 1);
-	for iM = 1:numel(mice)
-		m = mice(iM); R = sortrows(Sess(string(Sess.Mouse) == m, :), 'DateTime');
-		perf = double(R.Performance);
-		reached = find(perf >= 1.0, 1, 'first');
-		if isempty(reached), continue; end
-		R = R(1:reached, :);
-		R.Performance(end) = 1;
-		hit50 = find(double(R.Performance) >= 0.5, 1, 'first');
-		if isempty(hit50), continue; end
-		blocksVec(iM) = hit50;
-	end
-	out = table(mice, blocksVec, 'VariableNames', {'Mouse','BlocksTo50'});
-end
-
 function fitOut = iFitSigmoidCurve(T, groupName)
 	T = sortrows(T, {'Mouse','DateTime'});
-	xObs = double(T.Session(:)); yObs = double(T.Performance(:));
+	xObs = double(T.Block(:)); yObs = double(T.Performance(:));
 	use = isfinite(xObs) & isfinite(yObs); xObs = xObs(use); yObs = yObs(use);
-	if isempty(xObs), error('FigA2LvsL:NoDataForGroup', 'No data for %s.', char(groupName)); end
-	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); log(max(median(xObs), 1))];
+	if isempty(xObs), error('Fig1B:NoDataForGroup', 'No data for %s.', char(groupName)); end
+	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); max(median(xObs), 1)];
 	obj = @(p) sum((yObs - iSigmoidFromParams(p, xObs)).^2, 'omitnan');
 	opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
 	p = fminsearch(obj, p0, opt);
@@ -367,41 +351,13 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 	fitOut.SSE = SSE; fitOut.RSquared = rSquared; fitOut.XObserved = xObs; fitOut.YObserved = yObs;
 end
 
-function permOut = iPermutationTestSigmoidSlope(T1, T2, nPermutation, rngSeed)
-	if nargin < 3 || isempty(nPermutation), nPermutation = 2000; end
-	if nargin >= 4 && ~isempty(rngSeed), rng(rngSeed); end
-	T1 = sortrows(T1, {'Mouse','DateTime'});
-	T2 = sortrows(T2, {'Mouse','DateTime'});
-	mice1 = unique(string(T1.Mouse), 'stable');
-	mice2 = unique(string(T2.Mouse), 'stable');
-	allMouseTables = cell(numel(mice1) + numel(mice2), 1);
-	for i = 1:numel(mice1), allMouseTables{i} = T1(string(T1.Mouse) == mice1(i), :); end
-	for i = 1:numel(mice2), allMouseTables{numel(mice1) + i} = T2(string(T2.Mouse) == mice2(i), :); end
-	fit1 = iFitSigmoidCurve(T1, "G1");
-	fit2 = iFitSigmoidCurve(T2, "G2");
-	observedDiff = fit2.Slope - fit1.Slope;
-	permDiff = nan(nPermutation, 1); n1 = numel(mice1);
-	for iPerm = 1:nPermutation
-		ord = randperm(numel(allMouseTables));
-		perm1 = vertcat(allMouseTables{ord(1:n1)});
-		perm2 = vertcat(allMouseTables{ord(n1+1:end)});
-		fp1 = iFitSigmoidCurve(perm1, "G1Perm");
-		fp2 = iFitSigmoidCurve(perm2, "G2Perm");
-		permDiff(iPerm) = fp2.Slope - fp1.Slope;
-	end
-	pValue = mean(abs(permDiff) >= abs(observedDiff));
-	permOut = struct; permOut.ObservedSlope1 = fit1.Slope; permOut.ObservedSlope2 = fit2.Slope;
-	permOut.ObservedDifference = observedDiff; permOut.PermutedDifference = permDiff;
-	permOut.PValue = pValue; permOut.NPermutation = nPermutation;
-end
-
 function y = iSigmoidFromParams(p, x)
 	[lower, upper, slope, midpoint] = iDecodeSigmoidParams(p);
 	y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
 end
 
 function [lower, upper, slope, midpoint] = iDecodeSigmoidParams(p)
-	lower = 1 ./ (1 + exp(-p(1))); upper = 1; slope = exp(p(2)); midpoint = exp(p(3));
+	lower = 1 ./ (1 + exp(-p(1))); upper = 1; slope = exp(p(2)); midpoint = p(3);
 end
 
 function y = iLogit(x)
@@ -417,14 +373,14 @@ function [bestMouse, stats] = iFindBestRepresentativeMouse(T)
 	mice = unique(string(T.Mouse));
 	bestMSE = inf;
 	bestMouse = mice(1);
-	bestStats = struct('MSE', NaN, 'NSessions', 0, 'MouseSlope', NaN);
+	bestStats = struct('MSE', NaN, 'NBlocks', 0, 'MouseSlope', NaN);
 	for m = mice'
-		rows = string(T.Mouse) == m & isfinite(double(T.Session)) & isfinite(double(T.Performance));
+		rows = string(T.Mouse) == m & isfinite(double(T.Block)) & isfinite(double(T.Performance));
 		if sum(rows) < 2, continue; end
 		mouseT = T(rows, :);
 		mouseT = sortrows(mouseT, 'DateTime');
-		mouseT = iAddSessionIndex(mouseT);
-		xM = double(mouseT.Session);
+		mouseT = iAddBlockIndex(mouseT);
+		xM = double(mouseT.Block);
 		yM = double(mouseT.Performance);
 		% 插值到 xRef 上比较
 		yInterp = interp1(xM, yM, xRef, 'linear', 'extrap');
@@ -433,7 +389,7 @@ function [bestMouse, stats] = iFindBestRepresentativeMouse(T)
 			bestMSE = mse;
 			bestMouse = m;
 			bestStats.MSE = mse;
-			bestStats.NSessions = sum(rows);
+			bestStats.NBlocks = sum(rows);
 		end
 	end
 	stats = bestStats;

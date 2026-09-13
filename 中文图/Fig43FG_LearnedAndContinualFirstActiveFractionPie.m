@@ -1,6 +1,6 @@
 % 中文图43F/43G：活跃细胞占总细胞比例（模仿英文图1I样式）
 % 43F: 声水 Learned 活跃细胞占总细胞比例
-% 43G: 光水 Continual 首个训练单元活跃细胞占总细胞比例
+% 43G: 光水 Transfer 首个训练单元活跃细胞占总细胞比例
 
 if ~exist('UniExp.DataSet', 'class')
     thisFile = mfilename('fullpath');
@@ -35,31 +35,31 @@ learnedTable = iBuildActiveCellTable(GLearned, idx1s, baseMask, kSigma);
 
 % 43G: Transfer LightWater 每只鼠首个训练单元
 firstTransfer = iPerMouseFirstTransferLightWaterDateTime(DS);
-continualTables = cell(height(firstTransfer), 1);
+transferTables = cell(height(firstTransfer), 1);
 for iMouse = 1:height(firstTransfer)
     qTransferOne = struct('Stimulus', 'LightWater', 'DateTime', firstTransfer.DateTime(iMouse));
     GTransferOne = DS.QueryNTATS(qTransferOne, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
-    continualTables{iMouse} = iBuildActiveCellTable(GTransferOne, idx1s, baseMask, kSigma);
+    transferTables{iMouse} = iBuildActiveCellTable(GTransferOne, idx1s, baseMask, kSigma);
 end
-if isempty(continualTables)
-    continualTable = table(uint64.empty(0, 1), false(0, 1), 'VariableNames', {'CellUID', 'IsActive'});
+if isempty(transferTables)
+    transferTable = table(uint64.empty(0, 1), false(0, 1), 'VariableNames', {'CellUID', 'IsActive'});
 else
-    continualTable = vertcat(continualTables{:});
+    transferTable = vertcat(transferTables{:});
 end
-[continualActiveN, continualTotalN] = iUniqueCounts(continualTable);
+[transferActiveN, transferTotalN] = iUniqueCounts(transferTable);
 
 [fF, fracLearned] = iPlotOnePie(learnedActiveN, learnedTotalN, '中文图43F 声水Learned活跃细胞占比', sprintf('🔊💧\nactive cells'));
-[fG, fracContinual] = iPlotOnePie(continualActiveN, continualTotalN, '中文图43G 光水Continual首单元活跃细胞占比', sprintf('💡💧\nactive cells'));
+[fG, fracTransfer] = iPlotOnePie(transferActiveN, transferTotalN, '中文图43G 光水Transfer首单元活跃细胞占比', sprintf('💡💧\nactive cells'));
 
 svgF = '中文图Fig43F_LearnedAudioActiveFractionPie.svg';
-svgG = '中文图Fig43G_ContinualFirstLightActiveFractionPie.svg';
+svgG = '中文图Fig43G_TransferFirstLightActiveFractionPie.svg';
 svgFPath = TransferLearning.ExportStandardFigureTransparent(fF, 1, svgF);
 svgGPath = TransferLearning.ExportStandardFigureTransparent(fG, 1, svgG);
 fprintf('Wrote: %s\n', svgFPath);
 fprintf('Wrote: %s\n', svgGPath);
 
-summary = table(learnedActiveN, learnedTotalN, fracLearned, continualActiveN, continualTotalN, fracContinual, ...
-    'VariableNames', {'LearnedActiveN', 'LearnedTotalN', 'LearnedFraction', 'ContinualFirstActiveN', 'ContinualFirstTotalN', 'ContinualFirstFraction'});
+summary = table(learnedActiveN, learnedTotalN, fracLearned, transferActiveN, transferTotalN, fracTransfer, ...
+    'VariableNames', {'LearnedActiveN', 'LearnedTotalN', 'LearnedFraction', 'TransferFirstActiveN', 'TransferFirstTotalN', 'TransferFirstFraction'});
 assignin('base', 'Fig43FG_Summary', summary);
 assignin('base', 'Fig43F_SvgPath', svgFPath);
 assignin('base', 'Fig43G_SvgPath', svgGPath);

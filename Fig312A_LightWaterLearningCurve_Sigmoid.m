@@ -1,4 +1,4 @@
-% Fig312A sigmoid fit: LightWater learning curve for Naive vs Continual
+% Fig312A sigmoid fit: LightWater learning curve for Naive vs Transfer
 %
 % Output:
 % - SVG figure to \\Data-Server-2\个人数据\杨青宁\202604
@@ -67,7 +67,7 @@ sessionForSummary = sortrows(sessionForSummary, ["Group","Mouse","DateTime"]);
 nMat = iComputeNBySession(allSessions, x, ["Naive","Transfer"]);
 
 fitNaive = iFitSigmoidCurve(displayedNaive, "Naive");
-fitTransfer = iFitSigmoidCurve(displayedTransfer, "Continual");
+fitTransfer = iFitSigmoidCurve(displayedTransfer, "Transfer");
 
 xFit = (1:max([max(fitNaive.XObserved), max(fitTransfer.XObserved), max(x)])).';
 naiveFitCurve = iSigmoidFromParams(fitNaive.ParamRaw, xFit);
@@ -78,12 +78,12 @@ f.Units = 'centimeters';
 f.Position(3:4) = [16, 7.5];
 t = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 
-palette = TransferLearning.FigurePalette(2);
+palette = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 axNaive = nexttile(t, 1);
 iPlotGroupMouseCurves(axNaive, displayedNaive, xFit, naiveFitCurve, palette(1,:), "Naive", fitNaive);
 
 axTransfer = nexttile(t, 2);
-iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, palette(2,:), "Continual", fitTransfer);
+iPlotGroupMouseCurves(axTransfer, displayedTransfer, xFit, transferFitCurve, palette(2,:), "Transfer", fitTransfer);
 
 ylabel(axNaive, 'Hit rate', 'FontSize', 12);
 xlabel(axNaive, 'Block', 'FontSize', 12);
@@ -107,7 +107,7 @@ svgPath = fullfile(outDirUNC, svgName);
 exportgraphics(f, svgPath, 'ContentType', 'vector');
 
 fitTable = table;
-fitTable.Group = ["Naive"; "Continual"];
+fitTable.Group = ["Naive"; "Transfer"];
 fitTable.Lower = [fitNaive.Lower; fitTransfer.Lower];
 fitTable.Upper = [fitNaive.Upper; fitTransfer.Upper];
 fitTable.Slope = [fitNaive.Slope; fitTransfer.Slope];
@@ -119,11 +119,11 @@ writetable(fitTable, fullfile(outDirUNC, fitCsvName));
 summaryTable = table;
 summaryTable.Block = x(:);
 summaryTable.NaiveMean = meanMat(:,1);
-summaryTable.ContinualMean = meanMat(:,2);
+summaryTable.TransferMean = meanMat(:,2);
 summaryTable.NaiveSem = semMat(:,1);
-summaryTable.ContinualSem = semMat(:,2);
+summaryTable.TransferSem = semMat(:,2);
 summaryTable.NaiveN = nMat(:,1);
-summaryTable.ContinualN = nMat(:,2);
+summaryTable.TransferN = nMat(:,2);
 writetable(summaryTable, fullfile(outDirUNC, summaryCsvName));
 if ~isempty(excludedMice)
 	writetable(excludedMice, fullfile(outDirUNC, excludedCsvName));
@@ -136,7 +136,7 @@ fprintf('Wrote: %s\n', fullfile(outDirUNC, scriptCopyName));
 fprintf('Wrote: %s\n', fullfile(outDirUNC, fitCsvName));
 fprintf('Wrote: %s\n', fullfile(outDirUNC, summaryCsvName));
 fprintf('Naive sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitNaive.Lower, fitNaive.Upper, fitNaive.Slope, fitNaive.Midpoint, fitNaive.RSquared);
-fprintf('Continual sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
+fprintf('Transfer sigmoid: lower=%.4f, upper=%.4f, slope=%.4f, midpoint=%.4f, R^2=%.4f\n', fitTransfer.Lower, fitTransfer.Upper, fitTransfer.Slope, fitTransfer.Midpoint, fitTransfer.RSquared);
 
 assignin('base', 'Fig312A_Sigmoid_AllSessions', allSessions);
 assignin('base', 'Fig312A_Sigmoid_FitTable', fitTable);

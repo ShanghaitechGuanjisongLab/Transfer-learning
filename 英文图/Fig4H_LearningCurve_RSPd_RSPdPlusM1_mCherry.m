@@ -1,4 +1,4 @@
-﻿rspPath     = "\\Data-Server-2\个人数据\张天夫\202505\RSP-Gi 化学遗传学抑制 声转光.v2.mat";
+rspPath     = "\\Data-Server-2\个人数据\张天夫\202505\RSP-Gi 化学遗传学抑制 声转光.v2.mat";
 mopCtrlPath = "\\Data-Server-2\个人数据\张天夫\202409\Mop-Gi运动皮层化学遗传学抑制声光（无功能对照）.mat";
 rspMoPath   = "\\data-server-2\个人数据\张天夫\202507\MOP+RSP化学遗传学抑制.v1.mat";
 
@@ -22,7 +22,7 @@ try
 	Summary = Summary(groupOrder, :);
 catch
 end
-Colors = [TransferLearning.ColorA; TransferLearning.ColorB; TransferLearning.ContinualColor];
+Colors = [TransferLearning.ColorA; TransferLearning.ColorB; TransferLearning.TransferColor];
 
 f = figure('Color','w', 'Name','English Fig4H Learning Curve');
 f.Units = 'centimeters';

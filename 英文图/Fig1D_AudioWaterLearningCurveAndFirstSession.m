@@ -70,7 +70,7 @@ ax.FontSize = 12;
 hold(ax,'on');
 axes(ax);
 
-edgeColors = TransferLearning.FigurePalette(2);
+edgeColors = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 [yCells, sCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
 patches = MATLAB.Graphics.MultiShadowedLines(yCells, sCells, X=xCells, EdgeColors=edgeColors(1:2,:));
 

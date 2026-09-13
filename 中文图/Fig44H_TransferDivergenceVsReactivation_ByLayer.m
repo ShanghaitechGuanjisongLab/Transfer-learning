@@ -23,7 +23,7 @@ end
 Div = iBuildTransferDivergenceTable(ALB, string(R.Mouse), R.DateTimeTransfer, idx0, idx1s);
 M = outerjoin(R(:, {'Mouse','DateTimeTransfer','Reactivation'}), Div, 'Keys', 'Mouse', 'MergeKeys', true, 'Type', 'left');
 
-dotColor = TransferLearning.ContinualColor;
+dotColor = TransferLearning.TransferColor;
 fitColor = TransferLearning.ColorA;
 %% 
 
@@ -80,7 +80,7 @@ fprintf('\n=== Fig333E All ===\n');
 fprintf('n=%d, ρ=%.3f, p=%.4g\n', nnz(use), rho, p);
 
 svgPath = '中文图Fig44H_TransferDivergenceVsReactivation_ByLayer.svg';
-title('Continual 💡💧');
+title('Transfer 💡💧');
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 fprintf('Wrote: %s\n', svgPath);
 

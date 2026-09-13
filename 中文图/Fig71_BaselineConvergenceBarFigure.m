@@ -148,7 +148,7 @@ switch string(valueName)
 	case "TransferLightMiss"
 		color = TransferLearning.ColorB;
     otherwise
-        color = TransferLearning.GroupColors(string(valueName));
+        error('Fig71:UnknownValueName', 'No color defined for value name %s.', string(valueName));
 end
 end
 

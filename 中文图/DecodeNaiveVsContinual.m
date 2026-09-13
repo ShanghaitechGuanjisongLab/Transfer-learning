@@ -1,6 +1,6 @@
-% 解码分析：Naive vs Continual LightWater 群体活动分类
+% 解码分析：Naive vs Transfer LightWater 群体活动分类
 %
-% 对 Naive（初始光水）和 Continual（迁移光水）trial 级钙成像
+% 对 Naive（初始光水）和 Transfer（迁移光水）trial 级钙成像
 % 群体活动进行 time-resolved decoding + cross-decoding。
 % 使用 PCA 降维 + fitclinear (LASSO) + leave-one-mouse-out CV + 置换检验。
 %
@@ -30,7 +30,7 @@ nTime = nnz(tMask);
 winCenters = 1:winStride:nTime;
 nWin = numel(winCenters);
 
-fprintf('=== Naive vs Continual 解码 ===\n');
+fprintf('=== Naive vs Transfer 解码 ===\n');
 fprintf('时间 [%.1f,%.1f]s  窗口=%d  步长=%d  %d窗口\n', ...
     xsPlot(1), xsPlot(end), winHalf*2+1, winStride, nWin);
 fprintf('PCA=%d  置换=%d次\n', nPc, nShuffle);
@@ -42,12 +42,12 @@ LAI = TransferLearning.LAInterspersed();
 badNaive = iFindMiceWithAudioWaterInPhase(LAI, "Naive");
 [Xn, mn, cn] = iQueryTrialPopulation(LAB, LAI, "Naive", "LightWater", badNaive);
 
-fprintf('--- 加载 Continual LightWater ---\n');
+fprintf('--- 加载 Transfer LightWater ---\n');
 ALB = TransferLearning.AudioLightBaseline();
 [Xc, mc, cc] = iQueryTrialPopulation(ALB, [], "Transfer", "LightWater", []);
 
 fprintf('Naive: %d trials, %d cells, %d mice\n', size(Xn,1), size(Xn,2), numel(unique(mn)));
-fprintf('Continual: %d trials, %d cells, %d mice\n', size(Xc,1), size(Xc,2), numel(unique(mc)));
+fprintf('Transfer: %d trials, %d cells, %d mice\n', size(Xc,1), size(Xc,2), numel(unique(mc)));
 if isempty(Xn) || isempty(Xc), error('Decode:NoData','No data'); end
 
 %% 2) 公共细胞 + NaN 填充
@@ -174,7 +174,7 @@ for iS = 1:4
 end
 
 %% 6) 绘图
-f = figure('Color','w','Name','Decode Naive vs Continual');
+f = figure('Color','w','Name','Decode Naive vs Transfer');
 f.Units = 'centimeters'; f.Position(3:4) = [14, 6];
 L = tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact');
 
@@ -189,12 +189,12 @@ if any(sig), scatter(ax1, tSec(sig), accWin(sig), 15, ...
         'MarkerFaceColor',[0.8 0.2 0.2],'MarkerEdgeColor','none'); end
 xline(ax1,0,'--','Color',[0.5 0.5 0.5]); xline(ax1,1,'--','Color',[0.5 0.5 0.5]);
 yline(ax1,0.5,':k'); xlabel(ax1,'Time (s)'); ylabel(ax1,'Accuracy');
-title(ax1,sprintf('Naive vs Continual (PCA-%d)',nPc));
+title(ax1,sprintf('Naive vs Transfer (PCA-%d)',nPc));
 legend(ax1,{'Shuffle +/-1SD','Shuffle','Accuracy','p<0.05'},'Location','southeast','FontSize',8);
 ylim(ax1,[0.3 1]); ax1.FontSize = 10; box(ax1,'on');
 
 ax2 = nexttile(L,2);
-clr = [0.6 0.6 0.6; 0.4 0.4 0.4; TransferLearning.NaiveColor; TransferLearning.ContinualColor];
+clr = [0.6 0.6 0.6; 0.4 0.4 0.4; TransferLearning.NaiveColor; TransferLearning.TransferColor];
 b = bar(ax2, 1:4, crossTeAcc, 'FaceColor','flat');
 for iB = 1:4, b.CData(iB,:) = clr(iB,:); end
 hold(ax2,'on');
@@ -211,7 +211,7 @@ title(ax2,sprintf('Cross-decoding (PCA-%d)',nPc)); ax2.FontSize = 10; box(ax2,'o
 %% 7) 导出
 outDir = fullfile('\\Data-Server-2\个人数据', getenv('USERNAME'), char(datetime('now','Format','yyyyMM')));
 if ~isfolder(outDir), mkdir(outDir); end
-fpath = TransferLearning.ExportStandardFigure(f,2,'DecodeNaiveVsContinual.svg');
+fpath = TransferLearning.ExportStandardFigure(f,2,'DecodeNaiveVsTransfer.svg');
 fprintf('\n导出: %s\n', fpath);
 
 assignin('base','Decode_AccWin',accWin); assignin('base','Decode_PValWin',pValWin);

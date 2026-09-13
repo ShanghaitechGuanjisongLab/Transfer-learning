@@ -13,7 +13,7 @@ xSummary = (1:size(summary.Mean, 1)).';
 xFit = linspace(max(0, min(xSummary) - 1), max(xSummary) + 1, 200).';
 normalFitCurve = iSigmoidFromFit(SigmoidStats.FitA, xFit);
 thInhibitedFitCurve = iSigmoidFromFit(SigmoidStats.FitB, xFit);
-curveColors = [TransferLearning.ContinualColor; TransferLearning.ColorB];
+curveColors = [TransferLearning.TransferColor; TransferLearning.ColorB];
 anovaTable = iBuildGroupAnovaTableFromMatrices(normalPerformance, thInhibitedPerformance, ["Normal", "TH"]);
 groupP = TransferLearning.Style.TwoWayAnovaGroupPValue(anovaTable, 'Performance', 'Block', 'Group', 'Mouse');
 anovaTable7 = anovaTable(anovaTable.Block <= 7, :);

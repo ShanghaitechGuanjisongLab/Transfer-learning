@@ -60,8 +60,8 @@ end
 fprintf('Spearman ρ = %.4f (n = %d)\n', rho, nnz(mask));
 
 % 散点：空心圆，边框0.2
-scatterColor = TransferLearning.ContinualColor;
-fitColor = TransferLearning.ContinualColor;
+scatterColor = TransferLearning.TransferColor;
+fitColor = TransferLearning.TransferColor;
 scatter(ax, x(mask), y(mask), 5, scatterColor);
 
 % 拟合线：实线，打特殊标签供 ExportStandardFigure 减半宽度 & 淡化颜色

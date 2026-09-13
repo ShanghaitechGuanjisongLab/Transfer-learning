@@ -3,11 +3,11 @@ function fig = PlotTrainingCurvesCompare(statsA, statsB, labelA, labelB, titleTe
 % Returns the figure handle for ExportStandardFigure export.
 %
 % Default labels:
-%   labelA = "Continual B"
+%   labelA = "Transfer B"
 %   labelB = "Naive B"
-if nargin < 3 || isempty(labelA), labelA = "Continual B"; end
+if nargin < 3 || isempty(labelA), labelA = "Transfer B"; end
 if nargin < 4 || isempty(labelB), labelB = "Naive B"; end
-if nargin < 5 || isempty(titleText), titleText = "Continual vs Naive Learning: Task B (MNIST)"; end
+if nargin < 5 || isempty(titleText), titleText = "Transfer vs Naive Learning: Task B (MNIST)"; end
 if nargin < 6 || isempty(maxEpochs), maxEpochs = 10; end
 
 nA = min(numel(statsA.trainLoss), maxEpochs);

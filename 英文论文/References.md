@@ -1,7 +1,5 @@
 # References
 
-Alexander, A. S., Place, R., Starrett, M. J., Chrastil, E. R., & Nitz, D. A. (2023). Rethinking retrosplenial cortex: Perspectives and predictions. *Neuron, 111*(2), 150-175. https://doi.org/10.1016/j.neuron.2022.11.006
-
 Barnett, S. M., & Ceci, S. J. (2002). When and where do we apply what we learn?: A taxonomy for far transfer. *Psychological Bulletin, 128*(4), 612-637. https://doi.org/10.1037/0033-2909.128.4.612
 
 Bernardi, S., Benna, M. K., Rigotti, M., Munuera, J., Fusi, S., & Salzman, C. D. (2020). The geometry of abstraction in the hippocampus and prefrontal cortex. *Cell, 183*(4), 954-967.e21. https://doi.org/10.1016/j.cell.2020.09.031
@@ -61,8 +59,6 @@ Thorndike, E. L. (1898). Animal intelligence: An experimental study of the assoc
 Thorndike, E. L., & Woodworth, R. S. (1901). The influence of improvement in one mental function upon the efficiency of other functions. *Psychological Review, 8*(3), 247-261. https://doi.org/10.1037/h0074012
 
 Tonegawa, S., Liu, X., Ramirez, S., & Redondo, R. (2015). Memory engram cells have come of age. *Neuron, 87*(5), 918-931. https://doi.org/10.1016/j.neuron.2015.08.002
-
-Vedder, L. C., Miller, A. M. P., Harrison, M. B., & Smith, D. M. (2017). Retrosplenial cortical neurons encode navigational cues, trajectories and reward locations during goal directed navigation. *Cerebral Cortex, 27*(7), 3713-3723. https://doi.org/10.1093/cercor/bhw192
 
 Vyas, S., Golub, M. D., Sussillo, D., & Shenoy, K. V. (2020). Computation through neural population dynamics. *Annual Review of Neuroscience, 43*, 249-275. https://doi.org/10.1146/annurev-neuro-092619-094115
 

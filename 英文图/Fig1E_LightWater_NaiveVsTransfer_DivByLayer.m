@@ -1,4 +1,4 @@
-% English Fig2H: LightWater Naive vs Transfer Divergence by layer
+% English Fig1E: LightWater Naive vs Transfer Divergence by layer
 %
 % 上面板：L2/3  Naive LW vs Transfer LW（非配对 ranksum）
 % 下面板：L5    Naive LW vs Transfer LW（非配对 ranksum）
@@ -17,9 +17,8 @@
 sampleRate = 8;
 idx1s = 4 * sampleRate;
 
-palette2 = TransferLearning.FigurePalette(2);
-RED = palette2(1,:);
-BLUE = palette2(2,:);
+colorNaive = TransferLearning.NaiveColor;
+colorTransfer = TransferLearning.TransferColor;
 
 Sources = {
 	builtin('struct', 'Name', "LightAudioBaseline", 'DS', TransferLearning.LightAudioBaseline(), 'Group', "Naive", 'StartPhase', "Naive")
@@ -34,7 +33,7 @@ end
 
 T = vertcat(rows{:});
 if isempty(T)
-	error('English_Fig2H:EmptyData', 'No valid LightWater sessions found for panel H.');
+	error('English_Fig1E:EmptyData', 'No valid LightWater sessions found for panel E.');
 end
 
 % Collapse by mouse if duplicated across sources.
@@ -69,7 +68,7 @@ fprintf('  L5:   Naive %.3f ± %.3f (n=%d) vs Transfer %.3f ± %.3f (n=%d), p=%.
 	mean(naiveL5), std(naiveL5)/sqrt(numel(naiveL5)), numel(naiveL5), ...
 	mean(tranL5), std(tranL5)/sqrt(numel(tranL5)), numel(tranL5), pL5);
 
-f = figure('Color', 'w', 'Name', 'English Fig2H NaiveLW vs TransferLW Div by layer');
+f = figure('Color', 'w', 'Name', 'English Fig1E NaiveLW vs TransferLW Div by layer');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -90,7 +89,7 @@ for eb = EB1.Object(:)'
 	eb.LineWidth = 1;
 end
 iStyleAxes(ax1, 'L2/3');
-iStyleBars(Bars1, RED, BLUE);
+iStyleBars(Bars1, colorNaive, colorTransfer);
 
 ax2 = nexttile(Layout, 2);
 [~, ~, Bars2, EB2] = UniExp.BarScatterCompare({double(naiveL5(:)), double(tranL5(:))}, false, ...
@@ -101,16 +100,16 @@ for eb = EB2.Object(:)'
 end
 iStyleAxes(ax2, 'L5');
 xlabel(ax2, '💡💧', 'FontName', 'Arial', 'FontSize', 6);
-iStyleBars(Bars2, RED, BLUE);
+iStyleBars(Bars2, colorNaive, colorTransfer);
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgPath = 'English_Fig2H_LightWater_NaiveVsTransfer_DivByLayer.svg';
+svgPath = 'English_Fig1E_LightWater_NaiveVsTransfer_DivByLayer.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 
-assignin('base', 'English_Fig2H_Table', T);
-assignin('base', 'English_Fig2H_Summary', S);
-assignin('base', 'English_Fig2H_pL23', pL23);
-assignin('base', 'English_Fig2H_pL5', pL5);
+assignin('base', 'English_Fig1E_Table', T);
+assignin('base', 'English_Fig1E_Summary', S);
+assignin('base', 'English_Fig1E_pL23', pL23);
+assignin('base', 'English_Fig1E_pL5', pL5);
 
 function out = iBuildStartSessionDivergenceRows(spec, idx1s, sampleRate)
 DS = spec.DS;
@@ -325,7 +324,7 @@ if isprop(ax.XAxis, 'LineWidth')
 	ax.YAxis.LineWidth = 1;
 end
 ax.XTick = [1 2];
-ax.XTickLabel = {'Naive', 'Continual'};
+ax.XTickLabel = {'Naive', 'Transfer'};
 legend(ax, 'off');
 box(ax, 'off');
 grid(ax, 'off');

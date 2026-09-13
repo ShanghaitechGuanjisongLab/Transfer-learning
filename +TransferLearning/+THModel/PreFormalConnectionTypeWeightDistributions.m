@@ -93,15 +93,15 @@ naiveWeights = iCollectConnectionTypeWeights(naiveMouse);
 rng(mouseSeeds(2), 'twister');
 afterPretrainMouse = TransferLearning.THModel.DrawMouse(Params);
 Cond = TransferLearning.THModel.ConditionTable();
-continualCond = Cond(Cond.Name == "Transfer", :);
-[afterPretrainMouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(afterPretrainMouse, Params, continualCond);
+transferCond = Cond(Cond.Name == "Transfer", :);
+[afterPretrainMouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(afterPretrainMouse, Params, transferCond);
 pretrainReached = pretrainResult.Reached;
 pretrainSessions = pretrainResult.TrainingSessions;
 afterPretrainWeights = iCollectConnectionTypeWeights(afterPretrainMouse);
 if collectHeterogeneity
 	naiveCond = Cond(Cond.Name == "Naive", :);
 	naiveHeterogeneity = iCollectFormalLayerNeuronTypeHeterogeneity(naiveMouse, Params, naiveCond);
-	afterPretrainHeterogeneity = iCollectFormalLayerNeuronTypeHeterogeneity(afterPretrainMouse, Params, continualCond);
+	afterPretrainHeterogeneity = iCollectFormalLayerNeuronTypeHeterogeneity(afterPretrainMouse, Params, transferCond);
 end
 end
 

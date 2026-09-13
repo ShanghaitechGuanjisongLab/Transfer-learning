@@ -92,7 +92,7 @@ hold(ax,'on');
 title(ax, 'Non-specific MOp inhibition');
 
 % Reference palette from 范例 SVGs: Control=#e60012, Experimental=#0070c0
-edgeColors = [TransferLearning.ContinualColor;TransferLearning.ColorB];
+edgeColors = [TransferLearning.TransferColor;TransferLearning.ColorB];
 
 Patches = MATLAB.Graphics.MultiShadowedLines(meanCells, semCells, 1/(numel(grpOrder)+1), EdgeColors=edgeColors(1:2,:));
 
@@ -185,7 +185,7 @@ ax2.XTick = [];
 legend(ax2, 'off');
 
 	% Bar styling – reference palette from 范例 SVGs
-	palette2 = [TransferLearning.ContinualColor;TransferLearning.ColorB];
+	palette2 = [TransferLearning.TransferColor;TransferLearning.ColorB];
 	colorA = palette2(1,:);
 	colorB = palette2(2,:);
 if isscalar(Bars2)
