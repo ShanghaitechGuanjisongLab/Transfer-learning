@@ -1,10 +1,10 @@
-% English Fig2K: cFos activity-dependent inhibition vs Control
+% English Fig2H: cFos activity-dependent inhibition vs Control
 %
 % v6 Panel K: cFos-MOp 精准抑制（学习曲线 + 首会话命中率）
 % Shared behavior-session helpers: TransferLearning.BehaviorSessions
 % Outputs (SVG):
-%   - English_Fig2K_cFos_LearningCurve.svg
-%   - English_Fig2K_cFos_FirstSessionHitRate.svg
+%   - English_Fig2H_cFos_LearningCurve.svg
+%   - English_Fig2H_cFos_FirstSessionHitRate.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -34,14 +34,14 @@ DS = UniExp.DataSet(matPath);
 % --- 2) Build group table (Mouse -> Group)
 S = DS.Mice;
 if isempty(S)
-	error('English_Fig2K:EmptyMiceTable', 'DS.Mice is empty.');
+	error('English_Fig2H:EmptyMiceTable', 'DS.Mice is empty.');
 end
 
 if ~ismember('Mouse', S.Properties.VariableNames)
 	if ~isempty(S.Properties.RowNames)
 		S.Mouse = string(S.Properties.RowNames);
 	else
-		error('English_Fig2K:MissingMouse', 'DS.Mice has no Mouse column or RowNames.');
+		error('English_Fig2H:MissingMouse', 'DS.Mice has no Mouse column or RowNames.');
 	end
 end
 S.Mouse = string(S.Mouse);
@@ -49,7 +49,7 @@ S.Mouse = string(S.Mouse);
 needVars = ["ExpressedBrain","MarkTimes"];
 for k = 1:numel(needVars)
 	if ~ismember(needVars(k), string(S.Properties.VariableNames))
-		error('English_Fig2K:MissingMiceVar', 'DS.Mice lacks required var: %s', needVars(k));
+		error('English_Fig2H:MissingMiceVar', 'DS.Mice lacks required var: %s', needVars(k));
 	end
 end
 
@@ -68,13 +68,13 @@ S = S(ismember(S.Group, ["Control","MOp"]), :);
 [~, ia] = unique(S.Mouse, 'stable');
 S = S(ia, :);
 if isempty(S)
-	error('English_Fig2K:EmptyGroups', 'No mice left after filtering to Control/MOp.');
+	error('English_Fig2H:EmptyGroups', 'No mice left after filtering to Control/MOp.');
 end
 
 % --- 3) Query LightWater behavior blocks
 B = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS, false);
 if isempty(B)
-	error('English_Fig2K:EmptyBehavior', 'No LightWater behavior rows found.');
+	error('English_Fig2H:EmptyBehavior', 'No LightWater behavior rows found.');
 end
 B.Mouse = string(B.Mouse);
 B.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(B.DateTime);
@@ -118,7 +118,7 @@ semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', 
 
 %% 
 % --- 6) Plot learning curve (like English Fig1B)
-f = figure('Color','w', 'Name', 'English Fig2K cFos Learning curve');
+f = figure('Color','w', 'Name', 'English Fig2H cFos Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
 f.PaperPositionMode = 'auto';
@@ -172,7 +172,7 @@ grid(ax, 'off');
 
 % Export learning curve
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgLC = 'English_Fig2K_cFos_LearningCurve.svg';
+svgLC = 'English_Fig2H_cFos_LearningCurve.svg';
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -218,7 +218,7 @@ DataCell = {double(xCtrl(:)), double(xInh(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
 %% 
-f2 = figure('Color','none', 'Name', 'English Fig2K cFos First transfer session');
+f2 = figure('Color','none', 'Name', 'English Fig2H cFos First transfer session');
 f2.Units = 'centimeters';
 f2.Position(3:4) = [4, 4];
 f2.PaperPositionMode = 'auto';
@@ -264,15 +264,15 @@ if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
 
-svgFS = 'English_Fig2K_cFos_FirstSessionHitRate.svg';
+svgFS = 'English_Fig2H_cFos_FirstSessionHitRate.svg';
 svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
 fprintf('Wrote: %s (first-block p=%.4g)\n', svgFS, pFS);
 fprintf('Fig334C first-block hit-rate BarScatterCompare p = %.4g\n', pFS);
 fprintf('Fig334C first-block hit-rate ranksum p = %.4g\n', pFSRanksum);
 
-assignin('base', 'English_Fig2K_Sessions', Sess);
-assignin('base', 'English_Fig2K_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2K_FirstSessionP', pFS);
+assignin('base', 'English_Fig2H_Sessions', Sess);
+assignin('base', 'English_Fig2H_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2H_FirstSessionP', pFS);
 
 function h = iText(varargin)
 h = text(varargin{:});

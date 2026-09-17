@@ -17,11 +17,9 @@ if ~exist('UniExp.DataSet','class')
 	end
 end
 
-dataRoot = '\\Data-Server-2\个人数据\杨青宁\202607\行为学';
-
 %% --- 1. 加载数据 ---
-DataSetA2L = UniExp.DataSet(fullfile(dataRoot, 'A2L_L.mat'));
-DataSetL   = UniExp.DataSet(fullfile(dataRoot, 'L2A_L.mat'));
+DataSetA2L = UniExp.DataSet('\\Data-Server-2\个人数据\杨青宁\202607\行为学\A2L_L.mat');
+DataSetL   = UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\L2A_L_v3.mat");
 
 %% --- 2. 提取会话表（每鼠每 block 一行） ---
 % 尝试 TableQuery，兼容不同字段名
@@ -124,6 +122,12 @@ colorL  = TransferLearning.NaiveColor;
 hAL = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,1), semMatOut(:,1), xFit, alFitCurve, colorAL);
 hL  = iPlotGroupMeanErrorbarsSingleAx(ax, xSummary, meanMatOut(:,2), semMatOut(:,2), xFit, lFitCurve, colorL);
 
+% 组别图例（用户 2026-09-16：颜色必须可辨识；hAL/hL = [errorbar, fitline]，取拟合线句柄）
+lg = legend(ax, [hAL(2), hL(2)], {'Transfer', 'Naive'}, 'Location', 'southeast');
+lg.Box = 'off';
+lg.FontSize = 10;
+lg.AutoUpdate = 'off';   % 防止后续 p 线被追加为图例条目
+
 ylabel(ax, 'Hit rate', 'FontSize', 12);
 xlabel(ax, 'Block', 'FontSize', 12);
 ax.FontSize = 12;
@@ -159,7 +163,6 @@ for axItem = reshape(allAxes, 1, [])
 		axItem.Toolbar.Visible = 'off';
 	end
 end
-title('All mice');
 svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1B_LearningCurve_Sigmoid.svg');
 
 %% --- 8. First-block hit rate bar ---
@@ -171,10 +174,15 @@ firstL  = double(sess1L.Performance);  firstL  = firstL(isfinite(firstL));
 edgeColorsBar = [TransferLearning.TransferColor; TransferLearning.NaiveColor];
 f2 = figure('Name', 'Fig1B first-block hit rate');
 f2.Units = 'centimeters';
-f2.Position(3:4) = [4, 4];
+f2.Position(3:4) = [4.5, 4];
 [~, optional2, bars2, errorBars2] = UniExp.BarScatterCompare({firstAL(:), firstL(:)}, table([1 2], 'VariableNames', {'GroupPair'}), 'AsteriskThreshold', 0.05);
 ax2 = gca;
-ax2.XTickLabel = {};
+% X 轴标组名（用户 2026-09-16：颜色必须可辨识；顺序与 DataCell 一致：1=Transfer, 2=Naive）
+% 注意：导出时 ApplyStandardFigureStyle 会把全部字号重置为 12 pt，
+% 故水平标签在 4.5 cm 小图内必重叠，采用 45° 旋转。
+ax2.XTick = [1, 2];
+ax2.XTickLabel = {'Transfer', 'Naive'};
+ax2.XTickLabelRotation = 45;
 legend(ax2, 'off');
 if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames)
 	for pl = optional2.MultiCompare.PLine(:)'
@@ -194,10 +202,31 @@ ylabel(ax2, 'Hit rate', 'FontSize', 12);
 title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
 box(ax2, 'off');
 grid(ax2, 'off');
+% Y 范围与 P 线高度：BarScatterCompare 默认 YLim [0,1] 使小图矮胖，
+% 且 PLineRetune 从不把 P 线下移（baseline=当前位置），初始位又按 [0,1] 定在 ~0.9。
+% 故导出前手动把 P 线降到柱顶（mean+SEM）×1.10，并固定 YLim 为柱顶 ×1.5（容纳 p 文本）。
+semALfirst = std(firstAL, 'omitnan') / sqrt(numel(firstAL));
+semLfirst  = std(firstL,  'omitnan') / sqrt(numel(firstL));
+yTopBar = max(mean(firstAL, 'omitnan') + semALfirst, mean(firstL, 'omitnan') + semLfirst);
+if isfield(optional2, 'MultiCompare') && ismember('PLine', optional2.MultiCompare.Properties.VariableNames) ...
+		&& ~isempty(optional2.MultiCompare.PLine)
+	for pl = optional2.MultiCompare.PLine(:)'
+		pl.YData(:) = yTopBar * 1.10;
+	end
+end
+% P 文本也必须同步降下来：PLineRetune 以文本当前位置为下限，只降线无效
+if isfield(optional2, 'MultiCompare') && ismember('PText', optional2.MultiCompare.Properties.VariableNames) ...
+		&& ~isempty(optional2.MultiCompare.PText)
+	for pt = optional2.MultiCompare.PText(:)'
+		pt.Position(2) = yTopBar * 1.05;
+	end
+end
+ax2.YLim = [0, yTopBar * 1.5];
 if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
 	ax2.Toolbar.Visible = 'off';
 end
 svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, 'English_Fig1B_FirstBlockBar.svg');
+fprintf('Wrote: %s\n', svgPath2);
 
 %% --- 9. 选代表鼠 ---
 % 对每组：找出与组 sigmoid 拟合曲线最匹配的单鼠
