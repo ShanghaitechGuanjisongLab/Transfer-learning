@@ -60,19 +60,23 @@ colorMiss = [0.10 0.45 0.70];
 
 f = figure('Color', 'w', 'Name', 'English Fig2C hit vs miss weights');
 f.Units = 'centimeters';
-f.Position(3:4) = [10, 4.5];
+f.Position(3:4) = [11, 5.2];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [10, 4.5];
+f.PaperSize = [11, 5.2];
 f.PaperPositionMode = 'auto';
 
 ax1 = subplot(1, 2, 1);
 hold(ax1, 'on');
 edges = 0:0.05:3;
-histogram(ax1, wHit, edges, 'FaceColor', colorHit, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability', 'DisplayName', 'prefer-hit cells');
-histogram(ax1, abs(wMiss), edges, 'FaceColor', colorMiss, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability', 'DisplayName', 'prefer-miss cells');
+histogram(ax1, wHit, edges, 'FaceColor', colorHit, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability', 'DisplayName', 'hit cells');
+histogram(ax1, abs(wMiss), edges, 'FaceColor', colorMiss, 'FaceAlpha', 0.6, 'EdgeColor', 'none', 'Normalization', 'probability', 'DisplayName', 'miss cells');
 xlabel(ax1, '|weight| at 0.7 s', 'FontSize', 8);
 ylabel(ax1, 'proportion of cells', 'FontSize', 8);
-legend(ax1, 'Location', 'northeast', 'Box', 'off', 'FontSize', 7);
+% 不用 legend 对象（导出时字号重置会导致位置/尺寸漂移）：
+% 直方图右侧（|w|>1.4）为空，直接放彩色文字标注
+yMaxAx = max([max(ax1.YLim), 0.14]);
+text(ax1, 1.5, 0.80 * yMaxAx, 'hit cells', 'Color', colorHit, 'FontSize', 8, 'FontWeight', 'bold');
+text(ax1, 1.5, 0.68 * yMaxAx, 'miss cells', 'Color', colorMiss, 'FontSize', 8, 'FontWeight', 'bold');
 box(ax1, 'off');
 ax1.FontSize = 7;
 ax1.LineWidth = 1;
@@ -91,8 +95,8 @@ errorbar(ax2, 1:2, [mean(perMouseHit), mean(perMouseMiss)], se, 'k.', 'CapSize',
 for i = 1:numel(perMouseHit)
 	plot(ax2, [1 2], [perMouseHit(i) perMouseMiss(i)], '-', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 end
-plot(ax2, 1:numel(perMouseHit) * 0 + 1, perMouseHit, '.', 'Color', colorHit, 'MarkerSize', 8, 'HandleVisibility', 'off');
-plot(ax2, 1:numel(perMouseMiss) * 0 + 2, perMouseMiss, '.', 'Color', colorMiss, 'MarkerSize', 8, 'HandleVisibility', 'off');
+plot(ax2, ones(numel(perMouseHit), 1), perMouseHit, '.', 'Color', colorHit, 'MarkerSize', 8, 'HandleVisibility', 'off');
+plot(ax2, 2 * ones(numel(perMouseMiss), 1), perMouseMiss, '.', 'Color', colorMiss, 'MarkerSize', 8, 'HandleVisibility', 'off');
 % significance line
 yl = ylim(ax2);
 yrange = yl(2) - yl(1);

@@ -96,9 +96,9 @@ colorMiss = [0.10 0.45 0.70];
 
 f = figure('Color', 'w', 'Name', 'English Fig2D hit vs miss cell divergence');
 f.Units = 'centimeters';
-f.Position(3:4) = [4.5, 4.5];
+f.Position(3:4) = [6, 5.5];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [4.5, 4.5];
+f.PaperSize = [6, 5.5];
 f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
@@ -130,8 +130,7 @@ else
 end
 text(ax, 1.5, yLine + 0.02 * yrange, starStr, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontSize', 8, 'HandleVisibility', 'off');
 ylim(ax, [0, yLine + 0.25 * yrange]);
-set(ax, 'XTick', [1 2], 'XTickLabel', {'hit cells, hit trials', 'miss cells, miss trials'});
-ax.XTickLabelFontSize = 7;
+set(ax, 'XTick', [1 2], 'XTickLabel', {'hit', 'miss'});
 ylabel(ax, 'Inter-trial divergence', 'FontSize', 8);
 box(ax, 'off');
 ax.FontSize = 7;
@@ -180,10 +179,15 @@ elseif iscell(res)
 	end
 end
 if ~isempty(rows)
-	rows.Mouse = string(rows.Mouse);
-	rows.DateTime = datetime(rows.DateTime);
-	if ~isempty(rows.DateTime.TimeZone)
-		rows.DateTime.TimeZone = '';
+	% QueryNTS 默认不返回 Mouse/DateTime 列；仅在存在时归一化
+	if ismember('Mouse', rows.Properties.VariableNames)
+		rows.Mouse = string(rows.Mouse);
+	end
+	if ismember('DateTime', rows.Properties.VariableNames)
+		rows.DateTime = datetime(rows.DateTime);
+		if ~isempty(rows.DateTime.TimeZone)
+			rows.DateTime.TimeZone = '';
+		end
 	end
 	rows.CellUID = uint64(rows.CellUID);
 	rows.TrialUID = uint64(rows.TrialUID);
@@ -222,7 +226,8 @@ for iT = 1:numel(trialUIDs)
 	for iC = 1:numel(cellUIDs)
 		rC = rT(uint64(rT.CellUID) == cellUIDs(iC), :);
 		if height(rC) == 1
-			sig = double(rC.TrialSignal{1});
+			% TrialSignal 是数值时间向量（与 Fig1F 口径一致）
+			sig = double(rC.TrialSignal);
 			X(iC, iT) = sig(idx1s);
 		end
 	end

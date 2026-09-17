@@ -185,94 +185,11 @@ catch ME
 	warning(ME.identifier, 'Export failed: %s', ME.message);
 end
 
-%% 
-% --- 7) First transfer session hit-rate bar compare (Control vs Inhibited)
-perMouse = TransferLearning.BehaviorSessions.iPerMouseTable(Sess);
-perMouse = TransferLearning.BehaviorSessions.iAddFirstTransferPerf(perMouse, Sess);
-
-xCtrl = perMouse.TransferFirstPerf(perMouse.Group=="Control");
-xInh  = perMouse.TransferFirstPerf(perMouse.Group=="MOp");
-
-% Fallback if Phase/Transfer not available
-if ~any(isfinite(xCtrl)) || ~any(isfinite(xInh))
-	xCtrl = nan(height(perMouse),1);
-	xInh  = nan(height(perMouse),1);
-	for i = 1:height(perMouse)
-		m = perMouse.Mouse(i);
-		S1 = Sess(Sess.Mouse==m, :);
-		S1 = sortrows(S1, 'Session');
-		p1 = double(S1.Performance(find(S1.Session==1,1,'first')));
-		if perMouse.Group(i)=="Control"
-			xCtrl(i) = p1;
-		else
-			xInh(i) = p1;
-		end
-	end
-end
-
-xCtrl = xCtrl(isfinite(xCtrl));
-xInh  = xInh(isfinite(xInh));
-[pFSRanksum, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(xCtrl, xInh);
-
-DataCell = {double(xCtrl(:)), double(xInh(:))};
-CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
-
-%% 
-f2 = figure('Color','none', 'Name', 'English Fig2H cFos First transfer session');
-f2.Units = 'centimeters';
-f2.Position(3:4) = [4, 4];
-f2.PaperPositionMode = 'auto';
-f2.PaperUnits = 'centimeters';
-f2.PaperSize = [4, 4];
-
-tiledlayout(1, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
-nexttile;
-[~, Opt2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-pFS = iBarScatterPValue(Opt2, pFSRanksum);
-ax2 = gca;
-delete(findobj(ax2, 'Type', 'Scatter'));
-ax2.FontSize = 12;
-ax2.LineWidth = 2;
-if isprop(ax2.XAxis, 'LineWidth')
-	ax2.XAxis.LineWidth = 2;
-	ax2.YAxis.LineWidth = 2;
-end
-ax2.Color = 'none';
-ax2.XAxis.Visible = false;
-ax2.XTick = [];
-legend(ax2, 'off');
-
-if isfield(Opt2, 'MultiCompare') && ismember('PText', Opt2.MultiCompare.Properties.VariableNames)
-	for pt = Opt2.MultiCompare.PText(:)'
-		pt.FontSize = 12;
-	end
-end
-if isfield(Opt2, 'MultiCompare') && ismember('PLine', Opt2.MultiCompare.Properties.VariableNames)
-	for pl = Opt2.MultiCompare.PLine(:)'
-		pl.LineWidth = 2;
-	end
-end
-iStyleBars(Bars2, edgeColors(1,:), edgeColors(2,:));
-iStyleErrorBars(ErrorBars2, edgeColors);
-ax2.XLim = [0.5, 2.5];
-
-ylabel(ax2, 'Hit rate', 'FontSize', 12);
-title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal');
-box(ax2, 'off');
-grid(ax2, 'off');
-if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
-	ax2.Toolbar.Visible = 'off';
-end
-
-svgFS = 'English_Fig2H_cFos_FirstSessionHitRate.svg';
-svgFS = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgFS);
-fprintf('Wrote: %s (first-block p=%.4g)\n', svgFS, pFS);
-fprintf('Fig334C first-block hit-rate BarScatterCompare p = %.4g\n', pFS);
-fprintf('Fig334C first-block hit-rate ranksum p = %.4g\n', pFSRanksum);
+%%
+% 用户裁定（2026-09-17）：H 面板只保留学习曲线，删除首 block 柱（首 block 差异不显著）。
 
 assignin('base', 'English_Fig2H_Sessions', Sess);
 assignin('base', 'English_Fig2H_LearningSummarizeP', PValueLS);
-assignin('base', 'English_Fig2H_FirstSessionP', pFS);
 
 function h = iText(varargin)
 h = text(varargin{:});

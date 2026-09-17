@@ -32,15 +32,23 @@ Two sets of control observations support this framework (Figure S1). First, the 
 **G**, Reactivation fraction of learned audio-water active cells during transfer light-water hit vs miss trials, paired per mouse (n = 11 mice; 511 participating learned-active cells; right-tailed sign-rank p = 9.8 × 10⁻⁴).
 **H**, Active-cell fractions (active = z-score at cue +1 s above baseline mean + 3σ, baseline −3 to 0 s; n = 11 mice). Left, cells active in learned audio-water blocks as a fraction of all recorded cells (511/5107, 10.0%). Middle, cells active in the first transfer light-water block as a fraction of all recorded cells (212/5105, 4.2%). Right, cells active in learned audio-water blocks that were reactivated in the first transfer light-water block (76/511, 14.9%).
 # Encoding ensemble facilitates first-block performance
->Figure 2: Encoding ensemble facilitates first-block performance
-A.	Diagram of decoder: from calcium to cue/behavior
-B.	Behavior decoder can transfer to light, but cue decoder cannot
-C.	Hit weights larger than miss weights
-D.	Hit cells in hit trials are more convergent among trials than miss cells in miss trials
-E.	Activity of hit cells correlates with first-block hit rate, but miss cells do not.
-F.	Diagram of cFos-TRAP
-G.	cFos expression
-H.	Lower first-block performance in cFos inhibition
+
+The first-block transfer advantage implies that auditory learning leaves a cortical representation that the light task can read out immediately. To identify what is transferred, we trained two linear decoders on MOp population activity: a cue decoder that discriminates auditory from light stimuli on calibration blocks, and a behavior decoder that discriminates hit from miss trials on audio-water training blocks; both were then applied, without retraining, to the held-out transfer light-water block (Figure 2A). In their training contexts both decoders tracked their labels (Figure 2B, left). In the transfer light-water block, however, only the behavior decoder separated light hit from light miss trials, whereas the cue decoder remained at chance throughout the trial (Figure 2B, right). Auditory learning therefore transfers an outcome-related code, not a cue-specific one.
+
+The behavior decoder relied predominantly on hit-preferring cells: their absolute weights at 0.7 s after cue onset exceeded those of miss-preferring cells both across all cells and within every mouse (Figure 2C). Within the first transfer light-water block, hit-preferring cells evaluated on hit trials were more trial-stable than miss-preferring cells on miss trials (Figure 2D), and they responded more strongly on hit than on miss trials at cue +1 s, whereas miss-preferring cells showed no such outcome selectivity (Figure 2E). Auditory learning thus shapes a subset of outcome-selective, trial-stable hit cells — an encoding ensemble — whose activity tracks the outcome of the ongoing light trial.
+
+To test whether this ensemble is causally required for transfer, we permanently tagged the cells active during the last audio-water training block with cFos-TRAP and silenced them during subsequent light training (Figure 2F, G). Silencing the tagged ensemble impaired light-water learning relative to control mice (Figure 2H), showing that the ensemble established by auditory learning is re-used for learning the new cue rather than merely correlated with it.
+
+![](图2.svg)
+**Figure 2 | The transferred outcome code is carried by an encoding ensemble required for transfer learning.**
+**A**, Schematic of the decoding analysis. Population activity in MOp was used to train a cue decoder (auditory vs light, calibration blocks) and a behavior decoder (hit vs miss, audio-water training blocks); both decoders were then applied without retraining to the held-out transfer light-water block.
+**B**, Decoder probability tendency (mean ± SEM across mice; n = 10 mice per decoder) in the training context (left) and in the held-out transfer light-water block (right). Top, cue decoder; bottom, behavior decoder. Asterisks mark time points at which the two trial classes differed (paired t-test per time point, Benjamini–Hochberg corrected, q < 0.05): the behavior decoder separated light hit from light miss trials at 8 of 20 time points, whereas the cue decoder separated them at none. Dashed and dash-dotted vertical lines, cue onset and water delivery.
+**C**, Distribution of absolute decoder weights at 0.7 s after cue onset for hit-preferring (weight > 0; 2480 cells) and miss-preferring (weight < 0; 2078 cells) cells (left), and per-mouse mean absolute weight (right; n = 10 mice; sign-rank p = 0.020).
+**D**, Inter-trial divergence at cue +1 s within the first transfer light-water block, computed for hit-preferring cells on hit trials and for miss-preferring cells on miss trials (paired per mouse; n = 9 mice; sign-rank p = 0.039). Divergence is defined as in Figure 1E.
+**E**, Mean z-score at cue +1 s of hit-preferring (left) and miss-preferring (right) cells on hit vs miss trials of the first transfer light-water block (paired per mouse; n = 10 mice; one-tailed paired t-test, hit-preferring p = 0.033, miss-preferring p = 0.73).
+**F**, Schematic of cFos-TRAP: cells active during the last audio-water training block were permanently tagged and silenced during subsequent light training.
+**G**, Confocal images of cFos-driven tagging in MOp.
+**H**, Light-water learning curve of mice with the tagged ensemble silenced (n = 3) and control mice (n = 9): block-wise mean ± SEM hit rate; group effect of a linear mixed-effects model over blocks 1–7 (Performance ~ Block + Group + (1|Mouse), p = 1.4 × 10⁻³).
 # Stable encoding ensemble fades over time
 >Figure 3: Stable encoding ensemble fades over time
 ![](图3.svg)

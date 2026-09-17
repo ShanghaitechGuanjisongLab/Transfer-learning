@@ -70,13 +70,15 @@ for i = 1:nCh
 		pSt2Ch(i, 2, iT) = mean(phT(r.behTe == 0));     % light miss
 	end
 end
+%% 
 
 % ---------- figure ----------
 f = figure('Color', 'w', 'Name', 'English Fig2B decoder transfer');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 9];
+% 图窗加高（用户 2026-09-17）：16 cm 高使轴内 legend 不再压在曲线上
+f.Position(3:4) = [18, 16];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [12, 9];
+f.PaperSize = [18, 16];
 f.PaperPositionMode = 'auto';
 
 stC1 = {[0.85 0.33 0.10], [0.10 0.45 0.70]};
@@ -84,9 +86,10 @@ stC1a = {[0.30 0.60 0.20], [0.70 0.30 0.70]};
 stN2 = {'light hit', 'light miss'};
 
 axGrid = gobjects(2, 2);
+axPos = {[0.17 0.54 0.35 0.33], [0.60 0.54 0.35 0.33], [0.17 0.11 0.35 0.33], [0.60 0.11 0.35 0.33]};
 for r = 1:2
 	for c = 1:2
-		ax = subplot(2, 2, (r - 1) * 2 + c);
+		ax = axes(f, 'Position', axPos{(r - 1) * 2 + c});
 		hold(ax, 'on');
 		axGrid(r, c) = ax;
 		if c == 1
@@ -122,14 +125,20 @@ for r = 1:2
 			iShadedError(ax, tVec, mn, se, stC{s}, 1.4, stN{s});
 		end
 		iSigStars(ax, tVec, squeeze(P(:, 1, :)), squeeze(P(:, 2, :)), 0.02, stC{1});
-		ylabel(ax, ylbl, 'FontSize', 8);
+		if c == 1
+			ylabel(ax, ylbl, 'FontSize', 8);
+			% 行名以水平小标题置于左列轴上方，避免旋转文字与 ylabel 重叠
+			if r == 1
+				rowName = 'Cue decoder';
+			else
+				rowName = 'Behavior decoder';
+			end
+			text(ax, 0, 1.10, rowName, 'Units', 'normalized', 'HorizontalAlignment', 'left', 'FontWeight', 'bold', 'FontSize', 9);
+		end
 		ylim(ax, [0 1]);
 		yline(ax, 0.5, ':', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.6, 'HandleVisibility', 'off');
 		xline(ax, 0, '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.6, 'HandleVisibility', 'off');
 		xline(ax, 1, '-.', 'Color', [0.35 0.35 0.35], 'LineWidth', 0.8, 'HandleVisibility', 'off');
-		if r == 2
-			xlabel(ax, 'Time from stimulus (s)', 'FontSize', 8);
-		end
 		legend(ax, 'Location', 'northwest', 'Box', 'off', 'FontSize', 7);
 		box(ax, 'off');
 		ax.FontSize = 7;
@@ -137,10 +146,10 @@ for r = 1:2
 		ax.Color = 'none';
 	end
 end
-text(axGrid(1, 1), 0.5, 1.16, 'Stage1 (trained task)', 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
-text(axGrid(1, 2), 0.5, 1.16, 'Stage2 (transfer light-water)', 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
-text(axGrid(1, 1), -0.3, 0.5, 'Cue decoder', 'Units', 'normalized', 'Rotation', 90, 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 8);
-text(axGrid(2, 1), -0.3, 0.5, 'Behavior decoder', 'Units', 'normalized', 'Rotation', 90, 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 8);
+text(axGrid(1, 1), 0.5, 1.24, 'Stage1 (trained task)', 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
+text(axGrid(1, 2), 0.5, 1.24, 'Stage2 (transfer light-water)', 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
+text(axGrid(2, 1), 0.5, -0.28, 'Time from stimulus (s)', 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontSize', 8);
+text(axGrid(2, 2), 0.5, -0.28, 'Time from stimulus (s)', 'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontSize', 8);
 
 if isprop(axGrid(1,1), 'Toolbar') && ~isempty(axGrid(1,1).Toolbar)
 	axGrid(1,1).Toolbar.Visible = 'off';
@@ -175,7 +184,7 @@ for r = 1:2
 	end
 	okP = isfinite(pRaw);
 	pBH = nan(1, nTfull);
-	pBH(okP) = mafdr(pRaw(okP));
+	pBH(okP) = iBHCorrect(pRaw(okP));
 	nNom = sum(pRaw < 0.05, 'omitnan');
 	nFdr = sum(pBH < 0.05, 'omitnan');
 	fprintf('%s: nominal p<0.05 at %d/%d time points; BH-FDR q<0.05 at %d\n', name, nNom, nTfull, nFdr);
@@ -184,6 +193,20 @@ end
 assignin('base', 'Fig2B_DecoderTendency', struct('pSt1Cue', pSt1Cue, 'pSt2Cue', pSt2Cue, 'pSt1Ch', pSt1Ch, 'pSt2Ch', pSt2Ch, 'tVec', tVec, 'nCue', nCue, 'nCh', nCh));
 
 %% ========== local functions ==========
+function q = iBHCorrect(p)
+% Benjamini-Hochberg FDR 校正（与 mafdr 的 BH 口径一致，避免依赖 Bioinformatics Toolbox）
+p = p(:);
+n = numel(p);
+[sp, ord] = sort(p);
+q = sp * n ./ (1:n)';
+q = min(q, 1);
+qRev = cummin(q(end:-1:1));
+qRev = qRev(end:-1:1);
+out = nan(n, 1);
+out(ord) = qRev;
+q = out';
+end
+
 function iSigStars(ax, tVec, v1, v2, yoff, col)
 hold(ax, 'on');
 m1 = mean(v1, 1, 'omitnan');

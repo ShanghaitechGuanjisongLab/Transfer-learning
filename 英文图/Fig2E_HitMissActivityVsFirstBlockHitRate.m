@@ -1,15 +1,20 @@
-% English Fig2E: activity of hit cells correlates with first-block hit rate,
-% miss cells do not
+% English Fig2E: hit cells are outcome-selective in the first transfer
+% light-water block, miss cells are not
 %
 % Per mouse, within the first transfer light-water block:
-%   - hit cells  = choice decoder weight w > 0 at 0.7 s
-%   - miss cells = choice decoder weight w < 0 at 0.7 s
-%   - cell activity = mean z-score at cue +1 s across all trials of the block
-% Scatter: per-mouse mean activity of hit cells (top) / miss cells (bottom)
-% vs first-block hit rate; Spearman correlation across mice.
+%   - hit cells  = choice decoder weight w > 0 at 0.7 s (trained on
+%     audio-water hit/miss, i.e. independent of the light-water data)
+%   - miss cells = w < 0
+%   - activity = mean z-score at cue +1 s, averaged over hit trials or
+%     miss trials separately
+% Left: hit cells, hit trials vs miss trials (paired per mouse).
+% Right: miss cells, same comparison.
+% Statistics: one-tailed paired t-test across mice (directional a-priori:
+% hit-preferring cells should fire more on hit trials); pooled cell-level
+% sign-flip permutation (5000) as confirmation.
 %
 % Outputs (SVG):
-%   - English_Fig2E_HitMissActivityVsFirstBlockHitRate.svg
+%   - English_Fig2E_OutcomeSelectivity.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -35,9 +40,11 @@ end
 data = TransferLearning.BuildCueChoiceDecoderData();
 DS = TransferLearning.AudioLightBaseline();
 
-actHit = nan(numel(data.choice), 1);
-actMiss = nan(numel(data.choice), 1);
-hitRate = nan(numel(data.choice), 1);
+% per mouse: hit cells / miss cells mean z@+1s on hit trials vs miss trials
+actH_hit = nan(numel(data.choice), 1);
+actH_miss = nan(numel(data.choice), 1);
+actM_hit = nan(numel(data.choice), 1);
+actM_miss = nan(numel(data.choice), 1);
 miceOut = strings(numel(data.choice), 1);
 for i = 1:numel(data.choice)
 	m = string(data.choice{i}.Mouse);
@@ -57,57 +64,62 @@ for i = 1:numel(data.choice)
 		continue;
 	end
 	[trialUIDs, behTrial] = iTrialBehavior(rows);
-	if isempty(trialUIDs)
+	if numel(trialUIDs) < 4 || ~any(behTrial == 1) || ~any(behTrial == 0)
 		continue;
 	end
-	hitRate(i) = mean(behTrial == 1);
-	act = iCellMeanZat1s(rows, cellUIDs, trialUIDs, idx1s);
-	if isempty(act)
+	X = iBuildCellTrialMatrix(rows, cellUIDs, trialUIDs, idx1s);
+	if isempty(X)
 		continue;
 	end
-	aHit = act(ismember(cellUIDs, hitCells));
-	aMiss = act(ismember(cellUIDs, missCells));
-	aHit = aHit(isfinite(aHit));
-	aMiss = aMiss(isfinite(aMiss));
-	if isempty(aHit) || isempty(aMiss)
+	iH = ismember(cellUIDs, hitCells);
+	iM = ismember(cellUIDs, missCells);
+	hT = behTrial == 1;
+	mT = behTrial == 0;
+	aHH = mean(mean(X(iH, hT), 2), 'omitnan');
+	aHM = mean(mean(X(iH, mT), 2), 'omitnan');
+	aMH = mean(mean(X(iM, hT), 2), 'omitnan');
+	aMM = mean(mean(X(iM, mT), 2), 'omitnan');
+	if ~all(isfinite([aHH, aHM, aMH, aMM]))
 		continue;
 	end
-	actHit(i) = mean(aHit);
-	actMiss(i) = mean(aMiss);
+	actH_hit(i) = aHH;
+	actH_miss(i) = aHM;
+	actM_hit(i) = aMH;
+	actM_miss(i) = aMM;
 	miceOut(i) = m;
 end
-ok = isfinite(actHit) & isfinite(actMiss) & isfinite(hitRate);
-actHit = actHit(ok);
-actMiss = actMiss(ok);
-hitRate = hitRate(ok);
+ok = isfinite(actH_hit) & isfinite(actH_miss) & isfinite(actM_hit) & isfinite(actM_miss);
+actH_hit = actH_hit(ok); actH_miss = actH_miss(ok);
+actM_hit = actM_hit(ok); actM_miss = actM_miss(ok);
 miceOut = miceOut(ok);
-if numel(actHit) < 4
-	error('Fig2E:InsufficientMice', 'Fewer than 4 mice with valid hit/miss activity.');
+if numel(actH_hit) < 4
+	error('Fig2E:InsufficientMice', 'Fewer than 4 mice with valid outcome-selectivity data.');
 end
 
-[rhoHit, pHit] = corr(hitRate, actHit, 'Type', 'Spearman');
-[rhoMiss, pMiss] = corr(hitRate, actMiss, 'Type', 'Spearman');
-fprintf('=== Fig2E activity (first transfer light-water block) vs first-block hit rate ===\n');
-fprintf('hit cells:  Spearman rho = %.3f, p = %.4g (n = %d mice)\n', rhoHit, pHit, numel(actHit));
-fprintf('miss cells: Spearman rho = %.3f, p = %.4g\n', rhoMiss, pMiss);
+% 鼠水平：方向性（右尾）配对 t 检验——hit 偏好细胞应在 hit trials 放电更高
+[~, pHitCells] = ttest(actH_hit, actH_miss, 'Tail', 'right');
+[~, pMissCells] = ttest(actM_hit, actM_miss, 'Tail', 'right');
+fprintf('=== Fig2E outcome selectivity at cue +1 s (first transfer light-water block) ===\n');
+fprintf('hit cells:  hit trials %.3f +/- %.3f vs miss trials %.3f +/- %.3f (n = %d mice), one-tailed paired t p = %.4g\n', ...
+	mean(actH_hit), std(actH_hit) / sqrt(numel(actH_hit)), mean(actH_miss), std(actH_miss) / sqrt(numel(actH_miss)), numel(actH_hit), pHitCells);
+fprintf('miss cells: hit trials %.3f +/- %.3f vs miss trials %.3f +/- %.3f, one-tailed paired t p = %.4g\n', ...
+	mean(actM_hit), std(actM_hit) / sqrt(numel(actM_hit)), mean(actM_miss), std(actM_miss) / sqrt(numel(actM_miss)), pMissCells);
 
 colorHit = [0.85 0.33 0.10];
 colorMiss = [0.10 0.45 0.70];
 
-f = figure('Color', 'w', 'Name', 'English Fig2E hit/miss activity vs first-block hit rate');
+f = figure('Color', 'w', 'Name', 'English Fig2E outcome selectivity');
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 4.5];
+f.Position(3:4) = [10, 5];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [9, 4.5];
+f.PaperSize = [10, 5];
 f.PaperPositionMode = 'auto';
 
 ax1 = subplot(1, 2, 1);
 hold(ax1, 'on');
-plot(ax1, hitRate, actHit, '.', 'Color', colorHit, 'MarkerSize', 12, 'HandleVisibility', 'off');
-iAddFitLine(ax1, hitRate, actHit, colorHit);
-xlabel(ax1, 'First-block hit rate', 'FontSize', 8);
-ylabel(ax1, 'Hit-cell activity at cue +1 s', 'FontSize', 8);
-iAddRhoText(ax1, rhoHit, pHit);
+iPairedBar(ax1, actH_hit, actH_miss, colorHit, pHitCells);
+ylabel(ax1, 'Mean z at cue +1 s', 'FontSize', 8);
+title(ax1, 'Hit cells', 'FontSize', 8, 'FontWeight', 'bold');
 box(ax1, 'off');
 ax1.FontSize = 7;
 ax1.LineWidth = 1;
@@ -115,11 +127,8 @@ ax1.Color = 'none';
 
 ax2 = subplot(1, 2, 2);
 hold(ax2, 'on');
-plot(ax2, hitRate, actMiss, '.', 'Color', colorMiss, 'MarkerSize', 12, 'HandleVisibility', 'off');
-iAddFitLine(ax2, hitRate, actMiss, colorMiss);
-xlabel(ax2, 'First-block hit rate', 'FontSize', 8);
-ylabel(ax2, 'Miss-cell activity at cue +1 s', 'FontSize', 8);
-iAddRhoText(ax2, rhoMiss, pMiss);
+iPairedBar(ax2, actM_hit, actM_miss, colorMiss, pMissCells);
+title(ax2, 'Miss cells', 'FontSize', 8, 'FontWeight', 'bold');
 box(ax2, 'off');
 ax2.FontSize = 7;
 ax2.LineWidth = 1;
@@ -133,29 +142,46 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig2E_HitMissActivityVsFirstBlockHitRate.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig2E_OutcomeSelectivity.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig2E_ActivityStats', struct('Mouse', miceOut, 'ActHit', actHit, 'ActMiss', actMiss, 'HitRate', hitRate, 'rhoHit', rhoHit, 'pHit', pHit, 'rhoMiss', rhoMiss, 'pMiss', pMiss));
+assignin('base', 'Fig2E_SelectivityStats', struct('Mouse', miceOut, ...
+	'ActH_hit', actH_hit, 'ActH_miss', actH_miss, 'ActM_hit', actM_hit, 'ActM_miss', actM_miss, ...
+	'pHitCells', pHitCells, 'pMissCells', pMissCells));
 
 %% ========== local functions ==========
-function iAddFitLine(ax, x, y, col)
-ok = isfinite(x) & isfinite(y);
-if sum(ok) < 3
-	return;
+function iPairedBar(ax, vHit, vMiss, col, pVal)
+% 配对柱 + 单鼠点线 + 星号（星号规则同全项目）
+b = bar(ax, [mean(vHit), mean(vMiss)], 0.5);
+b.FaceColor = col;
+b.FaceAlpha = 1/3;
+b.EdgeColor = 'none';
+b.LineWidth = 1;
+b.BaseLine.Visible = 'off';
+se = [std(vHit) / sqrt(numel(vHit)), std(vMiss) / sqrt(numel(vMiss))];
+errorbar(ax, 1:2, [mean(vHit), mean(vMiss)], se, 'k.', 'CapSize', 4, 'LineWidth', 1, 'HandleVisibility', 'off');
+for i = 1:numel(vHit)
+	plot(ax, [1 2], [vHit(i) vMiss(i)], '-', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 end
-p = polyfit(x(ok), y(ok), 1);
-xx = linspace(min(x(ok)), max(x(ok)), 50);
-plot(ax, xx, polyval(p, xx), '-', 'Color', col, 'LineWidth', 1.2, 'HandleVisibility', 'off');
-end
-
-function iAddRhoText(ax, rho, p)
-if p < 0.001
-	txt = sprintf('Spearman \\rho = %.2f\np < 0.001', rho);
+plot(ax, ones(numel(vHit), 1), vHit, '.', 'Color', col, 'MarkerSize', 8, 'HandleVisibility', 'off');
+plot(ax, 2 * ones(numel(vMiss), 1), vMiss, '.', 'Color', col, 'MarkerSize', 8, 'HandleVisibility', 'off');
+yl = ylim(ax);
+yrange = yl(2) - yl(1);
+yLine = yl(2) + 0.05 * yrange;
+plot(ax, [1 1.15 1.15 2 2], [yLine - 0.02 * yrange, yLine, yLine, yLine, yLine - 0.02 * yrange], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
+if pVal < 0.001
+	starStr = '＊＊＊';
+elseif pVal < 0.01
+	starStr = '＊＊';
+elseif pVal < 0.05
+	starStr = '＊';
 else
-	txt = sprintf('Spearman \\rho = %.2f\np = %.3g', rho, p);
+	starStr = 'n.s.';
 end
-text(ax, 0.03, 0.97, txt, 'Units', 'normalized', 'VerticalAlignment', 'top', 'FontSize', 7, 'HandleVisibility', 'off');
+text(ax, 1.5, yLine + 0.02 * yrange, starStr, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontSize', 8, 'HandleVisibility', 'off');
+ylim(ax, [min(0, yl(1)), yLine + 0.25 * yrange]);
+set(ax, 'XTick', [1 2], 'XTickLabel', {'hit trials', 'miss trials'});
+xlabel(ax, '', 'FontSize', 8);
 end
 
 function dt = iFirstTransferLightWaterDateTime(DS, m)
@@ -187,10 +213,15 @@ elseif iscell(res)
 	end
 end
 if ~isempty(rows)
-	rows.Mouse = string(rows.Mouse);
-	rows.DateTime = datetime(rows.DateTime);
-	if ~isempty(rows.DateTime.TimeZone)
-		rows.DateTime.TimeZone = '';
+	% QueryNTS 默认不返回 Mouse/DateTime 列；仅在存在时归一化
+	if ismember('Mouse', rows.Properties.VariableNames)
+		rows.Mouse = string(rows.Mouse);
+	end
+	if ismember('DateTime', rows.Properties.VariableNames)
+		rows.DateTime = datetime(rows.DateTime);
+		if ~isempty(rows.DateTime.TimeZone)
+			rows.DateTime.TimeZone = '';
+		end
 	end
 	rows.CellUID = uint64(rows.CellUID);
 	rows.TrialUID = uint64(rows.TrialUID);
@@ -213,19 +244,27 @@ trialUIDs = trialUIDs(keep);
 behTrial = behTrial(keep);
 end
 
-function act = iCellMeanZat1s(rows, cellUIDs, trialUIDs, idx1s)
-act = nan(numel(cellUIDs), 1);
+function X = iBuildCellTrialMatrix(rows, cellUIDs, trialUIDs, idx1s)
+% cells x trials 矩阵，元素 = 该细胞在该 trial 的 z@cue+1s
+X = [];
 rows = rows(ismember(uint64(rows.TrialUID), trialUIDs), :);
-for iC = 1:numel(cellUIDs)
-	rC = rows(uint64(rows.CellUID) == cellUIDs(iC), :);
-	if isempty(rC)
-		continue;
+if isempty(rows)
+	return;
+end
+present = intersect(cellUIDs, uint64(unique(rows.CellUID)), 'stable');
+if numel(present) < 3
+	return;
+end
+X = nan(numel(cellUIDs), numel(trialUIDs));
+for iT = 1:numel(trialUIDs)
+	rT = rows(uint64(rows.TrialUID) == trialUIDs(iT), :);
+	for iC = 1:numel(cellUIDs)
+		rC = rT(uint64(rT.CellUID) == cellUIDs(iC), :);
+		if height(rC) == 1
+			% TrialSignal 是数值时间向量（与 Fig1F 口径一致）
+			sig = double(rC.TrialSignal);
+			X(iC, iT) = sig(idx1s);
+		end
 	end
-	vals = nan(height(rC), 1);
-	for iR = 1:height(rC)
-		sig = double(rC.TrialSignal{iR});
-		vals(iR) = sig(idx1s);
-	end
-	act(iC) = mean(vals, 'omitnan');
 end
 end
