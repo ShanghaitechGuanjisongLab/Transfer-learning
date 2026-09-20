@@ -204,93 +204,69 @@ if ~isempty(naiveFirst) && ~isempty(tranFirst) %[output:group:9039a271]
 	naiveA = naiveFirst;
 	tranA  = tranFirst;
 
-	DataCell = {naiveA, tranA}; % {Naive, Transfer}
+	DataCell = {naiveA(:), tranA(:)}; % {Naive, Transfer}，列向量
 	CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 
-	% --- Plot (transparent background)
-	f2 = figure('Color','none', 'Name', 'English FigS1D Undelayed first-block performance'); %[output:30387fc7]
-		f2.Units = 'centimeters';
-		pos2 = f2.Position;
-		pos2(3:4) = [4,4];
-		f2.Position = pos2; %[output:30387fc7]
-		f2.InvertHardcopy = 'off';
-		f2.PaperUnits = 'centimeters';
-		f2.PaperSize = [4,4];
-		f2.PaperPositionMode = 'auto';
+	% --- Plot (Inset 规范：图窗 4×4 cm，ExportStandardFigureTransparent 2×缩放，字号/线宽交给导出函数)
+	f2 = figure('Color', 'w', 'Name', 'English FigS1D Undelayed first-block performance');
+	f2.Units = 'centimeters';
+	f2.Position(3:4) = [4, 4];
+	f2.PaperUnits = 'centimeters';
+	f2.PaperSize = [4, 4];
+	f2.PaperPositionMode = 'auto';
 
-	tiledlayout(1,1,'TileSpacing','normal','Padding','normal'); %[output:30387fc7]
-	nexttile; %[output:30387fc7]
-	[~, Optional2, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, CompareGroup, 'AsteriskThreshold', 0.05); %[output:30387fc7]
-	ax2 = gca;
-	ax2.FontSize = 12; %[output:30387fc7]
-	ax2.LineWidth = 2; %[output:30387fc7]
-	ax2.Color = 'none'; %[output:30387fc7]
-	ax2.XAxis.Visible = 'off'; %[output:30387fc7]
-	ax2.XTick = []; %[output:30387fc7]
+	ax2 = axes(f2);
+	% IndividualErrorbars 旗帜：每根误差条独立对象，逐根与所属 bar 同色
+	[~, ~, Bars2, ErrorBars2] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+	ax2.Color = 'none';
+	ax2.XAxis.Visible = 'off';
+	ax2.XTick = [];
 	legend(ax2, 'off');
 
-	% Asterisk font size
-	if isfield(Optional2, 'MultiCompare') && ismember('PText', Optional2.MultiCompare.Properties.VariableNames)
-		for pt = Optional2.MultiCompare.PText(:)'
-			pt.FontSize = 12; %[output:30387fc7]
-		end
-	end
-	if isfield(Optional2, 'MultiCompare') && ismember('PLine', Optional2.MultiCompare.Properties.VariableNames)
-		for pl = Optional2.MultiCompare.PLine(:)'
-			pl.LineWidth = 2; %[output:30387fc7]
-		end
-	end
-
-	% Bar styling – current named palette
+	% Bar styling：bar 与 errorbar 同色（含透明度），bar 无边框
 	palette2 = [TransferLearning.NaiveColor; TransferLearning.TransferColor];
 	colorNaive = palette2(1,:);
 	colorTrans = palette2(2,:);
-	if numel(Bars2) == 1
-		Bars2.FaceColor = 'flat'; %[output:30387fc7]
+	if isscalar(Bars2)
+		Bars2.FaceColor = 'flat';
 		nBars = numel(Bars2.YData);
 		reps = ceil(nBars/2);
-		Bars2.CData = repmat([colorNaive; colorTrans], reps, 1); %[output:30387fc7]
-		Bars2.CData = Bars2.CData(1:nBars, :); %[output:30387fc7]
-		Bars2.BarWidth = 0.5; %[output:30387fc7]
-		Bars2.LineWidth = 2; %[output:30387fc7]
-		Bars2.EdgeColor = 'none'; %[output:30387fc7]
-		Bars2.FaceAlpha = 1/3; %[output:30387fc7]
+		Bars2.CData = repmat([colorNaive; colorTrans], reps, 1);
+		Bars2.CData = Bars2.CData(1:nBars, :);
 	else
-		if numel(Bars2) >= 2
-			Bars2(1).FaceColor = colorNaive;
-			Bars2(2).FaceColor = colorTrans;
-			Bars2(1).LineWidth = 2;
-			Bars2(2).LineWidth = 2;
-			Bars2(1).EdgeColor = 'none';
-			Bars2(2).EdgeColor = 'none';
-			Bars2(1).FaceAlpha = 1/3;
-			Bars2(2).FaceAlpha = 1/3;
-		else
-			Bars2.FaceColor = colorNaive;
-			Bars2.LineWidth = 2;
-			Bars2.EdgeColor = 'none';
-			Bars2.FaceAlpha = 1/3;
+		Bars2(1).FaceColor = colorNaive;
+		Bars2(2).FaceColor = colorTrans;
+	end
+	for kB = 1:numel(Bars2)
+		Bars2(kB).BarWidth = 0.5;
+		Bars2(kB).EdgeColor = 'none';
+		Bars2(kB).FaceAlpha = 1;
+	end
+	if istable(ErrorBars2) && ~isempty(ErrorBars2) && ismember('Object', ErrorBars2.Properties.VariableNames)
+		barColors = [colorNaive; colorTrans];
+		for kE = 1:height(ErrorBars2)
+			eb = ErrorBars2.Object(kE);
+			if isgraphics(eb) && kE <= size(barColors, 1)
+				eb.Color = barColors(kE, :);
+			end
 		end
 	end
-	for eb = ErrorBars2.Object(:)'
-		eb.LineWidth = 2; %[output:30387fc7]
-	end
-	ax2.XLim = [0.5, 2.5]; %[output:30387fc7]
+	ax2.XLim = [0.5, 2.5];
 
-	ylabel(ax2, 'Hit rate', 'FontSize', 12); %[output:30387fc7]
-	title(ax2, 'First block', 'FontSize', 12, 'FontWeight', 'normal'); %[output:30387fc7]
-	box(ax2, 'off'); %[output:30387fc7]
+	ylabel(ax2, 'Hit rate');
+	title(ax2, 'First block', 'FontWeight', 'normal');
+	box(ax2, 'off');
 
 	% Export SVG (transparent)
 	svgPath2 = 'English_FigS1D_UndelayedFirstBlockBar.svg';
 	if ~isfolder(outDirUNC)
 		mkdir(outDirUNC);
 	end
-	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar) %[output:30387fc7]
-		ax2.Toolbar.Visible = 'off'; %[output:30387fc7]
+	if isprop(ax2, 'Toolbar') && ~isempty(ax2.Toolbar)
+		ax2.Toolbar.Visible = 'off';
 	end
-	svgPath2 = TransferLearning.ExportStandardFigure(f2, 2, svgPath2); %[output:30387fc7]
-	fprintf('Wrote: %s\n', svgPath2); %[output:5fd930fe]
+	svgPath2 = TransferLearning.ExportStandardFigureTransparent(f2, 2, svgPath2);
+	fprintf('Wrote: %s\n', svgPath2);
 end %[output:group:9039a271]
 
 %% --- local functions

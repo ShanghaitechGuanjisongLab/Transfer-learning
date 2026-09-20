@@ -1,17 +1,13 @@
-% English Fig2E: hit cells are outcome-selective in the first transfer
-% light-water block, miss cells are not
+% English Fig2E: activity at cue +1 s of hit cells on hit trials vs miss
+% cells on miss trials in the first transfer light-water block
 %
 % Per mouse, within the first transfer light-water block:
-%   - hit cells  = choice decoder weight w > 0 at 0.7 s (trained on
+%   - hit cells  = choice decoder weight w > 0 at 1.0 s (trained on
 %     audio-water hit/miss, i.e. independent of the light-water data)
 %   - miss cells = w < 0
-%   - activity = mean z-score at cue +1 s, averaged over hit trials or
-%     miss trials separately
-% Left: hit cells, hit trials vs miss trials (paired per mouse).
-% Right: miss cells, same comparison.
-% Statistics: one-tailed paired t-test across mice (directional a-priori:
-% hit-preferring cells should fire more on hit trials); pooled cell-level
-% sign-flip permutation (5000) as confirmation.
+%   - activity = mean z-score at cue +1 s
+% Two groups only (no crossed comparisons): hit cells on hit trials vs
+% miss cells on miss trials, paired per mouse (sign-rank).
 %
 % Outputs (SVG):
 %   - English_Fig2E_OutcomeSelectivity.svg
@@ -40,18 +36,16 @@ end
 data = TransferLearning.BuildCueChoiceDecoderData();
 DS = TransferLearning.AudioLightBaseline();
 
-% per mouse: hit cells / miss cells mean z@+1s on hit trials vs miss trials
+% per mouse: hit cells on hit trials / miss cells on miss trials, mean z@+1s
 actH_hit = nan(numel(data.choice), 1);
-actH_miss = nan(numel(data.choice), 1);
-actM_hit = nan(numel(data.choice), 1);
 actM_miss = nan(numel(data.choice), 1);
 miceOut = strings(numel(data.choice), 1);
 for i = 1:numel(data.choice)
 	m = string(data.choice{i}.Mouse);
 	cellUIDs = uint64(data.choice{i}.cellUIDs);
-	w07 = data.choice{i}.w07;
-	hitCells = cellUIDs(w07 > 0);
-	missCells = cellUIDs(w07 < 0);
+	w1s = data.choice{i}.w1s;
+	hitCells = cellUIDs(w1s > 0);
+	missCells = cellUIDs(w1s < 0);
 	if numel(hitCells) < 3 || numel(missCells) < 3
 		continue;
 	end
@@ -76,114 +70,118 @@ for i = 1:numel(data.choice)
 	hT = behTrial == 1;
 	mT = behTrial == 0;
 	aHH = mean(mean(X(iH, hT), 2), 'omitnan');
-	aHM = mean(mean(X(iH, mT), 2), 'omitnan');
-	aMH = mean(mean(X(iM, hT), 2), 'omitnan');
 	aMM = mean(mean(X(iM, mT), 2), 'omitnan');
-	if ~all(isfinite([aHH, aHM, aMH, aMM]))
+	if ~all(isfinite([aHH, aMM]))
 		continue;
 	end
 	actH_hit(i) = aHH;
-	actH_miss(i) = aHM;
-	actM_hit(i) = aMH;
 	actM_miss(i) = aMM;
 	miceOut(i) = m;
 end
-ok = isfinite(actH_hit) & isfinite(actH_miss) & isfinite(actM_hit) & isfinite(actM_miss);
-actH_hit = actH_hit(ok); actH_miss = actH_miss(ok);
-actM_hit = actM_hit(ok); actM_miss = actM_miss(ok);
+ok = isfinite(actH_hit) & isfinite(actM_miss);
+actH_hit = actH_hit(ok);
+actM_miss = actM_miss(ok);
 miceOut = miceOut(ok);
 if numel(actH_hit) < 4
 	error('Fig2E:InsufficientMice', 'Fewer than 4 mice with valid outcome-selectivity data.');
 end
 
-% 鼠水平：方向性（右尾）配对 t 检验——hit 偏好细胞应在 hit trials 放电更高
-[~, pHitCells] = ttest(actH_hit, actH_miss, 'Tail', 'right');
-[~, pMissCells] = ttest(actM_hit, actM_miss, 'Tail', 'right');
-fprintf('=== Fig2E outcome selectivity at cue +1 s (first transfer light-water block) ===\n');
-fprintf('hit cells:  hit trials %.3f +/- %.3f vs miss trials %.3f +/- %.3f (n = %d mice), one-tailed paired t p = %.4g\n', ...
-	mean(actH_hit), std(actH_hit) / sqrt(numel(actH_hit)), mean(actH_miss), std(actH_miss) / sqrt(numel(actH_miss)), numel(actH_hit), pHitCells);
-fprintf('miss cells: hit trials %.3f +/- %.3f vs miss trials %.3f +/- %.3f, one-tailed paired t p = %.4g\n', ...
-	mean(actM_hit), std(actM_hit) / sqrt(numel(actM_hit)), mean(actM_miss), std(actM_miss) / sqrt(numel(actM_miss)), pMissCells);
+% 两组比较：hit cells on hit trials vs miss cells on miss trials（配对于鼠，sign-rank）
+vHit = actH_hit;
+vMiss = actM_miss;
+pPaired = signrank(vHit, vMiss);
+[~, pT] = ttest(vHit, vMiss);
+fprintf('=== Fig2E activity at cue +1 s (first transfer light-water block) ===\n');
+fprintf('hit cells on hit trials:   %.3f +/- %.3f (n = %d mice)\n', mean(vHit), std(vHit) / sqrt(numel(vHit)), numel(vHit));
+fprintf('miss cells on miss trials: %.3f +/- %.3f\n', mean(vMiss), std(vMiss) / sqrt(numel(vMiss)));
+fprintf('paired signrank p = %.4g ; paired t-test p = %.4g\n', pPaired, pT);
 
 colorHit = [0.85 0.33 0.10];
 colorMiss = [0.10 0.45 0.70];
 
+% 无 legend 基础图：高 4 cm，宽 3 cm（1.5 的整倍数）；Scale=1
 f = figure('Color', 'w', 'Name', 'English Fig2E outcome selectivity');
 f.Units = 'centimeters';
-f.Position(3:4) = [10, 5];
+f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [10, 5];
+f.PaperSize = [3, 4];
 f.PaperPositionMode = 'auto';
 
-ax1 = subplot(1, 2, 1);
-hold(ax1, 'on');
-iPairedBar(ax1, actH_hit, actH_miss, colorHit, pHitCells);
-ylabel(ax1, 'Mean z at cue +1 s', 'FontSize', 8);
-title(ax1, 'Hit cells', 'FontSize', 8, 'FontWeight', 'bold');
-box(ax1, 'off');
-ax1.FontSize = 7;
-ax1.LineWidth = 1;
-ax1.Color = 'none';
-
-ax2 = subplot(1, 2, 2);
-hold(ax2, 'on');
-iPairedBar(ax2, actM_hit, actM_miss, colorMiss, pMissCells);
-title(ax2, 'Miss cells', 'FontSize', 8, 'FontWeight', 'bold');
-box(ax2, 'off');
-ax2.FontSize = 7;
-ax2.LineWidth = 1;
-ax2.Color = 'none';
-
-if isprop(ax1, 'Toolbar') && ~isempty(ax1.Toolbar)
-	ax1.Toolbar.Visible = 'off';
+ax = axes(f);
+DataCell = {double(vHit(:)), double(vMiss(:))};
+CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+% IndividualErrorbars 旗帜：每根误差条独立对象，逐根与所属 bar 同色
+[~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+set(ax, 'XTick', [1 2], 'XTickLabel', {'hit', 'miss'});
+ylabel(ax, 'Mean z at cue +1 s');
+% bar 不设透明度：FaceAlpha<1 会冲淡柱色，与全饱和 errorbar 视觉不同色（违反同色规范）
+if isscalar(Bars)
+	Bars.FaceColor = 'flat';
+	nB = numel(Bars.YData);
+	barCData = repmat([colorHit; colorMiss], ceil(nB / 2), 1);
+	Bars.CData = barCData(1:nB, :);
+	Bars.EdgeColor = 'none';
+	Bars.FaceAlpha = 1;
+	Bars.BarWidth = 0.5;
+else
+	Bars(1).FaceColor = colorHit;
+	Bars(2).FaceColor = colorMiss;
+	for kB = 1:numel(Bars)
+		Bars(kB).EdgeColor = 'none';
+		Bars(kB).FaceAlpha = 1;
+		Bars(kB).BarWidth = 0.5;
+	end
+end
+% 误差条与所属 bar 同色（第 k 行对应第 k 根 bar）
+if istable(ErrorBars) && ~isempty(ErrorBars) && ismember('Object', ErrorBars.Properties.VariableNames)
+	barColors = [colorHit; colorMiss];
+	for kE = 1:height(ErrorBars)
+		eb = ErrorBars.Object(kE);
+		if isgraphics(eb) && kE <= size(barColors, 1)
+			eb.Color = barColors(kE, :);
+		end
+	end
+end
+% BarScatterCompare 内部 PLine 自动绘制；anova/multcompare 不感知配对，
+% PText 覆盖为配对 sign-rank p（图注报告口径）
+if isfield(Optional, 'MultiCompare') && istable(Optional.MultiCompare)
+	mc = Optional.MultiCompare;
+	if ismember('PText', mc.Properties.VariableNames)
+		for ip = 1:height(mc)
+			pt = mc.PText(ip);
+			if isgraphics(pt)
+				pt.String = TransferLearning.Style.iFormatPText(pPaired);
+				pt.Tag = 'PText';
+			end
+		end
+	end
+	if ismember('PLine', mc.Properties.VariableNames)
+		for ip = 1:height(mc)
+			pl = mc.PLine(ip);
+			if isgraphics(pl)
+				pl.Tag = 'PLine';
+			end
+		end
+	end
+end
+legend(ax, 'off');
+box(ax, 'off');
+ax.Color = 'none';
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
 end
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig2E_OutcomeSelectivity.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig2E_OutcomeSelectivity.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Fig2E_SelectivityStats', struct('Mouse', miceOut, ...
-	'ActH_hit', actH_hit, 'ActH_miss', actH_miss, 'ActM_hit', actM_hit, 'ActM_miss', actM_miss, ...
-	'pHitCells', pHitCells, 'pMissCells', pMissCells));
+	'ActH_hit', actH_hit, 'ActM_miss', actM_miss, 'pPaired', pPaired));
 
 %% ========== local functions ==========
-function iPairedBar(ax, vHit, vMiss, col, pVal)
-% 配对柱 + 单鼠点线 + 星号（星号规则同全项目）
-b = bar(ax, [mean(vHit), mean(vMiss)], 0.5);
-b.FaceColor = col;
-b.FaceAlpha = 1/3;
-b.EdgeColor = 'none';
-b.LineWidth = 1;
-b.BaseLine.Visible = 'off';
-se = [std(vHit) / sqrt(numel(vHit)), std(vMiss) / sqrt(numel(vMiss))];
-errorbar(ax, 1:2, [mean(vHit), mean(vMiss)], se, 'k.', 'CapSize', 4, 'LineWidth', 1, 'HandleVisibility', 'off');
-for i = 1:numel(vHit)
-	plot(ax, [1 2], [vHit(i) vMiss(i)], '-', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.5, 'HandleVisibility', 'off');
-end
-plot(ax, ones(numel(vHit), 1), vHit, '.', 'Color', col, 'MarkerSize', 8, 'HandleVisibility', 'off');
-plot(ax, 2 * ones(numel(vMiss), 1), vMiss, '.', 'Color', col, 'MarkerSize', 8, 'HandleVisibility', 'off');
-yl = ylim(ax);
-yrange = yl(2) - yl(1);
-yLine = yl(2) + 0.05 * yrange;
-plot(ax, [1 1.15 1.15 2 2], [yLine - 0.02 * yrange, yLine, yLine, yLine, yLine - 0.02 * yrange], 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
-if pVal < 0.001
-	starStr = '＊＊＊';
-elseif pVal < 0.01
-	starStr = '＊＊';
-elseif pVal < 0.05
-	starStr = '＊';
-else
-	starStr = 'n.s.';
-end
-text(ax, 1.5, yLine + 0.02 * yrange, starStr, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontSize', 8, 'HandleVisibility', 'off');
-ylim(ax, [min(0, yl(1)), yLine + 0.25 * yrange]);
-set(ax, 'XTick', [1 2], 'XTickLabel', {'hit trials', 'miss trials'});
-xlabel(ax, '', 'FontSize', 8);
-end
-
 function dt = iFirstTransferLightWaterDateTime(DS, m)
 T = DS.TableQuery(["Mouse", "DateTime", "Phase", "Stimulus"]);
 T.Mouse = string(T.Mouse);

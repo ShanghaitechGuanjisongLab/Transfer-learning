@@ -1,4 +1,4 @@
-% English Fig2B: behavior decoder transfers to light, cue decoder does not
+% English Fig2A: behavior decoder transfers to light, cue decoder does not
 %
 % 2x2 layout (2 lines per panel, 1.5 s window), copied from
 % 信息编码/Cfg2Figure_15.m:
@@ -10,7 +10,7 @@
 % miss, whereas the cue decoder's two lines stay at chance (~0.5).
 %
 % Outputs (SVG):
-%   - English_Fig2B_DecoderTransfer.svg
+%   - English_Fig2A_DecoderTransfer.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -73,7 +73,7 @@ end
 %% 
 
 % ---------- figure ----------
-f = figure('Color', 'w', 'Name', 'English Fig2B decoder transfer');
+f = figure('Color', 'w', 'Name', 'English Fig2A decoder transfer');
 f.Units = 'centimeters';
 % 图窗加高（用户 2026-09-17）：16 cm 高使轴内 legend 不再压在曲线上
 f.Position(3:4) = [18, 16];
@@ -159,11 +159,11 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig2B_DecoderTransfer.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig2A_DecoderTransfer.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 % ---------- statistics: Stage2 separation, BH-FDR over time points ----------
-fprintf('\n=== Fig2B Stage2 (transfer) hit vs miss, paired t-test per time point ===\n');
+fprintf('\n=== Fig2A Stage2 (transfer) hit vs miss, paired t-test per time point ===\n');
 for r = 1:2
 	if r == 1
 		P = pSt2Cue;
@@ -190,7 +190,7 @@ for r = 1:2
 	fprintf('%s: nominal p<0.05 at %d/%d time points; BH-FDR q<0.05 at %d\n', name, nNom, nTfull, nFdr);
 end
 
-assignin('base', 'Fig2B_DecoderTendency', struct('pSt1Cue', pSt1Cue, 'pSt2Cue', pSt2Cue, 'pSt1Ch', pSt1Ch, 'pSt2Ch', pSt2Ch, 'tVec', tVec, 'nCue', nCue, 'nCh', nCh));
+assignin('base', 'Fig2A_DecoderTendency', struct('pSt1Cue', pSt1Cue, 'pSt2Cue', pSt2Cue, 'pSt1Ch', pSt1Ch, 'pSt2Ch', pSt2Ch, 'tVec', tVec, 'nCue', nCue, 'nCh', nCh));
 
 %% ========== local functions ==========
 function q = iBHCorrect(p)

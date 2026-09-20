@@ -1,10 +1,9 @@
-% English Fig2H: cFos activity-dependent inhibition vs Control
+% English Fig2I: cFos activity-dependent inhibition vs Control
 %
-% v6 Panel K: cFos-MOp 精准抑制（学习曲线 + 首会话命中率）
+% v6 Panel K: cFos-MOp 精准抑制（仅学习曲线；首会话命中率柱状图已按用户要求删除）
 % Shared behavior-session helpers: TransferLearning.BehaviorSessions
 % Outputs (SVG):
-%   - English_Fig2H_cFos_LearningCurve.svg
-%   - English_Fig2H_cFos_FirstSessionHitRate.svg
+%   - English_Fig2I_cFos_LearningCurve.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -34,14 +33,14 @@ DS = UniExp.DataSet(matPath);
 % --- 2) Build group table (Mouse -> Group)
 S = DS.Mice;
 if isempty(S)
-	error('English_Fig2H:EmptyMiceTable', 'DS.Mice is empty.');
+		error('English_Fig2I:EmptyMiceTable', 'DS.Mice is empty.');
 end
 
 if ~ismember('Mouse', S.Properties.VariableNames)
 	if ~isempty(S.Properties.RowNames)
 		S.Mouse = string(S.Properties.RowNames);
 	else
-		error('English_Fig2H:MissingMouse', 'DS.Mice has no Mouse column or RowNames.');
+			error('English_Fig2I:MissingMouse', 'DS.Mice has no Mouse column or RowNames.');
 	end
 end
 S.Mouse = string(S.Mouse);
@@ -49,7 +48,7 @@ S.Mouse = string(S.Mouse);
 needVars = ["ExpressedBrain","MarkTimes"];
 for k = 1:numel(needVars)
 	if ~ismember(needVars(k), string(S.Properties.VariableNames))
-		error('English_Fig2H:MissingMiceVar', 'DS.Mice lacks required var: %s', needVars(k));
+		error('English_Fig2I:MissingMiceVar', 'DS.Mice lacks required var: %s', needVars(k));
 	end
 end
 
@@ -68,13 +67,13 @@ S = S(ismember(S.Group, ["Control","MOp"]), :);
 [~, ia] = unique(S.Mouse, 'stable');
 S = S(ia, :);
 if isempty(S)
-	error('English_Fig2H:EmptyGroups', 'No mice left after filtering to Control/MOp.');
+	error('English_Fig2I:EmptyGroups', 'No mice left after filtering to Control/MOp.');
 end
 
 % --- 3) Query LightWater behavior blocks
 B = TransferLearning.BehaviorSessions.iQueryLightWaterBlocks(DS, false);
 if isempty(B)
-	error('English_Fig2H:EmptyBehavior', 'No LightWater behavior rows found.');
+	error('English_Fig2I:EmptyBehavior', 'No LightWater behavior rows found.');
 end
 B.Mouse = string(B.Mouse);
 B.DateTime = TransferLearning.BehaviorSessions.iNormalizeDateTime(B.DateTime);
@@ -118,7 +117,7 @@ semCells  = cellfun(@(v) double(v(:))', SummaryPlot.SemCurve,  'UniformOutput', 
 
 %% 
 % --- 6) Plot learning curve (like English Fig1B)
-f = figure('Color','w', 'Name', 'English Fig2H cFos Learning curve');
+f = figure('Color','w', 'Name', 'English Fig2I cFos Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8]; % 90mm x 80mm (match English Fig1B)
 f.PaperPositionMode = 'auto';
@@ -172,7 +171,7 @@ grid(ax, 'off');
 
 % Export learning curve
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgLC = 'English_Fig2H_cFos_LearningCurve.svg';
+svgLC = 'English_Fig2I_cFos_LearningCurve.svg';
 try
 	if ~isfolder(outDirUNC), mkdir(outDirUNC); end
 catch
@@ -186,59 +185,9 @@ catch ME
 end
 
 %%
-% 用户裁定（2026-09-17）：H 面板只保留学习曲线，删除首 block 柱（首 block 差异不显著）。
+% 用户裁定（2026-09-17）：I 面板只保留学习曲线，删除首 block 柱（首 block 差异不显著）。
 
-assignin('base', 'English_Fig2H_Sessions', Sess);
-assignin('base', 'English_Fig2H_LearningSummarizeP', PValueLS);
+assignin('base', 'English_Fig2I_Sessions', Sess);
+assignin('base', 'English_Fig2I_LearningSummarizeP', PValueLS);
 
-function h = iText(varargin)
-h = text(varargin{:});
-end
-
-function pValue = iBarScatterPValue(options, fallbackPValue)
-pValue = fallbackPValue;
-if isfield(options, 'MultiCompare') && istable(options.MultiCompare) && ismember('PValue', options.MultiCompare.Properties.VariableNames) && ~isempty(options.MultiCompare.PValue)
-	pCandidate = options.MultiCompare.PValue(1);
-	if isnumeric(pCandidate) && isfinite(pCandidate)
-		pValue = double(pCandidate);
-	end
-end
-end
-
-function iStyleBars(barsObj, colorControl, colorInhibited)
-if isscalar(barsObj)
-	barsObj.FaceColor = 'flat';
-	nBars = numel(barsObj.YData);
-	barsObj.CData = repmat([colorControl; colorInhibited], ceil(nBars/2), 1);
-	barsObj.CData = barsObj.CData(1:nBars, :);
-	barsObj.BarWidth = 0.5;
-	barsObj.LineWidth = 2;
-	barsObj.BaseLine.LineWidth = 2;
-	barsObj.EdgeColor = 'none';
-	barsObj.FaceAlpha = 1;
-	return;
-end
-barsObj(1).FaceColor = colorControl;
-barsObj(2).FaceColor = colorInhibited;
-barsObj(1).BarWidth = 0.5;
-barsObj(2).BarWidth = 0.5;
-barsObj(1).LineWidth = 2;
-barsObj(2).LineWidth = 2;
-barsObj(1).BaseLine.LineWidth = 2;
-barsObj(2).BaseLine.LineWidth = 2;
-barsObj(1).EdgeColor = 'none';
-barsObj(2).EdgeColor = 'none';
-barsObj(1).FaceAlpha = 1;
-barsObj(2).FaceAlpha = 1;
-end
-
-function iStyleErrorBars(errorBars, colors)
-for iE = 1:height(errorBars)
-	errorBar = errorBars.Object(iE);
-	errorBar.LineWidth = 2;
-	x = double(errorBar.XData(:));
-	[~, colorIndex] = min(abs((1:size(colors, 1)).' - x(1)));
-	errorBar.Color = colors(colorIndex, :);
-end
-end
 

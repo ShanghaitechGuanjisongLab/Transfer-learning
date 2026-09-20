@@ -1,16 +1,16 @@
-% English Fig2D: hit cells in hit trials are more convergent across trials
-% than miss cells in miss trials
+% English Fig2F: activity at cue +1 s of hit cells on hit trials vs miss
+% cells on miss trials in the first transfer light-water block
 %
-% Divergence uses the Figure 1 definition (inter-trial divergence at
-% cue +1 s: sqrt(sum across cells of trial-to-trial variance / sum of
-% squared trial means)), computed within the first transfer light-water
-% block of each mouse:
-%   - hit divergence : hit-weight cells (choice decoder w > 0) over hit trials
-%   - miss divergence: miss-weight cells (choice decoder w < 0) over miss trials
-% Paired comparison across mice (sign-rank).
+% Per mouse, within the first transfer light-water block:
+%   - hit cells  = choice decoder weight w > 0 at 1.0 s (trained on
+%     audio-water hit/miss, i.e. independent of the light-water data)
+%   - miss cells = w < 0
+%   - activity = mean z-score at cue +1 s
+% Two groups only (no crossed comparisons): hit cells on hit trials vs
+% miss cells on miss trials, paired per mouse (sign-rank).
 %
 % Outputs (SVG):
-%   - English_Fig2D_HitMissCellDivergence.svg
+%   - English_Fig2F_OutcomeSelectivity.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -25,7 +25,6 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-sampleRate = 8;
 xs = TransferLearning.Xs;
 if isduration(xs)
 	xsSec = seconds(xs);
@@ -37,8 +36,9 @@ end
 data = TransferLearning.BuildCueChoiceDecoderData();
 DS = TransferLearning.AudioLightBaseline();
 
-divHit = nan(numel(data.choice), 1);
-divMiss = nan(numel(data.choice), 1);
+% per mouse: hit cells on hit trials / miss cells on miss trials, mean z@+1s
+actH_hit = nan(numel(data.choice), 1);
+actM_miss = nan(numel(data.choice), 1);
 miceOut = strings(numel(data.choice), 1);
 for i = 1:numel(data.choice)
 	m = string(data.choice{i}.Mouse);
@@ -58,44 +58,49 @@ for i = 1:numel(data.choice)
 		continue;
 	end
 	[trialUIDs, behTrial] = iTrialBehavior(rows);
-	hitTrials = trialUIDs(behTrial == 1);
-	missTrials = trialUIDs(behTrial == 0);
-	if numel(hitTrials) < 3 || numel(missTrials) < 3
+	if numel(trialUIDs) < 4 || ~any(behTrial == 1) || ~any(behTrial == 0)
 		continue;
 	end
 	X = iBuildCellTrialMatrix(rows, cellUIDs, trialUIDs, idx1s);
 	if isempty(X)
 		continue;
 	end
-	[~, cLoc] = ismember(cellUIDs, cellUIDs); %#ok<ASGLU>
-	Xh = X(ismember(cellUIDs, hitCells), behTrial == 1);
-	Xm = X(ismember(cellUIDs, missCells), behTrial == 0);
-	if size(Xh, 1) < 3 || size(Xh, 2) < 3 || size(Xm, 1) < 3 || size(Xm, 2) < 3
+	iH = ismember(cellUIDs, hitCells);
+	iM = ismember(cellUIDs, missCells);
+	hT = behTrial == 1;
+	mT = behTrial == 0;
+	aHH = mean(mean(X(iH, hT), 2), 'omitnan');
+	aMM = mean(mean(X(iM, mT), 2), 'omitnan');
+	if ~all(isfinite([aHH, aMM]))
 		continue;
 	end
-	divHit(i) = iDivFromX(Xh);
-	divMiss(i) = iDivFromX(Xm);
+	actH_hit(i) = aHH;
+	actM_miss(i) = aMM;
 	miceOut(i) = m;
 end
-ok = isfinite(divHit) & isfinite(divMiss);
-divHit = divHit(ok);
-divMiss = divMiss(ok);
+ok = isfinite(actH_hit) & isfinite(actM_miss);
+actH_hit = actH_hit(ok);
+actM_miss = actM_miss(ok);
 miceOut = miceOut(ok);
-if numel(divHit) < 4
-	error('Fig2D:InsufficientMice', 'Fewer than 4 mice with valid hit/miss divergence.');
+if numel(actH_hit) < 4
+	error('Fig2F:InsufficientMice', 'Fewer than 4 mice with valid outcome-selectivity data.');
 end
 
-pPaired = signrank(divHit, divMiss);
-fprintf('=== Fig2D divergence (first transfer light-water block) ===\n');
-fprintf('hit cells in hit trials:   %.3f +/- %.3f (n = %d mice)\n', mean(divHit), std(divHit) / sqrt(numel(divHit)), numel(divHit));
-fprintf('miss cells in miss trials: %.3f +/- %.3f\n', mean(divMiss), std(divMiss) / sqrt(numel(divMiss)));
-fprintf('paired signrank p = %.4g\n', pPaired);
+% 两组比较：hit cells on hit trials vs miss cells on miss trials（配对于鼠，sign-rank）
+vHit = actH_hit;
+vMiss = actM_miss;
+pPaired = signrank(vHit, vMiss);
+[~, pT] = ttest(vHit, vMiss);
+fprintf('=== Fig2F activity at cue +1 s (first transfer light-water block) ===\n');
+fprintf('hit cells on hit trials:   %.3f +/- %.3f (n = %d mice)\n', mean(vHit), std(vHit) / sqrt(numel(vHit)), numel(vHit));
+fprintf('miss cells on miss trials: %.3f +/- %.3f\n', mean(vMiss), std(vMiss) / sqrt(numel(vMiss)));
+fprintf('paired signrank p = %.4g ; paired t-test p = %.4g\n', pPaired, pT);
 
 colorHit = [0.85 0.33 0.10];
 colorMiss = [0.10 0.45 0.70];
 
 % 无 legend 基础图：高 4 cm，宽 3 cm（1.5 的整倍数）；Scale=1
-f = figure('Color', 'w', 'Name', 'English Fig2D hit vs miss cell divergence');
+f = figure('Color', 'w', 'Name', 'English Fig2F outcome selectivity');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -103,12 +108,12 @@ f.PaperSize = [3, 4];
 f.PaperPositionMode = 'auto';
 
 ax = axes(f);
-DataCell = {double(divHit(:)), double(divMiss(:))};
+DataCell = {double(vHit(:)), double(vMiss(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 % IndividualErrorbars 旗帜：每根误差条独立对象，逐根与所属 bar 同色
 [~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 set(ax, 'XTick', [1 2], 'XTickLabel', {'hit', 'miss'});
-ylabel(ax, 'Divergence');
+ylabel(ax, 'Mean z at cue +1 s');
 % bar 不设透明度：FaceAlpha<1 会冲淡柱色，与全饱和 errorbar 视觉不同色（违反同色规范）
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
@@ -170,10 +175,11 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig2D_HitMissCellDivergence.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig2F_OutcomeSelectivity.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig2D_DivergenceStats', struct('Mouse', miceOut, 'DivHit', divHit, 'DivMiss', divMiss, 'pPaired', pPaired));
+assignin('base', 'Fig2F_SelectivityStats', struct('Mouse', miceOut, ...
+	'ActH_hit', actH_hit, 'ActM_miss', actM_miss, 'pPaired', pPaired));
 
 %% ========== local functions ==========
 function dt = iFirstTransferLightWaterDateTime(DS, m)
@@ -237,6 +243,7 @@ behTrial = behTrial(keep);
 end
 
 function X = iBuildCellTrialMatrix(rows, cellUIDs, trialUIDs, idx1s)
+% cells x trials 矩阵，元素 = 该细胞在该 trial 的 z@cue+1s
 X = [];
 rows = rows(ismember(uint64(rows.TrialUID), trialUIDs), :);
 if isempty(rows)
@@ -244,7 +251,7 @@ if isempty(rows)
 end
 present = intersect(cellUIDs, uint64(unique(rows.CellUID)), 'stable');
 if numel(present) < 3
-		return;
+	return;
 end
 X = nan(numel(cellUIDs), numel(trialUIDs));
 for iT = 1:numel(trialUIDs)
@@ -257,15 +264,5 @@ for iT = 1:numel(trialUIDs)
 			X(iC, iT) = sig(idx1s);
 		end
 	end
-end
-end
-
-function div = iDivFromX(X)
-totalSignal = sum(mean(X, 2).^2);
-totalNoise = sum(var(X, [], 2));
-if totalSignal > 0
-	div = sqrt(totalNoise / totalSignal);
-else
-	div = NaN;
 end
 end

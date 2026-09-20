@@ -1,4 +1,4 @@
-% English Fig2D: hit cells in hit trials are more convergent across trials
+% English Fig2E: hit cells in hit trials are more convergent across trials
 % than miss cells in miss trials
 %
 % Divergence uses the Figure 1 definition (inter-trial divergence at
@@ -10,7 +10,7 @@
 % Paired comparison across mice (sign-rank).
 %
 % Outputs (SVG):
-%   - English_Fig2D_HitMissCellDivergence.svg
+%   - English_Fig2E_HitMissCellDivergence.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -82,11 +82,11 @@ divHit = divHit(ok);
 divMiss = divMiss(ok);
 miceOut = miceOut(ok);
 if numel(divHit) < 4
-	error('Fig2D:InsufficientMice', 'Fewer than 4 mice with valid hit/miss divergence.');
+	error('Fig2E:InsufficientMice', 'Fewer than 4 mice with valid hit/miss divergence.');
 end
 
 pPaired = signrank(divHit, divMiss);
-fprintf('=== Fig2D divergence (first transfer light-water block) ===\n');
+fprintf('=== Fig2E divergence (first transfer light-water block) ===\n');
 fprintf('hit cells in hit trials:   %.3f +/- %.3f (n = %d mice)\n', mean(divHit), std(divHit) / sqrt(numel(divHit)), numel(divHit));
 fprintf('miss cells in miss trials: %.3f +/- %.3f\n', mean(divMiss), std(divMiss) / sqrt(numel(divMiss)));
 fprintf('paired signrank p = %.4g\n', pPaired);
@@ -95,7 +95,7 @@ colorHit = [0.85 0.33 0.10];
 colorMiss = [0.10 0.45 0.70];
 
 % 无 legend 基础图：高 4 cm，宽 3 cm（1.5 的整倍数）；Scale=1
-f = figure('Color', 'w', 'Name', 'English Fig2D hit vs miss cell divergence');
+f = figure('Color', 'w', 'Name', 'English Fig2E hit vs miss cell divergence');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 f.PaperUnits = 'centimeters';
@@ -170,10 +170,10 @@ outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('no
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig2D_HitMissCellDivergence.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig2E_HitMissCellDivergence.svg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig2D_DivergenceStats', struct('Mouse', miceOut, 'DivHit', divHit, 'DivMiss', divMiss, 'pPaired', pPaired));
+assignin('base', 'Fig2E_DivergenceStats', struct('Mouse', miceOut, 'DivHit', divHit, 'DivMiss', divMiss, 'pPaired', pPaired));
 
 %% ========== local functions ==========
 function dt = iFirstTransferLightWaterDateTime(DS, m)

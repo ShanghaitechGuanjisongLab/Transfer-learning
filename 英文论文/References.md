@@ -22,6 +22,8 @@ Guyoton, M., Matteucci, G., Foucher, C. G., Getz, M. P., Gjorgjieva, J., & El-Bo
 
 Halassa, M. M., & Sherman, S. M. (2019). Thalamocortical circuit motifs: A general framework. *Neuron, 103*(5), 762-770. https://doi.org/10.1016/j.neuron.2019.08.005
 
+Horrocks, E. A. B., Rodrigues, F. R., & Saleem, A. B. (2024). Flexible neural population dynamics govern the speed and stability of sensory encoding in mouse visual cortex. *Nature Communications, 15*, 6415. https://doi.org/10.1038/s41467-024-50563-y
+
 Inagaki, H. K., Inagaki, M., Romani, S., & Svoboda, K. (2018). Low-dimensional and monotonic preparatory activity in mouse anterior lateral motor cortex. *Journal of Neuroscience, 38*(17), 4163-4185. https://doi.org/10.1523/JNEUROSCI.3152-17.2018
 
 Josselyn, S. A., & Tonegawa, S. (2020). Memory engrams: Recalling the past and imagining the future. *Science, 367*(6473), eaaw4325. https://doi.org/10.1126/science.aaw4325
@@ -49,6 +51,8 @@ Rasooli, A., Chalavi, S., Li, H., et al. (2024). Neural correlates of transfer o
 Runyan, C. A., Piasini, E., Panzeri, S., & Harvey, C. D. (2017). Distinct timescales of population coding across cortex. *Nature, 548*(7665), 92-96. https://doi.org/10.1038/nature23020
 
 Sadtler, P. T., Quick, K. M., Golub, M. D., et al. (2014). Neural constraints on learning. *Nature, 512*(7515), 423-426. https://doi.org/10.1038/nature13665
+
+Saxe, A. M., McClelland, J. L., & Ganguli, S. (2014). Exact solutions to the nonlinear dynamics of learning in deep linear neural networks. *International Conference on Learning Representations (ICLR 2014)*. arXiv:1312.6120. https://doi.org/10.48550/arXiv.1312.6120
 
 Shepherd, G. M. G., & Yamawaki, N. (2021). Untangling the cortico-thalamo-cortical loop: Cellular pieces of a knotty circuit puzzle. *Nature Reviews Neuroscience, 22*(7), 389-406. https://doi.org/10.1038/s41583-021-00459-3
 

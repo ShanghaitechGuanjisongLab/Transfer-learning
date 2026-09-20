@@ -1,5 +1,5 @@
 function data = BuildCueChoiceDecoderData()
-% Build cue / choice decoder data (cfg2) for English Figure 2 panels B-E.
+% Build cue / choice decoder data (cfg2) for English Figure 2 panels A-D.
 %
 % Cue decoder (cfg2): trained on AudioOnly + LightOnly calibration blocks,
 %   label = Cue (audio = 0, light = 1).
@@ -10,14 +10,17 @@ function data = BuildCueChoiceDecoderData()
 % Pipeline (identical to 信息编码/Cfg2Figure_15.m and WeightHistogram.m):
 %   per-time-point naive-Gaussian GLM decoder, class-balanced training,
 %   baseline (t < 0) subtraction, window -1 .. +1.5 s, rng(42), K = 5 folds.
-% Choice weights: w = (m1 - m0) ./ sp^2 at t = 0.7 s, one value per cell
-%   (w > 0 = prefer hit, w < 0 = prefer miss).
+% Choice weights: w = (m1 - m0) ./ sp^2 at t = 1.0 s, one value per cell
+%   (w > 0 = prefer hit, w < 0 = prefer miss). Computed on class-balanced
+%   training trials (majority class downsampled to minority size per draw,
+%   100 draws averaged; local RNG stream so the global rng(42) stream used
+%   by Fig2A's cross-validation is untouched).
 %
 % Returns struct:
 %   tVec      - time vector (s)
-%   pk07      - index of t = 0.7 s in tVec
+%   pk1s      - index of t = 1.0 s in tVec
 %   cue{i}    - struct('X2', trials x cells x time, 'Xt', 'y2', 'typ2', 'behT')
-%   choice{i} - struct('Xtr2', 'Xte', 'behTr2', 'behTe', 'cellUIDs', 'w07')
+%   choice{i} - struct('Xtr2', 'Xte', 'behTr2', 'behTe', 'cellUIDs', 'w1s')
 
 rng(42);
 
@@ -31,7 +34,7 @@ end
 nTime = numel(xsSec);
 tIdxFull = find((xsSec >= -1) & (xsSec <= 1.5));
 tVec = xsSec(tIdxFull);
-[~, pk07] = min(abs(tVec - 0.7));
+[~, pk1s] = min(abs(tVec - 1.0));
 
 Blk = DS.Blocks;
 Blk.Design = string(Blk.Design);
@@ -119,6 +122,7 @@ end
 
 % ---------- Choice cfg2 ----------
 choice = cell(0, 1);
+wStrm = RandStream('Threefry', 'Seed', 42);
 for iM = 1:numel(miceAll)
 	m = miceAll(iM);
 	tr2 = table(); testTbl = table();
@@ -162,11 +166,11 @@ for iM = 1:numel(miceAll)
 		continue;
 	end
 	okB = ~isnan(behTr2);
-	w07 = iWeight(Xtr2(okB, :, pk07), behTr2(okB)).';
-	choice{end + 1, 1} = struct('Mouse', m, 'Xtr2', Xtr2, 'Xte', Xte, 'behTr2', behTr2, 'behTe', behTe, 'cellUIDs', cellUIDs, 'w07', w07);
+	w1s = iWeightBalanced(Xtr2(okB, :, pk1s), behTr2(okB), wStrm, 100).';
+	choice{end + 1, 1} = struct('Mouse', m, 'Xtr2', Xtr2, 'Xte', Xte, 'behTr2', behTr2, 'behTe', behTe, 'cellUIDs', cellUIDs, 'w1s', w1s);
 end
 
-data = struct('tVec', tVec, 'pk07', pk07, 'cue', {cue}, 'choice', {choice});
+data = struct('tVec', tVec, 'pk1s', pk1s, 'cue', {cue}, 'choice', {choice});
 fprintf('BuildCueChoiceDecoderData: cue mice = %d, choice mice = %d\n', numel(cue), numel(choice));
 end
 
@@ -178,6 +182,30 @@ s1 = std(F(y == 1, :), 0, 1);
 sp = sqrt((s0.^2 + s1.^2) / 2);
 sp(sp == 0) = 1;
 w = (m1 - m0) ./ sp.^2;
+end
+
+function w = iWeightBalanced(F, y, strm, nDraws)
+% 类别平衡权重（与解码器训练的 iBalanceTrain 口径一致）：每次抽样将多数类下采样
+% 到少数类数量后计算 iWeight，nDraws 次取平均；使用局部随机流 strm，
+% 不消耗全局 rng 流（保证 Fig2A 交叉验证折划分不受影响）
+if nargin < 4 || isempty(nDraws)
+	nDraws = 1;
+end
+idx1 = find(y == 1);
+idx0 = find(y == 0);
+nMin = min(numel(idx1), numel(idx0));
+if nMin < 1
+	w = nan(1, size(F, 2));
+	return;
+end
+wAcc = zeros(1, size(F, 2));
+yBal = [ones(nMin, 1); zeros(nMin, 1)];
+for iDraw = 1:nDraws
+	s1 = idx1(randperm(strm, numel(idx1), nMin));
+	s0 = idx0(randperm(strm, numel(idx0), nMin));
+	wAcc = wAcc + iWeight(F([s1; s0], :), yBal);
+end
+w = wAcc / nDraws;
 end
 
 function X = iBuildTrialMatrix(rawTbl, cellUIDs, tIdx)
