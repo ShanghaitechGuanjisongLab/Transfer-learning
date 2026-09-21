@@ -122,15 +122,16 @@ end
 pPerm = (cHit + 1) / (NREP + 1);
 fprintf('P(post) at %.2f s: no gap %.3f +/- %.3f vs 7-day gap %.3f +/- %.3f, one-sided permutation p = %.4f\n', ...
 	tVec(end), mean(alP), iSem(alP), mean(v7P), iSem(v7P), pPerm);
+%% 
 
 % ---------- figure ----------
 f = figure('Color', 'w', 'Name', 'English Fig3D gap decoder transfer');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 8];
+f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [12, 8];
+f.PaperSize = [9, 8];
 f.PaperPositionMode = 'auto';
-Layout = tiledlayout(f, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+Layout = tiledlayout(f, 2, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 Ax = gobjects(2, 2);
 for r = 1:2
@@ -164,9 +165,9 @@ for r = 1:2
 		% 规范：列重复信息（Stage）只写在第一行标题；行重复信息（组）写在第一列 ylabel
 		if r == 1
 			if c == 1
-				title(ax, 'Stage1  self-train-test', 'FontSize', 8, 'FontWeight', 'normal');
+				title(ax, '🔊', 'FontSize', 8, 'FontWeight', 'normal');
 			else
-				title(ax, 'Stage2  transfer light-water', 'FontSize', 8, 'FontWeight', 'normal');
+				title(ax, '💡', 'FontSize', 8, 'FontWeight', 'normal');
 			end
 		end
 		if c == 1

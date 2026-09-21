@@ -161,7 +161,7 @@ end
 fprintf('Global clim (true range): [%.3f, %.3f]\n', globalMin, globalMax);
 
 % ===== Volshow: symmetric cbrt clim from combined data range of both blocks =====
-vAbs = sqrt(max(abs(globalMin), abs(globalMax)));
+vAbs = max(abs(globalMin), abs(globalMax)).^(1/3);
 fprintf('--- Symmetric cbrt clim from combined data range: [%.3f, %.3f] ---\n', -vAbs, vAbs);
 
 nMap = 256;
