@@ -101,7 +101,8 @@ for s=1:5
 end
 
 %% 图 1x5（三线：prefer-hit / prefer-miss / rest）
-f = figure('Name','Choice top25% cells activity across stages','Color','w','Position',[40 40 1500 320]);
+fullName = {'AudioOnly','LightOnly','AudioWater-Naive','AudioWater-Learned','LightWater-Transfer'};
+f = figure('Name','Choice top25% cells activity across stages','Color','w','Position',[40 40 1820 620]);
 for s=1:5
     ax = subplot(1,5,s); hold(ax,'on');
     vH=T(s).topH; vM=T(s).topM; vR=T(s).rest;
@@ -113,17 +114,21 @@ for s=1:5
     iShaded(ax,tVec,mtM,stM,[0.85 0.33 0.10],'top·prefer miss');
     xline(ax,0,'--','Color',[0.5 0.5 0.5],'LineWidth',0.6,'HandleVisibility','off');
     yline(ax,0,':','Color',[0.5 0.5 0.5],'LineWidth',0.6,'HandleVisibility','off');
-    title(ax,stNames{s});
+    % 顶部留白，避免 legend 与曲线互相遮挡
+    yl = ylim(ax); if yl(2)<=0; yl(2)=0.1; end
+    ylim(ax,[yl(1), yl(2)+0.24*(yl(2)-yl(1))]);
+    title(ax,fullName{s},'FontSize',12);
     if s==1; ylabel(ax,'ΔF/F (z)'); end
     xlabel(ax,'Time (s)');
-    legend(ax,'Location','northwest','Box','off','FontSize',7);
-    box(ax,'off'); ax.FontSize=8;
+    legend(ax,'Location','northeast','Box','off','FontSize',10);
+    box(ax,'off'); ax.FontSize=11;
 end
 figDir = fullfile(prjRoot,'信息编码','_figcheck');
 if ~exist(figDir,'dir'); mkdir(figDir); end
 outfile = fullfile(figDir,'ChoiceTopCells_Stages.png');
-exportgraphics(f, outfile, 'Resolution', 200);
+exportgraphics(f, outfile, 'Resolution', 500);
 fprintf('Saved: %s\n', outfile);
+savefig(f, fullfile(figDir,'ChoiceTopCells_Stages.fig'));
 
 %% 统计：刺激诱发响应，分窗口（早期/中期/晚期）
 wBins = {find(tVec>=0.3 & tVec<=0.96), find(tVec>0.96 & tVec<=1.5), find(tVec>1.5 & tVec<=2)};

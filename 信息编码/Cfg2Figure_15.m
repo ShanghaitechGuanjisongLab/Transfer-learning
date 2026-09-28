@@ -136,11 +136,15 @@ for i = 1:nCh
 end
 
 %% 3. Figure 2x2
-f = figure('Name','Cfg2 simple 1.5s: Cue vs Choice','Color','w','Position',[60 60 900 640]);
+f = figure('Name','Cfg2 simple 1.5s: Cue vs Choice','Color','w','Position',[60 60 1500 1050]);
 axGrid = gobjects(2,2);
+mL=0.13; mR=0.02; mB=0.09; mT=0.13; hgap=0.07; vgap=0.10;
+wa=(1-mL-mR-hgap)/2; ha=(1-mB-mT-vgap)/2;
 for r = 1:2
     for c = 1:2
-        ax = subplot(2,2,(r-1)*2+c); hold(ax,'on');
+        px = mL + (c-1)*(wa+hgap);
+        py = mB + (ha+vgap)*(2-r);
+        ax = axes('Parent',f,'Position',[px py wa ha]); hold(ax,'on');
         axGrid(r,c) = ax;
         if c == 1   % Stage1
             if r == 1
@@ -156,7 +160,7 @@ for r = 1:2
                 mn = mean(v,1,'omitnan'); se = std(v,0,1,'omitnan')/sqrt(sum(~isnan(v(:,1))));
                 iShadedError(ax, tVec, mn, se, stC{s}, 1.4, stN{s});
             end
-            iSigStars(ax, tVec, squeeze(P(:,1,:)), squeeze(P(:,2,:)), 0.02, stC{1});
+            iSigStars(ax, tVec, squeeze(P(:,1,:)), squeeze(P(:,2,:)), 0.03, stC{1});
             ylabel(ax, ylbl); set(ax,'YLim',[0 1]);
         else   % Stage2
             if r==1; P = pSt2Cue; ylbl = 'P(audio) tendency (0=light,1=audio)';
@@ -168,27 +172,28 @@ for r = 1:2
                 mn = mean(v,1,'omitnan'); se = std(v,0,1,'omitnan')/sqrt(sum(~isnan(v(:,1))));
                 iShadedError(ax, tVec, mn, se, stC{s}, 1.4, stN{s});
             end
-            iSigStars(ax, tVec, squeeze(P(:,1,:)), squeeze(P(:,2,:)), 0.02, stC{1});
+            iSigStars(ax, tVec, squeeze(P(:,1,:)), squeeze(P(:,2,:)), 0.03, stC{1});
             ylabel(ax, ylbl); set(ax,'YLim',[0 1]);
         end
         yline(ax,0.5,':','Color',[0.5 0.5 0.5],'LineWidth',0.6,'HandleVisibility','off');
         xline(ax,0,'--','Color',[0.5 0.5 0.5],'LineWidth',0.6,'HandleVisibility','off');
         xline(ax,1,'-.','Color',[0.35 0.35 0.35],'LineWidth',0.8,'HandleVisibility','off');   % 1s 参考线（与原 0.96s 端点对应）
         if r==2; xlabel(ax,'Time from stimulus (s)'); end
-        legend(ax,'Location','northwest','Box','off','FontSize',8);
-        box(ax,'off'); ax.FontSize = 7;
+        legend(ax,'Location','northwest','Box','off','FontSize',10);
+        box(ax,'off'); ax.FontSize = 9;
     end
 end
-text(axGrid(1,1), 0.5, 1.16, 'Stage1 prob-tendency', 'Units','normalized','HorizontalAlignment','center','FontWeight','bold','FontSize',10);
-text(axGrid(1,2), 0.5, 1.16, 'Stage2 prob-tendency', 'Units','normalized','HorizontalAlignment','center','FontWeight','bold','FontSize',10);
-text(axGrid(1,1), -0.3, 0.5, 'Cue (AudioOnly+LightOnly)', 'Units','normalized','Rotation',90,'HorizontalAlignment','center','FontWeight','bold','FontSize',9);
-text(axGrid(2,1), -0.3, 0.5, 'Choice (AudioWater)', 'Units','normalized','Rotation',90,'HorizontalAlignment','center','FontWeight','bold','FontSize',9);
+text(axGrid(1,1), 0.5, 1.16, 'Stage1 prob-tendency', 'Units','normalized','HorizontalAlignment','center','FontWeight','bold','FontSize',12);
+text(axGrid(1,2), 0.5, 1.16, 'Stage2 prob-tendency', 'Units','normalized','HorizontalAlignment','center','FontWeight','bold','FontSize',12);
+text(axGrid(1,1), -0.3, 0.5, 'Cue (AudioOnly+LightOnly)', 'Units','normalized','Rotation',90,'HorizontalAlignment','center','FontWeight','bold','FontSize',11);
+text(axGrid(2,1), -0.3, 0.5, 'Choice (AudioWater)', 'Units','normalized','Rotation',90,'HorizontalAlignment','center','FontWeight','bold','FontSize',11);
 
 figDir = fullfile(prjRoot, '信息编码', '_figcheck');
 if ~exist(figDir,'dir'); mkdir(figDir); end
 outfile = fullfile(figDir, 'Cfg2_Compare_CueChoice_simple_15.png');
-exportgraphics(f, outfile, 'Resolution', 200);
+exportgraphics(f, outfile, 'Resolution', 500);
 fprintf('Saved: %s\n', outfile);
+savefig(f, fullfile(figDir, 'Cfg2_Compare_CueChoice_simple_15.fig'));
 save(fullfile(figDir, 'Cfg2_15_data.mat'), 'pSt1Cue','pSt2Cue','pSt1Ch','pSt2Ch','tVec','nCue','nCh');
 fprintf('Saved data: Cfg2_15_data.mat\n');
 
@@ -203,7 +208,7 @@ for iT = 1:numel(tVec)
     [~, pp] = ttest(a(ok), b(ok));
     if pp < 0.05
         y = max(m1(iT), m2(iT)) + yoff;
-        text(ax, tVec(iT), y, '*', 'Color', col, 'FontSize', 9, ...
+        text(ax, tVec(iT), y, '*', 'Color', col, 'FontSize', 11, ...
             'HorizontalAlignment','center','VerticalAlignment','bottom','HandleVisibility','off');
     end
 end
