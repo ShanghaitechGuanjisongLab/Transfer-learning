@@ -16,6 +16,7 @@ classdef(Abstract)TransferLearning
 		scFLARE=memoize(@iscFLARE);
 		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
 		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
+		ALDelayed=memoize(@iALDelayed);
 		NaiveColor=[0.6249    0.2188    0.9830];
 		TransferColor=[0.9386    0.4672    0.0384];
 		ColorA=[0.0547    0.0818    0.0163];
@@ -373,4 +374,12 @@ F.TagSplitTrial(seconds([-3,3]));
 LLP=F.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
 F.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightOnly","LightWater"]);
 F.AddRepeatIndex;
+end
+function ALDelayed=iALDelayed
+ALDelayed=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202609\有延迟不舔不给水钙成像.v1.mat");
+ALDelayed.TagSplitTrial(seconds([-3,3]));
+TrialDuration=seconds(6);
+LLP=ALDelayed.CheckForLightLeakage(seconds([0,0.2]),["LightLearnWater","LightLearnWaterAlways"]);
+ALDelayed.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightLearnWater","LightLearnWaterAlways"]);
+ALDelayed.ResampleTrials(milliseconds(125),TrialDuration);
 end
