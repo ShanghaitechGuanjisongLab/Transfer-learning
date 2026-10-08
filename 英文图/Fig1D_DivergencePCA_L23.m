@@ -2,7 +2,8 @@
 % component space of the first light-water block (MOp2/3 cells only).
 % 自 Temp/Fig1F_PCA_NaiveTransfer_L23.m 提升为正式英文图1D，替换原代表细胞 trial 曲线面板（原脚本 Fig1D_TwoRepresentativeCellTraces.m 留档不删）。
 % 鼠源与英文图1F 完全一致：Naive=LightAudioBaseline+LAInterspersed 的首个纯 LW Naive 会话（LAI 中 Naive 期出现过 AudioWater 的鼠整只排除），Transfer=AudioLightBaseline 的首个 Transfer LW 会话；只取 MOp2/3 细胞（Cells.ZLayer=="MOp2/3"，MOp5 舍弃）。
-% super-mouse 口径：每细胞取该会话全部 LightWater 回合（按 TrialUID 排序），尽可能均分成 nLines 组（组间最多差 1 回合）后组内平均 → 每细胞 nLines 条轨迹；归一化 ZScore（基线 1:24）匹配散度口径；绘图时段 cue 0 → +1 s，💡@0、💧@1s（undelayed 范式给水时点）。
+% super-mouse 口径：每细胞取该会话全部 LightWater 回合（按 TrialUID 排序），尽可能均分成 nLines 组（组间最多差 1 回合）后组内平均 → 每细胞 nLines 条轨迹；归一化 ZScore（基线 1:24）匹配散度口径；绘图时段 cue 0 → +1 s（undelayed 范式给水在线索后 1 s），轨迹浅色端=cue 起点、深色端=给水时刻。
+% 轨迹着色为线内时间渐变：cue 端接近白（基色仅 15%）、向给水端渐深到基色；逐段平色小线段（每条 nGradSeg 段）实现，不用跨线的深浅区分。
 % 两 tile 的 PCA 独立计算（两组细胞集合不相交），各坐标轴不标注解释度、不统一轴限；展示的是 cue 后轨迹的分叉形态——Naive 扇形分叉=高散度，Transfer 平行=低散度，定量结论以逐鼠散度（Fig1E/1F）为准。
 %
 % Outputs (SVG):
@@ -14,6 +15,8 @@
 
 % 可调参数：把每细胞的全部回合尽可能均分成多少条轨迹
 nLines = 10;
+% 可调参数：线内渐变的分段数（每条轨迹拆成多少段平色小线段）
+nGradSeg = 40;
 
 thisDir = fileparts(mfilename('fullpath'));
 if ~exist('UniExp.DataSet', 'class')
@@ -47,15 +50,15 @@ f.PaperSize = [12, 8];
 
 tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 axN = nexttile(tlo, 1);
-iPlotTrialsAttachedOnAxes(axN, PlotDataN, TransferLearning.NaiveColor);
-title(axN, "Naive 💡 response", 'FontSize', 12);
+iPlotTrialsAttachedOnAxes(axN, PlotDataN, TransferLearning.NaiveColor, nGradSeg);
+title(axN, "Naive light response", 'FontSize', 12);
 xlabel(axN, 'PC1', 'FontSize', 12);
 ylabel(axN, 'PC2', 'FontSize', 12);
 iApplySingleLimits(axN, PlotDataN);
 
 axT = nexttile(tlo, 2);
-iPlotTrialsAttachedOnAxes(axT, PlotDataT, TransferLearning.TransferColor);
-title(axT, "Transfer 💡 response", 'FontSize', 12);
+iPlotTrialsAttachedOnAxes(axT, PlotDataT, TransferLearning.TransferColor, nGradSeg);
+title(axT, "Transfer light response", 'FontSize', 12);
 axT.YAxisLocation = 'right';
 xlabel(axT, 'PC1', 'FontSize', 12);
 ylabel(axT, 'PC2', 'FontSize', 12);
@@ -64,12 +67,11 @@ iApplySingleLimits(axT, PlotDataT);
 hNaiveLegend = plot(axN, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.NaiveColor);
 hTransferLegend = plot(axN, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.TransferColor);
 
-lgd = legend(axN, [hNaiveLegend, hTransferLegend], ["Naive after 💡", "Transfer after 💡"], ...
+lgd = legend(axN, [hNaiveLegend, hTransferLegend], ["Naive after light cue", "Transfer after light cue"], ...
 	'Orientation', 'horizontal', 'NumColumns', 2);
 lgd.Layout.Tile = 'south';
 lgd.Box = 'off';
 lgd.FontSize = 12;
-lgd.FontName = 'Segoe UI Emoji';
 lgd.ItemTokenSize(1) = 8;
 
 TransferLearning.ApplyStandardExportStyle(f, 2);
@@ -243,8 +245,6 @@ PlotData.PcaTable = PcaTable;
 PlotData.PcaData = PcaData;
 PlotData.preCueSegment = 1:idxCueInPlot;
 PlotData.postCueSegment = idxCueInPlot:idxWaterInPlot;
-PlotData.cuePts = squeeze(PcaData(:, idxCueInPlot, :)).';
-PlotData.waterPts = squeeze(PcaData(:, idxWaterInPlot, :)).';
 PlotData.nLines = size(PcaData, 3);
 % 只画 cue 后轨迹，span 也只统计 cue 后段
 postCueData = PcaData(:, idxCueInPlot:idxWaterInPlot, :);
@@ -260,29 +260,18 @@ if ~(isfinite(PlotData.ySpan) && PlotData.ySpan > 0)
 end
 end
 
-function hTrial = iPlotTrialsAttachedOnAxes(ax, PlotData, groupColor)
+function hTrial = iPlotTrialsAttachedOnAxes(ax, PlotData, groupColor, nGradSeg)
 ax.FontSize = 12;
 ax.LineWidth = 1;
 box(ax, 'off');
 grid(ax, 'off');
 hold(ax, 'on');
-lineColors = iAlphaRamp(groupColor, PlotData.nLines);
 PcaData = PlotData.PcaData;
-cuePts = PlotData.cuePts;
-waterPts = PlotData.waterPts;
 for iLine = 1:PlotData.nLines
 	xy = squeeze(PcaData(:, :, iLine));
-	plot(ax, xy(1, PlotData.postCueSegment), xy(2, PlotData.postCueSegment), '-', 'LineWidth', 2, 'Color', lineColors(iLine, :), 'HandleVisibility', 'off');
+	iGradientPath(ax, xy(1, PlotData.postCueSegment), xy(2, PlotData.postCueSegment), groupColor, nGradSeg);
 end
 hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', groupColor);
-for iLine = 1:PlotData.nLines
-	text(ax, cuePts(iLine, 1), cuePts(iLine, 2), '💡', ...
-		'FontSize', 12, 'FontName', 'Segoe UI Emoji', 'HorizontalAlignment', 'center', ...
-		'VerticalAlignment', 'middle', 'Clipping', 'on', 'HandleVisibility', 'off');
-	text(ax, waterPts(iLine, 1), waterPts(iLine, 2), '💧', ...
-		'FontSize', 12, 'FontName', 'Segoe UI Emoji', 'HorizontalAlignment', 'center', ...
-		'VerticalAlignment', 'middle', 'Clipping', 'on', 'HandleVisibility', 'off');
-end
 view(ax, 2);
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -306,13 +295,22 @@ xlim(ax, [min(xAll) - xMargin, max(xAll) + xMargin]);
 ylim(ax, [min(yAll) - yMargin, max(yAll) + yMargin]);
 end
 
-function colors = iAlphaRamp(baseColor, nLines)
-if nLines <= 1
-	colors = [baseColor, 1];
-	return;
+function iGradientPath(ax, x, y, baseColor, nSeg)
+% 线内时间渐变：把 cue→water 折线按时间重采样成 nSeg 段，逐段平色，
+% 早段接近白（baseColor 仅 15%）、晚段为基色。
+% 用 line 图元逐段绘制：plot 返回的 2 点线会被标准样式误判为轴对齐细线
+% （line 图元不受影响），且平色段在 SVG 导出中保持稳定。
+x = x(:)';
+y = y(:)';
+n = numel(x);
+tt = linspace(1, n, nSeg + 1);
+xs = interp1(1:n, x, tt);
+ys = interp1(1:n, y, tt);
+f = linspace(0, 1, nSeg);
+for k = 1:nSeg
+	ck = 1 - f(k) * (1 - baseColor(:)');
+	line(ax, xs(k:k+1), ys(k:k+1), 'Color', ck, 'LineWidth', 2, 'HandleVisibility', 'off');
 end
-alphaVals = linspace(0.45, 1.0, nLines)';
-colors = 1 - alphaVals .* (1 - repmat(baseColor, nLines, 1));
 end
 
 function idx = iFindPlotTimeIndex(nTime, targetSec)

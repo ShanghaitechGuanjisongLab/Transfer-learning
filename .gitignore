@@ -34,7 +34,6 @@ codegen/
 
 # Excel临时文件
 ~$*
-整合/Thumbs.db
 data
 Temp
 *.tmp
@@ -42,3 +41,4 @@ Temp
 tools
 resources/2*
 resources/c*
+**/Thumbs.db
