@@ -51,28 +51,16 @@ f.PaperSize = [12, 8];
 tlo = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 axN = nexttile(tlo, 1);
 iPlotTrialsAttachedOnAxes(axN, PlotDataN, TransferLearning.NaiveColor, nGradSeg);
-title(axN, "Naive light response", 'FontSize', 12);
-xlabel(axN, 'PC1', 'FontSize', 12);
-ylabel(axN, 'PC2', 'FontSize', 12);
+title(axN, "Naive");
+xlabel(tlo, 'PC1');
+ylabel(tlo, 'PC2');
 iApplySingleLimits(axN, PlotDataN);
 
 axT = nexttile(tlo, 2);
 iPlotTrialsAttachedOnAxes(axT, PlotDataT, TransferLearning.TransferColor, nGradSeg);
-title(axT, "Transfer light response", 'FontSize', 12);
+title(axT, "Transfer");
 axT.YAxisLocation = 'right';
-xlabel(axT, 'PC1', 'FontSize', 12);
-ylabel(axT, 'PC2', 'FontSize', 12);
 iApplySingleLimits(axT, PlotDataT);
-
-hNaiveLegend = plot(axN, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.NaiveColor);
-hTransferLegend = plot(axN, nan, nan, '-', 'LineWidth', 2, 'Color', TransferLearning.TransferColor);
-
-lgd = legend(axN, [hNaiveLegend, hTransferLegend], ["Naive after light cue", "Transfer after light cue"], ...
-	'Orientation', 'horizontal', 'NumColumns', 2);
-lgd.Layout.Tile = 'south';
-lgd.Box = 'off';
-lgd.FontSize = 12;
-lgd.ItemTokenSize(1) = 8;
 
 TransferLearning.ApplyStandardExportStyle(f, 2);
 svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1D_DivergencePCA_L23.svg');
