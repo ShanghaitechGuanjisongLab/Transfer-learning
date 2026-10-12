@@ -11,7 +11,12 @@
 %
 % Per tile: mean +/- s.e.m. P(post) over mice, grey dashed line = 95th
 % percentile of the label-shuffled permutation null (200 shuffles, averaged over
-% mice), filled markers = time points where the group mean exceeds that null.
+% mice). Significance follows the English Fig1B/2H convention instead of
+% pointwise markers: every tile carries a horizontal black line above the curve
+% spanning the SAME 0.5..1 s window (the window ending at water delivery), and
+% above it the significance of that window taken as a whole (per-mouse mean
+% P(post) minus mean null over 0.5..1 s, one-sample sign-rank; 1B/2H star/p text
+% convention).
 % Line colour encodes the TRAINING context, so a row can be followed across its
 % read-outs. The AW -> LW tile is the Fig3D direction with the whole initial
 % learning phase as the AudioWater training pool; the AO -> LW tile asks how much
@@ -29,6 +34,8 @@
 % water delivery in every context.
 %
 % Input: 信息编码/CueModel_ContextCrossMatrix_Results.mat
+%   缓存缺失时本脚本自动运行 信息编码/CueModel_ContextCrossMatrix.m 现场生成，
+%   不要求先手动运行别的脚本（生成开并行池 + 200 次置换，只跑一次，之后直接读缓存）。
 %
 % Output (SVG):
 %   - Trial_ContextCrossMatrix.svg
@@ -46,9 +53,15 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 matPath = fullfile(thisDir, '..', '信息编码', 'CueModel_ContextCrossMatrix_Results.mat');
+genScript = fullfile(thisDir, '..', '信息编码', 'CueModel_ContextCrossMatrix.m');
+if ~isfile(matPath)
+	% 入口脚本自给自足：结果缓存缺失时现场运行生成脚本补齐，不要求先手动运行别的脚本。
+	fprintf('Results cache missing (%s)\nGenerating it now via %s ...\n', matPath, genScript);
+	iRunGeneratorScript(genScript);
+end
 if ~isfile(matPath)
 	error('Trial_ContextCrossMatrix:NoResults', ...
-		'Missing %s - run CueModel_ContextCrossMatrix.m first.', matPath);
+		'%s still missing after running %s.', matPath, genScript);
 end
 S = load(matPath);
 tVec = S.tVec;
@@ -67,7 +80,7 @@ fprintf('=== Trial: 4x4 context cross matrix of the cue pre/post decoder (%s) ==
 fprintf('n = %d mice in every tile: %s\n', numel(mouseNames), strjoin(reshape(mouseNames, 1, []), ', '));
 fprintf('\n%-14s', 'train \ read');
 for c = 1:nCtx
-	fprintf('%-31s', S.ctxLabel(c));
+	fprintf('%-42s', S.ctxLabel(c));
 end
 fprintf('\n');
 for r = 1:nCtx
@@ -78,25 +91,30 @@ for r = 1:nCtx
 		mn = mean(curves{r, c}, 1, 'omitnan');
 		mn95 = mean(nulls{r, c}, 1, 'omitnan');
 		nSig = sum(v > 0.5);
-		fprintf('%-31s', sprintf('%.3f ± %.3f, %d/%d*, %d/%dt', mean(v), iSem(v), nSig, numel(v), ...
-			sum(mn > mn95), nT));
+		winMask = (tVec(:) >= 0.5) & (tVec(:) <= 1);
+		pR = iWindowP(curves{r, c}, nulls{r, c}, tVec);
+		if isfinite(pR)
+			pStr = sprintf('p=%.3g', pR);
+		else
+			pStr = 'p=n.a.';
+		end
+		fprintf('%-42s', sprintf('%.3f ± %.3f, %d/%d*, %d/%dt, %s', mean(v), iSem(v), nSig, numel(v), ...
+			sum(mn(winMask) > mn95(winMask)), sum(winMask), pStr));
 	end
 	fprintf('\n');
 end
-fprintf('(k/m* = mice with accuracy > 0.5; k/mt = time points above the null 95%%)\n');
+fprintf('(k/m* = mice with accuracy > 0.5; k/mt = time points above the null 95%% within 0.5-1 s; p = the 0.5-1 s window as a whole)\n');
 %% 
 
 % ---------- figure ----------
 f = figure('Color', 'w', 'Name', 'Trial: cue decoder 4x4 context cross matrix');
 f.Units = 'centimeters';
 % 与 3x3 版逐 tile 同尺寸（tile 5.3 x 4.3 cm），行数 x 列数 3 -> 4
-f.Position(3:4) = [21.3, 17.3];
-f.PaperUnits = 'centimeters';
-f.PaperSize = [21.3, 17.3];
-f.PaperPositionMode = 'auto';
+f.Position(3:4) = [9, 8];
 Layout = tiledlayout(f, nCtx, nCtx, 'TileSpacing', 'tight', 'Padding', 'tight');
 
 Ax = gobjects(nCtx, nCtx);
+pWindow = nan(nCtx, nCtx);
 for r = 1:nCtx
 	for c = 1:nCtx
 		ax = nexttile(Layout);
@@ -110,15 +128,13 @@ for r = 1:nCtx
 		n95 = mean(nulls{r, c}, 1, 'omitnan');
 		iShadedError(ax, tVec, mn, se, rowColors(r, :), 1.2, 'P(post)');
 		plot(ax, tVec, n95, '--', 'Color', [0.55 0.55 0.55], 'LineWidth', 1, 'DisplayName', 'null 95%');
-		% 超过置换 null 95% 的时间点
-		sig = mn > n95;
-		if any(sig)
-			plot(ax, tVec(sig), mn(sig), 'o', 'MarkerSize', 5, 'LineWidth', 1, ...
-				'Color', rowColors(r, :), 'MarkerFaceColor', rowColors(r, :), 'HandleVisibility', 'off');
-		end
 		yline(ax, 0.5, ':', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.6, 'HandleVisibility', 'off');
 		xline(ax, 0, '--', 'Color', [0.35 0.35 0.35], 'LineWidth', 0.8, 'HandleVisibility', 'off');
-		ylim(ax, [0 1]);
+		% y 上限留出显著性标注空间（同英文图1B/2H 为 P 值标注扩展 y 上限的做法）
+		ylim(ax, [0 1.15]);
+		% 显著性（模仿英文图1B/2H）：所有 tile 的横线统一画在 0.5..1 s，窗口整体标显著性，
+		% 不逐点打点。横线与标注在统一轴限之后绘制（见下方循环），保证不越出轴范围
+		pWindow(r, c) = iWindowP(V, nulls{r, c}, tVec);
 		% 规范：列重复信息（读出上下文）只写在第一行标题；行重复信息（训练上下文）
 		% 写在第一列 ylabel；维度名（哪一行是训练、哪一列是测试）写在 Layout 级
 		if r == 1
@@ -138,9 +154,6 @@ for r = 1:nCtx
 		legend(ax, 'off');
 		ax.Color = 'none';
 		box(ax, 'off');
-		if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-			ax.Toolbar.Visible = 'off';
-		end
 		Ax(r, c) = ax;
 	end
 end
@@ -151,7 +164,15 @@ ylabel(Layout, sprintf('P(post)\nTraining context'));
 TransferLearning.ApplyStandardExportStyle(f, 2);
 MATLAB.Graphics.UnifyAxesLims(Ax(:), @xlim, @ylim);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'Trial_ContextCrossMatrix.svg');
+% 显著性标注在统一轴限之后画（英文图1B/2H 式：0.5..1 s 上方横线 + 窗口整体显著性 p），
+% 并按最终轴限钳制横线与文本，防止末列 tile 贴图缘被裁
+for r = 1:nCtx
+	for c = 1:nCtx
+		iSigBar(Ax(r, c), tVec, mean(curves{r, c}, 1, 'omitnan'), pWindow(r, c));
+	end
+end
+
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'Trial_ContextCrossMatrix.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Trial_ContextCrossMatrixStats', struct('accM', accM, 'curves', curves, ...
@@ -182,4 +203,86 @@ end
 fill(ax, [x fliplr(x)], [mn + se fliplr(mn - se)], col, ...
 	'FaceAlpha', 0.25, 'EdgeColor', 'none', 'HandleVisibility', 'off');
 plot(ax, x, mn, '-', 'Color', col, 'LineWidth', lw, 'DisplayName', dn);
+end
+
+function p = iWindowP(V, N, tVec)
+% 0.5..1 s 窗口作为一个整体的显著性：逐鼠取窗口内 P(post) 与 null 的均值差，
+% 跨鼠单样本 sign-rank（代替逐时间点判断）。所有 tile 的显著性都算在这段窗口内。
+tVec = tVec(:)';
+winMask = (tVec >= 0.5) & (tVec <= 1);
+dd = mean(V(:, winMask), 2, 'omitnan') - mean(N(:, winMask), 2, 'omitnan');
+dd = dd(isfinite(dd));
+if isempty(dd) || all(dd == 0)
+	p = NaN;
+	return;
+end
+p = signrank(dd);
+end
+
+function iSigBar(ax, tVec, mn, p)
+% 模仿英文图1B/2H 的显著性标注：所有 tile 的横线统一画在 0.5..1 s 窗口的曲线上方，
+% 窗口整体显著性 p 标在线上方。
+% 横线用 line 图元绘制：plot 的 2 点水平线会被标准样式误判为轴对齐细线而被重调。
+% 横线与文本都钳在轴限内：末列 tile 贴图缘，越界部分会被裁掉。
+tVec = tVec(:)';
+winMask = (tVec >= 0.5) & (tVec <= 1);
+xl = xlim(ax);
+yrange = diff(ylim(ax));
+yTop = max(mn(winMask), [], 'omitnan');
+yBar = yTop + 0.05 * yrange;
+x1 = max(0.5, xl(1));
+x2 = min(1, xl(2));
+line(ax, [x1, x2], [yBar, yBar], 'Color', 'k', 'LineWidth', 1, 'HandleVisibility', 'off');
+if ~isfinite(p)
+	starStr = 'n.s.';
+elseif p < 0.001
+	starStr = '＊＊＊＊';
+else
+	starStr = TransferLearning.Style.iFormatPText(p);
+end
+hT = text(ax, (x1 + x2) / 2, yBar + 0.02 * yrange, starStr, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', ...
+	'FontSize', 7, 'HandleVisibility', 'off');
+% 文本宽度在数据坐标下可能超出轴范围，按 Extent 平移回轴内
+ext = hT.Extent;
+xShift = 0;
+if ext(1) < xl(1)
+	xShift = xl(1) - ext(1);
+elseif ext(1) + ext(3) > xl(2)
+	xShift = xl(2) - ext(1) - ext(3);
+end
+if xShift ~= 0
+	hT.Position(1) = hT.Position(1) + xShift;
+end
+end
+
+function iRunGeneratorScript(genScript)
+% 在独立的函数工作区里 run 生成脚本，其变量不会污染本脚本的工作区；
+% 并恢复 cd（生成脚本会 cd 到工程根目录）。
+if ~isfile(genScript)
+	error('Trial_ContextCrossMatrix:NoGenerator', 'Missing generator script: %s', genScript);
+end
+iEnsureParallelPool;
+oldDir = pwd;
+cleaner = onCleanup(@() cd(oldDir)); %#ok<NASGU>
+run(genScript);
+end
+
+function iEnsureParallelPool
+% 生成脚本内部用 parfor。本机默认池（=逻辑核数，56 worker）会因 worker 过多启动失败，
+% 这里先建一个稳妥规模的池；实在建不起来就让 parfor 串行执行（慢但能跑完）。
+if ~isempty(gcp('nocreate'))
+	return;
+end
+for nW = unique([min(24, feature('numcores')), 16, 8], 'stable')
+	try
+		parpool('Processes', nW);
+		return;
+	catch
+	end
+end
+warning('Trial_ContextCrossMatrix:NoPool', ...
+	'Parallel pool unavailable; the generator will run serially (much slower).');
+ps = parallel.Settings;
+ps.Pool.AutoCreate = false;
 end

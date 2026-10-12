@@ -2,7 +2,7 @@
 % pre-cue decoder output for all sixteen cells of the 4x4 context cross matrix,
 % drawn in the style of 中文图/Fig54B_PreFormalConnectionWeightStdBars.m
 % (grouped bars with one colour per group, individual s.e.m. error bars,
-% per-mouse scatter, legend outside).
+% legend outside).
 %
 % Quantity per bar: for every mouse and every matrix cell, the P(post) curve of
 % the decoder is averaged over the post-cue time points (t > 0, +0.06..+0.96 s)
@@ -10,7 +10,7 @@
 % taken:
 %   ΔP(post) = mean_post-cue P(post) - mean_pre-cue P(post)
 % So each bar holds n = 10 repeat values (one per mouse) with their s.e.m., drawn
-% as individual error bars plus one scatter point per mouse.
+% as individual error bars (no per-mouse scatter).
 %
 % Layout: x-axis = TRAINING context (4 groups), bar colour = READ-OUT context
 % (4 colours). This is the dimension swap of 英文图/Trial_ContextCrossMatrix.m,
@@ -25,13 +25,12 @@
 % Audio-water -> Audio-water, Light-water -> Light-water) are the 5-fold
 % out-of-fold self-tests; the other twelve are true cross-context transfers.
 %
-% Asterisk rule (as asked): one '*' on a bar when the post-cue vs pre-cue
-% difference of that cell is significant across mice, no mark when it is not.
-% Test = Wilcoxon signed-rank on the 10 per-mouse ΔP(post) values against 0
-% (equivalently the paired post-cue vs pre-cue comparison within mouse); the
-% one-sample t-test p is printed to the command window for reference, together
-% with the Bonferroni-corrected survival over the sixteen cells. No between-group
-% P-value lines are drawn: the marking is per bar, not per pair.
+% Significance (as asked): nothing is marked on the figure - no asterisks, no
+% per-mouse scatter. The statistics stay in the command window for reference
+% only: Wilcoxon signed-rank on the 10 per-mouse ΔP(post) values against 0
+% (equivalently the paired post-cue vs pre-cue comparison within mouse), the
+% one-sample t-test p, and the Bonferroni-corrected survival over the sixteen
+% cells.
 %
 % Input: 信息编码/CueModel_ContextCrossMatrix_Results.mat
 %          (run CueModel_ContextCrossMatrix.m first)
@@ -105,13 +104,12 @@ fprintf('\n');
 for r = 1:nCtx
 	fprintf('%-14s', char(ctxLabel(r)));
 	for c = 1:nCtx
-		fprintf('%-40s', sprintf('Δ %.3f ± %.3f, %d/%d >0, Wilcoxon p=%.4f%s, t-test p=%.4g', ...
-			dMean(r, c), dSem(r, c), nSigT(r, c), nM, pRank(r, c), ...
-			iif(pRank(r, c) < 0.05, '*', ''), pT(r, c)));
+		fprintf('%-40s', sprintf('Δ %.3f ± %.3f, %d/%d >0, Wilcoxon p=%.4f, t-test p=%.4g', ...
+			dMean(r, c), dSem(r, c), nSigT(r, c), nM, pRank(r, c), pT(r, c)));
 	end
 	fprintf('\n');
 end
-fprintf('\nAsterisk threshold: Wilcoxon signed-rank p < 0.05; Bonferroni over the %d bars = %.4f -> %d/%d bars remain significant.\n', ...
+fprintf('\nFigure carries no significance marks (stats below are reference only); Bonferroni over the %d bars = %.4f -> %d/%d bars significant at the 0.05 level.\n', ...
 	numel(pRank), pBonf, nKeepBonf, numel(pRank));
 for r = 1:nCtx
 	for c = 1:nCtx
@@ -167,29 +165,6 @@ for iRow = 1:height(errorBars)
 	if isgraphics(eBar)
 		eBar.Color = [0.2 0.2 0.2];
 		eBar.LineWidth = 1;
-	end
-end
-
-% 每鼠散点（同一格内轻微抖动，避免重叠）：c = 条形系列（读出），r = X 组（训练）
-rng(7);
-for c = 1:nCtx
-	xBar = barHandles(c).XEndPoints(:);
-	for r = 1:nCtx
-		v = squeeze(deltaM(r, c, :));
-		scatter(ax, xBar(r) + (rand(numel(v), 1) - 0.5) * 0.16, v, 12, ...
-			[0.05 0.05 0.05], 'filled', 'MarkerFaceAlpha', 0.85);
-	end
-end
-
-% 每格显著性星号：线索前后感应差异在鼠水平是否显著
-for c = 1:nCtx
-	xBar = barHandles(c).XEndPoints(:);
-	for r = 1:nCtx
-		if pRank(r, c) < 0.05
-			yTop = max(dMean(r, c) + dSem(r, c), max(squeeze(deltaM(r, c, :)))) + 0.012;
-			text(ax, xBar(r), yTop, '*', 'HorizontalAlignment', 'center', ...
-				'FontSize', 12, 'FontWeight', 'bold');
-		end
 	end
 end
 
@@ -273,8 +248,4 @@ if ~any(ok)
 	return;
 end
 s = std(v(ok)) / sqrt(sum(ok));
-end
-
-function s = iif(c, a, b)
-if c; s = a; else; s = b; end
 end

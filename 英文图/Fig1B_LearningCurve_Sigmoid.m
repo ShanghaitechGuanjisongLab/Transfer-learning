@@ -109,8 +109,6 @@ f = figure('Color', 'w', 'Name', 'Fig1B Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [12, 8];
-f.PaperPositionMode = 'auto';
 
 ax = axes(f);
 hold(ax, 'on');
@@ -145,7 +143,11 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-if groupP < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP); end
+if groupP < 0.001
+	starStr = '＊＊＊＊'; 
+else
+	starStr = TransferLearning.Style.iFormatPText(groupP)
+end
 text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
@@ -156,13 +158,6 @@ yticks(ax, yt(yt <= 1 + 1e-6));
 % 扩展 y 上限避免 title 与 P 值标注遮挡
 yl_ = ylim(ax);
 ylim(ax, [yl_(1), yl_(2) + 0.12 * (yl_(2) - yl_(1))]);
-
-allAxes = findall(f, 'Type', 'axes');
-for axItem = reshape(allAxes, 1, [])
-	if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar)
-		axItem.Toolbar.Visible = 'off';
-	end
-end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1B_LearningCurve_Sigmoid.svg');
 
 %% --- 8. First-block hit rate bar ---

@@ -85,7 +85,20 @@ if ~exist('UniExp.DataSet', 'class')
     if exist(prjFile, 'file'); matlab.project.loadProject(prjFile); end
 end
 rng(42);
-if isempty(gcp('nocreate')); parpool; end
+if isempty(gcp('nocreate'))
+    % 默认池（=逻辑核数）可能因 worker 过多启动失败；依次降级，最后退回串行 parfor
+    poolOK = false;
+    for nW = unique([min(24, feature('numcores')), 16, 8], 'stable')
+        try
+            parpool('Processes', nW); poolOK = true; break;
+        catch
+        end
+    end
+    if ~poolOK
+        warning('CueModel_ContextCrossMatrix:NoPool', 'Parallel pool unavailable; parfor runs serially (much slower).');
+        ps = parallel.Settings; ps.Pool.AutoCreate = false;
+    end
+end
 
 DS = TransferLearning.AudioLightBaseline();
 dsName = 'AudioLightBaseline (no gap)';
