@@ -90,6 +90,26 @@ classdef(Abstract)TransferLearning
 			end
 			SvgPath=fullfile(OutDir,[Name,Ext]);
 		end
+		function MatPath=CachePath(FileName)
+			%结果缓存（*_Results.mat 等）统一放到数据服务器的个人缓存目录，
+			%不放进代码工作区，避免被 git 追踪
+			arguments
+				FileName {mustBeTextScalar}
+			end
+			FileName=char(FileName);
+			[parentDir,Name,Ext]=fileparts(FileName);
+			if isempty(FileName) || isempty(Name) || ~isempty(parentDir) || ~isempty(regexp(FileName,'[<>:"/\\|?*]','once'))
+				error('TransferLearning:InvalidCacheFileName', 'CachePath expects a .mat file name only, not a path: %s', FileName);
+			end
+			if ~strcmpi(Ext,'.mat')
+				error('TransferLearning:InvalidCacheFileName', 'CachePath expects a .mat file name: %s', FileName);
+			end
+			OutDir=fullfile('\\Data-Server-2\个人数据',getenv('USERNAME'),'缓存');
+			if ~isfolder(OutDir)
+				mkdir(OutDir);
+			end
+			MatPath=fullfile(OutDir,[Name,Ext]);
+		end
 		function DrawCueWaterLines(Ax)
 			if nargin
 				Ax={Ax};

@@ -27,7 +27,8 @@
 % Water is delivered at cue + 1 s, so the post window (0..1 s) ends exactly at
 % water delivery and contains no water/lick response in any context.
 %
-% Input: 信息编码/CueModel_TransferAudioOnlyToAudioWater_Results.mat
+% Input: CueModel_TransferAudioOnlyToAudioWater_Results.mat（缓存，经 TransferLearning.CachePath
+%         存到数据服务器个人缓存目录，不在代码工作区内、不被 git 追踪）
 %
 % Output (SVG):
 %   - Trial_AudioOnlyCueDecoderTransfer.svg
@@ -44,7 +45,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-matPath = fullfile(thisDir, '..', '信息编码', 'CueModel_TransferAudioOnlyToAudioWater_Results.mat');
+matPath = TransferLearning.CachePath('CueModel_TransferAudioOnlyToAudioWater_Results.mat');
 if ~isfile(matPath)
 	error('Trial_AudioOnly:NoResults', ...
 		'Missing %s - run CueModel_TransferAudioOnlyToAudioWater.m first.', matPath);

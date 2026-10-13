@@ -67,7 +67,8 @@
 % block (no AudioOnly / LightOnly trial) and drops out -> 10 mice in all
 % sixteen cells.
 %
-% Output: 信息编码/CueModel_ContextCrossMatrix_Results.mat
+% Output: CueModel_ContextCrossMatrix_Results.mat（缓存，经 TransferLearning.CachePath
+%         存到数据服务器个人缓存目录，不在代码工作区内、不被 git 追踪）
 % Plots:  英文图/Trial_ContextCrossMatrix.m          (4x4 P(post) curve tiles)
 %         英文图/Trial_ContextCrossMatrixDeltaBars.m (ΔP(post) grouped bars)
 %
@@ -314,7 +315,7 @@ for c = 1:nCtx
 end
 
 % --- reference: the published Fig3D direction ---
-refMat = fullfile(thisDir, 'CueModel_TransferAudioToLight_Results.mat');
+refMat = TransferLearning.CachePath('CueModel_TransferAudioToLight_Results.mat');
 if isfile(refMat)
     Sref = load(refMat);
     isDS1 = cellfun(@(R) R.DS == 1, Sref.res);
@@ -331,7 +332,7 @@ else
     fprintf('\nReference Fig3D results not found (%s): comparison skipped.\n', refMat);
 end
 
-save(fullfile(thisDir, 'CueModel_ContextCrossMatrix_Results.mat'), ...
+save(TransferLearning.CachePath('CueModel_ContextCrossMatrix_Results.mat'), ...
     'res', 'meta', 'dsName', 'tVec', 'NPERM', 'ctxStim', 'ctxShort', 'ctxLabel', ...
     'accM', 'curves', 'nulls', 'nTeCell', 'mouseNames');
 fprintf('\nSaved CueModel_ContextCrossMatrix_Results.mat\n');

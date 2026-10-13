@@ -12,7 +12,8 @@
 %            only (200 iterations, as in CueModel.m).
 % The window-trained decoder is additionally read out AT EVERY TIME POINT of
 % Stage2 (accuracy and P(post)), and per-cell LASSO weights are returned.
-% Results are saved to CueModel_TransferAudioToLight_Results.mat.
+% Results are saved to CueModel_TransferAudioToLight_Results.mat (cache, via
+% TransferLearning.CachePath in the server personal cache folder, not in the repo).
 %
 % EXCLUDED: vtf0353 (AudioLightBaseline) - its Transfer LightWater block is
 % flagged "2/5层亮度反相" (inverted brightness) in the database.
@@ -169,7 +170,7 @@ for iDS = 1:numel(DSs)
 end
 
 % ---- save results ----
-save(fullfile(thisDir, 'CueModel_TransferAudioToLight_Results.mat'), ...
+save(TransferLearning.CachePath('CueModel_TransferAudioToLight_Results.mat'), ...
     'res', 'tasks', 'dsNames', 'tVec', 'excludeMice');
 fprintf('\nSaved CueModel_TransferAudioToLight_Results.mat\n');
 

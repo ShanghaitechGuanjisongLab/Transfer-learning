@@ -1,18 +1,31 @@
 %% CueModel_ContextCrossMatrix_ALDelayed.m
-% ALDelayed（有延迟不舔不给水）上下文交叉解码矩阵（2x2）。
-% 模仿 CueModel_ContextCrossMatrix.m 的解码口径：
-% - 每 trial 取 pre/post 窗均值训练 pre(0)/post(1) 逻辑回归解码器；
-% - 对角线：训练域内 5-fold trial-aware OOF；
+% ALDelayed（有延迟不舔不给水钙成像，声水转光水，延迟任务）上下文交叉解码矩阵（3x3）。
+% 注：Always（总是给水）回合不参与分析。
+% 模仿 信息编码/CueModel_ContextCrossMatrix.m（AudioLightBaseline 4x4）的解码口径：
+% - 每 trial 取 pre/post 窗均值训练 pre(0)/post(1) 逻辑回归解码器
+%   （TransferLearning.DecodeCuePrePostTransfer，Fig3D 规则）；
+% - 对角线：训练域内 5-fold trial-aware OOF 自测；
 % - 非对角：行上下文训练后直接读出列上下文（不重训）；
-% - 训练标签置换（默认 200 次）生成 null95。
+% - 训练标签置换（200 次）生成 null95。
 %
-% 与原 4x4 版的主要差异：
-% - 数据源：TransferLearning.ALDelayed()
-% - 上下文：LightLearnWater / LightLearnWaterAlways
-% - 时间窗：[-1.5, 1.5] s（训练 pre=-1.5..0, post=0..1.5；读出同范围）
+% 上下文（实验时间线：预训练 → 声水学习 → 光水迁移；全部含 cue）：
+%   Audio only  = AudioPreTrainCueOnly   （预训练声 cue-only，对应原图 AO）
+%   Audio-water = AudioLearnWater        （声水学习，延迟期舔才给水）
+%   Light-water = LightLearnWater        （光水迁移，延迟期舔才给水）
+%   AudioLearnWaterAlways / LightLearnWaterAlways（总是给水）不参与分析；
+%   AudioPreTrainWaterOnly 无 cue（同原图排除 WaterOnly 的理由），不解码。
+%
+% 时间窗（延迟任务：反应/名义给水 = cue +1.5 s，用户要求时间范围 [-1.5, 1.5] s）：
+%   pre = -1.5..0 s，post = 0..1.5 s，读出网格 [-1.5, 1.5] s。
+%
+% 块排除（同原图口径：MustWarn 块跳过）。本库 4 个被标记块：BlockUID 7「后来电脑蓝屏」
+% 与 3 个缺 Design 块「标通道没打上」「没拍」×2。
+% 细胞集合：每鼠三个上下文的交集（注册全会话共享；yqn2200/2201/2202/2203 约
+% 504/783/344/635 个）。
 %
 % 输出：
-% - 信息编码/CueModel_ContextCrossMatrix_ALDelayed_Results.mat
+% - CueModel_ContextCrossMatrix_ALDelayed_Results.mat（缓存，经 TransferLearning.CachePath
+%   存到数据服务器个人缓存目录，不在代码工作区内、不被 git 追踪）
 %
 % 执行：
 % - 保持脚本形态（不要改 function）。
@@ -32,7 +45,7 @@ end
 rng(42);
 
 DS = TransferLearning.ALDelayed();
-dsName = 'ALDelayed';
+dsName = 'ALDelayed (delayed task, water at cue+1.5 s)';
 xs = TransferLearning.Xs;
 if isduration(xs)
 	xs = seconds(xs);
@@ -43,16 +56,24 @@ tIdxFull = find((xs >= -1.5) & (xs <= 1.5));
 tVec = xs(tIdxFull);
 nT = numel(tVec);
 NPERM = 200;
-ctxStim = ["LightLearnWater", "LightLearnWaterAlways"];
-ctxShort = ["LW", "LWA"];
-ctxLabel = ["Light-water", "Light-water(always)"];
+ctxStim = ["AudioPreTrainCueOnly", "AudioLearnWater", "LightLearnWater"];
+ctxShort = ["AO", "AW", "LW"];
+ctxLabel = ["Audio only", "Audio-water", "Light-water"];
 nCtx = numel(ctxStim);
-fprintf('=== CueModel 2x2 cross-context matrix (%s) ===\n', dsName);
+fprintf('=== CueModel 3x3 cross-context matrix (%s) ===\n', dsName);
 fprintf('Pre: %.2f-%.2fs  Post: %.2f-%.2fs  | read-out grid: %d pts (%.2f-%.2f s)  | permutations: %d\n', ...
 	xs(find(tPre, 1)), xs(find(tPre, 1, 'last')), xs(find(tPost, 1)), xs(find(tPost, 1, 'last')), ...
 	nT, tVec(1), tVec(end), NPERM);
 
-%% 1. Per-mouse trial data -> one task per matrix row
+%% 1. 块质量标记（同原图口径：MustWarn 块跳过）
+Blk = DS.Blocks;
+Blk.MustWarn = string(Blk.MustWarn);
+nFlag = ~ismissing(Blk.MustWarn) & strlength(Blk.MustWarn) > 0;
+warnedUID = uint64(Blk.BlockUID(nFlag));
+fprintf('Blocks: %d total, %d flagged (skipped): %s\n', height(Blk), sum(nFlag), ...
+	strjoin(unique(Blk.MustWarn(nFlag)), '; '));
+
+%% 2. Per-mouse trial data -> one task per matrix row
 T = DS.TableQuery(["Mouse", "Stimulus"]);
 T.Mouse = string(T.Mouse);
 T.Stimulus = string(T.Stimulus);
@@ -73,6 +94,7 @@ for m = mice
 		if isempty(tab)
 			continue;
 		end
+		tab = tab(~ismember(uint64(tab.BlockUID), warnedUID), :);
 		tab = tab(~isnan(tab.Behavior), :);
 		if isempty(tab)
 			continue;
@@ -174,7 +196,7 @@ for r = 1:nCtx
 	fprintf('\n');
 end
 
-save(fullfile(thisDir, 'CueModel_ContextCrossMatrix_ALDelayed_Results.mat'), ...
+save(TransferLearning.CachePath('CueModel_ContextCrossMatrix_ALDelayed_Results.mat'), ...
 	'res', 'meta', 'dsName', 'tVec', 'NPERM', 'ctxStim', 'ctxShort', 'ctxLabel', ...
 	'accM', 'curves', 'nulls', 'nTeCell', 'mouseNames');
 fprintf('\nSaved CueModel_ContextCrossMatrix_ALDelayed_Results.mat\n');

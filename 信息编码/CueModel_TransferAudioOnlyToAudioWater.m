@@ -43,7 +43,8 @@
 % Cohort: AudioLightBaseline only (no gap). 11 mice; yqn1130 has no AudioOnly
 % trial and drops out -> 10 decodable mice for Stage1 and AW, 9 for LW1.
 %
-% Output: 信息编码/CueModel_TransferAudioOnlyToAudioWater_Results.mat
+% Output: CueModel_TransferAudioOnlyToAudioWater_Results.mat（缓存，经 TransferLearning.CachePath
+%         存到数据服务器个人缓存目录，不在代码工作区内、不被 git 追踪）
 % Plot:   英文图/Trial_AudioOnlyCueDecoderTransfer.m
 %
 % Execution (hard requirement):
@@ -263,7 +264,7 @@ if ismember("LW1", testLabels)
 end
 
 % --- reference: the published Fig3D direction (Learned AudioWater -> Transfer LightWater) ---
-refMat = fullfile(thisDir, 'CueModel_TransferAudioToLight_Results.mat');
+refMat = TransferLearning.CachePath('CueModel_TransferAudioToLight_Results.mat');
 if isfile(refMat)
     Sref = load(refMat);
     isDS1 = cellfun(@(R) R.DS == 1, Sref.res);
@@ -276,7 +277,7 @@ else
     fprintf('\nReference Fig3D results not found (%s): comparison skipped.\n', refMat);
 end
 
-save(fullfile(thisDir, 'CueModel_TransferAudioOnlyToAudioWater_Results.mat'), ...
+save(TransferLearning.CachePath('CueModel_TransferAudioOnlyToAudioWater_Results.mat'), ...
     'res', 'tasks', 'dsName', 'tVec', 'NPERM', 'testLabels', 'lwFirst');
 fprintf('\nSaved CueModel_TransferAudioOnlyToAudioWater_Results.mat\n');
 fprintf('Next: run 英文图/Trial_AudioOnlyCueDecoderTransfer.m\n');

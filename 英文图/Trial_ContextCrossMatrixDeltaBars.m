@@ -32,8 +32,9 @@
 % one-sample t-test p, and the Bonferroni-corrected survival over the sixteen
 % cells.
 %
-% Input: 信息编码/CueModel_ContextCrossMatrix_Results.mat
-%          (run CueModel_ContextCrossMatrix.m first)
+% Input: CueModel_ContextCrossMatrix_Results.mat（经 TransferLearning.CachePath 存放在数据服务器
+%          个人缓存目录，不在代码工作区内、不被 git 追踪）。缓存缺失时本脚本自动运行
+%          信息编码/CueModel_ContextCrossMatrix.m 现场生成，不要求先手动运行别的脚本。
 %
 % Output (SVG):
 %   - Trial_ContextCrossMatrixDeltaBars.svg
@@ -50,10 +51,16 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-matPath = fullfile(thisDir, '..', '信息编码', 'CueModel_ContextCrossMatrix_Results.mat');
+matPath = TransferLearning.CachePath('CueModel_ContextCrossMatrix_Results.mat');
+genScript = fullfile(thisDir, '..', '信息编码', 'CueModel_ContextCrossMatrix.m');
+if ~isfile(matPath)
+	% 入口脚本自给自足：结果缓存缺失时现场运行生成脚本补齐，不要求先手动运行别的脚本。
+	fprintf('Results cache missing (%s)\nGenerating it now via %s ...\n', matPath, genScript);
+	iRunGeneratorScript(genScript);
+end
 if ~isfile(matPath)
 	error('Trial_DeltaBars:NoResults', ...
-		'Missing %s - run CueModel_ContextCrossMatrix.m first.', matPath);
+		'%s still missing after running %s.', matPath, genScript);
 end
 S = load(matPath);
 curves = S.curves;
@@ -248,4 +255,35 @@ if ~any(ok)
 	return;
 end
 s = std(v(ok)) / sqrt(sum(ok));
+end
+
+function iRunGeneratorScript(genScript)
+% 在独立的函数工作区里 run 生成脚本，其变量不会污染本脚本的工作区；
+% 并恢复 cd（生成脚本会 cd 到工程根目录）。
+if ~isfile(genScript)
+	error('Trial_DeltaBars:NoGenerator', 'Missing generator script: %s', genScript);
+end
+iEnsureParallelPool;
+oldDir = pwd;
+cleaner = onCleanup(@() cd(oldDir)); %#ok<NASGU>
+run(genScript);
+end
+
+function iEnsureParallelPool
+% 生成脚本内部用 parfor。本机默认池（=逻辑核数，56 worker）会因 worker 过多启动失败，
+% 这里先建一个稳妥规模的池；实在建不起来就让 parfor 串行执行（慢但能跑完）。
+if ~isempty(gcp('nocreate'))
+	return;
+end
+for nW = unique([min(24, feature('numcores')), 16, 8], 'stable')
+	try
+		parpool('Processes', nW);
+		return;
+	catch
+	end
+end
+warning('Trial_DeltaBars:NoPool', ...
+	'Parallel pool unavailable; the generator will run serially (much slower).');
+ps = parallel.Settings;
+ps.Pool.AutoCreate = false;
 end

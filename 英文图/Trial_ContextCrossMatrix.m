@@ -33,9 +33,10 @@
 % Water is delivered at cue + 1 s, so the post window (0..1 s) ends exactly at
 % water delivery in every context.
 %
-% Input: 信息编码/CueModel_ContextCrossMatrix_Results.mat
-%   缓存缺失时本脚本自动运行 信息编码/CueModel_ContextCrossMatrix.m 现场生成，
-%   不要求先手动运行别的脚本（生成开并行池 + 200 次置换，只跑一次，之后直接读缓存）。
+% Input: CueModel_ContextCrossMatrix_Results.mat（经 TransferLearning.CachePath 存放在数据服务器
+%   个人缓存目录，不在代码工作区内、不被 git 追踪）。缓存缺失时本脚本自动运行
+%   信息编码/CueModel_ContextCrossMatrix.m 现场生成，不要求先手动运行别的脚本
+%   （生成开并行池 + 200 次置换，只跑一次，之后直接读缓存）。
 %
 % Output (SVG):
 %   - Trial_ContextCrossMatrix.svg
@@ -52,7 +53,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-matPath = fullfile(thisDir, '..', '信息编码', 'CueModel_ContextCrossMatrix_Results.mat');
+matPath = TransferLearning.CachePath('CueModel_ContextCrossMatrix_Results.mat');
 genScript = fullfile(thisDir, '..', '信息编码', 'CueModel_ContextCrossMatrix.m');
 if ~isfile(matPath)
 	% 入口脚本自给自足：结果缓存缺失时现场运行生成脚本补齐，不要求先手动运行别的脚本。

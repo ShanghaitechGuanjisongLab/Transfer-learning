@@ -20,8 +20,9 @@
 % percentile over mice), i.e. the level reached by a decoder trained on
 % randomized labels read out the same way.
 %
-% Input: 信息编码/CueModel_TransferAudioToLight_Results.mat (decoded results,
-% verified above; this script only plots and re-tests group differences).
+% Input: CueModel_TransferAudioToLight_Results.mat (decoded results, verified
+% above; this script only plots and re-tests group differences; the cache lives
+% in TransferLearning.CachePath, the server personal cache folder, not the repo).
 %
 % Outputs (SVG):
 %   - English_Fig3D_GapDecoderTransfer.svg
@@ -38,7 +39,7 @@ if ~exist('UniExp.DataSet', 'class')
 	end
 end
 
-matPath = fullfile(thisDir, '..', '信息编码', 'CueModel_TransferAudioToLight_Results.mat');
+matPath = TransferLearning.CachePath('CueModel_TransferAudioToLight_Results.mat');
 if ~isfile(matPath)
 	error('English_Fig3D:NoResults', 'Missing %s - run CueModel_TransferAudioToLight.m first.', matPath);
 end
