@@ -16,7 +16,7 @@
 % （组间最多差 1 回合）后组内平均 → 每细胞 nLines 条轨迹；归一化 ZScore（基线 1:24）匹配散度口径。
 % 绘图时段按各范式的给水时刻：Delayed 行 cue 0 → +1.5 s，Undelayed 行 cue 0 → +1 s（Fig1D 口径）；
 % 只给声音的列无给水，但为行内可比取同一时段。轨迹浅色端=cue 起点、深色端=时段末端，
-% 着色为线内时间渐变（逐段平色小线段，nGradSeg 段）。
+% 着色为线内时间渐变（单次 patch 逐顶点着色，学习 UniExp.SegmentFadePlot/ColorfulMarkerPlot）。
 % 4 个 tile 的 PCA 独立计算（各自 super-mouse 群体），各坐标轴不标注解释度；
 % 着色按列沿用上下文配色：Audio only = NaiveColor（紫），Audio-water = ColorB（绿）。
 %
@@ -29,7 +29,7 @@
 
 % 可调参数：把每细胞的全部回合尽可能均分成多少条轨迹
 nLines = 10;
-% 可调参数：线内渐变的分段数（每条轨迹拆成多少段平色小线段）
+% 可调参数：线内渐变的分段数（轨迹重采样顶点数，patch 逐顶点着色）
 nGradSeg = 40;
 
 thisDir = fileparts(mfilename('fullpath'));
@@ -284,10 +284,7 @@ box(ax, 'off');
 grid(ax, 'off');
 hold(ax, 'on');
 PcaData = PlotData.PcaData;
-for iLine = 1:PlotData.nLines
-	xy = squeeze(PcaData(:, :, iLine));
-	iGradientPath(ax, xy(1, :), xy(2, :), groupColor, nGradSeg);
-end
+iGradientLines(ax, PcaData, groupColor, nGradSeg);
 hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', groupColor);
 view(ax, 2);
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
@@ -312,22 +309,27 @@ xlim(ax, [min(xAll) - xMargin, max(xAll) + xMargin]);
 ylim(ax, [min(yAll) - yMargin, max(yAll) + yMargin]);
 end
 
-function iGradientPath(ax, x, y, baseColor, nSeg)
-% 线内时间渐变：把 cue→末端折线按时间重采样成 nSeg 段，逐段平色，
-% 早段接近白（baseColor 仅 15%）、晚段为基色。
-% 用 line 图元逐段绘制：plot 返回的 2 点线会被标准样式误判为轴对齐细线
-% （line 图元不受影响），且平色段在 SVG 导出中保持稳定。
-x = x(:)';
-y = y(:)';
-n = numel(x);
-tt = linspace(1, n, nSeg + 1);
-xs = interp1(1:n, x, tt);
-ys = interp1(1:n, y, tt);
-f = linspace(0, 1, nSeg);
-for k = 1:nSeg
-	ck = 1 - f(k) * (1 - baseColor(:)');
-	line(ax, xs(k:k+1), ys(k:k+1), 'Color', ck, 'LineWidth', 2, 'HandleVisibility', 'off');
+function iGradientLines(ax, PcaData, baseColor, nSeg)
+% 线内时间渐变：cue→末端折线按时间重采样成 nSeg 段，cue 端接近白、末端为基色。
+% 学习 UniExp.SegmentFadePlot / UniExp.ColorfulMarkerPlot 的 patch 画法：
+% 矩阵 X/Y 每列一条折线 + 末行 NaN 断开 patch 闭合边 + 逐顶点色 + EdgeColor='flat'，
+% 全部轨迹一次 patch 调用画完（不再逐段调用 line，每条 40 次 → 全部 1 次）。
+nLines = size(PcaData, 3);
+nTime = size(PcaData, 2);
+tt = linspace(1, nTime, nSeg + 1);
+w = linspace(0, 1, nSeg + 1)';
+cv = 1 - w * (1 - baseColor(:)');   % (nSeg+1)×3 逐顶点颜色：cue 端近白 → 末端基色
+X = nan(nSeg + 2, nLines);
+Y = nan(nSeg + 2, nLines);
+for iLine = 1:nLines
+	xy = squeeze(PcaData(:, :, iLine));
+	X(1:nSeg+1, iLine) = interp1(1:nTime, xy(1, :), tt);
+	Y(1:nSeg+1, iLine) = interp1(1:nTime, xy(2, :), tt);
 end
+C = repmat(reshape(cv, [nSeg+1, 1, 3]), 1, nLines, 1);
+C(end+1, :, :) = repmat(reshape(cv(end, :), [1, 1, 3]), 1, nLines);
+patch(ax, X, Y, C, 'EdgeColor', 'flat', 'FaceColor', 'none', ...
+	'LineWidth', 2, 'HandleVisibility', 'off');
 end
 
 function idx = iFindPlotTimeIndex(nTime, targetSec)

@@ -200,7 +200,7 @@ save(TransferLearning.CachePath('CueModel_ContextCrossMatrix_ALDelayed_Results.m
 	'res', 'meta', 'dsName', 'tVec', 'NPERM', 'ctxStim', 'ctxShort', 'ctxLabel', ...
 	'accM', 'curves', 'nulls', 'nTeCell', 'mouseNames');
 fprintf('\nSaved CueModel_ContextCrossMatrix_ALDelayed_Results.mat\n');
-fprintf('Next: run 英文图/Trial_ContextCrossMatrix_ALDelayed.m\n');
+fprintf('Next: run 英文图/FigS2D_Delayed_ContextCrossMatrix.m\n');
 
 %% ========== local functions ==========
 function Te = iTestEntry(name, X, tPre, tPost, tIdxFull)

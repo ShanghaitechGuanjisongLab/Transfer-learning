@@ -336,7 +336,7 @@ save(TransferLearning.CachePath('CueModel_ContextCrossMatrix_Results.mat'), ...
     'res', 'meta', 'dsName', 'tVec', 'NPERM', 'ctxStim', 'ctxShort', 'ctxLabel', ...
     'accM', 'curves', 'nulls', 'nTeCell', 'mouseNames');
 fprintf('\nSaved CueModel_ContextCrossMatrix_Results.mat\n');
-fprintf('Next: run 英文图/Trial_ContextCrossMatrix.m\n');
+fprintf('Next: run 英文图/Fig2A_ContextCrossMatrix.m\n');
 
 %% ========== local functions ==========
 function sel = iCtxSel(Blk, k)

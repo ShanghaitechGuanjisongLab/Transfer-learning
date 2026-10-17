@@ -1,6 +1,6 @@
-% Trial figure (ALDelayed): cue pre/post decoder context cross matrix (3x3),
-% Always (always-water) contexts excluded from the analysis,
-% mimicking the style of Trial_ContextCrossMatrix.m.
+% English FigS2D (formerly Trial_ContextCrossMatrix_ALDelayed): cue pre/post
+% decoder context cross matrix (3x3) on ALDelayed, Always (always-water)
+% contexts excluded from the analysis, mimicking the style of Fig2A_ContextCrossMatrix.m.
 %
 % Data source:
 % - CueModel_ContextCrossMatrix_ALDelayed_Results.mat (cache, via
@@ -10,13 +10,15 @@
 % Time range:
 % - Fixed display window: [-1.5, 1.5] s (delayed task: nominal water at cue +1.5 s)
 %
-% Significance (same convention as Trial_ContextCrossMatrix.m):
-% - All tiles carry one bar over the SAME 1.0..1.5 s window (the 0.5 s window ending
-%   at nominal water delivery, the delayed-task analog of the 4x4's 0.5..1 s window),
-%   with the window-level sign-rank p above it; no point-wise markers.
+% Significance (same convention as Fig2A_ContextCrossMatrix.m, 2A style):
+% - NO P-value lines and no point-wise markers; each tile carries the significance
+%   of the SAME 1.0..1.5 s window taken as a whole (the 0.5 s window ending at
+%   nominal water delivery, the delayed-task analog of the 4x4's 0.5..1 s window;
+%   per-mouse mean P(post) minus mean null over the window, one-sample sign-rank)
+%   as a single P-value text hugging the tile's top-right corner.
 %
 % Output (SVG):
-% - Trial_ContextCrossMatrix_ALDelayed.svg
+% - English_FigS2D_Delayed_ContextCrossMatrix.svg
 %
 % Execution:
 % - Keep this file as a script (do NOT convert to function).
@@ -81,7 +83,7 @@ end
 fprintf('(k/m* = mice with accuracy > 0.5; k/mt = time points above the null 95%% within 1.0-1.5 s; p = the 1.0-1.5 s window as a whole)\n');
 
 %% ---------- figure ----------
-f = figure('Color', 'w', 'Name', 'Trial: ALDelayed cue decoder 3x3 context matrix');
+f = figure('Color', 'w', 'Name', 'English FigS2D ALDelayed cue decoder 3x3 context matrix');
 f.Units = 'centimeters';
 f.Position(3:4) = [6.75, 6];
 Layout = tiledlayout(f, nCtx, nCtx, 'TileSpacing', 'tight', 'Padding', 'tight');
@@ -105,9 +107,8 @@ for r = 1:nCtx
 		xline(ax, 0, '--', 'Color', [0.35 0.35 0.35], 'LineWidth', 0.8, 'HandleVisibility', 'off');
 		ylim(ax, [0 1.15]);
 		xlim(ax, [-1.5 1.5]);
-		% 显著性（同 Trial_ContextCrossMatrix.m 现行约定）：所有 tile 的横线统一画在
-		% 1.0..1.5 s（名义给水 cue+1.5 s 前 0.5 s），窗口整体标显著性，不逐点打点。
-		% 横线与标注在统一轴限之后绘制（见下方循环），保证不越出轴范围
+		% 显著性（同 Fig2A_ContextCrossMatrix.m 的 2A 版式）：1.0..1.5 s（名义给水
+		% cue+1.5 s 前 0.5 s）窗口整体标显著性，不画横线不逐点打点；P 值文本在下方循环画
 		pWindow(r, c) = iWindowP(V, nulls{r, c}, tVec);
 		if r == 1
 			title(ax, S.ctxLabel(c), 'FontSize', 8, 'FontWeight', 'normal');
@@ -132,23 +133,24 @@ for r = 1:nCtx
 		Ax(r, c) = ax;
 	end
 end
-xlabel(Layout, sprintf('Time from cue onset (s)\nRead-out context'));
+% "Read-out context" 字样改标在 Layout 级 title（用户裁定，同 2A）
+xlabel(Layout, 'Time from cue onset (s)');
 ylabel(Layout, sprintf('P(post)\nTraining context'));
+title(Layout, 'Read-out context');
 TransferLearning.ApplyStandardExportStyle(f, 2);
 MATLAB.Graphics.UnifyAxesLims(Ax(:), @xlim, @ylim);
 for iA = 1:numel(Ax)
 	xlim(Ax(iA), [-1.5 1.5]);
 end
 
-% 显著性标注在统一轴限之后画（英文图1B/2H 式：1.0..1.5 s 上方横线 + 窗口整体显著性 p），
-% 并按最终轴限钳制横线与文本，防止末列 tile 贴图缘被裁
+% 显著性标注（2A 版式）：不画横线，窗口整体 P 值文本贴靠每格右上角（归一化定位，不越界）
 for r = 1:nCtx
 	for c = 1:nCtx
-		iSigBar(Ax(r, c), tVec, mean(curves{r, c}, 1, 'omitnan'), pWindow(r, c));
+		iSigBar(Ax(r, c), pWindow(r, c));
 	end
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'Trial_ContextCrossMatrix_ALDelayed.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS2D_Delayed_ContextCrossMatrix.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Trial_ContextCrossMatrix_ALDelayed_Stats', struct('accM', accM, 'curves', curves, ...
@@ -196,20 +198,9 @@ end
 p = signrank(dd);
 end
 
-function iSigBar(ax, tVec, mn, p)
-% 模仿英文图1B/2H 的显著性标注：所有 tile 的横线统一画在 1.0..1.5 s 窗口的曲线上方，
-% 窗口整体显著性 p 标在线上方。
-% 横线用 line 图元绘制：plot 的 2 点水平线会被标准样式误判为轴对齐细线而被重调。
-% 横线与文本都钳在轴限内：末列 tile 贴图缘，越界部分会被裁掉。
-tVec = tVec(:)';
-winMask = (tVec >= 1.0) & (tVec <= 1.5);
-xl = xlim(ax);
-yrange = diff(ylim(ax));
-yTop = max(mn(winMask), [], 'omitnan');
-yBar = yTop + 0.05 * yrange;
-x1 = max(1.0, xl(1));
-x2 = min(1.5, xl(2));
-line(ax, [x1, x2], [yBar, yBar], 'Color', 'k', 'LineWidth', 1, 'HandleVisibility', 'off');
+function iSigBar(ax, p)
+% 显著性标注（2A 版式，用户裁定）：不画 P 值横线，窗口整体显著性 P 值文本
+% 贴靠 tile 右上角（归一化定位，不越界）。
 if ~isfinite(p)
 	starStr = 'n.s.';
 elseif p < 0.001
@@ -217,20 +208,9 @@ elseif p < 0.001
 else
 	starStr = TransferLearning.Style.iFormatPText(p);
 end
-hT = text(ax, (x1 + x2) / 2, yBar + 0.02 * yrange, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', ...
+text(ax, 0.98, 0.98, starStr, 'Units', 'normalized', ...
+	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', ...
 	'FontSize', 7, 'HandleVisibility', 'off');
-% 文本宽度在数据坐标下可能超出轴范围，按 Extent 平移回轴内
-ext = hT.Extent;
-xShift = 0;
-if ext(1) < xl(1)
-	xShift = xl(1) - ext(1);
-elseif ext(1) + ext(3) > xl(2)
-	xShift = xl(2) - ext(1) - ext(3);
-end
-if xShift ~= 0
-	hT.Position(1) = hT.Position(1) + xShift;
-end
 end
 
 function iRunGeneratorScript(genScript)

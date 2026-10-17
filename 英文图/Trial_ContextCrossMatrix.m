@@ -1,4 +1,4 @@
-% Trial figure (no figure number yet): the English Fig3D cue pre/post decoder
+% English Fig2A (formerly Trial_ContextCrossMatrix): the cue pre/post decoder
 % laid out as a complete 4x4 cross-context matrix. Rows = training context,
 % columns = read-out context; the diagonal is the decoder's own 5-fold
 % out-of-fold self-test, every off-diagonal tile is the SAME decoder read out on
@@ -11,12 +11,11 @@
 %
 % Per tile: mean +/- s.e.m. P(post) over mice, grey dashed line = 95th
 % percentile of the label-shuffled permutation null (200 shuffles, averaged over
-% mice). Significance follows the English Fig1B/2H convention instead of
-% pointwise markers: every tile carries a horizontal black line above the curve
-% spanning the SAME 0.5..1 s window (the window ending at water delivery), and
-% above it the significance of that window taken as a whole (per-mouse mean
-% P(post) minus mean null over 0.5..1 s, one-sample sign-rank; 1B/2H star/p text
-% convention).
+% mice). Significance (2A style, user's call): NO P-value lines and no pointwise
+% markers; each tile carries the significance of the SAME 0.5..1 s window taken
+% as a whole (per-mouse mean P(post) minus mean null over the window, one-sample
+% sign-rank) as a single P-value text hugging the tile's top-right corner
+% (1B/2H star/p text convention).
 % Line colour encodes the TRAINING context, so a row can be followed across its
 % read-outs. The AW -> LW tile is the Fig3D direction with the whole initial
 % learning phase as the AudioWater training pool; the AO -> LW tile asks how much
@@ -27,8 +26,9 @@
 % Labelling: the CONTEXT NAMES live on the tiles (read-out context in the
 % first-row titles, training context in the first-column ylabels, each written
 % once because it repeats along that dimension); the Layout-level xlabel/ylabel
-% carry the axis quantity plus which dimension runs along that axis (read-out vs
-% training), not the names again.
+% carry the axis quantity plus which dimension runs along that axis (training),
+% and the "Read-out context" wording is re-labelled onto the Layout-level title
+% (user's call).
 %
 % Water is delivered at cue + 1 s, so the post window (0..1 s) ends exactly at
 % water delivery in every context.
@@ -39,7 +39,7 @@
 %   （生成开并行池 + 200 次置换，只跑一次，之后直接读缓存）。
 %
 % Output (SVG):
-%   - Trial_ContextCrossMatrix.svg
+%   - English_Fig2A_ContextCrossMatrix.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -108,7 +108,7 @@ fprintf('(k/m* = mice with accuracy > 0.5; k/mt = time points above the null 95%
 %% 
 
 % ---------- figure ----------
-f = figure('Color', 'w', 'Name', 'Trial: cue decoder 4x4 context cross matrix');
+f = figure('Color', 'w', 'Name', 'English Fig2A cue decoder 4x4 context cross matrix');
 f.Units = 'centimeters';
 % 与 3x3 版逐 tile 同尺寸（tile 5.3 x 4.3 cm），行数 x 列数 3 -> 4
 f.Position(3:4) = [9, 8];
@@ -158,22 +158,22 @@ for r = 1:nCtx
 		Ax(r, c) = ax;
 	end
 end
-% 规范：Layout 级只写轴量与该轴上的维度名（读出/训练），不重复 tile 上已有的组名
-xlabel(Layout, sprintf('Time from cue onset (s)\nRead-out context'));
+% 规范：Layout 级只写轴量与维度名；"Read-out context" 字样改标在 Layout 级 title（用户裁定）
+xlabel(Layout, 'Time from cue onset (s)');
 ylabel(Layout, sprintf('P(post)\nTraining context'));
+title(Layout, 'Read-out context');
 % 规范：先结算标准样式与 padding，再统一各 tile 轴限，否则 padding 会拆掉统一的轴限
 TransferLearning.ApplyStandardExportStyle(f, 2);
 MATLAB.Graphics.UnifyAxesLims(Ax(:), @xlim, @ylim);
 
-% 显著性标注在统一轴限之后画（英文图1B/2H 式：0.5..1 s 上方横线 + 窗口整体显著性 p），
-% 并按最终轴限钳制横线与文本，防止末列 tile 贴图缘被裁
+% 显著性标注（2A 版式）：不画横线，窗口整体 P 值文本贴靠每格右上角（归一化定位，不越界）
 for r = 1:nCtx
 	for c = 1:nCtx
-		iSigBar(Ax(r, c), tVec, mean(curves{r, c}, 1, 'omitnan'), pWindow(r, c));
+		iSigBar(Ax(r, c), pWindow(r, c));
 	end
 end
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'Trial_ContextCrossMatrix.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig2A_ContextCrossMatrix.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'Trial_ContextCrossMatrixStats', struct('accM', accM, 'curves', curves, ...
@@ -220,20 +220,9 @@ end
 p = signrank(dd);
 end
 
-function iSigBar(ax, tVec, mn, p)
-% 模仿英文图1B/2H 的显著性标注：所有 tile 的横线统一画在 0.5..1 s 窗口的曲线上方，
-% 窗口整体显著性 p 标在线上方。
-% 横线用 line 图元绘制：plot 的 2 点水平线会被标准样式误判为轴对齐细线而被重调。
-% 横线与文本都钳在轴限内：末列 tile 贴图缘，越界部分会被裁掉。
-tVec = tVec(:)';
-winMask = (tVec >= 0.5) & (tVec <= 1);
-xl = xlim(ax);
-yrange = diff(ylim(ax));
-yTop = max(mn(winMask), [], 'omitnan');
-yBar = yTop + 0.05 * yrange;
-x1 = max(0.5, xl(1));
-x2 = min(1, xl(2));
-line(ax, [x1, x2], [yBar, yBar], 'Color', 'k', 'LineWidth', 1, 'HandleVisibility', 'off');
+function iSigBar(ax, p)
+% 显著性标注（2A 版式，用户裁定）：不画 P 值横线，窗口整体显著性 P 值文本
+% 贴靠 tile 右上角（归一化定位，不越界）。
 if ~isfinite(p)
 	starStr = 'n.s.';
 elseif p < 0.001
@@ -241,20 +230,9 @@ elseif p < 0.001
 else
 	starStr = TransferLearning.Style.iFormatPText(p);
 end
-hT = text(ax, (x1 + x2) / 2, yBar + 0.02 * yrange, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', ...
+text(ax, 0.98, 0.98, starStr, 'Units', 'normalized', ...
+	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', ...
 	'FontSize', 7, 'HandleVisibility', 'off');
-% 文本宽度在数据坐标下可能超出轴范围，按 Extent 平移回轴内
-ext = hT.Extent;
-xShift = 0;
-if ext(1) < xl(1)
-	xShift = xl(1) - ext(1);
-elseif ext(1) + ext(3) > xl(2)
-	xShift = xl(2) - ext(1) - ext(3);
-end
-if xShift ~= 0
-	hT.Position(1) = hT.Position(1) + xShift;
-end
 end
 
 function iRunGeneratorScript(genScript)
