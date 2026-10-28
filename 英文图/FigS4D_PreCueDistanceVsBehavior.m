@@ -1,12 +1,9 @@
 %% FigS4D_PreCueDistanceVsBehavior.m
-% English FigS4D: pre-cue population-state distance predicts trial outcome
-% （仿 Nature 2026 s41586-026-11174-3 Fig.3e：pre-stim distance 高 → 低 hit rate；
-%   及 Fig.4b 的 trial 级散点/三分位）
-% 左 panel：每鼠 hit vs miss 的线索前距离（鼠内 z），bar(mean±SEM)+逐鼠点
-%   （样式对应 Fig.5b 的 movement vs no-movement bar+dot）；
-% 右 panel：pooled 四分位箱的 movement probability + logistic 拟合曲线
-%   （样式/思路对应 Extended Data Fig.9d：初始状态分箱的实际运动概率 + 拟合曲线）。
-% 文献预期：距离越大（离 learned 轨迹越远）命中率越低 → 负相关。
+% English FigS4D: pre-cue population-state distance 与 trial outcome。
+% 左：Fig.5a/b 的 bar(mean±SEM)+逐鼠点样式；纵轴仍为本工程线索前距离。
+% 右：ED Fig.9d 的四分位均值点±横纵 SEM + 平滑 logistic 曲线；分箱点不连线。
+% 文献 initial state 是 movement/no-movement decoder 输出；本工程 Learned 几乎全
+% hit，无法直接套用该训练，故保留预先确认的描述性量“线索前距离”而非同义复刻。
 %
 % Outputs (SVG): English_FigS4D_PreCueDistanceVsBehavior.svg
 % Execution: Keep as a script. Run/F5 in MATLAB Editor.
@@ -19,8 +16,8 @@ end
 S = load(fullfile(thisDir, '..', 'Temp', 'FigS4_PreCueStatePCA_Results.mat'));
 M = S.M;
 
-hitColor = TransferLearning.ColorA;
-missColor = TransferLearning.ColorB;
+hitColor = [0.66, 0.32, 0.50];
+missColor = [0.82, 0.72, 0.67];
 
 % ---- 每鼠 hit/miss 均值（要求两组各 >=3 trial）----
 keep = [];
@@ -58,36 +55,32 @@ pF = friedman(Rm, 1, 'off');
 fprintf('三分位命中率：low %.3f mid %.3f high %.3f；Friedman p=%.4g；high-low 中位差 %+.3f，p=%.4g %s\n', ...
 	mean(Rm(:,1)), mean(Rm(:,2)), mean(Rm(:,3)), pF, median(Rm(:,3)-Rm(:,1)), pHL, iifS(hHL==1,'(显著)','(不显著)'));
 
-% ---- figure（左仿 Fig.5b bar+dot；右仿 ED Fig.9d 分箱概率 + 拟合曲线）----
+% ---- figure（左仿 Fig.5a/b bar+dot；右仿 ED Fig.9d 分箱概率 + 拟合曲线）----
 f = figure('Color', 'w', 'Name', 'English FigS4D PreCueDistanceVsBehavior');
 f.Units = 'centimeters';
-f.Position(3:4) = [15, 8];
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+f.Position(3:4) = [9, 4];
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
 
-% 左：Hit vs Miss 线索前距离（bar = 鼠均±SEM，dot = 每鼠）
+% 左：Movement vs No movement 线索前距离（bar = 鼠均±SEM，dot = 每鼠）
 ax = nexttile(tl);
-hold(ax, 'on'); box(ax, 'off');
-ax.FontSize = 12; ax.LineWidth = 2;
+hold(ax, 'on');
 muG = [mean(dH), mean(dMs)];
 seG = [std(dH)/sqrt(numel(dH)), std(dMs)/sqrt(numel(dMs))];
-bar(ax, 1, muG(1), 0.55, 'EdgeColor', 'none', 'FaceColor', hitColor);
-bar(ax, 2, muG(2), 0.55, 'EdgeColor', 'none', 'FaceColor', missColor);
-errorbar(ax, [1, 2], muG, seG, 'k.', 'LineWidth', 1.5, 'CapSize', 8);
-for i = 1:numel(dH)
-	scatter(ax, 1 + 0.18*(rand-0.5), dH(i), 14, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', 'k');
-	scatter(ax, 2 + 0.18*(rand-0.5), dMs(i), 14, missColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', 'k');
-end
-xlim([0.4, 2.6]);
-set(ax, 'XTick', [1,2], 'XTickLabel', ["Hit", "Miss"]);
-ylabel(ax, 'Pre-cue distance (within-mouse z)');
-title(ax, sprintf('Wilcoxon p = %.3g', pW), 'FontSize', 12, 'FontWeight', 'normal');
-ax.Toolbar.Visible = 'off';
+bar(ax, 1, muG(1), 0.5, 'EdgeColor', 'none', 'FaceColor', hitColor);
+bar(ax, 2, muG(2), 0.5, 'EdgeColor', 'none', 'FaceColor', missColor);
+errorbar(ax, [1, 2], muG, seG, '.', 'Color', [0.2, 0.2, 0.2], 'LineWidth', 0.75, 'CapSize', 3);
+jitter = 0.16 * linspace(-0.5, 0.5, numel(dH))';
+scatter(ax, 1+jitter, dH, 6, 0.65*hitColor, 'filled', 'MarkerEdgeColor', 'none');
+scatter(ax, 2+jitter, dMs, 6, 0.65*missColor, 'filled', 'MarkerEdgeColor', 'none');
+xlim(ax, [0.4, 2.6]);
+set(ax, 'XTick', [1, 2], 'XTickLabel', ["Movement", "No movement"]);
+ylabel(ax, 'Pre-cue distance (z)');
+iStyleAxes(ax);
 
 % 右：movement probability vs initial state 四分位箱（ED Fig.9d 样式）
-% 注意：dPreTz 以 pre+post 距离联合标准化，pre 系统性偏负；此面板改用仅 pre 距离的鼠内 z
+% 此面板仅用 pre 距离做鼠内 z；不用几乎全 hit 的 Learned 数据强行训练文献 logistic decoder。
 ax2 = nexttile(tl);
-hold(ax2, 'on'); box(ax2, 'off');
-ax2.FontSize = 12; ax2.LineWidth = 2;
+hold(ax2, 'on');
 Xp = []; Yp = []; Xm = [];
 for i = 1:numel(M)
 	d0 = M(i).dPreT;
@@ -99,36 +92,45 @@ end
 qs = quantile(Xp, [0.25, 0.5, 0.75]);
 binI = 1 + sum(Xp(:) > qs, 2);
 nBin = 4;
-rateM = nan(numel(M), nBin); xC = nan(nBin, 1);
+rateM = nan(numel(M), nBin); xM = nan(numel(M), nBin);
 for kb = 1:nBin
 	selB = binI == kb;
-	xC(kb) = mean(Xp(selB));
 	for i = 1:numel(M)
 		si = selB & Xm == i;
-		if any(si), rateM(i, kb) = mean(Yp(si)); end
+		if any(si)
+			rateM(i, kb) = mean(Yp(si));
+			xM(i, kb) = mean(Xp(si));
+		end
 	end
 end
-muR = mean(rateM, 1, 'omitnan');
-seR = std(rateM, 0, 1, 'omitnan') ./ sqrt(sum(isfinite(rateM), 1));
-errorbar(ax2, xC, muR, seR, 'o-', 'Color', TransferLearning.TransferColor, ...
-	'LineWidth', 1.6, 'MarkerSize', 6, 'MarkerFaceColor', TransferLearning.TransferColor, 'CapSize', 6);
-pGlm = NaN;
-try
-	glm = fitglm(table(Xp, Yp), 'Yp ~ Xp', 'Distribution', 'binomial');
-	pGlm = glm.Coefficients.pValue(2);
-	xf = linspace(min(Xp), max(Xp), 100)';
-	plot(ax2, xf, predict(glm, table(xf, 'VariableNames', {'Xp'})), '-', 'Color', TransferLearning.ColorA, 'LineWidth', 2);
-catch
-	fprintf('  [提示] pooled logistic 拟合失败，略曲线。\n');
-end
+xC = mean(xM, 1, 'omitnan')';
+xSE = (std(xM, 0, 1, 'omitnan') ./ sqrt(sum(isfinite(xM), 1)))';
+muR = mean(rateM, 1, 'omitnan')';
+seR = (std(rateM, 0, 1, 'omitnan') ./ sqrt(sum(isfinite(rateM), 1)))';
+errorbar(ax2, xC, muR, xSE, xSE, seR, seR, 'o', 'LineStyle', 'none', ...
+	'Color', hitColor, 'LineWidth', 0.6, 'MarkerSize', 3, 'MarkerFaceColor', hitColor, 'CapSize', 2);
+glm = fitglm(table(Xp, Yp), 'Yp ~ Xp', 'Distribution', 'binomial');
+pGlm = glm.Coefficients.pValue(2);
+xf = linspace(min(Xp), max(Xp), 100)';
+plot(ax2, xf, predict(glm, table(xf, 'VariableNames', {'Xp'})), '-', 'Color', hitColor, 'LineWidth', 1);
+fprintf('pooled logistic：初始状态斜率 p=%.4g\n', pGlm);
 xlabel(ax2, 'Initial state (pre-cue distance, z)');
 ylabel(ax2, 'Movement probability');
-title(ax2, sprintf('logistic slope p = %.3g', pGlm), 'FontSize', 12, 'FontWeight', 'normal');
-ax2.Toolbar.Visible = 'off';
+ylim(ax2, [0, 1]); set(ax2, 'YTick', 0:0.5:1);
+iStyleAxes(ax2);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS4D_PreCueDistanceVsBehavior.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS4D_PreCueDistanceVsBehavior.svg');
 fprintf('Wrote: %s\n', svgPath);
-assignin('base', 'FigS4D_Stats', struct('pWilcoxon', pW, 'pFriedman', pF, 'pHighLow', pHL, 'Rm', Rm, 'dH', dH, 'dMs', dMs));
+assignin('base', 'FigS4D_Stats', struct('pWilcoxon', pW, 'pFriedman', pF, 'pHighLow', pHL, ...
+	'pLogistic', pGlm, 'Rm', Rm, 'dH', dH, 'dMs', dMs));
+
+function iStyleAxes(ax)
+box(ax, 'off');
+ax.FontName = 'Arial'; ax.FontSize = 6; ax.LineWidth = 0.5;
+ax.XColor = 'k'; ax.YColor = 'k'; ax.TickDir = 'out'; ax.TickLength = [0.025, 0.025];
+ax.LabelFontSizeMultiplier = 1; ax.TitleFontSizeMultiplier = 1;
+if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+end
 
 function s = iifS(c, a, b)
 if c, s = a; else, s = b; end

@@ -1,19 +1,12 @@
 %% FigS4A_EarlyOnsetFractionByPhase.m
-% English FigS4A: early-onset 细胞的直观展示与占比，Learned vs Transfer
-% （仿 Nature 2026 s41586-026-11174-3 Fig.1c）
-% 文献口径：movement(=舔水)锁定 PSTH，onset = 基线([-1,-0.5]s)+1SD 且持续
-% 200 ms（200 Hz 上采样网格）；onset<0 → early-onset，onset≥0 → late-onset，
-% 无 onset → no onset。占比 = 各类细胞数 / 全部记录细胞。
-% 体例：**先直观展示原始活动热图（仿 Fig.1c 左，让读者先看到"early-onset"是什么），
-% 再做统计**。数据源：FigS4_PreCueStatePCA_Analysis.m（AudioLightBaseline：每鼠
-% Learned(AudioWater) 与 Transfer(LightWater) block 分别判定）。六个 panel（2 行×3 列）：
-%   1/2) Learned / Transfer：全部鼠全部细胞的逐神经元 lick(movement) 锁定 PSTH 热图，
-%        行序 = early-onset（onset 升序）→ late-onset（onset 升序）→ no onset（峰值降序），
-%        白競线 = movement(lick) onset(t=0)，每行一个神经元，n = neurons/sessions/mice；
-%        early 行在白競线左侧即开始变亮 = 直观看出“运动前就激活”（仿 Fig.1c 左）；
-%   3) early-onset 细胞 lick 锁定平均 PSTH ± SEM（仿 Fig.1c 右示例轨迹）；
-%   4/5) early/late/no-onset 占比堆叠条（Learned / Transfer，逐鼠）；
-%   6) 逐鼠配对 early% 与 Wilcoxon p。
+% English FigS4A: early-onset 细胞的直观展示与占比，Learned vs Transfer。
+% 经 PDF 原图核对：Fig.1c 是黑红热图，右侧为 3 个上下排列、无常规坐标轴的
+% 示例细胞子图，每个子图仅一条跨 movement 平均曲线及其 SEM 阴影；Fig.2a
+% 是黑白饼图而非比例条。本图按这些实际元素绘制，不混入其它面板样式。
+% onset = 基线([-1,-0.5]s)+1SD 且持续 200 ms；onset<0 为 early，onset≥0
+% 为 late，无 onset 为 no onset。两阶段各含热图、3 个示例细胞及 early 饼图。
+% 示例细胞按 Learned onset 的 25/50/75% 位置客观选取，两阶段显示同一细胞。
+% 饼图比例 = 每鼠 early/全部记录细胞比例的跨鼠均值；mean±SEM 在命令行报告。
 %
 % Outputs (SVG): English_FigS4A_EarlyOnsetFractionByPhase.svg
 % Execution: Keep as a script. Run/F5 in MATLAB Editor.
@@ -53,20 +46,25 @@ fprintf('early%% Learned med=%.2f Transfer med=%.2f，Wilcoxon p=%.4g（%d/%d �
 fprintf('late%%  Learned med=%.2f Transfer med=%.2f，Wilcoxon p=%.4g\n', ...
 	median(frac(:,2,1)), median(frac(:,2,2)), pL);
 
-% ---- figure（3 tiles：两阶段占比堆叠条 + early 细胞 lick 锁定 PSTH，后者仿 Fig.1c 右）----
-cEarly = [0.478, 0.204, 0.012];       % 文献深棕
-cLate  = [255, 127, 14] ./ 255;       % 文献橙
-cNone  = [0.85, 0.85, 0.85];          % 文献浅灰
-phaseColor = [TransferLearning.LearnedColor; TransferLearning.TransferColor];
-phaseName = ["Learned (🔊💧)", "Transfer (💡💧)"];
+% ---- figure：Fig.1c 黑红热图/独立示例曲线 + Fig.2a 黑白饼图 ----
+cEarly = [0.478, 0.204, 0.012];
+cLate  = [0.45, 0.45, 0.45];
+cNone  = [0.35, 0.35, 0.35];
+cCells = [0.93, 0.39, 0.10; 0.95, 0.82, 0.08; 0.48, 0.20, 0.03];
+phaseColor = [0.55, 0.55, 0.55; 0.66, 0.32, 0.50];
+phaseName = ["Learned", "Transfer"];
 
 f = figure('Color', 'w', 'Name', 'English FigS4A EarlyOnsetFractionByPhase');
 f.Units = 'centimeters';
-f.Position(3:4) = [22, 15];
-tl = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
-axList = gobjects(3, 1);
+f.Position(3:4) = [18.2, 12];
+heatPos = [1.35, 4.65, 4.0, 5.35; 9.95, 4.65, 4.0, 5.35];
+traceX = [6.35, 14.95];
+traceY = [9.25, 7.40, 5.55];
+traceW = 2.15; traceH = 1.10;
+traceAx = gobjects(2, 3);
+piePos = [2.75, 0.55, 2.7, 2.7; 11.35, 0.55, 2.7, 2.7];
 
-% ---- tile 1/2：逐神经元 lick 锁定 PSTH 热图（仿 Fig.1c 左：直观、原始地展示 early-onset）----
+% ---- Learned / Transfer 逐神经元 lick 锁定 PSTH 热图（Fig.1c 左）----
 % 各鼠原生帧率不同 → 逐细胞 PSTH 先插值到公共 100 Hz 网格，再全局排序堆叠：
 %   行序 = early（onset 升序）→ late（onset 升序）→ no onset（[-0.5,1.5] s 峰值降序）
 % 与文献一致：热图为跨 movement 平均的原始活动（本图不另做归一化），
@@ -127,128 +125,170 @@ for ph = 1:2
 	end
 end
 vF = cat(1, heat{1}, heat{2}); vF = vF(isfinite(vF));
-cLimC = [prctile(vF, 1), prctile(vF, 99.3)];
+cLimC = [0, max(2, ceil(prctile(vF, 99.3)))];
+redMap = [linspace(0, 1, 256)', zeros(256, 2)];
 for ph = 1:2
-	ax = nexttile(tl, ph);
-	hold(ax, 'on'); box(ax, 'off');
+	ax = axes(f, 'Units', 'centimeters', 'Position', heatPos(ph, :));
+	hold(ax, 'on');
 	nTot = sum(grp(:, ph));
-	yRow = (0 : -1 : -(nTot-1))';
-	imagesc(ax, tC, yRow, heat{ph});
-	set(ax, 'YDir', 'normal');
-	% 锁定 Y 轴限到图像数据实际范围 [-(nTot-1)-0.5, 0.5]：否则 auto 轴限会取整到“整千”
-	% （如 -6000），在图像底部留出一段不覆盖数据的空白（约占高度 15%），且与 colorbar 不对齐。
-	ylim(ax, [-nTot + 0.5, 0.5]);
-	ax.YLimMode = 'manual';
-	colormap(ax, parula);
+	imagesc(ax, tC, 1:nTot, heat{ph});
+	set(ax, 'YDir', 'reverse', 'YLim', [0.5, nTot*1.075], 'XLim', [tC(1), tC(end)]);
+	colormap(ax, redMap);
 	clim(ax, cLimC);
-	xline(ax, 0, '--', 'Color', 'w', 'LineWidth', 2);
-	yline(ax, -grp(1, ph) - 0.5, '-', 'Color', 'w', 'LineWidth', 1.5);
-	yline(ax, -grp(1, ph) - grp(2, ph) - 0.5, '-', 'Color', 'w', 'LineWidth', 1.5);
-	yb = [-grp(1, ph)-grp(2, ph)-grp(3, ph)/2, ...   % YTick 须递增；y 向下为负
-		-(grp(1, ph) + grp(2, ph)/2), -grp(1, ph)/2];
-	ax.YTick = yb;
-	if ph == 1
-		ax.YTickLabel = {'no onset', 'late', 'early'};
-		ylabel(ax, 'Neuron (sorted by activity onset)');
-		cb = colorbar(ax); cb.Label.String = 'z (\DeltaF/F)';
-	else
-		ax.YTickLabel = {};   % 行类别只标在首列，避免重复
+	xline(ax, 0, ':', 'Color', [0.45, 0.45, 0.45], 'LineWidth', 0.5);
+	yb = [grp(1, ph)/2, grp(1, ph)+grp(2, ph)/2, ...
+		grp(1, ph)+grp(2, ph)+grp(3, ph)/2];
+	axis(ax, 'off');
+	title(ax, phaseName(ph), 'Color', phaseColor(ph, :), 'FontName', 'Arial', ...
+		'FontSize', 6, 'FontWeight', 'normal');
+	lab = ["early-onset", "late-onset", "no onset"];
+	labColor = [cEarly; cLate; cNone];
+	for j = 1:3
+		text(ax, -0.035, 1-yb(j)/nTot, lab(j), 'Units', 'normalized', ...
+			'Rotation', 90, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
+			'FontName', 'Arial', 'FontSize', 6, 'Color', labColor(j, :));
 	end
-	ax.XTick = -1.5 : 0.5 : tC(end);
-	xlim(ax, [tC(1), tC(end)]);
-	xlabel(ax, 'Time from lick (movement) onset (s)');
-	title(ax, phaseName(ph), 'Color', phaseColor(ph, :), 'FontSize', 12, 'FontWeight', 'bold');
-	if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+	cb = colorbar(ax, 'eastoutside');
+	cb.Box = 'off'; cb.FontName = 'Arial'; cb.FontSize = 6; cb.LineWidth = 0.5;
+	cb.TickDirection = 'out'; cb.Ticks = cLimC; cb.Label.String = 'z (\DeltaF/F)';
+	cb.Units = 'centimeters';
+	cb.Position = [heatPos(ph,1)+heatPos(ph,3)+0.22, heatPos(ph,2)+0.45, ...
+		0.13, heatPos(ph,4)-0.9];
+	ax.Units = 'centimeters'; ax.Position = heatPos(ph, :);
+	% Fig.1c 用比例尺而非直角坐标框；不添加文献没有的白色分组线。
+	yScale = nTot + 0.5 + 0.022*nTot;
+	x0 = tC(1) + 0.06*range(tC);
+	plot(ax, [x0, x0+0.5], [yScale, yScale], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+	text(ax, x0, yScale+0.022*nTot, '0.5 s', 'HorizontalAlignment', 'left', ...
+		'VerticalAlignment', 'top', 'FontName', 'Arial', 'FontSize', 6, 'Clipping', 'off');
+	text(ax, 0.5, -0.10, 'Time from movement onset', 'Units', 'normalized', ...
+		'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', ...
+		'FontName', 'Arial', 'FontSize', 6, 'Color', 'k');
 end
 
+% ---- 每阶段 3 个示例细胞：与 FigS4B 同一示例鼠，按 Learned onset 的 25/50/75% 选取 ----
+cand = [];
+for i = 1:nM
+	if sum(M(i).YT == 1) >= 5 && sum(M(i).YT == 0) >= 5 && M(i).k >= 2
+		cand(end+1) = i; %#ok<SAGROW>
+	end
+end
+if isempty(cand), error('FigS4A:NoExampleMouse', '无与 FigS4B 兼容的示例鼠。'); end
+[~, q] = max([M(cand).nC]); iS = cand(q);
+if M(iS).nEarly < 3
+	cand = find([M.nEarly] >= 3);
+	if isempty(cand), error('FigS4A:TooFewEarly', '无至少 3 个 Learned early 细胞的鼠。'); end
+	[~, q] = max([M(cand).nC]); iS = cand(q);
+end
+m = M(iS);
+eI = find(m.isEarlyL);
+[~, o] = sort(m.onsetCellL(eI)); eI = eI(o);
+ranks = floor((numel(eI)+1) * [0.25, 0.50, 0.75]);
+selCell = eI(ranks);
+assert(numel(selCell) == 3 && numel(unique(selCell)) == 3, 'FigS4A:ExampleSelection', '示例细胞选择失败。');
+fprintf('示例细胞：%s，按 Learned onset 百分位取细胞索引 %s（两阶段同一细胞）\n', ...
+	m.Mouse, mat2str(selCell));
+
+% ---- 每阶段 3 个独立示例子图：每图一条细胞均值曲线 + 跨 movement SEM ----
+pieMean = mean(frac(:, 1, :), 1);
+pieSem = std(frac(:, 1, :), 0, 1) / sqrt(nM);
 for ip = 1:2
-	ax = nexttile(tl, ip + 3);
-	axList(ip) = ax;
-	hold(ax, 'on'); box(ax, 'off');
-	ax.FontSize = 12; ax.LineWidth = 2; ax.FontName = 'Segoe UI Emoji';
-	b = bar(ax, 1:nM, squeeze(frac(:, :, ip)), 'stacked', 'BarWidth', 0.7, 'EdgeColor', 'none');
-	b(1).FaceColor = cEarly; b(2).FaceColor = cLate; b(3).FaceColor = cNone;
-	ylim([0, 100]);
-	ylabel(ax, '% of recorded cells');
-	xlabel(ax, 'Mouse');
-	title(ax, phaseName(ip), 'Color', phaseColor(ip,:), 'FontSize', 12, 'FontWeight', 'bold');
-	set(ax, 'XTick', 1:nM, 'XTickLabel', string({M.Mouse})', 'FontSize', 7, ...
-		'XTickLabelRotation', 90);
-	if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+	if ip == 1
+		Pc = m.psthCellL; Sc = m.psthCellSemL;
+	else
+		Pc = m.psthCellT; Sc = m.psthCellSemT;
+	end
+	for j = 1:3
+		pos = [traceX(ip), traceY(j), traceW, traceH];
+		ax = axes(f, 'Units', 'centimeters', 'Position', pos);
+		traceAx(ip, j) = ax;
+		hold(ax, 'on');
+		tr = interp1(m.tP(:), Pc(selCell(j), :).', tC, 'linear', nan);
+		se = interp1(m.tP(:), Sc(selCell(j), :).', tC, 'linear', nan);
+		if ~all(isfinite(tr)) || ~all(isfinite(se))
+			error('FigS4A:NaNInTrace', '示例细胞 PSTH/SEM 在严格显示窗内含 NaN。');
+		end
+		patch(ax, [tC; flipud(tC)], [tr+se; flipud(tr-se)], cCells(j, :), ...
+			'EdgeColor', 'none', 'FaceAlpha', 0.22, 'Clipping', 'off');
+		plot(ax, tC, tr, '-', 'Color', cCells(j, :), 'LineWidth', 0.75, 'Clipping', 'off');
+		xlim(ax, [tC(1), tC(end)]);
+		yl = [min(tr-se), max(tr+se)];
+		if range(yl) <= 0, yl = yl + [-0.5, 0.5]; end
+		yl = yl + [-0.18, 0.10] * range(yl);
+		if j == 3
+			yl(1) = yl(1) - 0.25 * range(yl);
+			yScale = yl(1) + 0.08 * range(yl);
+			yl(2) = max(yl(2), yScale + 0.5 + 0.08 * range(yl));
+		end
+		ylim(ax, yl);
+		% 仅隐藏坐标尺；axis off 在本版 SVG 导出中会连同曲线一起裁掉。
+		ax.Color = 'none'; box(ax, 'off');
+		ax.XAxis.Visible = 'off'; ax.YAxis.Visible = 'off'; ax.Visible = 'on';
+		if j == 1
+			text(ax, -0.16, 0.5, 'Example early-onset', 'Units', 'normalized', ...
+				'Rotation', 90, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
+				'FontName', 'Arial', 'FontSize', 6, 'Color', cCells(1, :));
+		elseif j == 3
+			% 文献仅有比例尺，没有常规 x/y 坐标轴或逐子图轴标签。
+			y0 = yl(1) + 0.08 * range(yl);
+			x0 = tC(1) + 0.15;
+			plot(ax, [x0, x0+1], [y0, y0], 'k-', 'LineWidth', 1, 'Clipping', 'off');
+			text(ax, x0+0.5, y0-0.04*range(yl), '1 s', 'HorizontalAlignment', 'center', ...
+				'VerticalAlignment', 'top', 'FontName', 'Arial', 'FontSize', 6, 'Clipping', 'off');
+			x1 = tC(end) - 0.12;
+			plot(ax, [x1, x1], [y0, y0+0.5], '-', 'Color', [0.35, 0.35, 0.35], ...
+				'LineWidth', 0.75, 'Clipping', 'off');
+			text(ax, x1+0.08, y0+0.25, '0.5 z', 'Rotation', 90, ...
+				'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
+				'FontName', 'Arial', 'FontSize', 6, 'Color', [0.35, 0.35, 0.35], 'Clipping', 'off');
+		end
+	end
+	axPie = axes(f, 'Units', 'centimeters', 'Position', piePos(ip, :));
+	iDrawEarlyPie(axPie, pieMean(1, 1, ip));
+	fprintf('%s early-onset = %.2f%% ± %.2f%%（逐鼠 mean±SEM，分母为每鼠全部记录细胞）\n', ...
+		phaseName(ip), pieMean(1, 1, ip), pieSem(1, 1, ip));
 end
 
-% tile 3：early-onset 细胞 lick(=movement) 锁定平均 PSTH（仿 Fig.1c 右示例轨迹）
-% 各鼠原生帧率不同（8/30 Hz）→ 用与热图相同的公共 100 Hz 网格跨鼠平均
-ax = nexttile(tl, 3);
-axList(3) = ax;
-hold(ax, 'on'); box(ax, 'off');
-ax.FontSize = 12; ax.FontName = 'Segoe UI Emoji'; ax.LineWidth = 2;
-PL = nan(numel(tC), nM); PT = nan(numel(tC), nM);
-for i = 1:nM
-	PL(:, i) = interp1(M(i).tP(:), M(i).psthEL(:), tC, 'linear', nan);
-	PT(:, i) = interp1(M(i).tP(:), M(i).psthET(:), tC, 'linear', nan);
-end
-mL = mean(PL, 2, 'omitnan'); sL = std(PL, 0, 2, 'omitnan') ./ sqrt(sum(isfinite(PL), 2));
-mT = mean(PT, 2, 'omitnan'); sT = std(PT, 0, 2, 'omitnan') ./ sqrt(sum(isfinite(PT), 2));
-% 单鼠无 early 细胞时该鼠列为 NaN（omitnan 均値合法跳过）；但显示曲线本身必须处处有限
-if ~all(isfinite(mL)) || ~all(isfinite(mT)) || ~all(isfinite(sL)) || ~all(isfinite(sT))
-	error('FigS4A:NaNInTrace', 'early 细胞平均 PSTH 曲线含 NaN：无鼠可平均的时间点落在显示窗内。');
-end
-patch(ax, [tC; flipud(tC)], [mL+sL; flipud(mL-sL)], phaseColor(1,:), 'EdgeColor', 'none', 'FaceAlpha', 0.2);
-patch(ax, [tC; flipud(tC)], [mT+sT; flipud(mT-sT)], phaseColor(2,:), 'EdgeColor', 'none', 'FaceAlpha', 0.2);
-hL = plot(ax, tC, mL, '-', 'Color', phaseColor(1,:), 'LineWidth', 2);
-hT = plot(ax, tC, mT, '-', 'Color', phaseColor(2,:), 'LineWidth', 2);
-xline(ax, 0, ':k', 'LineWidth', 2);
-xlim(ax, [tC(1), tC(end)]);
-xlabel(ax, 'Time from lick onset (s)');
-ylabel(ax, 'z-score');
-title(ax, 'Early-onset cells', 'FontSize', 12, 'FontWeight', 'normal');
-lg0 = legend(ax, [hL, hT], {'Learned', 'Transfer'}, 'Location', 'northwest', 'Box', 'off');
-lg0.FontSize = 10;
-ax.Toolbar.Visible = 'off';
-
-% tile 6：逐鼠配对 early-onset 占比（Learned → Transfer）与 Wilcoxon p
-ax = nexttile(tl, 6);
-hold(ax, 'on'); box(ax, 'off');
-ax.FontSize = 12; ax.FontName = 'Segoe UI Emoji'; ax.LineWidth = 2;
-eL = frac(:, 1, 1); eT = frac(:, 1, 2);
-for i = 1:nM
-	plot(ax, [1, 2], [eL(i), eT(i)], '-o', 'Color', [0.6 0.6 0.6], 'LineWidth', 1, ...
-		'MarkerSize', 4, 'MarkerFaceColor', [0.6 0.6 0.6], 'HandleVisibility', 'off');
-end
-plot(ax, [1, 2], [median(eL), median(eT)], '-s', 'Color', [0.1 0.1 0.1], 'LineWidth', 2.5, ...
-	'MarkerSize', 8, 'MarkerFaceColor', [0.1 0.1 0.1]);
-set(ax, 'XTick', 1:2, 'XTickLabel', {'Learned', 'Transfer'});
-ylabel(ax, sprintf('%% early-onset cells (%d/%d up)', sum(eT > eL), nM));
-title(ax, sprintf('Wilcoxon p = %.3f', pE), 'FontSize', 12, 'FontWeight', 'normal');
-if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
-
-lg = legend(axList(1), {"early-onset", "late-onset", "no onset"}, 'Location', 'southoutside', ...
-	'Orientation', 'horizontal', 'Box', 'off');
-lg.FontSize = 12;
-ttl = title(tl, {'rows sorted by activity onset; white dashed line = movement (lick) onset', ...
-	sprintf('n = %d / %d neurons (Learned / Transfer), %d sessions, %d mice', ...
-	sum(grp(:, 1)), sum(grp(:, 2)), 2*nM, nM)});
-ttl.FontSize = 12;
-
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS4A_EarlyOnsetFractionByPhase.svg');
+% print -dsvg 在本图隐藏坐标尺的 axes 中会漏掉示例曲线；exportgraphics 已验证可完整保留。
+TransferLearning.ApplyStandardExportStyle(f, 1);
+svgPath = TransferLearning.StandardFigureSvgPath('English_FigS4A_EarlyOnsetFractionByPhase.svg');
+exportgraphics(f, svgPath, 'ContentType', 'vector', 'BackgroundColor', 'white');
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'FigS4A_Frac', frac);
 assignin('base', 'FigS4A_P', struct('pEarly', pE, 'pLate', pL));
+assignin('base', 'FigS4A_Example', struct('Mouse', m.Mouse, 'CellIndex', selCell));
+assignin('base', 'FigS4A_Pie', struct('MeanPercent', pieMean, 'SemPercent', pieSem));
 
 %% ========== local functions ==========
+function iDrawEarlyPie(ax, pct)
+% Fig.2a 的黑白饼图：early 为黑，其余记录细胞为浅灰；标签置于灰区。
+hold(ax, 'on');
+aAll = linspace(0, 2*pi, 361);
+patch(ax, cos(aAll), sin(aAll), [0.82, 0.82, 0.82], 'EdgeColor', 'none');
+a = linspace(pi/2, pi/2 - 2*pi*pct/100, max(12, ceil(3.6*pct)));
+patch(ax, [0, cos(a), 0], [0, sin(a), 0], [0.05, 0.05, 0.05], 'EdgeColor', 'none');
+aText = pi/2 - 2*pi*pct/100 - deg2rad(14);
+rText = 0.58;
+text(ax, rText*cos(aText), rText*sin(aText), sprintf('%.1f%%\nEarly-onset', pct), ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
+	'FontName', 'Arial', 'FontSize', 6, 'Color', 'k');
+axis(ax, 'equal'); axis(ax, 'off');
+xlim(ax, [-1.05, 1.05]); ylim(ax, [-1.05, 1.05]);
+end
+
 function tf = iCacheHasPerCellPsth(matPath)
-% 旧版缓存只存了跨细胞平均 PSTH，画不了逐神经元热图 → 需重跑生成器
-% 且需含 movement 覆盖率向量 mvCovL（用于右端裁剪）
+% 热图需逐细胞 PSTH，示例阴影需逐细胞跨 movement SEM，且需覆盖率向量。
 tf = false;
 if ~isfile(matPath), return; end
 S = load(matPath, 'M');
 if ~isfield(S, 'M') || isempty(S.M), return; end
 M = S.M;
 if ~isfield(M, 'psthCellL') || ~isfield(M, 'psthCellT'), return; end
+if ~isfield(M, 'psthCellSemL') || ~isfield(M, 'psthCellSemT'), return; end
 if ~isfield(M, 'mvCovL') || ~isfield(M, 'mvCovT'), return; end
-if ~isfield(M, 'psthAllL'), return; end   % 旧版 psthEL 为全细胞均值（误标），新版才是 early-only
-tf = ~isempty(M(1).psthCellL) && ~isempty(M(1).psthCellT) && ~isempty(M(1).mvCovL);
+if ~isfield(M, 'psthAllL'), return; end
+tf = ~isempty(M(1).psthCellL) && ~isempty(M(1).psthCellT) && ...
+	~isempty(M(1).psthCellSemL) && ~isempty(M(1).psthCellSemT) && ~isempty(M(1).mvCovL);
 end
 
 function iRunGeneratorScript(genScript)

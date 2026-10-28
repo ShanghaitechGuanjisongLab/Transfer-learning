@@ -1,12 +1,11 @@
 %% FigS4B_PreCueDistanceTrace.m
-% English FigS4B: population-state distance to the learned trajectory over time
-% （仿 Nature 2026 s41586-026-11174-3 Fig.3a-b：non-target 神经元 PCA → 与 learned
-%   movement trial 平均轨迹的欧氏距离随时间的 profile，hit/miss 分开）
-% 口径：PCA 在 non-early 细胞的 cue±2 s 活动上拟合（Learned block），保留 80%
-% 方差；learned trajectory = Learned hit trial 的平均 PC 轨迹（对 Learned 自身
-% hit 用 leave-one-out）；逐 trial 距离 d(t)。灰色竖带 = 线索前分析窗
-% [-0.5, 0] s（文献 Fig.3b 的 pre-activity 窗）。
-% 示例鼠：Transfer 中 hit 与 miss 各 ≥5 trial 且非 early 细胞最多的鼠。
+% English FigS4B: PC 轨迹与到 learned trajectory 的距离时间过程。
+% 左：Fig.4b 左侧样式，cue 前 [-0.5,0] s，黑=Learned hit 均值，灰实/虚=
+% Transfer 高(>0.7)/低(<=0.5)舔水相关 trial。严格只用解释 80% 方差的 PC；
+% 本数据仅需 1–2 个 PC，经确认示例鼠画 PC1–PC2，不额外引入第 3 个 PC。
+% 右：ED Fig.10 的 mean±SEM 误差线样式，按 Movement/No movement 分组；
+% 纵轴仍是本工程的距离而非文献活动幅度，浅粉带表示实际 cue 时长 0–0.2 s。
+% 示例鼠：Transfer 中 hit/miss 各 >=5、k>=2 且记录细胞最多的鼠。
 %
 % Outputs (SVG): English_FigS4B_PreCueDistanceTrace.svg
 % Execution: Keep as a script. Run/F5 in MATLAB Editor.
@@ -17,94 +16,90 @@ if ~exist('UniExp.DataSet', 'class')
 	if exist(prjFile, 'file'), matlab.project.loadProject(prjFile); end
 end
 S = load(fullfile(thisDir, '..', 'Temp', 'FigS4_PreCueStatePCA_Results.mat'));
-M = S.M; P = S.P;
+M = S.M;
 
-% 选示例鼠：Transfer 内 hit/miss 均 >=5，细胞数最多
+% 选示例鼠：Transfer 内 hit/miss 均 >=5、80% 方差 PC 至少 2 个，细胞数最多
 cand = [];
 for i = 1:numel(M)
 	nH = sum(M(i).YT == 1); nM_ = sum(M(i).YT == 0);
-	if nH >= 5 && nM_ >= 5, cand(end+1) = i; end %#ok<SAGROW>
+	if nH >= 5 && nM_ >= 5 && M(i).k >= 2, cand(end+1) = i; end %#ok<SAGROW>
 end
-if isempty(cand), error('FigS4B:NoMouse', '无 hit/miss 均 >=5 的鼠。'); end
+if isempty(cand), error('FigS4B:NoMouse', '无 hit/miss 均 >=5 且至少 2 个 PC 的鼠。'); end
 [~, im] = max([M(cand).nC]);
 iS = cand(im);
 m = M(iS);
-fprintf('示例鼠 %s（nC=%d, Transfer hit=%d miss=%d）\n', m.Mouse, m.nC, sum(m.YT==1), sum(m.YT==0));
+fprintf('示例鼠 %s（nC=%d, k=%d, Transfer hit=%d miss=%d）\n', m.Mouse, m.nC, m.k, sum(m.YT==1), sum(m.YT==0));
 
-hitColor = TransferLearning.ColorA;
-missColor = TransferLearning.ColorB;
-phaseName = ["Learned (🔊💧)", "Transfer (💡💧)"];
+hitColor = [0.66, 0.32, 0.50];
+missColor = [0.82, 0.72, 0.67];
+transferColor = hitColor;
 
 f = figure('Color', 'w', 'Name', 'English FigS4B PreCueDistanceTrace');
 f.Units = 'centimeters';
-f.Position(3:4) = [15, 8];
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+f.Position(3:4) = [12, 4];
+tl = tiledlayout(f, 1, 2, 'TileSpacing', 'loose', 'Padding', 'compact');
 
-% ---- tile 1：PC 空间轨迹（仿 Fig.4b left：learned 黑线 + 高/低相似 trial 灰线）----
+% ---- tile 1：Fig.4b 左侧线型；80% PC 不足 3 个，经确认只用 PC1-2 二维 ----
 ax = nexttile(tl);
-hold(ax, 'on'); box(ax, 'off');
-ax.FontSize = 12; ax.FontName = 'Segoe UI Emoji'; ax.LineWidth = 2;
-wF = m.tF >= -0.5 & m.tF <= 1.0;                 % 线索前 0.5 s + 线索后 1 s（文献两窗合并展示）
-tW = m.tF(wF);
-trajL = squeeze(mean(m.coordsL(:, wF, :), 1));   % nFw x k
-thrC = prctile(m.corrT, [33.3, 66.6]);
-hiT = m.corrT > thrC(2); loT = m.corrT < thrC(1);
-trajH = squeeze(mean(m.coordsT(hiT, wF, :), 1));
-trajLo = squeeze(mean(m.coordsT(loT, wF, :), 1));
-plot(ax, trajL(:,1), trajL(:,2), '-', 'Color', [0 0 0], 'LineWidth', 2);
-hH = plot(ax, trajH(:,1), trajH(:,2), '-', 'Color', [0.45 0.45 0.45], 'LineWidth', 1.6);
-hLo = plot(ax, trajLo(:,1), trajLo(:,2), ':', 'Color', [0.45 0.45 0.45], 'LineWidth', 1.6);
-[~, iCueW] = min(abs(tW - 0));
-[~, iLkW] = min(abs(tW - m.lickOnT));
-plot(ax, trajL(iCueW,1), trajL(iCueW,2), 'o', 'Color', [0 0 0], 'MarkerFaceColor', 'w', 'MarkerSize', 7, 'LineWidth', 1.6);
-plot(ax, trajL(iLkW,1), trajL(iLkW,2), '.', 'Color', [0 0 0], 'MarkerSize', 14);
+hold(ax, 'on');
+wF = m.tF >= -0.5 & m.tF <= 0;
+hiT = m.corrT > 0.7; loT = m.corrT <= 0.5 & isfinite(m.corrT);
+if ~any(hiT) || ~any(loT)
+	error('FigS4B:EmptyTrajectoryGroup', '示例鼠在固定阈值下缺少高或低相似 trial。');
+end
+for j = find(hiT).'
+	tr = squeeze(m.coordsT(j, wF, 1:2));
+	plot(ax, tr(:,1), tr(:,2), '-', 'Color', [0.48, 0.48, 0.48], 'LineWidth', 0.4);
+end
+for j = find(loT).'
+	tr = squeeze(m.coordsT(j, wF, 1:2));
+	plot(ax, tr(:,1), tr(:,2), ':', 'Color', [0.48, 0.48, 0.48], 'LineWidth', 0.4);
+end
+trajL = squeeze(mean(m.coordsL(m.YL == 1, wF, 1:2), 1));
+plot(ax, trajL(:,1), trajL(:,2), '-', 'Color', 'k', 'LineWidth', 1.25);
+grid(ax, 'off'); box(ax, 'off');
+set(ax, 'XTick', [], 'YTick', []);
 xlabel(ax, 'PC1'); ylabel(ax, 'PC2');
-title(ax, sprintf('%s — population trajectories', m.Mouse), 'FontSize', 12, 'FontWeight', 'normal');
-lg1 = legend(ax, [plot(ax, nan, nan, '-', 'Color', [0 0 0], 'LineWidth', 2), hH, hLo], ...
-	{'Learned (mean)', 'Transfer high-corr', 'Transfer low-corr'}, 'Location', 'best', 'Box', 'off');
-lg1.FontSize = 9;
-ax.Toolbar.Visible = 'off';
+text(ax, 0.02, 0.98, 'Transfer', 'Units', 'normalized', 'VerticalAlignment', 'top', ...
+	'FontName', 'Arial', 'FontSize', 6, 'Color', transferColor);
+iStyleAxes(ax);
 
-% ---- tile 2：距离时间过程（hit/miss，仿 ED Fig.10 的 mean±SEM 时间过程样式）----
-hHit = gobjects(1); hMiss = gobjects(1);
+% ---- tile 2：ED Fig.10 样式 mean±SEM 误差线；色带为实际 0.2 s cue ----
 ax2 = nexttile(tl);
-hold(ax2, 'on'); box(ax2, 'off');
-ax2.FontSize = 12; ax2.FontName = 'Segoe UI Emoji'; ax2.LineWidth = 2;
-D = m.dProfT; Y = m.YT;
-muAll = mean(D, 1, 'omitnan');
+hold(ax2, 'on');
+wT = m.tF >= -0.5 & m.tF <= 2;
+tW = m.tF(wT);
+D = m.dProfT(:, wT); Y = m.YT;
 for grp = 1:2
-	sel = (Y == (2-grp));                  % grp=1 → hit, grp=2 → miss
+	sel = (Y == (2-grp));
 	if sum(sel) < 2, continue; end
 	Dg = D(sel, :);
 	mu = mean(Dg, 1, 'omitnan');
 	se = std(Dg, 0, 1, 'omitnan') ./ sqrt(sum(sel));
 	if grp == 1, c = hitColor; else, c = missColor; end
-	patch(ax2, [m.tF(:); flipud(m.tF(:))], [mu(:) + se(:); flipud(mu(:) - se(:))], c, ...
-		'EdgeColor', 'none', 'FaceAlpha', 0.25);
-	h = plot(ax2, m.tF, mu, '-', 'Color', c, 'LineWidth', 2);
-	if grp == 1, hHit = h; else, hMiss = h; end
+	errorbar(ax2, tW, mu, se, '-', 'Color', c, 'LineWidth', 0.75, 'CapSize', 1.5);
 end
-plot(ax2, m.tF, muAll, '--', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.2);
-uistack(findobj(ax2, 'Type', 'patch'), 'bottom');
-ylA = ylim(ax2);
-hBand = fill(ax2, [P.preWin(1) P.preWin(2) P.preWin(2) P.preWin(1)], ...
-	[ylA(1) ylA(1) ylA(2) ylA(2)], [0.88 0.88 0.88], 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+xlim(ax2, [-0.5, 2]); set(ax2, 'XTick', 0:1:2);
+yl = ylim(ax2); yl(1) = 0; ylim(ax2, yl);
+hBand = fill(ax2, [0, 0.2, 0.2, 0], [yl(1), yl(1), yl(2), yl(2)], ...
+	[0.96, 0.86, 0.91], 'EdgeColor', 'none');
 uistack(hBand, 'bottom');
-xline(ax2, 0, ':k', 'LineWidth', 2);
-ylB = ylim(ax2);
-ylim(ax2, [max(0, ylB(1)), 1.25*ylB(2)]);
-xlim(P.tWin);
-xlabel(ax2, 'Time from cue (s)');
+text(ax2, 0.03, 0.95, 'Movement', 'Units', 'normalized', 'VerticalAlignment', 'top', ...
+	'FontName', 'Arial', 'FontSize', 6, 'Color', hitColor);
+text(ax2, 0.03, 0.85, 'No movement', 'Units', 'normalized', 'VerticalAlignment', 'top', ...
+	'FontName', 'Arial', 'FontSize', 6, 'Color', missColor);
+xlabel(ax2, 'Time from cue onset (s)');
 ylabel(ax2, 'Distance to learned trajectory');
-title(ax2, phaseName(2), 'FontSize', 12, 'FontWeight', 'normal');
-ax2.Toolbar.Visible = 'off';
-if isvalid(hHit) && isvalid(hMiss)
-	lg = legend(ax2, [hHit, hMiss], {'Hit', 'Miss'}, 'Location', 'northeast', 'Box', 'off');
-	lg.FontSize = 10;
-end
-ttl = title(tl, 'PC-space distance to learned trajectory (non-early cells, 80% var.)');
-ttl.FontSize = 12;
+iStyleAxes(ax2);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS4B_PreCueDistanceTrace.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS4B_PreCueDistanceTrace.svg');
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'FigS4B_Mouse', m.Mouse);
+
+function iStyleAxes(ax)
+box(ax, 'off');
+ax.FontName = 'Arial'; ax.FontSize = 6; ax.LineWidth = 0.5;
+ax.XColor = 'k'; ax.YColor = 'k'; ax.TickDir = 'out'; ax.TickLength = [0.025, 0.025];
+ax.LabelFontSizeMultiplier = 1; ax.TitleFontSizeMultiplier = 1;
+if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+end

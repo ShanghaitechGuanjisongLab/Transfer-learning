@@ -1,13 +1,9 @@
 %% FigS4C_PreCueDistanceVsLickSimilarity.m
-% English FigS4C: pre-cue population-state distance vs lick-pattern similarity
-% （仿 Nature 2026 s41586-026-11174-3 Fig.3d：pre-activity distance 与 learned
-%   movement 相似度的负相关散点）
-% 文献口径：相似度 = movement trace 与 learned movement 模板的相关/投影；距离 =
-% 线索前 [-0.5,0] s 窗内 PC 空间到 learned trajectory 的平均距离。预期负相关：
-% 群体状态越接近 learned 轨迹，movement 越像 learned movement。
-% 本工程：相似度 = 舔水率 trace（CD2>阈 + 200 ms movmean）在 Learned hit 模板上的
-% 投影（LOO）；距离同 FigS4B。散点 = Transfer trial（鼠内 z 后 pooled），
-% 标注 pooled Pearson r / Spearman rho 与逐鼠中位 rho + Wilcoxon p。
+% English FigS4C: pre-cue population-state distance vs lick-pattern correlation。
+% 样式对应文献 Fig.4a/b 右：x=线索前 [-0.5,0] s 的平均轨迹距离，y=运动相关。
+% 本工程纵轴为 corrT，即舔水率 trace（CD2>阈 + 200 ms 平滑）与 Learned hit
+% 舔水模板的 Pearson r；不是投影系数 simT。散点为 Transfer trial，距离鼠内 z
+% 后 pooled；统计只在命令行报告，图内保留文献式散点、拟合线和阶段标签。
 %
 % Outputs (SVG): English_FigS4C_PreCueDistanceVsLickSimilarity.svg
 % Execution: Keep as a script. Run/F5 in MATLAB Editor.
@@ -20,26 +16,26 @@ end
 S = load(fullfile(thisDir, '..', 'Temp', 'FigS4_PreCueStatePCA_Results.mat'));
 M = S.M;
 
-% ---- 逐鼠 Spearman rho ----
+% ---- 逐鼠 Spearman rho：文献 Fig.4a/b 右的 x=距离、y=运动相关 ----
 rhoM = nan(numel(M), 1);
 for i = 1:numel(M)
-	o = isfinite(M(i).simT) & isfinite(M(i).dPreTz) & isfinite(M(i).corrT);
-	if sum(o) < 12 || std(M(i).simT(o)) == 0 || std(M(i).dPreTz(o)) == 0, continue; end
-	rhoM(i) = corr(M(i).simT(o), M(i).dPreTz(o), 'Type', 'Spearman');
+	cr = M(i).corrT; d = M(i).dPreTz;
+	o = isfinite(cr) & isfinite(d);
+	if sum(o) < 12 || std(cr(o)) == 0 || std(d(o)) == 0, continue; end
+	rhoM(i) = corr(d(o), cr(o), 'Type', 'Spearman');
 end
 okR = isfinite(rhoM);
 [pR, hR] = signrank(rhoM(okR));
-fprintf('逐鼠 rho(simT, dPreT)：中位 %+.3f，%d/%d 鼠为负，Wilcoxon p=%.4g %s\n', ...
+fprintf('逐鼠 rho(dPreT, corrT)：中位 %+.3f，%d/%d 鼠为负，Wilcoxon p=%.4g %s\n', ...
 	median(rhoM(okR)), sum(rhoM(okR) < 0), sum(okR), pR, iifS(hR==1,'(显著)','(不显著)'));
 
-% ---- pooled 散点（鼠内 z：simT 也 z 化）----
+% ---- pooled 散点：距离沿用原鼠内 z，纵轴保留真实 Pearson 相关系数 ----
 X = []; Yb = [];
 for i = 1:numel(M)
-	s = M(i).simT; d = M(i).dPreTz;
-	o = isfinite(s) & isfinite(d) & std(s, 'omitnan') > 0;
-	if sum(o) < 5, continue; end
-	sz = (s(o) - mean(s(o))) / std(s(o));
-	X = [X; sz(:)]; Yb = [Yb; d(o)]; %#ok<AGROW>
+	d = M(i).dPreTz; cr = M(i).corrT;
+	o = isfinite(d) & isfinite(cr);
+	if sum(o) < 5 || std(d(o)) == 0, continue; end
+	X = [X; d(o)]; Yb = [Yb; cr(o)]; %#ok<AGROW>
 end
 [rP, pP] = corr(X, Yb);
 [rS, pS] = corr(X, Yb, 'Type', 'Spearman');
@@ -47,27 +43,35 @@ fprintf('pooled（%d trial）：Pearson r=%+.3f p=%.3g；Spearman rho=%+.3f p=%.
 	numel(X), rP, pP, rS, pS);
 
 % ---- figure ----
-colorP = TransferLearning.TransferColor;
-colorFit = TransferLearning.ColorA;
+colorFit = [0.66, 0.32, 0.50];
+colorPoint = 0.65*colorFit + 0.35;
 f = figure('Color', 'w', 'Name', 'English FigS4C PreCueDistanceVsLickSimilarity');
 f.Units = 'centimeters';
-f.Position(3:4) = [9, 8];
+f.Position(3:4) = [4.5, 4];
 ax = axes(f);
-hold(ax, 'on'); box(ax, 'off');
-ax.FontSize = 12; ax.LineWidth = 2;
-scatter(ax, X, Yb, 6, colorP, 'o', 'filled', 'LineWidth', 0.2, 'MarkerFaceAlpha', 0.35);
+hold(ax, 'on');
+scatter(ax, X, Yb, 6, colorPoint, 'o', 'filled', 'MarkerEdgeColor', 'none');
 b = polyfit(X, Yb, 1);
-xF = [min(X); max(X)];
-plot(ax, xF, polyval(b, xF), '-', 'Color', colorFit, 'LineWidth', 2);
-text(ax, 0.96, 0.96, sprintf('r = %+.2f, p = %.3g\nn = %d trials, %d mice', rP, pP, numel(X), sum(okR)), ...
-	'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 10);
-xlabel(ax, 'Lick-similarity to learned template (z)');
-ylabel(ax, 'Pre-cue distance (z)');
-ax.Toolbar.Visible = 'off';
+xF = linspace(min(X), max(X), 100);
+plot(ax, xF, polyval(b, xF), '-', 'Color', colorFit, 'LineWidth', 0.75);
+text(ax, 0.04, 0.06, 'Transfer', 'Units', 'normalized', 'VerticalAlignment', 'bottom', ...
+	'FontName', 'Arial', 'FontSize', 6, 'Color', colorFit);
+xlabel(ax, {'Population activity distance', 'before cue onset (z)'});
+ylabel(ax, {'Correlation with', 'learned movement'});
+ylim(ax, [-0.2, 1.05]); set(ax, 'YTick', 0:0.5:1);
+iStyleAxes(ax);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS4C_PreCueDistanceVsLickSimilarity.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS4C_PreCueDistanceVsLickSimilarity.svg');
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'FigS4C_Rho', struct('perMouse', rhoM, 'pWilcoxon', pR, 'pooledR', rP, 'pooledP', pP));
+
+function iStyleAxes(ax)
+box(ax, 'off');
+ax.FontName = 'Arial'; ax.FontSize = 6; ax.LineWidth = 0.5;
+ax.XColor = 'k'; ax.YColor = 'k'; ax.TickDir = 'out'; ax.TickLength = [0.025, 0.025];
+ax.LabelFontSizeMultiplier = 1; ax.TitleFontSizeMultiplier = 1;
+if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+end
 
 function s = iifS(c, a, b)
 if c, s = a; else, s = b; end

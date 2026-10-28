@@ -1,10 +1,8 @@
 %% FigS4E_PreVsPostDistance.m
-% English FigS4E: correlation between pre-cue and post-cue trajectory distance
-% （仿 Nature 2026 s41586-026-11174-3 Extended Data Fig.3d：检验 pre-activity
-%   是否为独立测量——若 d(pre) 与 d(post) 高度相关，则线索前距离只是线索后
-%   距离的泄漏，不能视为独立的状态变量）
-% 两个 panel：Learned / Transfer，pooled 散点（鼠内 z），标 pooled Pearson r 与
-% 逐鼠 r 的中位数；逐鼠 Wilcoxon 检验 r>0。
+% English FigS4E: correlation between pre-cue and post-cue trajectory distance。
+% 样式对应 Fig.4c / ED Fig.9b：Transfer 在上、Learned 在下，散点+拟合线。
+% pre=[-0.5,0] s，post=[0,1] s（文献口径）；两阶段 pooled 散点使用鼠内 z。
+% pooled Pearson 与逐鼠统计只在命令行报告，不在图内添加文献没有的统计文本。
 %
 % Outputs (SVG): English_FigS4E_PreVsPostDistance.svg
 % Execution: Keep as a script. Run/F5 in MATLAB Editor.
@@ -17,8 +15,8 @@ end
 S = load(fullfile(thisDir, '..', 'Temp', 'FigS4_PreCueStatePCA_Results.mat'));
 M = S.M;
 
-phaseName = ["Learned (🔊💧)", "Transfer (💡💧)"];
-phaseColor = [TransferLearning.LearnedColor; TransferLearning.TransferColor];
+phaseName = ["Learned", "Transfer"];
+phaseColor = [0.55, 0.55, 0.55; 0.66, 0.32, 0.50];
 rMouse = nan(numel(M), 2);
 stats = struct('r', nan(1,2), 'p', nan(1,2), 'medPerMouse', nan(1,2), 'pW', nan(1,2));
 for ip = 1:2
@@ -44,8 +42,8 @@ end
 
 f = figure('Color', 'w', 'Name', 'English FigS4E PreVsPostDistance');
 f.Units = 'centimeters';
-f.Position(3:4) = [15, 8];
-tl = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+f.Position(3:4) = [5, 8];
+tl = tiledlayout(f, 2, 1, 'TileSpacing', 'loose', 'Padding', 'compact');
 for ip = 1:2
 	X = []; Yb = [];
 	for i = 1:numel(M)
@@ -55,24 +53,28 @@ for ip = 1:2
 		if sum(o) < 12 || std(dPre(o)) == 0, continue; end
 		X = [X; dPre(o)]; Yb = [Yb; dPost(o)]; %#ok<AGROW>
 	end
-	ax = nexttile(tl);
-	hold(ax, 'on'); box(ax, 'off');
-	ax.FontSize = 12; ax.FontName = 'Segoe UI Emoji'; ax.LineWidth = 2;
-	scatter(ax, X, Yb, 6, phaseColor(ip,:), 'o', 'filled', 'LineWidth', 0.2, 'MarkerFaceAlpha', 0.3);
+	ax = nexttile(tl, 3-ip);  % 文献 Fig.4c：Transfer/opto 在上，Learned/voluntary 在下
+	hold(ax, 'on');
+	c = phaseColor(ip, :);
+	scatter(ax, X, Yb, 6, 0.65*c+0.35, 'o', 'filled', 'MarkerEdgeColor', 'none');
 	b = polyfit(X, Yb, 1);
-	xF = [min(X); max(X)];
-	plot(ax, xF, polyval(b, xF), 'k-', 'LineWidth', 2);
-	text(ax, 0.04, 0.96, sprintf('r = %+.2f, p = %.2g\nper-mouse median r = %+.2f', ...
-		stats.r(ip), stats.p(ip), stats.medPerMouse(ip)), 'Units', 'normalized', ...
-		'VerticalAlignment', 'top', 'FontSize', 10);
-	xlabel(ax, 'Pre-cue distance (z)');
-	ylabel(ax, 'Post-cue distance (z)');
-	title(ax, phaseName(ip), 'Color', phaseColor(ip,:), 'FontSize', 12, 'FontWeight', 'bold');
-	ax.Toolbar.Visible = 'off';
+	xF = linspace(min(X), max(X), 100);
+	plot(ax, xF, polyval(b, xF), '-', 'Color', c, 'LineWidth', 0.75);
+	text(ax, 0.96, 0.06, phaseName(ip), 'Units', 'normalized', 'HorizontalAlignment', 'right', ...
+		'VerticalAlignment', 'bottom', 'FontName', 'Arial', 'FontSize', 6, 'Color', c);
+	xlabel(ax, {'Pre-cue population activity', 'distance (z)'});
+	ylabel(ax, {'Post-cue population activity', 'distance (z)'});
+	iStyleAxes(ax);
 end
-ttl = title(tl, 'Pre-cue vs post-cue distance (independence check)');
-ttl.FontSize = 12;
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS4E_PreVsPostDistance.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS4E_PreVsPostDistance.svg');
 fprintf('Wrote: %s\n', svgPath);
 assignin('base', 'FigS4E_Stats', stats);
+
+function iStyleAxes(ax)
+box(ax, 'off');
+ax.FontName = 'Arial'; ax.FontSize = 6; ax.LineWidth = 0.5;
+ax.XColor = 'k'; ax.YColor = 'k'; ax.TickDir = 'out'; ax.TickLength = [0.025, 0.025];
+ax.LabelFontSizeMultiplier = 1; ax.TitleFontSizeMultiplier = 1;
+if ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+end

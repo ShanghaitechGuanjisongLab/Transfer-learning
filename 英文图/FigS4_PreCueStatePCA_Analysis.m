@@ -9,16 +9,17 @@
 %     baseline([-1,-0.5] s 均值) ≥1 SD 且持续 200 ms。本工程沿用
 %     EarlyOnsetCells_LickLocked_Analysis.m 的同口径实现（lick 锁定）。
 %   - PCA：对 **non-target**（= 非 early-onset）神经元，取 cue 前后各 2 s
-%     （文献 40 帧@10 Hz；本工程用原生帧率 ~8/30 Hz 的等长时间窗）的 trial×帧
-%     活动矩阵做 PCA，保留解释 80% 方差的 PC。
+%     （文献 40 帧@10 Hz；本工程用原生帧率 ~8/30 Hz 的等长时间窗），先在
+%     Learned trial 间平均为 神经元×帧 矩阵拟合 PCA，再投影逐 trial 活动；
+%     保留解释 80% 方差的 PC。
 %   - learned trajectory：贡献了 learned movement（= Learned 声水 hit trial）的
 %     trial 的平均 PC 轨迹；逐 trial 计算 PC 空间欧氏距离 d(t)。
-%   - pre/post distance：d(t) 在 trial(=cue) onset 前 0.5 s / 后 0.5 s 的均值。
+%   - pre/post distance：d(t) 在 trial(=cue) onset 前 0.5 s / 后 1 s 的均值。
 %   - 与 learned movement 的相似度：文献为 lever 位移与 learned movement 的相关；
-%     本工程等价为舔水率 trace 在 learned 舔水模板上的投影系数（无舔水 trial 亦
-%     有定义：0），另报可定义 trial 的 Pearson r 作对照。
-%   - 解码（Fig.4d）：以线索前 PC 活动为预测量、lasso 回归预测 movement；
-%     文献"voluntary 训练 → opto 测试"，本工程等价为"Learned 训练 → Transfer 测试"。
+%     本工程 FigS4C 使用舔水率 trace 与 learned 舔水模板的 Pearson r（corrT）；
+%     投影系数 simT 仅保留在缓存中，不再冒充相关系数。
+%   - 解码（Fig.3d 样式）：以线索前 PC 活动为预测量、lasso 回归预测舔水模板相关；
+%     该标量解码是本工程保留的迁移问题，不是文献时间轨迹残差解码的同义复刻。
 %
 % 循环论证防护：learned trajectory / 舔水模板对 Learned 自身 trial 用 leave-one-out；
 % early-onset 分组只在 Learned block 判定，Transfer 的分组另算（仅用于 S4A 保持性）。
@@ -41,7 +42,7 @@ end
 P = struct();
 P.tWin     = [-2, 2];        % PCA 用的 cue 对齐窗（文献 ±2 s）
 P.preWin   = [-0.5, 0];      % 线索前距离窗（文献：trial onset 前 500 ms）
-P.postWin  = [0, 0.5];       % 线索后距离窗
+P.postWin  = [0, 1];         % 线索后距离窗（文献：trial onset 后 1 s）
 P.lickWin  = [0, 2];         % 舔水模板窗
 P.lickSm   = 0.2;            % 舔水率平滑窗（s）
 P.varExpl  = 0.80;           % PCA 保留方差比例（文献 80%）
@@ -92,7 +93,8 @@ M0 = builtin('struct', ...
 	'YL',[],'YT',[],'featL',[],'featT',[], ...
 	'tP',[],'psthEL',[],'psthELsem',[],'psthET',[],'psthETsem',[], ...
 	'psthAllL',[],'psthAllT',[], ...
-	'psthCellL',[],'psthCellT',[],'thrCellL',[],'thrCellT',[], ...
+	'psthCellL',[],'psthCellT',[],'psthCellSemL',[],'psthCellSemT',[], ...
+	'thrCellL',[],'thrCellT',[], ...
 	'onsetCellL',[],'onsetCellT',[],'hasOnsetL',[],'hasOnsetT',[], ...
 	'isEarlyL',[],'isEarlyT',[],'isLateL',[],'isLateT',[], ...
 	'nMvtL',[],'nMvtT',[],'mvCovL',[],'mvCovT',[], ...
@@ -122,18 +124,20 @@ for im = 1:numel(mice)
 	nonEarly = ~isEarlyL;
 	if sum(nonEarly) < 10, continue; end
 
-	% ---- PCA：non-early 细胞、Learned 全部 trial ----
-	XL = permute(FL.Zt(:, nonEarly, :), [2, 1, 3]);          % nCnon x nTr x nF
-	XL = reshape(XL, sum(nonEarly), []);                    % nCnon x (nTr*nF)
-	mu = mean(XL, 2);
-	[coef, score, latent] = pca(XL', 'NumComponents', min(size(XL', 2), size(XL', 1) - 1));
+	% ---- PCA：文献 Sec.24 口径，仅在 Learned 的 trial 平均活动上拟合 ----
+	% 不用逐 trial×帧 作为 PCA 观测；否则 PC 会同时吸收试次平均轨迹与试次间变异，
+	% 与文献的 population trajectory 定义不同。拟合后再投影全部单 trial。
+	XL = squeeze(mean(FL.Zt(:, nonEarly, :), 1));           % nCnon x nF（trial 平均）
+	mu = mean(XL, 2);                                      % 每细胞跨时间均值
+	[coef, ~, latent] = pca(XL', 'NumComponents', min(size(XL', 2), size(XL', 1) - 1));
 	cumv = cumsum(latent) / sum(latent);
 	k = find(cumv >= P.varExpl, 1);
 	if isempty(k), k = numel(latent); end
-	coordsL = reshape(score(:, 1:k), FL.nTr, FL.nF, k);
-	XT = permute(FT.Zt(:, nonEarly, :), [2, 1, 3]);
-	XT = reshape(XT, sum(nonEarly), []);                    % nCnon x (nTr*nF)
-	coordsT = reshape((XT' - mu(:).') * coef(:, 1:k), FT.nTr, FT.nF, k);   % 观测 x 细胞 投影
+	coefK = coef(:, 1:k);
+	XLall = reshape(permute(FL.Zt(:, nonEarly, :), [2, 1, 3]), sum(nonEarly), []);
+	XTall = reshape(permute(FT.Zt(:, nonEarly, :), [2, 1, 3]), sum(nonEarly), []);
+	coordsL = reshape((XLall' - mu(:).') * coefK, FL.nTr, FL.nF, k);
+	coordsT = reshape((XTall' - mu(:).') * coefK, FT.nTr, FT.nF, k);
 
 	% ---- learned trajectory（Learned hit 均值）与逐 trial 距离（LOO）----
 	hitL = FL.Y == 1;
@@ -167,6 +171,7 @@ for im = 1:numel(mice)
 		'psthET', LT.PSTHmeanE, 'psthETsem', LT.PSTHsemE, ...
 		'psthAllL', LL.PSTHmean, 'psthAllT', LT.PSTHmean, ...
 		'psthCellL', LL.PSTHcell, 'psthCellT', LT.PSTHcell, ...
+		'psthCellSemL', LL.PSTHcellSem, 'psthCellSemT', LT.PSTHcellSem, ...
 		'thrCellL', LL.thr, 'thrCellT', LT.thr, ...
 		'onsetCellL', LL.onsetT, 'onsetCellT', LT.onsetT, ...
 		'hasOnsetL', LL.hasOnset, 'hasOnsetT', LT.hasOnset, ...
