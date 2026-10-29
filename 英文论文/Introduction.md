@@ -1,4 +1,5 @@
-﻿# Introduction
+﻿Engram-based cross-modal transfer depends on temporal continuity
+# Introduction
 
 Transfer of learning describes the influence of previously acquired knowledge and skills on the acquisition of new ones (Thorndike and Woodworth, 1901). The phenomenon pervades adaptive behavior, and its reach has long been taxonomized from near to far transfer (Barnett and Ceci, 2002). Prior frameworks have characterized transfer mainly at the behavioral and psychological levels (Perkins and Salomon, 1994), and even contemporary neural evidence on transfer itself has remained largely at brain-region resolution (Rasooli et al., 2024). A persistent conceptual difficulty is that the overall transfer advantage conflates at least two distinct processes: the ability to start a new task from an elevated initial state, and the ability to keep improving faster once the new task is underway. Whether and how these two components are supported by different cellular and circuit mechanisms is largely unknown.
 
