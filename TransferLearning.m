@@ -370,7 +370,7 @@ V7Inhibit.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([
 V7Inhibit.ResampleTrials(milliseconds(125),TrialDuration);
 end
 function I=iALInterspersed
-I=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202511\声光穿插迁移MOp成像v3.mat");
+I=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\声光穿插迁移MOp成像.v4.mat");
 I.TagSplitTrial(seconds([-3,3]));
 TrialDuration=seconds(6);
 LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
@@ -379,7 +379,7 @@ I.ResampleTrials(milliseconds(125),TrialDuration);
 I.AddRepeatIndex;
 end
 function I=iLAInterspersed
-I=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v5.mat");
+I=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v6.mat");
 I.TagSplitTrial(seconds([-3,3]));
 TrialDuration=seconds(6);
 LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
