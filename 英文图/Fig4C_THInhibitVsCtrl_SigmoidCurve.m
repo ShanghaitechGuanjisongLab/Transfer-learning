@@ -175,7 +175,7 @@ end
 
 function out = iBuildFig3GPOBehaviorSessions()
 out = iEmptySessionsTable();
-poMatPath = "\\Data-Server-2\个人数据\张天夫\202505\化学遗传抑制PO.v1.mat";
+poMatPath = "\\Data-Server-2\个人数据\张天夫\202610\化学遗传抑制PO.v2.mat";
 if ~exist(poMatPath, 'file')
 	return;
 end

@@ -14,8 +14,8 @@ classdef(Abstract)TransferLearning
 		ALInterspersed=memoize(@iALInterspersed);
 		LAInterspersed=memoize(@iLAInterspersed);
 		scFLARE=memoize(@iscFLARE);
-		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202511\基本迁移行为 声水转光水.v2.mat"));
-		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202601\基本迁移行为 光水转声水.v3.mat"));
+		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202610\基本迁移行为 声水转光水.v3.mat"));
+		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\基本迁移行为 光水转声水.v4.mat"));
 		ALDelayed=memoize(@iALDelayed);
 		LADelayed=memoize(@iLADelayed);
 		NaiveColor=[0.6249    0.2188    0.9830];
@@ -319,7 +319,7 @@ MB.DateTimes.DateTime.TimeZone='';
 MB.Blocks.DateTime.TimeZone='';
 end
 function AL=iAudioLightBaseline
-AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\声光迁移MOp成像（含学会后三次）.v5.mat");
+AL=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\声光迁移MOp成像（含学会后三次）.v6.mat");
 AL.TagSplitTrial(seconds([-3,3]));
 
 %该日期行为记录了99回合，标通道拆出100回合，每个回合的刺激类型对不上
@@ -330,7 +330,7 @@ AL.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2])
 AL.ResampleTrials(milliseconds(125),TrialDuration);
 end
 function LA=iLightAudioBaseline
-LA=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202512\光声迁移无穿插MOp成像（含学会后三次）.v3.mat");
+LA=UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\光声迁移无穿插MOp成像（含学会后三次）.v4.mat");
 LA.TagSplitTrial(seconds([-3,3]));
 %由于行为和水混用CD2通道导致多拆出了一个假回合
 LA.RemoveTrials(LA.TableQuery("TrialUID",DateTime=datetime('2022-08-06 20:26:00'),TrialIndex=31).TrialUID);
@@ -379,7 +379,7 @@ I.ResampleTrials(milliseconds(125),TrialDuration);
 I.AddRepeatIndex;
 end
 function I=iLAInterspersed
-I=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202601\光声迁移MOp成像有穿插.v6.mat");
+I=UniExp.DataSet("\\data-server-2\个人数据\张天夫\202610\光声迁移MOp成像有穿插.v6.mat");
 I.TagSplitTrial(seconds([-3,3]));
 TrialDuration=seconds(6);
 LLP=I.CheckForLightLeakage(seconds([0,0.2]),["LightOnly","LightWater"]);
