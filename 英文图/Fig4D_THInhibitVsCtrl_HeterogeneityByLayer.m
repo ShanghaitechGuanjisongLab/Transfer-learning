@@ -1,4 +1,4 @@
-% English Fig4D: thalamus-inhibited vs Control response heterogeneity by layer
+% English Fig4D: response heterogeneity by layer across 12 h / 7 d / TH inhibition
 %
 % Response heterogeneity (RH) = across-cell SD of the trial-mean z-scored
 % response at cue +1 s (cells restricted to |z| <= 1, moderate-response cells),
@@ -6,11 +6,13 @@
 % to the last performed block (Performance < 1.0), separately for L2/3 (MOp2/3)
 % and L5 (MOp5).
 %
-% Data: Control = AudioLightBaseline, TH = THInhibit (imaging cohort only; the
-% PO behavior-only mice have no imaging, so RH uses THInhibit imaging mice).
+% Data (three bars): 12 h = AudioLightBaseline (Control), 7 d = Vacation7,
+% TH = THInhibit (imaging cohort only; PO behavior-only mice have no imaging).
 % Two stacked bar tiles (L2/3 top, L5 bottom), same layout as Chinese Fig61H.
+% Two comparisons: 12 h vs 7 d, and 12 h vs TH (both against the 12 h control).
 %
-% Claim: thalamus inhibition lowers population response heterogeneity.
+% Claim: thalamus inhibition lowers population response heterogeneity;
+% 7-d interval serves as the long-interval comparison against 12 h.
 %
 % Outputs (SVG):
 %   - English_Fig4D_THInhibitVsCtrl_HeterogeneityByLayer.svg
@@ -31,6 +33,7 @@ if ~exist('UniExp.DataSet', 'class')
 end
 
 CtrlDS = TransferLearning.AudioLightBaseline();
+V7DS = TransferLearning.Vacation7();
 THDS = TransferLearning.THInhibit();
 
 xs = TransferLearning.Xs;
@@ -44,138 +47,143 @@ if ~ok1s
 	error('Fig4D:No1s', 'Cannot find sample close to 1s.');
 end
 
-[sdL23C, sdL5C, statsC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");
-[sdL23T, sdL5T, statsT] = iCohortData(THDS, idx1s, "Transfer", "Final");
+[sdL23C, sdL5C, statsC] = iCohortData(CtrlDS, idx1s, "Transfer", "Final");   % 12 h
+[sdL23V, sdL5V, statsV] = iCohortData(V7DS, idx1s, "Transfer", "Final");     % 7 d
+[sdL23T, sdL5T, statsT] = iCohortData(THDS, idx1s, "Transfer", "Final");     % TH
 
-fprintf('=== English Fig4D response heterogeneity by layer ===\n');
-fprintf('Ctrl L2/3: %d mice, %d total cells, %d moderate cells | mean=%.3f +/- %.3f\n', ...
-	statsC.L23MouseN, statsC.MOp23CellN, statsC.ModerateMOp23CellN, mean(sdL23C), iSem(sdL23C));
-fprintf('TH   L2/3: %d mice, %d total cells, %d moderate cells | mean=%.3f +/- %.3f\n', ...
-	statsT.L23MouseN, statsT.MOp23CellN, statsT.ModerateMOp23CellN, mean(sdL23T), iSem(sdL23T));
-fprintf('Ctrl L5:   %d mice, %d total cells, %d moderate cells | mean=%.3f +/- %.3f\n', ...
-	statsC.L5MouseN, statsC.MOp5CellN, statsC.ModerateMOp5CellN, mean(sdL5C), iSem(sdL5C));
-fprintf('TH   L5:   %d mice, %d total cells, %d moderate cells | mean=%.3f +/- %.3f\n', ...
-	statsT.L5MouseN, statsT.MOp5CellN, statsT.ModerateMOp5CellN, mean(sdL5T), iSem(sdL5T));
+fprintf('=== English Fig4D response heterogeneity by layer (12h / 7d / TH) ===\n');
+fprintf('12h L2/3: %d mice | mean=%.3f +/- %.3f\n', statsC.L23MouseN, mean(sdL23C), iSem(sdL23C));
+fprintf('7d  L2/3: %d mice | mean=%.3f +/- %.3f\n', statsV.L23MouseN, mean(sdL23V), iSem(sdL23V));
+fprintf('TH  L2/3: %d mice | mean=%.3f +/- %.3f\n', statsT.L23MouseN, mean(sdL23T), iSem(sdL23T));
+fprintf('12h L5:   %d mice | mean=%.3f +/- %.3f\n', statsC.L5MouseN, mean(sdL5C), iSem(sdL5C));
+fprintf('7d  L5:   %d mice | mean=%.3f +/- %.3f\n', statsV.L5MouseN, mean(sdL5V), iSem(sdL5V));
+fprintf('TH  L5:   %d mice | mean=%.3f +/- %.3f\n', statsT.L5MouseN, mean(sdL5T), iSem(sdL5T));
 
-[pL23, ~] = ranksum(sdL23C, sdL23T);
-[pL5, ~] = ranksum(sdL5C, sdL5T);
-fprintf('L2/3 rank-sum p = %.4g | L5 rank-sum p = %.4g\n', pL23, pL5);
+% 两组比较（都对 12 h）：12h-7d、12h-TH
+[pL23_CV, ~] = ranksum(sdL23C, sdL23V);
+[pL23_CT, ~] = ranksum(sdL23C, sdL23T);
+[pL5_CV, ~] = ranksum(sdL5C, sdL5V);
+[pL5_CT, ~] = ranksum(sdL5C, sdL5T);
+fprintf('L2/3 12h-7d p=%.4g | 12h-TH p=%.4g\n', pL23_CV, pL23_CT);
+fprintf('L5   12h-7d p=%.4g | 12h-TH p=%.4g\n', pL5_CV, pL5_CT);
 
-colorCtrl = TransferLearning.TransferColor;
-colorGap = TransferLearning.ColorB;
-palette2 = [colorCtrl; colorGap];
-CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+% 交换维度：X 轴=层（L2/3、L5），图例=组。12h 居中，7d/TH 分列两边。每层内比 12h-7d 与 12h-TH。
+% 二维表：行=层，列=组（顺序 7d/12h/TH）。配色：7d=ColorB(绿), 12h=TransferColor(橙), TH=NaiveColor(紫)
+layerLabels = ["L2/3", "L5"];
+groupLabels = ["7 d", "12 h", "TH"];
+groupColors = [TransferLearning.ColorB; TransferLearning.TransferColor; TransferLearning.NaiveColor];
 
-%% ---------- figure: 2 stacked bar tiles (中文图61H 样式) ----------
-% 规范：两行 bar tile 例外，一般不放大；高 4 cm、宽 3 cm（2 bar ≤3 cm）
-f = figure('Color', 'w', 'Name', 'English Fig4D TH response heterogeneity by layer');
+%% ---------- figure：单 tile，二维表语法（行=层，列=组） ----------
+f = figure('Color', 'w', 'Name', 'English Fig4D response heterogeneity by layer 12h 7d TH');
 f.Units = 'centimeters';
-f.Position(3:4) = [3, 4];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
+f.Position(3:4) = [9, 8];
 
-% 两行 tile + 旋转 x 标签：tight 外边距会裁切旋转标签，用 loose 留出空间
-Layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'loose');
-
-% ---- Tile 1: L2/3 ----
-nexttile(Layout, 1);
-[~, Opt1, Bars1, EB1] = UniExp.BarScatterCompare({sdL23C, sdL23T}, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-ax1 = gca;
-delete(findobj(ax1, 'Type', 'Scatter'));
-iStyleBars(Bars1, palette2);
-iStyleErrorBars(EB1, palette2);
-iOverridePText(Opt1, pL23);
-ax1.XTick = [1 2];
-ax1.XTickLabel = {};
-ylabel(ax1, 'L2/3');
-iStyleAxesCommon(ax1);
-
-% ---- Tile 2: L5 ----
-nexttile(Layout, 2);
-[~, Opt2, Bars2, EB2] = UniExp.BarScatterCompare({sdL5C, sdL5T}, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-ax2 = gca;
-delete(findobj(ax2, 'Type', 'Scatter'));
-iStyleBars(Bars2, palette2);
-iStyleErrorBars(EB2, palette2);
-iOverridePText(Opt2, pL5);
-ax2.XTick = [1 2];
-% 2-bar tile：加 3 个前导空格触发 MATLAB 自动旋转标签，免手工旋转；标签需短于 tile 高
-ax2.XTickLabel = {'   Control', '   TH'};
-ylabel(ax2, 'L5');
-iStyleAxesCommon(ax2);
-
-% 规范：两 tile 都是响应异质性，标题写在 Layout 级别；3 cm 宽下用缩写（同 Fig3J 先例）
-title(Layout, 'Respo. heter.');
+dataCell = {sdL23V, sdL23C, sdL23T; sdL5V, sdL5C, sdL5T};   % 2 层 × 3 组（7d/12h/TH），每元素为该层该组逐鼠向量
+dataTable = cell2table(dataCell, 'VariableNames', cellstr(groupLabels), 'RowNames', cellstr(layerLabels));
+dataTable.Properties.DimensionNames = cellstr(["Layer", "Group"]);
+% 比较：每层(Layer，行)内跨组(Group，列) 12h-7d、12h-TH（Fig3E 式固定行比列）
+compareGroup = iWithinLayerCompareGroup(layerLabels, groupLabels, dataTable.Properties.DimensionNames);
+colorTable = array2table(groupColors, 'VariableNames', {'R','G','B'}, 'RowNames', cellstr(groupLabels));
+ax = axes(f);
+[~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(dataTable, compareGroup, ...
+	colorTable, ax, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+iStyleBars(ax, barHandles, errorBars, groupColors);
+legendHandle = optional.Legend;
+legendHandle.String = cellstr(groupLabels);
+legendHandle.Title.String = 'Group';
+legendHandle.Box = 'off';
+legendHandle.Location = 'eastoutside';
+xlabel(ax, 'Layer');
+ylabel(ax, 'Respo. heter.');
+box(ax, 'off');
+grid(ax, 'off');
+iRetunePValueLines(optional);
+% PText 顺序：L2/3 行内 12h-7d、12h-TH，L5 行内 12h-7d、12h-TH
+iOverridePTextMulti(optional, [pL23_CV, pL23_CT, pL5_CV, pL5_CT]);
 
 if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
-svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
-fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'Fig4D_HeterogeneityStats', struct( ...
-	'sdL23C', sdL23C, 'sdL23T', sdL23T, 'pL23', pL23, ...
-	'sdL5C', sdL5C, 'sdL5T', sdL5T, 'pL5', pL5, ...
-	'statsC', statsC, 'statsT', statsT));
+svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
 
 %% ========== local functions ==========
-function iStyleAxesCommon(ax)
-legend(ax, 'off');
-box(ax, 'off');
-grid(ax, 'off');
-ax.Color = 'none';
+function compareGroup = iWithinLayerCompareGroup(layerLabels, groupLabels, dimensionNames)
+% Fig3E 式：固定每个层(行)，比两个组(列)。每层配两对：12h-7d、12h-TH。
+layerLabels = string(layerLabels(:));
+groupLabels = string(groupLabels(:)).';
+% 组对（12h 居中为第 2 列）：7d(1)-12h(2)、12h(2)-TH(3)
+pairIdx = [1 2; 2 3];
+nPair = size(pairIdx, 1);
+nLayer = numel(layerLabels);
+layerPair = strings(nLayer * nPair, 2);
+groupPair = strings(nLayer * nPair, 2);
+row = 0;
+for iL = 1:nLayer
+	for iP = 1:nPair
+		row = row + 1;
+		layerPair(row, :) = [layerLabels(iL), layerLabels(iL)];
+		groupPair(row, :) = groupLabels(pairIdx(iP, :)).';
+	end
+end
+GroupPair = table(layerPair, groupPair, 'VariableNames', cellstr(dimensionNames));
+compareGroup = table(GroupPair);
+end
+
+function iRetunePValueLines(optional)
+if ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+if ~all(ismember({'PLine','PText'}, optional.MultiCompare.Properties.VariableNames))
+	return;
+end
+MATLAB.Graphics.PLineRetune(optional.MultiCompare.PLine, optional.MultiCompare.PText);
+for pLine = optional.MultiCompare.PLine(:)'
+	if isgraphics(pLine)
+		pLine.LineWidth = 1;
+		pLine.Tag = 'PLine';
+		setappdata(pLine, 'TransferLearningPreserveLineWidth', true);
+	end
+end
+for pText = optional.MultiCompare.PText(:)'
+	if isgraphics(pText)
+		pText.Tag = 'PText';
+	end
+end
+end
+
+function iStyleBars(ax, barHandles, errorBars, layerColors)
+for iBar = 1:numel(barHandles)
+	barHandles(iBar).LineStyle = 'none';
+	barHandles(iBar).FaceColor = layerColors(iBar, :);
+	if isprop(barHandles(iBar), 'BaseLine') && isgraphics(barHandles(iBar).BaseLine)
+		barHandles(iBar).BaseLine.Visible = 'off';
+	end
+end
+for iRow = 1:height(errorBars)
+	eBar = errorBars.Object(iRow);
+	if ~isgraphics(eBar)
+		continue;
+	end
+	x = double(eBar.XData(1));
+	bestDist = inf;
+	bestColor = layerColors(1, :);
+	for iBar2 = 1:numel(barHandles)
+		xp = double(barHandles(iBar2).XEndPoints(:));
+		d = min(abs(xp - x));
+		if d < bestDist
+			bestDist = d;
+			bestColor = barHandles(iBar2).FaceColor;
+		end
+	end
+	eBar.Color = bestColor;
+end
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
 end
 end
 
-function iStyleBars(Bars, palette2)
-if isscalar(Bars)
-	Bars.FaceColor = 'flat';
-	nB = numel(Bars.YData);
-	Bars.CData = repmat(palette2, ceil(nB / 2), 1);
-	Bars.CData = Bars.CData(1:nB, :);
-	Bars.BarWidth = 0.5;
-	Bars.FaceAlpha = 1;
-	Bars.LineWidth = 1;
-	Bars.BaseLine.LineWidth = 1;
-	Bars.EdgeColor = 'none';
-	return;
-end
-for kB = 1:numel(Bars)
-	Bars(kB).FaceColor = palette2(kB, :);
-	Bars(kB).BarWidth = 0.5;
-	Bars(kB).FaceAlpha = 1;
-	Bars(kB).LineWidth = 1;
-	Bars(kB).BaseLine.LineWidth = 1;
-	Bars(kB).EdgeColor = 'none';
-end
-end
-
-function iStyleErrorBars(errorBars, palette2)
-if ~(istable(errorBars) && ~isempty(errorBars) && ismember('Object', errorBars.Properties.VariableNames))
-	return;
-end
-for iE = 1:height(errorBars)
-	eb = errorBars.Object(iE);
-	if ~isgraphics(eb)
-		continue;
-	end
-	eb.LineWidth = 1;
-	xData = double(eb.XData(:));
-	xData = xData(isfinite(xData));
-	if isempty(xData)
-		continue;
-	end
-	[~, colorIndex] = min(abs((1:size(palette2, 1)).' - xData(1)));
-	eb.Color = palette2(colorIndex, :);
-end
-end
-
-function iOverridePText(Optional, p)
-% BarScatterCompare 内部 anova/multcompare 之外统一报告 rank-sum p
+function iOverridePTextMulti(Optional, pVec)
+% 多组比较：PText 按 compareGroup 行序一一对应 rank-sum p（12h-7d、12h-TH）
 if ~(isfield(Optional, 'MultiCompare') && istable(Optional.MultiCompare))
 	return;
 end
@@ -185,8 +193,8 @@ if ~ismember('PText', mc.Properties.VariableNames)
 end
 for ip = 1:height(mc)
 	pt = mc.PText(ip);
-	if isgraphics(pt)
-		pt.String = TransferLearning.Style.iFormatPText(p);
+	if isgraphics(pt) && ip <= numel(pVec)
+		pt.String = TransferLearning.Style.iFormatPText(pVec(ip));
 		pt.Tag = 'PText';
 	end
 end
@@ -195,6 +203,7 @@ if ismember('PLine', mc.Properties.VariableNames)
 		pl = mc.PLine(ip);
 		if isgraphics(pl)
 			pl.Tag = 'PLine';
+			setappdata(pl, 'TransferLearningPreserveLineWidth', true);
 		end
 	end
 end

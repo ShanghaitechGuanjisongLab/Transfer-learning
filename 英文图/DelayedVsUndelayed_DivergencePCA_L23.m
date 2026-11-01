@@ -1,20 +1,20 @@
-% FigS2A（英文图）：2×4 群体轨迹 PCA 对照（仅 MOp2/3 细胞）：行 = 范式，列 = 声转光迁移时间线上的阶段。
+% 2×4 群体轨迹 PCA 对照（仅 MOp2/3 细胞）：行 = 范式，列 = 声转光迁移时间线上的阶段。
 % 整合现有脚本的 tile（英文图/AudioOnlyVsLastAudioWater_PCA_L23.m 的声侧 2 阶段 + 英文图1D 的
 % Naive/Transfer + ALDelayed_DivergencePCA_L23 的 Transfer(delayed)），并含新增 Naive(delayed) tile：
-%   列 1 🔊 Naive：初始只给声。Undelayed = AudioLightBaseline 的 AudioOnly 初始校准会话
+%   列 1 Audio only (initial)：初始只给声。Undelayed = AudioLightBaseline 的 AudioOnly 初始校准会话
 %                              （每鼠仅一个）；Delayed = ALDelayed 的 AudioPreTrainCueOnly 首个会话
 %                              （同会话 AudioPreTrainWaterOnly 只给水不给声，不取）；
-%   列 2 🔊💧 Learned：转光水之前的最后一个声水（声水学会）。Undelayed = AudioLightBaseline
+%   列 2 Last audio-water：转光水之前的最后一个声水（声水学会）。Undelayed = AudioLightBaseline
 %                              最后一个非 Recall 的 AudioWater 会话（= Learned 会话，Recall 是
 %                              光迁移后的回忆测试不算训练）；Delayed = ALDelayed 最后一个含
 %                              AudioLearnWater 的会话（只取 AudioLearnWater 回合，AudioLearnWaterAlways
 %                              总是给水不参与）；
-%   列 3 💡💧 Naive：光水学习初始。Undelayed = 英文图1D 口径（LightAudioBaseline+LAInterspersed 首个纯 LW
+%   列 3 Naive：光水学习初始。Undelayed = 英文图1D 口径（LightAudioBaseline+LAInterspersed 首个纯 LW
 %                              Naive 会话，LAI 中 Naive 期出现过 AudioWater 的鼠整只排除）；
 %                              Delayed = TransferLearning.LADelayed（有延迟光声钙成像，光水转声水，延迟任务）
 %                              每鼠首个含 LightLearnWater 的会话（本库无 Phase 列，光水学习=初始 Naive 阶段），
 %                              该会话全部光水回合（LightLearnWater + LightLearnWaterAlways）；
-%   列 4 💡💧 Transfer：转光水后的首个光水（Transfer 首块）。Undelayed = AudioLightBaseline 首个 Transfer
+%   列 4 Transfer：转光水后的首个光水（Transfer 首块）。Undelayed = AudioLightBaseline 首个 Transfer
 %                              LW 会话；Delayed = TransferLearning.ALDelayed（有延迟不舔不给水钙成像，
 %                              声水转光水）每鼠首个含 LightLearnWater 的 DateTime，
 %                              同英文图/ALDelayed_DivergencePCA_L23.m。
@@ -30,13 +30,11 @@
 % 出图后用 MATLAB.Graphics.UnifyAxesLims 的 Range 模式统一各 tile 的 X/Y 轴跨度
 % （保留各自中心、统一对径），使独立 PCA 的图形尺度可比；
 % 展示的是 cue 后轨迹的分叉形态（Naive 扇形分叉=高散度，Transfer 平行=低散度）。
-% 着色按列沿用现有脚本配色：🔊 = NaiveColor（紫），🔊💧 = ColorB（绿），
-% 💡💧 Naive = NaiveColor（紫），💡💧 Transfer = TransferColor（橙）。
-% 标注规范：tile 标题只写在首行（列名；🔊/💡/💧 = 声/光线索/给水，阶段词保留英文），
-% 行名（Undelayed/Delayed）写在首列 ylabel，Y 轴位置统一在左。
+% 着色按列沿用现有脚本配色：Audio only = NaiveColor（紫），Last audio-water = ColorB（绿），
+% Naive = NaiveColor（紫），Transfer = TransferColor（橙）。
 %
 % Outputs (SVG):
-%   - English_FigS2A_DelayedVsUndelayed_DivergencePCA_L23.svg
+%   - English_DelayedVsUndelayed_DivergencePCA_L23.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -80,8 +78,7 @@ StimAll = {"AudioOnly", "AudioWater", "LightWater", "LightWater"; ...
 	"AudioPreTrainCueOnly", "AudioLearnWater", ["LightLearnWater","LightLearnWaterAlways"], ["LightLearnWater","LightLearnWaterAlways"]};
 WinEnd = [1, 1, 1, 1; 1.5, 1.5, 1.5, 1.5];   % 各行按范式给水时刻（延迟 +1.5 s，无延迟 +1 s）
 rowName = ["Undelayed", "Delayed"];
-% 列标题用 emoji 标刺激（🔊=声线索，💡=光线索，💧=给水），阶段词用 Naive/Learned/Transfer
-colName = ["🔊 Naive", "🔊💧 Learned", "💡💧 Naive", "💡💧 Transfer"];
+colName = ["Audio only (initial)", "Last audio-water", "Naive", "Transfer"];
 
 G = cell(2, 4);
 P = cell(2, 4);
@@ -96,7 +93,7 @@ for r = 1:2
 end
 %%
 
-f = figure('Color', 'w', 'Name', 'English FigS2A delayed vs undelayed divergence PCA L23');
+f = figure('Color', 'w', 'Name', 'Audio stages vs Naive vs Transfer divergence PCA delayed vs undelayed L23');
 f.Units = 'centimeters';
 f.Position(3:4) = [24, 16];
 f.PaperUnits = 'centimeters';
@@ -111,14 +108,11 @@ for r = 1:2
 	for c = 1:4
 		ax = nexttile(tlo);
 		iPlotTrialsAttachedOnAxes(ax, P{r, c}, colColor(c, :), nGradSeg);
-		% 规范：tile 标题只标在首行（列名），行名（范式）写在首列 ylabel，Y 轴统一在左
-		if r == 1
-			title(ax, colName(c));
-		end
-		if c == 1
-			ylabel(ax, rowName(r));
-		end
+		title(ax, sprintf('%s\n%s', rowName(r), colName(c)));
 		iApplySingleLimits(ax, P{r, c});
+		if c == 4
+			ax.YAxisLocation = 'right';
+		end
 		axAll(r, c) = ax;
 	end
 end
@@ -127,8 +121,22 @@ ylabel(tlo, 'PC2');
 % 统一各 tile 的 X/Y 轴跨度（Range 模式：保留各自中心、统一对径），使独立 PCA 的尺度可比
 MATLAB.Graphics.UnifyAxesLims(axAll, MATLAB.Flags.Range, @xlim, @ylim);
 
-TransferLearning.ApplyStandardExportStyle(f, 2);
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS2A_DelayedVsUndelayed_DivergencePCA_L23.svg');
+TransferLea4ning.ApplyStandardExportStyle(f, 2);
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_DelayedVsUndelayed_DivergencePCA_L23.svg');
+fprintf('Wrote: %s\n', svgPath);
+for r = 1:2
+	for c = 1:2
+		fprintf('=== %s / %s\n', rowName(r), colName(c));
+		for iS = 1:height(SessAll{r, c})
+			fprintf('  %s  %s\n', SessAll{r, c}.Mouse(iS), datestr(SessAll{r, c}.DateTime(iS), 'yyyy-mm-dd HH:MM'));
+		end
+		fprintf('  cells used: %d (mice %d)\n', height(G{r, c}), numel(unique(string(G{r, c}.Mouse))));
+		fprintf('  PC explained: %.1f%% / %.1f%%\n', P{r, c}.PcaTable.Explained(1), P{r, c}.PcaTable.Explained(2));
+	end
+end
+
+assignin('base', 'DelayVsUndelayed_PCA_GroupNtats', G);
+assignin('base', 'DelayVsUndelayed_PCA_PlotData', P);
 
 %% ========== local functions（口径同英文图1D，延迟库会话定义同 ALDelayed_DivergencePCA_L23） ==========
 function mice = iMiceWithStimulusInPhase(DS, stimulusName, phaseName)

@@ -476,6 +476,8 @@ for pLine = optional.MultiCompare.PLine(:)'
 	if isgraphics(pLine)
 		pLine.LineWidth = 1;
 		pLine.Tag = 'PLine';
+		% 豁免标准样式的线宽调整：保持 P 值线 LineWidth=1 不被导出时改写
+		setappdata(pLine, 'TransferLearningPreserveLineWidth', true);
 	end
 end
 for pText = optional.MultiCompare.PText(:)'

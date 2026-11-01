@@ -1,4 +1,4 @@
-% English Fig1D: per-mouse penalized-sigmoid learning-slope histograms.
+% English Fig1C: per-mouse penalized-sigmoid learning-slope histograms.
 %
 % Model per mouse, using individual trial outcomes:
 %   p(hit|block) = L + (1-L)/(1+exp(-k*(block-midpoint)))
@@ -34,7 +34,7 @@ labels = containers.Map(["Naive","Interspersed","12h","7d"], ...
 comparisons = ["Interspersed - Naive","12h - Naive","7d - Naive"];
 %% 
 
-f = figure('Color','w','Name','English Fig1D penalized sigmoid slope histograms');
+f = figure('Color','w');
 f.Units = 'centimeters';
 f.Position(3:4) = [12,8];
 layout = tiledlayout(f,1,3,'TileSpacing','tight','Padding','tight');
@@ -81,13 +81,5 @@ for i = 1:NumComparisons
 end
 MATLAB.Graphics.UnifyAxesLims(Axes,@ylim);
 svgPath = TransferLearning.ExportStandardFigure(f,2, ...
-	'English_Fig1D_PenalizedSigmoidSlopeHistogram.svg');
+	'English_Fig1C_PenalizedSigmoidSlopeHistogram.svg');
 fprintf('Wrote: %s\n',svgPath);
-
-matPath = TransferLearning.CachePath('English_Fig1D_PenalizedSigmoidSlope.mat');
-save(matPath,'PenalizedSlopeResult_AllZeroLower','PenalizedSlopeResult');
-outDir = fileparts(matPath);
-writetable(R.PerMouse,fullfile(outDir,'English_Fig1D_PenalizedSigmoidSlope_PerMouse.csv'));
-writetable(R.Pairwise,fullfile(outDir,'English_Fig1D_PenalizedSigmoidSlope_Stats.csv'));
-fprintf('Saved: %s\n',matPath);
-disp(R.Pairwise);

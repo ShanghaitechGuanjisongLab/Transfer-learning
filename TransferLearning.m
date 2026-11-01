@@ -16,6 +16,7 @@ classdef(Abstract)TransferLearning
 		scFLARE=memoize(@iscFLARE);
 		ALPureBehavior=memoize(@()UniExp.DataSet("\\data-server-2\个人数据\张天夫\202610\基本迁移行为 声水转光水.v3.mat"));
 		LAPureBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\基本迁移行为 光水转声水.v4.mat"));
+		THBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\化学遗传抑制PO.v2.mat"));
 		ALDelayed=memoize(@iALDelayed);
 		LADelayed=memoize(@iLADelayed);
 		NaiveColor=[0.6249    0.2188    0.9830];

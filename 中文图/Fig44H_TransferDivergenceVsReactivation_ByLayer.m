@@ -27,13 +27,9 @@ dotColor = TransferLearning.TransferColor;
 fitColor = TransferLearning.ColorA;
 %% 
 
-f = figure('Color', 'w', 'Name', 'Fig333E Transfer divergence vs reactivation');
+f = figure('Color', 'w');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 3, 4];
-f.PaperSize = [3, 4];
 
 tl = tiledlayout(f, 1, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 xlabel(tl, 'Divergence', 'FontSize', 6);
@@ -53,9 +49,6 @@ end
 x = double(M.Divergence);
 y = double(M.Reactivation);
 use = isfinite(x) & isfinite(y);
-if nnz(use) < 3
-	error('Fig333E:TooFewPoints', 'Too few valid mice after filtering.');
-end
 
 scatter(ax, x(use), y(use), 5, dotColor, 'o', 'filled', 'LineWidth', 0.2);
 if nnz(use) >= 2 && std(x(use)) > 0
@@ -82,10 +75,6 @@ fprintf('n=%d, ρ=%.3f, p=%.4g\n', nnz(use), rho, p);
 svgPath = '中文图Fig44H_TransferDivergenceVsReactivation_ByLayer.svg';
 title('Transfer 💡💧');
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
-fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'Fig333E_PerMouseData', M);
-assignin('base', 'Fig333E_Stats', Stats);
 
 function R = iBuildTransferReactivationTable(DS)
 xs = TransferLearning.Xs;

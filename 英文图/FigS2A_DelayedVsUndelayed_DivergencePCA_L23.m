@@ -1,6 +1,15 @@
-% FigS2A（英文图）：2×4 群体轨迹 PCA 对照（仅 MOp2/3 细胞）：行 = 范式，列 = 声转光迁移时间线上的阶段。
-% 整合现有脚本的 tile（英文图/AudioOnlyVsLastAudioWater_PCA_L23.m 的声侧 2 阶段 + 英文图1D 的
-% Naive/Transfer + ALDelayed_DivergencePCA_L23 的 Transfer(delayed)），并含新增 Naive(delayed) tile：
+% FigS2A（英文图）：2×4 代表性小鼠单 trial 轨迹 PCA 对照（仅 MOp2/3 细胞）：行 = 范式，列 = 声转光迁移时间线上的阶段。
+% 每 tile 取一只代表性小鼠、每 trial 一条线（不做分组平均），PCA 在该鼠该会话全部 MOp2/3 细胞上独立计算。
+% 轨迹样式参考文献（Makino et al., 2017, Neuron, Fig.4）：一条黑线（cue 对齐 → 给水/参照时刻），
+% 线上打两个点：黑点 = Cue 时点（t=0），红点 = 给水时点（Undelayed +1 s / Delayed +1.5 s）；
+% 只给声列（第 1 列）无给水，红点标同一参照时刻（与该行给水时刻一致，便于行内比较）。
+% 代表鼠按逐鼠散度选取（散度口径同英文图1F/ALDelayed_DivVsHitRate_Scatter：z-score 后逐回合减 cue onset 值，
+% 取该行给水时刻的 细胞×回合 矩阵 X，div = sqrt( sum(var(X,[],2)) / sum(mean(X,2).^2) ，MOp2/3 细胞）：
+%   第 1、2、4 列共享同一只鼠（Undelayed 取 ALB、Delayed 取 ALDelayed）：在该范式候选鼠中，
+%   选 🔊Naive 散度尽可能大、🔊💧Learned 散度尽可能小（差值最大）、且 💡💧Transfer 散度居中
+%   （落在 [Learned, Naive] 区间内）者；
+%   💡💧Naive 列在光侧 Naive 候选鼠（Undelayed=LAB+LAI，Delayed=LADelayed）中选散度最大者。
+% 各 tile 数据源：
 %   列 1 🔊 Naive：初始只给声。Undelayed = AudioLightBaseline 的 AudioOnly 初始校准会话
 %                              （每鼠仅一个）；Delayed = ALDelayed 的 AudioPreTrainCueOnly 首个会话
 %                              （同会话 AudioPreTrainWaterOnly 只给水不给声，不取）；
@@ -18,20 +27,13 @@
 %                              LW 会话；Delayed = TransferLearning.ALDelayed（有延迟不舔不给水钙成像，
 %                              声水转光水）每鼠首个含 LightLearnWater 的 DateTime，
 %                              同英文图/ALDelayed_DivergencePCA_L23.m。
-% Undelayed 声侧两列只保留两个阶段都具备的鼠（yqn1130 无 AudioOnly 校准会话，整只排除，
-% 同英文图/AudioOnlyVsLastAudioWater_PCA_L23.m）；光侧两列沿用英文图1D 口径各自选鼠。
 % 只取 MOp2/3 细胞（Cells.ZLayer=="MOp2/3"，MOp5 舍弃）。
-% super-mouse 口径同 Fig1D：每细胞取该会话全部光水回合（按 TrialUID 排序），尽可能均分成 nLines 组
-% （组间最多差 1 回合）后组内平均 → 每细胞 nLines 条轨迹；归一化 ZScore（基线 1:24）匹配散度口径。
-% 绘图时段按各范式给水时刻：Undelayed 行 cue 0 → +1 s，Delayed 行 cue 0 → +1.5 s；
-% 只给声的列无给水，为行内可比取同一时段。轨迹浅色端=cue 起点、深色端=时段末端，
-% 着色为线内时间渐变（单次 patch 逐顶点着色，学习 UniExp.SegmentFadePlot/ColorfulMarkerPlot）。
-% 8 个 tile 的 PCA 独立计算（各自 super-mouse 群体），各坐标轴不标注解释度；
+% 归一化 ZScore（基线 1:24）与散度口径一致；每细胞取该会话全部目标回合（按 TrialUID 排序），
+% 不做任何 trial 平均 → 每细胞 nTrial 条轨迹；Naive 列整 session 全部 trial 均入图（呈现学习分叉）。
+% 绘图时段统一为 cue 0 → +3 s（黑线），红点仍标给水/参照时刻（Undelayed +1 s / Delayed +1.5 s）。
+% 8 个 tile 的 PCA 独立计算（各代表鼠自身群体），各坐标轴不标注解释度；
 % 出图后用 MATLAB.Graphics.UnifyAxesLims 的 Range 模式统一各 tile 的 X/Y 轴跨度
-% （保留各自中心、统一对径），使独立 PCA 的图形尺度可比；
-% 展示的是 cue 后轨迹的分叉形态（Naive 扇形分叉=高散度，Transfer 平行=低散度）。
-% 着色按列沿用现有脚本配色：🔊 = NaiveColor（紫），🔊💧 = ColorB（绿），
-% 💡💧 Naive = NaiveColor（紫），💡💧 Transfer = TransferColor（橙）。
+% （保留各自中心、统一对径），使独立 PCA 的图形尺度可比。
 % 标注规范：tile 标题只写在首行（列名；🔊/💡/💧 = 声/光线索/给水，阶段词保留英文），
 % 行名（Undelayed/Delayed）写在首列 ylabel，Y 轴位置统一在左。
 %
@@ -41,11 +43,6 @@
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
 % - Open in MATLAB Editor and Run/F5.
-
-% 可调参数：把每细胞的全部回合尽可能均分成多少条轨迹
-nLines = 10;
-% 可调参数：线内渐变的分段数（轨迹重采样顶点数，patch 逐顶点着色）
-nGradSeg = 40;
 
 thisDir = fileparts(mfilename('fullpath'));
 if ~exist('UniExp.DataSet', 'class')
@@ -83,6 +80,20 @@ rowName = ["Undelayed", "Delayed"];
 % 列标题用 emoji 标刺激（🔊=声线索，💡=光线索，💧=给水），阶段词用 Naive/Learned/Transfer
 colName = ["🔊 Naive", "🔊💧 Learned", "💡💧 Naive", "💡💧 Transfer"];
 
+% ---- 代表鼠选取（逐鼠散度，MOp2/3 细胞；前两列共享同一只鼠） ----
+% 第 1、2、4 列共享鼠名（Naive 用初始只给声会话，Learned 用最后声水会话，Transfer 用首个光水会话）
+mouseAU = iSelectAudioRepresentative(sessAU, "AudioOnly", sessAWU, "AudioWater", sessTU, "LightWater", WinEnd(1,1));
+mouseAD = iSelectAudioRepresentative(sessAD, "AudioPreTrainCueOnly", sessAWD, "AudioLearnWater", sessTD, ["LightLearnWater","LightLearnWaterAlways"], WinEnd(2,1));
+SessAll{1,1} = sessAU(sessAU.Mouse == mouseAU, :);
+SessAll{1,2} = sessAWU(sessAWU.Mouse == mouseAU, :);
+SessAll{1,4} = sessTU(sessTU.Mouse == mouseAU, :);
+SessAll{2,1} = sessAD(sessAD.Mouse == mouseAD, :);
+SessAll{2,2} = sessAWD(sessAWD.Mouse == mouseAD, :);
+SessAll{2,4} = sessTD(sessTD.Mouse == mouseAD, :);
+% 💡💧Naive 列：散度最大者
+SessAll{1,3} = iSelectByDivergence(sessNU, "LightWater", WinEnd(1,3), 'max');
+SessAll{2,3} = iSelectByDivergence(sessND, ["LightLearnWater","LightLearnWaterAlways"], WinEnd(2,3), 'max');
+
 G = cell(2, 4);
 P = cell(2, 4);
 for r = 1:2
@@ -90,8 +101,10 @@ for r = 1:2
 		if isempty(SessAll{r, c})
 			error('DelayVsUndelayedPCA:NoSession', 'No %s session for %s.', colName(c), rowName(r));
 		end
-		G{r, c} = iNtsSuperMouseFromSessions(SessAll{r, c}, nLines, StimAll{r, c});
+		G{r, c} = iNtsSingleMouseTrials(SessAll{r, c}, StimAll{r, c});
 		P{r, c} = iComputePcaPlotData(G{r, c}, WinEnd(r, c));
+		fprintf('%s / %s -> representative mouse %s (%d cells, %d trials)\n', ...
+			rowName(r), colName(c), SessAll{r, c}.Mouse, height(G{r, c}), P{r, c}.nLines);
 	end
 end
 %%
@@ -101,13 +114,12 @@ f.Units = 'centimeters';
 f.Position(3:4) = [18, 8];
 f.PaperUnits = 'centimeters';
 
-colColor = [TransferLearning.NaiveColor; TransferLearning.ColorB; TransferLearning.NaiveColor; TransferLearning.TransferColor];
 tlo = tiledlayout(f, 2, 4, 'TileSpacing', 'tight', 'Padding', 'tight');
 axAll = gobjects(2, 4);
 for r = 1:2
 	for c = 1:4
 		ax = nexttile(tlo);
-		iPlotTrialsAttachedOnAxes(ax, P{r, c}, colColor(c, :), nGradSeg);
+		iPlotTrialsAttachedOnAxes(ax, P{r, c});
 		% 规范：tile 标题只标在首行（列名），行名（范式）写在首列 ylabel，Y 轴统一在左
 		if r == 1
 			title(ax, colName(c));
@@ -121,11 +133,9 @@ for r = 1:2
 end
 xlabel(tlo, 'PC1');
 ylabel(tlo, 'PC2');
-% 统一各 tile 的 X/Y 轴跨度（Range 模式：保留各自中心、统一对径），使独立 PCA 的尺度可比
-MATLAB.Graphics.UnifyAxesLims(axAll, MATLAB.Flags.Range, @xlim, @ylim);
+% 不能统一PCA尺度：因为散度是方差/强度，而MATLAB的自动坐标范围恰好把强度归一化掉了，恰好能展示出真实散度
 
-TransferLearning.ApplyStandardExportStyle(f, 1);
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS2A_DelayedVsUndelayed_DivergencePCA_L23.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_FigS2A_DelayedVsUndelayed_DivergencePCA_L23.svg');
 
 %% ========== local functions（口径同英文图1D，延迟库会话定义同 ALDelayed_DivergencePCA_L23） ==========
 function mice = iMiceWithStimulusInPhase(DS, stimulusName, phaseName)
@@ -271,82 +281,183 @@ if ~isempty(T.DateTime.TimeZone)
 end
 end
 
-function GroupNtats = iNtsSuperMouseFromSessions(sess, nLines, stimNames)
-% 会话表的 DS 列直接携带数据集对象；只保留 ZLayer=="MOp2/3" 的细胞。
-% 每细胞取该会话全部目标回合（stimNames，按 TrialUID 排序），尽可能均分成 nLines 组
-% （组间最多差 1 回合）后组内平均 → 每细胞 nLines 条轨迹。
-cellTraces = {};
-cellUIDList = zeros(0, 1, 'uint64');
-mouseList = strings(0, 1);
-for iS = 1:height(sess)
-	DS = sess.DS(iS);
-	ntsCell = DS.QueryNTS(struct('Stimulus', stimNames, 'Mouse', sess.Mouse(iS), 'DateTime', sess.DateTime(iS)), UniExp.Flags.ZScore, 1:24);
-	if iscell(ntsCell)
-		nts = ntsCell{1};
-	else
-		nts = ntsCell;
-	end
-	if isempty(nts)
+function mouse = iSelectAudioRepresentative(sessN, stimN, sessL, stimL, sessT, stimT, tWaterSec)
+% 第 1、2、4 列共享代表鼠（返回鼠名）：🔊Naive 散度尽可能大、🔊💧Learned 尽可能小、💡💧Transfer 居中。
+% 主目标 = (divNaive - divLearned) 最大；约束 = divTransfer 落在 [divLearned, divNaive] 区间内。
+divN = iDivergencePerMouse(sessN, stimN, tWaterSec);
+divL = iDivergencePerMouse(sessL, stimL, tWaterSec);
+divT = iDivergencePerMouse(sessT, stimT, tWaterSec);
+mice = intersect(intersect(divN.Mouse, divL.Mouse, 'stable'), divT.Mouse, 'stable');
+divN = divN(ismember(divN.Mouse, mice), :);
+divL = divL(ismember(divL.Mouse, mice), :);
+divT = divT(ismember(divT.Mouse, mice), :);
+[divN, divL] = iAlignMouseTables(divN, divL);
+[divN, divT] = iAlignMouseTables(divN, divT);
+mice = divN.Mouse;
+dN = divN.Divergence; dL = divL.Divergence; dT = divT.Divergence;
+inBetween = dT >= dL & dT <= dN;
+score = dN - dL;
+% Transfer 居中者直接比差值；不居中者罚一个很大的量，仅在没有居中鼠时才退化到全体比差值
+penalty = 1e3;
+scoreAdj = score - penalty * ~inBetween;
+scoreAdj(~isfinite(scoreAdj)) = -inf;
+if all(~isfinite(scoreAdj))
+	error('FigS2APCA:NoAudioDiv', 'No valid divergence for representative selection.');
+end
+[~, iBest] = max(scoreAdj);
+mouse = mice(iBest);
+fprintf('  shared-mouse candidates (divNaive, divLearned, divTransfer, Naive-Learned, TransferBetween):\n');
+for i = 1:numel(mice)
+	fprintf('    %s  %.3f  %.3f  %.3f  %.3f  %d%s\n', mice(i), dN(i), dL(i), dT(i), dN(i)-dL(i), inBetween(i), string(repmat("  <== selected", i==iBest, 1)));
+end
+end
+
+function sess = iSelectByDivergence(sessAll, stimNames, tWaterSec, mode)
+% 光侧代表鼠：Naive 列 'max'（散度最大），Transfer 列 'min'（散度最小）。
+divTbl = iDivergencePerMouse(sessAll, stimNames, tWaterSec);
+divTbl = divTbl(isfinite(divTbl.Divergence), :);
+if isempty(divTbl)
+	error('FigS2APCA:NoLightDiv', 'No valid light divergence for representative selection.');
+end
+switch mode
+	case 'max'
+		[~, iBest] = max(divTbl.Divergence);
+	case 'min'
+		[~, iBest] = min(divTbl.Divergence);
+	otherwise
+		error('FigS2APCA:BadMode', 'Unknown mode %s.', mode);
+end
+sess = sessAll(sessAll.Mouse == divTbl.Mouse(iBest), :);
+fprintf('  light-stage candidates (%s):\n', mode);
+for i = 1:height(divTbl)
+	fprintf('    %s  div=%.3f%s\n', divTbl.Mouse(i), divTbl.Divergence(i), string(repmat("  <== selected", i==iBest, 1)));
+end
+end
+
+function [a, b] = iAlignMouseTables(a, b)
+% 按 Mouse 对齐两个散度表（同序）
+[tf, loc] = ismember(a.Mouse, b.Mouse);
+a = a(tf, :);
+b = b(loc(tf), :);
+end
+
+function divTbl = iDivergencePerMouse(sessAll, stimNames, tWaterSec)
+% 逐鼠散度（口径同 Fig1F/ALDelayed_DivVsHitRate_Scatter，限 MOp2/3 细胞）：
+% z-score 后逐回合减 cue onset 值，取 tWaterSec 时刻的 细胞×回合 矩阵 X，
+% div = sqrt( sum(var(X,[],2)) / sum(mean(X,2).^2) )。
+divTbl = table(strings(0,1), zeros(0,1), 'VariableNames', {'Mouse','Divergence'});
+for iS = 1:height(sessAll)
+	sess = sessAll(iS, :);
+	div = iSessionDivergence(sess, stimNames, tWaterSec);
+	divTbl = [divTbl; table(sess.Mouse, div, 'VariableNames', {'Mouse','Divergence'})]; %#ok<AGROW>
+end
+end
+
+function div = iSessionDivergence(sess, stimNames, tWaterSec)
+div = NaN;
+DS = sess.DS(1);
+ntsCell = DS.QueryNTS(struct('Stimulus', stimNames, 'Mouse', sess.Mouse(1), 'DateTime', sess.DateTime(1)), UniExp.Flags.ZScore, 1:24);
+if iscell(ntsCell)
+	nts = ntsCell{1};
+else
+	nts = ntsCell;
+end
+if isempty(nts)
+	return;
+end
+% 只保留 MOp2/3 细胞
+cellTbl = DS.Cells;
+cellTbl.CellUID = uint64(cellTbl.CellUID);
+cellTbl.ZLayer = string(cellTbl.ZLayer);
+cellTbl.Mouse = string(cellTbl.Mouse);
+keepUID = cellTbl.CellUID(cellTbl.Mouse == sess.Mouse(1) & cellTbl.ZLayer == "MOp2/3");
+nts = nts(ismember(uint64(nts.CellUID), keepUID), :);
+if isempty(nts)
+	return;
+end
+nTime = size(nts.TrialSignal, 2);
+idx0 = iFindPlotTimeIndex(nTime, 0);
+idxW = iFindPlotTimeIndex(nTime, tWaterSec);
+trialUIDs = unique(uint64(nts.TrialUID), 'stable');
+allCells = unique(uint64(nts.CellUID), 'stable');
+traceCell = {};
+for iC = 1:numel(allCells)
+	rows = uint64(nts.CellUID) == allCells(iC);
+	uid = uint64(nts.TrialUID(rows));
+	sig = double(nts.TrialSignal(rows, :));
+	[tf, loc] = ismember(trialUIDs, uid);
+	if ~all(tf)
 		continue;
 	end
-	cellTbl = DS.Cells;
-	cellTbl.CellUID = uint64(cellTbl.CellUID);
-	cellTbl.ZLayer = string(cellTbl.ZLayer);
-	cellTbl.Mouse = string(cellTbl.Mouse);
-	mCell = cellTbl(cellTbl.Mouse == sess.Mouse(iS), :);
-	cellUIDs = unique(uint64(nts.CellUID));
-	for iC = 1:numel(cellUIDs)
-		cid = cellUIDs(iC);
-		[isIn, loc] = ismember(cid, mCell.CellUID);
-		if ~isIn || mCell.ZLayer(loc) ~= "MOp2/3"
-			continue;
-		end
-		rowsC = (uint64(nts.CellUID) == cid);
-		uid = uint64(nts.TrialUID(rowsC));
-		sig = double(nts.TrialSignal(rowsC, :));
-		[~, order] = sort(uid);
-		sig = sig(order, :);
-		meanSig = iAverageIntoNLines(sig, nLines);
-		if isempty(meanSig)
-			continue;
-		end
-		cellTraces{end+1, 1} = meanSig; %#ok<AGROW>
-		cellUIDList(end+1, 1) = cid; %#ok<AGROW>
-		mouseList(end+1, 1) = sess.Mouse(iS); %#ok<AGROW>
+	ordered = sig(loc, :);
+	if any(~isfinite(ordered), 'all')
+		continue;
 	end
+	traceCell{end+1} = ordered; %#ok<AGROW>
+end
+if numel(traceCell) < 3 || numel(trialUIDs) < 2
+	return;
+end
+nTrial = numel(trialUIDs);
+ctt = nan(numel(traceCell), nTrial, nTime);
+for iC = 1:numel(traceCell)
+	ctt(iC, :, :) = traceCell{iC};
+end
+ctt = ctt - ctt(:, :, idx0);
+X = ctt(:, :, idxW);
+totalSignal = sum(mean(X, 2).^2);
+totalNoise = sum(var(X, [], 2));
+if totalSignal > 0
+	div = sqrt(totalNoise / totalSignal);
+end
+end
+
+function GroupNtats = iNtsSingleMouseTrials(sess, stimNames)
+% 单代表鼠：该会话全部 MOp2/3 细胞 × 全部目标回合（按 TrialUID 排序），不做任何平均。
+DS = sess.DS(1);
+ntsCell = DS.QueryNTS(struct('Stimulus', stimNames, 'Mouse', sess.Mouse(1), 'DateTime', sess.DateTime(1)), UniExp.Flags.ZScore, 1:24);
+if iscell(ntsCell)
+	nts = ntsCell{1};
+else
+	nts = ntsCell;
+end
+if isempty(nts)
+	error('FigS2APCA:EmptyMouse', 'No trials for representative mouse %s.', sess.Mouse(1));
+end
+cellTbl = DS.Cells;
+cellTbl.CellUID = uint64(cellTbl.CellUID);
+cellTbl.ZLayer = string(cellTbl.ZLayer);
+cellTbl.Mouse = string(cellTbl.Mouse);
+mCell = cellTbl(cellTbl.Mouse == sess.Mouse(1) & cellTbl.ZLayer == "MOp2/3", :);
+cellUIDs = unique(uint64(nts.CellUID));
+cellTraces = {};
+cellUIDList = zeros(0, 1, 'uint64');
+for iC = 1:numel(cellUIDs)
+	cid = cellUIDs(iC);
+	if ~ismember(cid, mCell.CellUID)
+		continue;
+	end
+	rowsC = (uint64(nts.CellUID) == cid);
+	uid = uint64(nts.TrialUID(rowsC));
+	sig = double(nts.TrialSignal(rowsC, :));
+	[~, order] = sort(uid);
+	sig = sig(order, :);
+	cellTraces{end+1, 1} = sig; %#ok<AGROW>
+	cellUIDList(end+1, 1) = cid; %#ok<AGROW>
 end
 if isempty(cellTraces)
-	error('DelayVsUndelayedPCA:EmptySuperMouse', 'No MOp2/3 cells found after pooling.');
+	error('FigS2APCA:NoL23Cell', 'No MOp2/3 cells for representative mouse %s.', sess.Mouse(1));
 end
 nCells = numel(cellTraces);
-nGroupActual = size(cellTraces{1}, 1);
+nTrial = size(cellTraces{1}, 1);
 nTime = size(cellTraces{1}, 2);
-CellTrialTimes = nan(nCells, nGroupActual, nTime);
+CellTrialTimes = nan(nCells, nTrial, nTime);
 for iC = 1:nCells
 	CellTrialTimes(iC, :, :) = cellTraces{iC};
 end
 ntatsData = permute(CellTrialTimes, [1, 3, 2]);
 ntats = MATLAB.DataTypes.NDTable(ntatsData);
-GroupNtats = table(ntats, cellUIDList, mouseList, 'VariableNames', ["NTATS", "CellUID", "Mouse"]);
-end
-
-function meanSig = iAverageIntoNLines(sig, nLines)
-% 把 sig（nTrial × nTime）按回合顺序尽可能均分成 nLines 组，组内平均；组间最多差 1 回合，靠前的组多 1 回合。
-nTrial = size(sig, 1);
-nTime = size(sig, 2);
-if nTrial < 1 || nTime < 1
-	meanSig = [];
-	return;
-end
-nLines = min(nLines, nTrial);
-groupSize = ones(1, nLines) * floor(nTrial / nLines);
-groupSize(1:(nTrial - floor(nTrial / nLines) * nLines)) = groupSize(1:(nTrial - floor(nTrial / nLines) * nLines)) + 1;
-boundStart = [1, cumsum(groupSize(1:end-1)) + 1];
-boundEnd = cumsum(groupSize);
-meanSig = nan(nLines, nTime);
-for k = 1:nLines
-	meanSig(k, :) = mean(sig(boundStart(k):boundEnd(k), :), 1, 'omitnan');
-end
+GroupNtats = table(ntats, cellUIDList, repmat(sess.Mouse(1), nCells, 1), 'VariableNames', ["NTATS", "CellUID", "Mouse"]);
 end
 
 function PlotData = iComputePcaPlotData(GroupNtats, tEndSec)
@@ -355,13 +466,17 @@ PcaLines = PcaTable.Score;
 PcaDataAll = PcaLines.Data;
 nTime = size(PcaDataAll, 2);
 idxCue = iFindPlotTimeIndex(nTime, 0);
+idxEnd = iFindPlotTimeIndex(nTime, 3);   % 作图时段统一延长到 cue +3 s
 idxWater = iFindPlotTimeIndex(nTime, tEndSec);
-idxPlotTime = idxCue:idxWater;
+idxPlotTime = idxCue:idxEnd;
 PcaData = PcaDataAll(:, idxPlotTime, :);
 PlotData = struct();
 PlotData.PcaTable = PcaTable;
 PlotData.PcaData = PcaData;
 PlotData.nLines = size(PcaData, 3);
+% 文献样式标记：Cue 时点 = 第 1 个采样点（黑）；给水/参照时点（红）= 该范式给水时刻，不再是轨迹终点
+PlotData.idxCue = 1;
+PlotData.idxWater = idxWater - idxCue + 1;
 % 只画 cue 后轨迹（cue 0 → 给水时刻），span 也只统计该段
 xAll = reshape(PcaData(1, :, :), [], 1);
 yAll = reshape(PcaData(2, :, :), [], 1);
@@ -375,15 +490,25 @@ if ~(isfinite(PlotData.ySpan) && PlotData.ySpan > 0)
 end
 end
 
-function hTrial = iPlotTrialsAttachedOnAxes(ax, PlotData, groupColor, nGradSeg)
+function iPlotTrialsAttachedOnAxes(ax, PlotData)
+% 文献样式（Makino 2017 Fig.4）：每 trial 一条黑线 + Cue 黑点 + 给水/参照红点
 ax.FontSize = 12;
 ax.LineWidth = 1;
 box(ax, 'off');
 grid(ax, 'off');
 hold(ax, 'on');
 PcaData = PlotData.PcaData;
-iGradientLines(ax, PcaData, groupColor, nGradSeg);
-hTrial = plot(ax, nan, nan, '-', 'LineWidth', 2, 'Color', groupColor);
+% 所有 trial 的黑线一次 plot（每列一条）；豁免标准样式线宽调整，保持 LineWidth=0.5
+hLines = plot(ax, squeeze(PcaData(1, :, :)), squeeze(PcaData(2, :, :)), '-', ...
+	'Color', [0 0 0], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+for iL = 1:numel(hLines)
+	setappdata(hLines(iL), 'TransferLearningPreserveLineWidth', true);
+end
+% Cue 时点（黑）与给水/参照时点（红）：每 trial 各一点
+plot(ax, squeeze(PcaData(1, PlotData.idxCue, :)), squeeze(PcaData(2, PlotData.idxCue, :)), 'o', ...
+	'MarkerSize', 3, 'MarkerEdgeColor', 'none', 'MarkerFaceColor', [0 0 0], 'HandleVisibility', 'off');
+plot(ax, squeeze(PcaData(1, PlotData.idxWater, :)), squeeze(PcaData(2, PlotData.idxWater, :)), 'o', ...
+	'MarkerSize', 3, 'MarkerEdgeColor', 'none', 'MarkerFaceColor', [1 0 0], 'HandleVisibility', 'off');
 view(ax, 2);
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
 	ax.Toolbar.Visible = 'off';
@@ -405,29 +530,6 @@ if ~(isfinite(yMargin) && yMargin > 0)
 end
 xlim(ax, [min(xAll) - xMargin, max(xAll) + xMargin]);
 ylim(ax, [min(yAll) - yMargin, max(yAll) + yMargin]);
-end
-
-function iGradientLines(ax, PcaData, baseColor, nSeg)
-% 线内时间渐变：cue→末端折线按时间重采样成 nSeg 段，cue 端接近白、末端为基色。
-% 学习 UniExp.SegmentFadePlot / UniExp.ColorfulMarkerPlot 的 patch 画法：
-% 矩阵 X/Y 每列一条折线 + 末行 NaN 断开 patch 闭合边 + 逐顶点色 + EdgeColor='flat'，
-% 全部轨迹一次 patch 调用画完（不再逐段调用 line，每条 40 次 → 全部 1 次）。
-nLines = size(PcaData, 3);
-nTime = size(PcaData, 2);
-tt = linspace(1, nTime, nSeg + 1);
-w = linspace(0, 1, nSeg + 1)';
-cv = 1 - w * (1 - baseColor(:)');   % (nSeg+1)×3 逐顶点颜色：cue 端近白 → 末端基色
-X = nan(nSeg + 2, nLines);
-Y = nan(nSeg + 2, nLines);
-for iLine = 1:nLines
-	xy = squeeze(PcaData(:, :, iLine));
-	X(1:nSeg+1, iLine) = interp1(1:nTime, xy(1, :), tt);
-	Y(1:nSeg+1, iLine) = interp1(1:nTime, xy(2, :), tt);
-end
-C = repmat(reshape(cv, [nSeg+1, 1, 3]), 1, nLines, 1);
-C(end+1, :, :) = repmat(reshape(cv(end, :), [1, 1, 3]), 1, nLines);
-patch(ax, X, Y, C, 'EdgeColor', 'flat', 'FaceColor', 'none', ...
-	'LineWidth', 2, 'HandleVisibility', 'off');
 end
 
 function idx = iFindPlotTimeIndex(nTime, targetSec)
