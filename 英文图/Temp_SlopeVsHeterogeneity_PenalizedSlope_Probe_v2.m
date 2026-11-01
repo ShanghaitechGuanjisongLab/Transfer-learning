@@ -70,16 +70,10 @@ for iM = 1:numel(M)
 			end
 		end
 	end
-	% ---- 异质性：pre-ceiling 会话 ----
-	Rhet = Rall;
-	first100 = find(perfAll>=1.0,1,'first');
-	if ~isempty(first100) && first100>1
-		Rhet = Rall(1:first100-1,:);
-	elseif ~isempty(first100) && first100==1
-		Rhet = Rall([],:);   % 首个即学满：无异质性
-	end
-	if height(Rhet) >= 2
-		[sd23(iM), sd5(iM)] = iMouseLayerSD(Rhet, DS1, DS2, idx1s);
+	% ---- 异质性：与斜率同一会话集（Fig3B 口径，不额外 pre-ceiling），
+	% 每细胞先会话内 median z@+1s，再跨会话 mean，|z|<=1 后 across-cell SD ----
+	if height(Rall) >= 2
+		[sd23(iM), sd5(iM)] = iMouseLayerSD(Rall, DS1, DS2, idx1s);
 	end
 end
 end
@@ -130,18 +124,23 @@ for d=1:2
 		Rd = R;
 	end
 	if isempty(Rd), continue; end
-	try, nts = DS.QueryNTS(struct('Stimulus','LightWater','DateTime',Rd.DateTime), UniExp.Flags.ZScore, 1:24); catch, continue; end
+	try, nts = DS.QueryNTS(struct('Stimulus','LightWater','DateTime',Rd.DateTime), UniExp.Flags.ZScore, 1:24, 'ExtraColumns',"DateTime"); catch, continue; end
 	if iscell(nts), nts=nts{1}; end
 	if isempty(nts), continue; end
 	nts.CellUID=uint64(nts.CellUID);
+	nts.DateTime = datetime(nts.DateTime);
+	if ~isempty(nts.DateTime.TimeZone), nts.DateTime.TimeZone=''; end
 	sig = double(nts.TrialSignal);
 	z = sig(:,idx1s);
-	[G,cid]=findgroups(nts.CellUID);
+	% 每细胞×会话 median，再跨会话 mean（Fig3B 口径）
+	[G,cid,dtU]=findgroups(nts.CellUID, nts.DateTime);
 	med = splitapply(@(x) median(x,'omitnan'),z,G);
+	[Gc,cidU]=findgroups(cid);
+	meanPerCell = splitapply(@(x) mean(x,'omitnan'),med,Gc);
 	CellTbl = DS.Cells; CellTbl.CellUID=uint64(CellTbl.CellUID); CellTbl.ZLayer=string(CellTbl.ZLayer);
-	[~,loc]=ismember(cid,CellTbl.CellUID);
+	[~,loc]=ismember(cidU,CellTbl.CellUID);
 	layers = CellTbl.ZLayer(loc);
-	allZ=[allZ;med]; allLayer=[allLayer;layers]; %#ok<AGROW>
+	allZ=[allZ;meanPerCell]; allLayer=[allLayer;layers]; %#ok<AGROW>
 end
 v23 = allZ(allLayer=="MOp2/3"); v5 = allZ(allLayer=="MOp5");
 v23 = v23(isfinite(v23)&abs(v23)<=1); v5 = v5(isfinite(v5)&abs(v5)<=1);
