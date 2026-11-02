@@ -346,29 +346,19 @@ function [sdVec, miceKept] = iNaiveHeterogeneityByLayer(LAB, LAI, CellLAB, CellL
 	srcCellMaps = {CellLAB; CellLAI};
 	for i = 1:2
 		dts = unique(SessUsed.DateTime(SessUsed.Source == srcNames(i)));
-		% 诊断：LAI 的 dts 里是否有 vtf0045 的会话
 		if i == 2
-			vtfDT = SessUsed.DateTime(SessUsed.Mouse=="vtf0045");
-			fprintf('HET-DTS: vtf0045 in SessUsed.DateTime=%d, in dts=%d\n', numel(vtfDT), sum(ismember(vtfDT, dts)));
-			fprintf('  SessUsed vtf0045 DT(1)=%s, dts(1)=%s\n', string(vtfDT(1)), string(dts(1)));
-			fprintf('  dts contains vtf0045 DT(1)=%d\n', ismember(vtfDT(1), dts));
-			fprintf('  SessUsed vtf0045 DT(1) class=%s, dts class=%s\n', class(vtfDT), class(dts));
-			fprintf('  dts unique count=%d, SessUsed unique count=%d\n', numel(dts), numel(unique(SessUsed.DateTime)));
-			fprintf('  dts(1)=%s, SessUsed vtf0045 DT(1)=%s\n', string(dts(1)), string(vtfDT(1)));
-			fprintf('  SessUsed.DateTime(1)=%s, dts(1)=%s\n', string(SessUsed.DateTime(1)), string(dts(1)));
-			fprintf('  SessUsed.Source(1)=%s, srcNames(2)=%s\n', string(SessUsed.Source(1)), srcNames(2));
-			fprintf('  SessUsed.DateTime(1) TimeZone=[%s], dts(1) TimeZone=[%s]\n', string(SessUsed.DateTime.TimeZone), string(dts.TimeZone));
-			fprintf('  dts(1) class=%s, SessUsed.DateTime(1) class=%s\n', class(dts), class(SessUsed.DateTime));
-			fprintf('  dts(1)=%s, SessUsed.DateTime(1)=%s\n', string(dts(1)), string(SessUsed.DateTime(1)));
-			fprintf('  dts(1)=%s, SessUsed vtf0045 DT(1)=%s\n', string(dts(1)), string(vtfDT(1)));
-			fprintf('  SessUsed.DateTime(1)=%s, dts(1)=%s\n', string(SessUsed.DateTime(1)), string(dts(1)));
-			fprintf('  SessUsed.DateTime(1)=%s, dts(1)=%s\n', string(SessUsed.DateTime(1)), string(dts(1)));
-			fprintf('  dts(1)=%s, SessUsed.DateTime(1)=%s\n', string(dts(1)), string(SessUsed.DateTime(1)));
+			for dm = ["vtf0045","vtf0101","yqn0051","yqn0052"]
+				expected = SessUsed.DateTime(SessUsed.Mouse == dm);
+				fprintf('HET-DTS %s: n=%d, values=%s, inBatch=%s\n', dm, numel(expected), ...
+					strjoin(string(expected), ','), mat2str(ismember(expected, dts)));
+			end
+			fprintf('HET-DTS batch: class=%s, TimeZone=%s, n=%d\n', class(dts), string(dts.TimeZone), numel(dts));
 		end
 		if isempty(dts)
 			continue;
 		end
-		part = iBatchQueryRawNTS(srcDS{i}, dts);
+		expectedSessions = SessUsed(SessUsed.Source == srcNames(i), {'Mouse','DateTime'});
+		part = iBatchQueryRawNTS(srcDS{i}, dts, expectedSessions);
 		if isempty(part)
 			continue;
 		end
@@ -780,13 +770,16 @@ function medTbl = iPerBlockCellMedianTable(rawTbl, idx1s, layerName, hasSource)
 	end
 end
 
-function rawTbl = iBatchQueryRawNTS(DS, dts)
+function rawTbl = iBatchQueryRawNTS(DS, dts, expectedSessions)
+	if nargin < 3
+		expectedSessions = table();
+	end
 	q = struct('Stimulus', 'LightWater', 'DateTime', dts);
 	try
 		ntsCell = DS.QueryNTS(q, UniExp.Flags.ZScore, 1:24, 'ExtraColumns', "DateTime");
-	catch
-		rawTbl = table();
-		return;
+	catch ME
+		fprintf('HET-BATCH query error: %s: %s\n', ME.identifier, ME.message);
+		rethrow(ME);
 	end
 	if isempty(ntsCell) || isempty(ntsCell{1})
 		rawTbl = table();
@@ -795,16 +788,18 @@ function rawTbl = iBatchQueryRawNTS(DS, dts)
 	rawTbl = ntsCell{1};
 	rawTbl.CellUID = uint64(rawTbl.CellUID);
 	rawTbl.DateTime = iNormDT(datetime(rawTbl.DateTime));
-	% 诊断：iBatchQueryRawNTS 的 dts 与 rawTbl.DateTime 的值与时区
-	vtfDT = datetime(["2022-09-02 16:07:00";"2022-09-09 20:29:00"], 'Format','yyyy-MM-dd HH:mm:ss');
-	fprintf('HET-BATCH: rawTbl rows=%d, vtf0045 sessions in rawTbl=%d, dtsHasVtf=%d\n', ...
-		height(rawTbl), sum(ismember(vtfDT, rawTbl.DateTime)), sum(ismember(vtfDT, dts)));
-	fprintf('  dts class=%s, numel=%d, dts(1)=%s, vtfDT(1)=%s\n', class(dts), numel(dts), string(dts(1)), string(vtfDT(1)));
-	fprintf('  ismember(vtfDT(1), dts)=%d, ismember(dts(1), vtfDT)=%d\n', ismember(vtfDT(1), dts), ismember(dts(1), vtfDT));
-	% 查 dts 里是否有 vtf0045 的会话（用 SessUsed 的精确值）
-	vtfSessDT = SessUsed.DateTime(SessUsed.Mouse=="vtf0045");
-	if ~isempty(vtfSessDT)
-		fprintf('  SessUsed vtf0045 DT(1)=%s, in dts=%d\n', string(vtfSessDT(1)), ismember(vtfSessDT(1), dts));
+	fprintf('HET-BATCH: input n=%d, TimeZone=%s, output rows=%d, unique DateTimes=%d\n', ...
+		numel(dts), string(dts.TimeZone), height(rawTbl), numel(unique(rawTbl.DateTime)));
+	for dm = ["vtf0045","vtf0101","yqn0051","yqn0052"]
+		if ~ismember('Mouse', expectedSessions.Properties.VariableNames)
+			continue;
+		end
+		expected = expectedSessions.DateTime(string(expectedSessions.Mouse) == dm);
+		if ~isempty(expected)
+			fprintf('HET-BATCH %s: expected=%s, inInput=%s, inOutput=%s\n', dm, ...
+				strjoin(string(expected), ','), mat2str(ismember(expected, dts)), ...
+				mat2str(ismember(expected, rawTbl.DateTime)));
+		end
 	end
 end
 

@@ -54,10 +54,10 @@ fprintf('V7:  cells=%d, LA=%d, react=%d\n', numel(WV7.w), nnz(WV7.g>=1), nnz(WV7
 
 % ---- 双 tile 堆叠直方图（共享固定 bin 边界，样式沿用 Temp 手动调整） ----
 edges = linspace(-2, 2, 41);
-f = figure('Color','w','Name','🔊→12h→💡  vs  🔊→7d→💡');
+f = figure('Color','w');
 f.Units='centimeters'; f.Position(3:4)=[21,8];
 tlo = tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact');
-sets = {WALB, 'AudioLightBaseline (12 h)'; WV7, 'Vacation7 (7 d)'};
+sets = {WALB, '🔊→12h→💡'; WV7, '🔊→7d→💡'};
 colReact = [0.0001 0.0045 0.3319];   % reactivated 深蓝（底）
 colLA = [1.0000 0.4567 0.2322];      % learned-active 橙（中）
 colOther = [0.0000 0.7809 0.0000];   % other 绿（顶）
