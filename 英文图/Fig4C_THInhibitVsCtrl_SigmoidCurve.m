@@ -1,5 +1,6 @@
-% English Fig4C: thalamus (PO) inhibited vs Control light-water learning,
-% group-level sigmoid fits (caliber copied from Chinese Fig61B)
+% Legacy Fig4C: thalamus (PO) inhibited vs Control light-water learning,
+% group-level sigmoid fits (caliber copied from Chinese Fig61B).
+% The Fig4C designation is now assigned to the block-divergence comparison.
 %
 % Data (identical to Chinese Fig61B / old Fig3G):
 % - Control: TransferLearning.AudioLightBaseline
@@ -18,14 +19,14 @@
 % performance unchanged.
 %
 % Outputs (SVG):
-%   - English_Fig4C_THInhibitVsCtrl_SigmoidCurve.svg   (legend -> Scale = 2)
+%   - English_Legacy_Fig4C_THInhibitVsCtrl_SigmoidCurve.svg   (legend -> Scale = 2)
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
 % - Open in MATLAB Editor and Run/F5.
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgName = "English_Fig4C_THInhibitVsCtrl_SigmoidCurve.svg";
+outDirUNC = fullfile('\\\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
+svgName = "English_Legacy_Fig4C_THInhibitVsCtrl_SigmoidCurve.svg";
 
 thisDir = fileparts(mfilename('fullpath'));
 if ~exist('UniExp.DataSet', 'class')

@@ -1,7 +1,7 @@
-% Fig2F（英文图）：全细胞 choice 解码器权重分布 + 子群堆叠直方图，双 tile。
+% Fig2F（英文图）：learned-active 细胞 choice 解码器权重分布 + 子群堆叠直方图，双 tile。
 %   左 tile = AudioLightBaseline（12 h），右 tile = Vacation7（7 d）。
-% 底 histogram = 全细胞 choice 权重 w（+1 s，w>0 偏 hit / w<0 偏 miss）；
-% 每柱内 reactivated 堆最底、learned-active（未 reactivated）居中、其它细胞在顶。
+% 仅显示 learned-active 细胞的 choice 权重 w（+1 s，w>0 偏 hit / w<0 偏 miss）；
+% 每柱内 reactivated 堆最底、learned-active（未 reactivated）在上，不含其它细胞。
 % 活跃判定沿用 FigS1H 口径：QueryNTATS Median 跨 trial 后，+1 s 处 z > 基线(-3~0 s)均值+3σ。
 % reactivated = learned-active ∩ transfer-active（learned=最后非 Recall AudioWater 会话，
 % transfer=首个 Transfer LightWater 会话）。
@@ -59,25 +59,22 @@ f.Units='centimeters'; f.Position(3:4)=[21,8];
 tlo = tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact');
 sets = {WALB, '🔊→12h→💡'; WV7, '🔊→7d→💡'};
 colReact = [0.0001 0.0045 0.3319];   % reactivated 深蓝（底）
-colLA = [1.0000 0.4567 0.2322];      % learned-active 橙（中）
-colOther = [0.0000 0.7809 0.0000];   % other 绿（顶）
+colLA = [1.0000 0.4567 0.2322];      % learned-active 橙（上）
 for iT = 1:2
 	W = sets{iT,1};
 	ax = nexttile(tlo);
 	hold(ax,'on');
 	nReact = histcounts(W.w(W.g==2), edges);
 	nLA = histcounts(W.w(W.g==1), edges);
-	nOther = histcounts(W.w(W.g==0), edges);
-	counts = [nReact(:), nLA(:), nOther(:)];
+	counts = [nReact(:), nLA(:)];
 	h = bar(ax, edges(1:end-1)+diff(edges)/2, counts, 1, 'stacked','EdgeColor','none');
 	h(1).FaceColor = colReact;
 	h(2).FaceColor = colLA;
-	h(3).FaceColor = colOther;
 	xline(ax,0,':','HandleVisibility','off');
 	box(ax,'off');
 	title(ax, sets{iT,2});
 	if iT==1
-		legend(ax, h, {'reactivated','learned-active','other'}, 'Box','off','Location','northwest');
+		legend(ax, h, {'reactivated','learned-active'}, 'Box','off','Location','northwest');
 	end
 end
 xlabel(tlo,'Choice decoder weight');

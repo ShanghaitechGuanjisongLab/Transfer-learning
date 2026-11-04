@@ -7,3 +7,4 @@ description: MATLAB作图规范
 用户对作图的要求如果有不明确之处，优先发问，避免自己瞎猜后再让用户回头来改。
 MATLAB有时会自动旋转较长的xticklabels，这是符合审美的，不要手动调节这种旋转或增加边框留白，即使它“看起来出界了”
 不要同时使用ApplyStandardExportStyle和ExportStandardFigure，因为ExportStandardFigure实际上就是ApplyStandardExportStyle并导出图像。ApplyStandardExportStyle通常是为了在应用标准格式后、导出图像之前增加更多自定义调整，那之后应该直接用MATLAB内置函数（如print）出图。
+不要手动设置xlim、ylim，仅在需要统一时使用MATLAB.Graphics.UnifyAxesLims

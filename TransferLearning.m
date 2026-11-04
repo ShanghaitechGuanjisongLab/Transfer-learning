@@ -19,6 +19,8 @@ classdef(Abstract)TransferLearning
 		THBehavior=memoize(@()UniExp.DataSet("\\Data-Server-2\个人数据\张天夫\202610\化学遗传抑制PO.v2.mat"));
 		ALDelayed=memoize(@iALDelayed);
 		LADelayed=memoize(@iLADelayed);
+		ALDelayedBehavior=memoize(@iALDelayedBehavior);
+		LADelayedBehavior=memoize(@iLADelayedBehavior);
 		NaiveColor=[0.6249    0.2188    0.9830];
 		TransferColor=[0.9386    0.4672    0.0384];
 		ColorA=[0.0547    0.0818    0.0163];
@@ -412,4 +414,16 @@ TrialDuration=seconds(6);
 LLP=ALDelayed.CheckForLightLeakage(seconds([0,0.2]),["LightLearnWater","LightLearnWaterAlways"]);
 ALDelayed.LightLeakageInterpolation(LLP.BlockUID(LLP.Probability>0.95),seconds([0,0.2]),["LightLearnWater","LightLearnWaterAlways"]);
 ALDelayed.ResampleTrials(milliseconds(125),TrialDuration);
+end
+function ALDBehavior=iALDelayedBehavior
+%有延迟纯行为 声水转光水（A2L）：A2L_A=声水阶段、A2L_L=光水阶段，仅内存临时合并不落盘
+ALDBehavior=UniExp.DataSet.Merge( ...
+	UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\A2L_A_0928.mat"), ...
+	UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\A2L_L_0928.mat"));
+end
+function LADBehavior=iLADelayedBehavior
+%有延迟纯行为 光水转声水（L2A）：L2A_L=光水阶段、L2A_A=声水阶段，仅内存临时合并不落盘
+LADBehavior=UniExp.DataSet.Merge( ...
+	UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\L2A_L_0928.mat"), ...
+	UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\L2A_A_0928.mat"));
 end

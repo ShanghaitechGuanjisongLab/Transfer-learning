@@ -430,7 +430,7 @@ function [SessUsed, mice] = iKeepAnalyzedBlocks_Fig3C(Sess)
 			continue;
 		end
 		yi = double(R.Performance);
-		if nnz(isfinite(yi)) < 2
+		if nnz(isfinite(yi)) < 1
 			continue;
 		end
 		rows = string(Sess.Mouse) == m & ismember(Sess.DateTime, R.DateTime);
