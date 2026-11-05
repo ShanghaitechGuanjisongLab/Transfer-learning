@@ -1,0 +1,80 @@
+[
+  {
+    "file": "ALB_vtf0233_20240421-0753_LAu.mat",
+    "cohort": "ALB",
+    "fs": 7.984,
+    "nCell": 550,
+    "durMin": 28.7,
+    "trend_abs_pct_median": 12.053254178131962,
+    "trend_abs_pct_p90": 29.126855613901476,
+    "trend_abs_pct_max": 81.02267721023252,
+    "cub_r2_median": 0.2530846603344865,
+    "cub_r2_p90": 0.619661677647665,
+    "lowfreq_frac_pop": 0.9091088868112032
+  },
+  {
+    "file": "ALB_vtf0233_20240421-2045_AudioWater.mat",
+    "cohort": "ALB",
+    "fs": 7.984,
+    "nCell": 550,
+    "durMin": 24.9,
+    "trend_abs_pct_median": 9.197879208787292,
+    "trend_abs_pct_p90": 27.129168644490484,
+    "trend_abs_pct_max": 38447851250.55286,
+    "cub_r2_median": 0.1495572201815099,
+    "cub_r2_p90": 0.4739681739866274,
+    "lowfreq_frac_pop": 0.5421488534283923
+  },
+  {
+    "file": "ALB_vtf0233_20240422-0833_AudioWater.mat",
+    "cohort": "ALB",
+    "fs": 7.984,
+    "nCell": 550,
+    "durMin": 36.0,
+    "trend_abs_pct_median": 23.89351523969598,
+    "trend_abs_pct_p90": 53.65811507238664,
+    "trend_abs_pct_max": 216.73938175898127,
+    "cub_r2_median": 0.518125357043412,
+    "cub_r2_p90": 0.7753165567028508,
+    "lowfreq_frac_pop": 0.9057749403775677
+  },
+  {
+    "file": "LightAudioBaseline_yqn0022_20220807-0924_LLw.mat",
+    "cohort": "LightAudioBaseline",
+    "fs": 8.0,
+    "nCell": 527,
+    "durMin": 22.4,
+    "trend_abs_pct_median": 3.251633628619972,
+    "trend_abs_pct_p90": 8.337507433115615,
+    "trend_abs_pct_max": 40.198344890434676,
+    "cub_r2_median": 0.03314552523073078,
+    "cub_r2_p90": 0.117587092014806,
+    "lowfreq_frac_pop": 0.6707799901908572
+  },
+  {
+    "file": "LightAudioBaseline_yqn0044_20220704-2142_LLw.mat",
+    "cohort": "LightAudioBaseline",
+    "fs": 8.0,
+    "nCell": 348,
+    "durMin": 19.3,
+    "trend_abs_pct_median": 4.230818747432141,
+    "trend_abs_pct_p90": 9.794316919759913,
+    "trend_abs_pct_max": 38.0199618862731,
+    "cub_r2_median": 0.06752552075320056,
+    "cub_r2_p90": 0.25288106347509715,
+    "lowfreq_frac_pop": 0.46203875318813115
+  },
+  {
+    "file": "LightAudioBaseline_yqn0404_20230506-1807_LightWater.mat",
+    "cohort": "LightAudioBaseline",
+    "fs": 8.267,
+    "nCell": 612,
+    "durMin": 16.6,
+    "trend_abs_pct_median": 4.4269432566640265,
+    "trend_abs_pct_p90": 12.096891319468039,
+    "trend_abs_pct_max": 33.20899301276643,
+    "cub_r2_median": 0.05136725244922541,
+    "cub_r2_p90": 0.2239765391670282,
+    "lowfreq_frac_pop": 0.8816180376182086
+  }
+]

@@ -27,7 +27,7 @@ catch
 end
 
 % --- 1) Load cFos database
-matPath = "\\Data-Server-2\个人数据\张天夫\202601\cFos合集.v2.mat";
+matPath = "\\Data-Server-2\个人数据\张天夫\202611\cFos合集.v3.mat";
 DS = UniExp.DataSet(matPath);
 
 % --- 2) Build group table (Mouse -> Group)

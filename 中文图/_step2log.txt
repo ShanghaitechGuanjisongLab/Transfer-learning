@@ -1,0 +1,1178 @@
+try
+	run('Step2_LickAxisStability.m');
+catch ME
+	disp(getReport(ME, 'extended', 'hyperlinks', 'off'));
+end
+feature('HotLinks',0);p = 'd:\git\Transfer-Learning\中文图\_step2log.txt';
+if exist(p,'file')
+	fprintf('LOG EXISTS, bytes=%d\n', dir(p).bytes);
+else
+	fprintf('NO LOG\n');
+end
+fprintf('pwd=%s\n', pwd);
+fprintf('pool=%d\n', ~isempty(gcp('nocreate')));
+feature('HotLinks',0);vars = {'groups','blkG','pairRes','pair','S','nG','nBlk'};
+for v = vars
+	fprintf('%-9s exists=%d\n', v{1}, exist(v{1},'var'));
+end
+if exist('blkG','var'); fprintf('blkG numel=%d, 各组block数=%s\n', numel(blkG), mat2str(cellfun(@numel,blkG))); end
+if exist('pairRes','var'); fprintf('pairRes numel=%d, 非空=%d\n', numel(pairRes), sum(~cellfun(@isempty,pairRes))); end
+feature('HotLinks',0);try
+	p = parpool('Processes');
+	fprintf('pool started, workers=%d\n', p.NumWorkers);
+catch ME
+	fprintf('POOL FAIL: %s | %s\n', ME.identifier, ME.message);
+end
+feature('HotLinks',0);fprintf('alive, pwd=%s\n', pwd);
+c = parcluster('Processes');
+feature('HotLinks',0);try, c = parcluster('Processes'); fprintf('parcluster OK\n'); catch ME, fprintf('parcluster FAIL %s\n', ME.identifier); end
+feature('HotLinks',0);fprintf('probe start\n');
+fprintf('distcomp=%d\n', license('test','Distrib_Computing_Toolbox'));
+fprintf('settingdir=%s\n', prefdir);
+fprintf('ascii_prefdir=%d\n', all(double(prefdir)<128));
+feature('HotLinks',0);try
+	p = parpool('Processes');
+	fprintf('POOL OK workers=%d\n', p.NumWorkers);
+catch
+	fprintf('POOL FAILED (message suppressed)\n');
+end
+feature('HotLinks',0);tests = {@() parallel.listProfiles(), @() parcluster('local'), @() parallel.cluster.Local};
+for i = 1:numel(tests)
+	try
+		v = tests{i}();
+		fprintf('T%d OK: %s\n', i, class(v));
+	catch
+		fprintf('T%d FAILED\n', i);
+	end
+end
+feature('HotLinks',0);p = parpool("Processes", 4);
+feature('HotLinks',0);c = parallel.cluster.Local;
+feature('HotLinks',0);tic; pause(25); fprintf('long call OK, %.0f s\n', toc);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+run('Step2_LickAxisStability.m');
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+run('Step2_LickAxisStability.m');
+feature('HotLinks',0);for g = 1:numel(pairRes)
+	pr = pairRes{g};
+	sz = size(pr);
+	if isempty(pr)
+		fprintf('g=%2d  size=%s  EMPTY\n', g, mat2str(sz));
+	else
+		fprintf('g=%2d  size=%s  f1=%s  cosCross1=%s\n', g, mat2str(sz), class(pr(1).mouse), mat2str(pr(1).cosCross));
+	end
+end
+feature('HotLinks',0);ok = ~cellfun(@isempty, pairRes);
+fprintf('ok count=%d\n', sum(ok));
+try
+	pp = vertcat(pairRes{ok});
+	fprintf('vertcat OK size=%s\n', mat2str(size(pp)));
+catch ME
+	fprintf('vertcat FAIL: %s\n', ME.identifier);
+	fprintf('msg=%s\n', ME.message);
+end
+% 逐对试
+acc = pairRes{find(ok,1)};
+for g = find(ok)
+	try
+		acc = [acc; pairRes{g}];
+	catch
+		fprintf('  加到 g=%d 失败, size=%s\n', g, mat2str(size(pairRes{g})));
+	end
+end
+fprintf('逐对累加结果 size=%s\n', mat2str(size(acc)));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+run('Step2_LickAxisStability.m');
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+run('Step2_LickAxisStability.m');
+feature('HotLinks',0);d = dir(fullfile(pwd,'**','Step2_LickAxisStability*'));
+for i=1:numel(d); fprintf('%s  %d bytes\n', fullfile(d(i).folder,d(i).name), d(i).bytes); end
+d2 = dir(fullfile(pwd,'**','Step1c_CD2_vs_Calcium_Summary.svg'));
+for i=1:numel(d2); fprintf('%s\n', fullfile(d2(i).folder,d2(i).name)); end
+feature('HotLinks',0);d = dir(fullfile('D:\git\Transfer-Learning','**','Step*.svg'));
+for i=1:numel(d); fprintf('%s  %d\n', fullfile(d(i).folder,d(i).name), d(i).bytes); end
+fprintf('---\n');
+d2 = dir(fullfile('D:\git\Transfer-Learning','**','*LickAxis*'));
+for i=1:numel(d2); fprintf('%s\n', fullfile(d2(i).folder,d2(i).name)); end
+feature('HotLinks',0);w = which('TransferLearning.ExportStandardFigure');
+fprintf('which: %s\n', w);
+d = dir(fullfile(pwd,'**','*.svg'));
+fprintf('cwd svg 数=%d\n', numel(d));
+fprintf('cwd=%s\n', pwd);
+files = dir('D:\git\Transfer-Learning\中文图');
+fprintf('中文图 目录条目=%d\n', numel(files));
+for i=1:min(numel(files),40); fprintf('  %s\n', files(i).name); end
+feature('HotLinks',0);d = dir('D:\git\Transfer-Learning\*.svg');
+for i=1:numel(d); fprintf('%s  %6.0f B  %s\n', d(i).name, d(i).bytes, d(i).date); end
+feature('HotLinks',0);d = dir(fullfile('D:\git\Transfer-Learning','**','*.svg'));
+for i=1:numel(d)
+	if contains(d(i).name,'Step') || contains(d(i).name,'Discriminant')
+		fprintf('%s  %6.0f B  %s\n', fullfile(d(i).folder,d(i).name), d(i).bytes, d(i).date);
+	end
+end
+fprintf('--- 全部目录 ---\n');
+u = unique({d.folder});
+for i=1:numel(u); fprintf('%s\n', u{i}); end
+feature('HotLinks',0);d = dir(fullfile('D:\git\Transfer-Learning\中文图','*.svg'));
+fprintf('中文图 svg 数=%d\n', numel(d));
+for i=1:numel(d)
+	if contains(d(i).name,'Step'); fprintf('  %s\n', d(i).name); end
+end
+fprintf('--- 最近的 12 个文件 ---\n');
+a = dir('D:\git\Transfer-Learning\中文图');
+[~,o] = sort({a.date});
+a = a(o);
+for i=max(1,numel(a)-11):numel(a); fprintf('  %-60s %s\n', a(i).name, a(i).date); end
+feature('HotLinks',0);a = dir('D:\git\Transfer-Learning\中文图');
+sub = a([a.isdir]);
+for i=1:numel(sub); fprintf('[DIR] %s\n', sub(i).name); end
+fprintf('--- 文件总数 %d ---\n', sum(~[a.isdir]));
+fprintf('--- 全部 svg（全盘项目内，不限后缀大小写） ---\n');
+d = dir(fullfile('D:\git\Transfer-Learning','**','*.SVG'));
+fprintf('%d\n', numel(d));
+feature('HotLinks',0);d = dir(fullfile('D:\git\Transfer-Learning','**','*.svg'));
+for i=1:numel(d); fprintf('%-70s %s\n', fullfile(d(i).folder,d(i).name), d(i).date); end
+feature('HotLinks',0);out = TransferLearning.ExportStandardFigure(f, 1, 'Step2_LickAxisStability.svg'); %#ok<NASGU>
+if ischar(out) || isstring(out)
+	fprintf('返回路径: %s\n', out);
+else
+	fprintf('返回类型: %s\n', class(out));
+	disp(out);
+end
+exportgraphics(f, 'D:\git\Transfer-Learning\中文图\_step2_preview.svg', 'ContentType', 'vector');
+fprintf('preview 已导出\n');
+feature('HotLinks',0);delete('D:\git\Transfer-Learning\中文图\_step2_preview.svg');
+delete('D:\git\Transfer-Learning\中文图\_step2log.txt');
+fprintf('临时文件已清理；输出图: \\\\Data-Server-2\\个人数据\\杨青宁\\202610\\Step2_LickAxisStability.svg\n');
+fprintf('服务器上是否存在: %d\n', exist('\\Data-Server-2\个人数据\杨青宁\202610\Step2_LickAxisStability.svg','file'));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+out = evalc("run('Step2_LickAxisStability.m')");   %#ok<NOPRT>
+fprintf('脚本执行完毕（输出长度 %d 字符）\n', numel(out));
+exportgraphics(f, 'D:\git\Transfer-Learning\中文图\_step2_preview.png', 'Resolution', 400);
+fprintf('预览 PNG 已导出\n');
+feature('HotLinks',0);delete('D:\git\Transfer-Learning\中文图\_step2_preview.png');
+fprintf('已清理。服务端图存在: %d\n', exist('\\Data-Server-2\个人数据\杨青宁\202610\Step2_LickAxisStability.svg','file'));
+feature('HotLinks',0);fprintf('物理核数(feature numcores) = %d\n', feature('numcores'));
+fprintf('逻辑核数(系统)             = %d\n', getenv('NUMBER_OF_PROCESSORS'));
+fprintf('计算线程上限 maxNumCompThreads = %d\n', maxNumCompThreads);
+fprintf('CPU: %s\n', getenv('PROCESSOR_IDENTIFIER'));
+fprintf('GPU 数 = %d\n', gpuDeviceCount);
+try
+	g = gpuDevice;
+	fprintf('GPU: %s, 显存 %.1f GB, 算力 %s\n', g.Name, g.TotalMemory/2^30, g.ComputeCapability);
+catch
+	fprintf('GPU: 无可用设备\n');
+end
+fprintf('pool 存在? %d\n', ~isempty(gcp('nocreate')));
+feature('HotLinks',0);fprintf('gpuDeviceCount = %d\n', gpuDeviceCount);
+fprintf('gpuDeviceCount(available) = %d\n', gpuDeviceCount("available"));
+try
+	fprintf('parallel.gpu.GPUDevice.count = %d\n', parallel.gpu.GPUDevice.count);
+catch e
+	fprintf('parallel.gpu 查询失败: %s\n', e.identifier);
+end
+[~, cpu] = system('wmic cpu get name /value');
+fprintf('CPU:\n%s\n', strtrim(cpu));
+[~, gpu] = system('wmic path win32_VideoController get name,driverversion /value');
+fprintf('GPU(系统):\n%s\n', strtrim(gpu));
+feature('HotLinks',0);[~, g] = system('powershell -NoProfile -Command "Get-CimInstance Win32_VideoController | Select-Object Name,DriverVersion,AdapterRAM | Format-List"');
+fprintf('=== 系统显卡 ===\n%s\n', g);
+[~, c] = system('powershell -NoProfile -Command "Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | Format-List"');
+fprintf('=== CPU ===\n%s\n', c);
+[~, n] = system('powershell -NoProfile -Command "$env:NUMBER_OF_PROCESSORS"');
+fprintf('NUMBER_OF_PROCESSORS = %s\n', strtrim(n));
+feature('HotLinks',0);fprintf('maxNumCompThreads=%d, gpuDeviceCount=%d\n', maxNumCompThreads, gpuDeviceCount);
+[nW1, nG1] = TransferLearning.ParallelWorkers(10);
+fprintf('ParallelWorkers(10) -> nWorkers=%d, nGpu=%d  (期望 5, 0)\n', nW1, nG1);
+[nW2, nG2] = TransferLearning.ParallelWorkers(3);
+fprintf('ParallelWorkers(3)  -> nWorkers=%d, nGpu=%d  (期望 3, 0)\n', nW2, nG2);
+g = TransferLearning.ClaimWorkerGpu();
+fprintf('ClaimWorkerGpu()     -> %d  (期望 0，且不应报错)\n', g);
+feature('HotLinks',0);% 用现有的 cross-phase 配对，看 cosRatio / cosCross 与"细胞数""时长"的关系
+sel = find(~[pair.samePhase]);
+nC = arrayfun(@(s) s.nCell, pair(sel));
+dA = arrayfun(@(s) s.durMinA, pair(sel));
+dB = arrayfun(@(s) s.durMinB, pair(sel));
+dmin = min(dA,dB);
+iW = 1;   % W = 2 s 这一列
+cr = arrayfun(@(s) s.cosRatio(iW), pair(sel));
+cc = arrayfun(@(s) s.cosCross(iW), pair(sel));
+ce = arrayfun(@(s) s.cosCeil(iW),  pair(sel));
+
+sp = @(a,b) corr(a(:), b(:), 'type','Spearman', 'rows','complete');
+fprintf('配对 n = %d\n', numel(sel));
+fprintf('cosRatio vs 细胞数 d       : rho = %+.3f\n', sp(cr, nC));
+fprintf('cosRatio vs 最短时长 (min) : rho = %+.3f\n', sp(cr, dmin));
+fprintf('cosRatio vs 时长/细胞数    : rho = %+.3f\n', sp(cr, dmin*60./nC));
+fprintf('cosCross vs 细胞数 d       : rho = %+.3f\n', sp(cc, nC));
+fprintf('cosCeil  vs 细胞数 d       : rho = %+.3f\n', sp(ce, nC));
+fprintf('cosCeil  vs 时长 (min)     : rho = %+.3f\n', sp(ce, dmin));
+fprintf('cosCross vs 时长 (min)     : rho = %+.3f\n', sp(cc, dmin));
+fprintf('\n细胞数: 中位 %d (%d~%d)   最短时长: 中位 %.1f min (%.1f~%.1f)\n', ...
+	round(median(nC)), min(nC), max(nC), median(dmin), min(dmin), max(dmin));
+fprintf('时长(秒)/细胞数 比值: 中位 %.1f (%.1f~%.1f)\n', ...
+	median(dmin*60./nC), min(dmin*60./nC), max(dmin*60./nC));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+tic; run('Step2_LickAxisStability.m'); fprintf('\n[用时 %.0f s]\n', toc);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+tic; run('Step2_LickAxisStability.m'); fprintf('\n[用时 %.0f s]\n', toc);
+feature('HotLinks',0);nW = 5; nD = numel(durListMin);
+selD = find(~[pair.samePhase] & [pair.durSec] >= max(durListMin)*60);
+miceD = reshape(unique(string({pair(selD).mouse})),1,[]);
+fprintf('时长扫描配对 = %d 对，%d 只鼠\n', numel(selD), numel(miceD));
+Rt = nan(numel(miceD), nD, nW);
+for m = 1:numel(miceD)
+	sel = selD(string({pair(selD).mouse}) == miceD(m));
+	if isempty(sel); continue; end
+	CC = reshape([pair(sel).dCosCross], nD*nW, []);
+	CE = reshape([pair(sel).dCosCeil],  nD*nW, []);
+	Rt(m,:,:) = reshape(mean(CC,2,'omitnan')./mean(CE,2,'omitnan'), nD, nW);
+end
+fprintf('\n每鼠×T 的共享比例（W=2 s）：\n');
+for m=1:numel(miceD); fprintf('  %-9s %s\n', miceD(m), sprintf('%.3f ', Rt(m,:,1))); end
+fprintf('\n每鼠×T 的共享比例（W=5 s）：\n');
+for m=1:numel(miceD); fprintf('  %-9s %s\n', miceD(m), sprintf('%.3f ', Rt(m,:,2))); end
+
+fprintf('\n配对 Wilcoxon：T=20min vs T=5min（每鼠先平均）\n');
+for iw = 1:nW
+	a = Rt(:,end,iw); b = Rt(:,1,iw);
+	ok = isfinite(a) & isfinite(b);
+	if sum(ok) >= 5
+		p = signrank(a(ok), b(ok));
+		fprintf('  W=%-4s  20min 中位 %.3f   5min 中位 %.3f   Δ=%+.3f   p=%.3f  (n=%d)\n', ...
+			hpLabel(iw), median(a(ok)), median(b(ok)), median(a(ok))-median(b(ok)), p, sum(ok));
+	end
+end
+feature('HotLinks',0);Ct = nan(numel(miceD), nD, nW);
+for m = 1:numel(miceD)
+	sel = selD(string({pair(selD).mouse}) == miceD(m));
+	if isempty(sel); continue; end
+	CE = reshape([pair(sel).dCosCeil], nD*nW, []);
+	Ct(m,:,:) = reshape(mean(CE,2,'omitnan'), nD, nW);
+end
+fprintf('配对 Wilcoxon：折半上限 cosCeil  20min vs 5min（每鼠先平均）\n');
+for iw = 1:nW
+	a = Ct(:,end,iw); b = Ct(:,1,iw);
+	ok = isfinite(a) & isfinite(b);
+	fprintf('  W=%-4s  20min 中位 %.3f   5min 中位 %.3f   Δ=%+.3f   p=%.3f  (n=%d)\n', ...
+		hpLabel(iw), median(a(ok)), median(b(ok)), median(a(ok))-median(b(ok)), signrank(a(ok),b(ok)), sum(ok));
+end
+% 折半上限 vs 时长的整体相关（用全部逐对值）
+tt = repmat(durListMin(:)', numel(selD), 1);
+for iw = 1:nW
+	ce = reshape([pair(selD).dCosCeil], nD*nW, []);
+	ce = reshape(mean(ce,2), nD, []);   % 咦：这里已按行平均了
+	fprintf('W=%-4s cosCeil 随时长 rho = %+.3f\n', hpLabel(iw), corr(tt(:), ce(:,iw), 'type','Spearman'));
+end
+feature('HotLinks',0);fprintf('f2 存在: %d\n', exist('f2','var'));
+exportgraphics(f2, 'D:\git\Transfer-Learning\中文图\_step2b_preview.png', 'Resolution', 400);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+delete('_step2b_preview.png');
+Step2UseParallel = false;   %#ok<NASGU>
+out = evalc("run('Step2_LickAxisStability.m')");
+fprintf('重跑完成\n');
+fprintf('服务端图: %d / %d\n', ...
+	exist('\\Data-Server-2\个人数据\杨青宁\202610\Step2_LickAxisStability.svg','file'), ...
+	exist('\\Data-Server-2\个人数据\杨青宁\202610\Step2b_LickAxisRatioVsDuration.svg','file'));
+feature('HotLinks',0);w = which('UniExp.DataSet.TagSplitTrial');
+fprintf('which: %s\n', w);
+fid = fopen(w,'r'); txt = fread(fid, inf, '*char')'; fclose(fid);
+feature('HotLinks',0);w = which('UniExp.DataSet');
+fprintf('DataSet 类文件: %s\n', w);
+if ~isempty(w)
+	fid = fopen(w,'r'); txt = fread(fid, inf, '*char')'; fclose(fid);
+	i = strfind(txt, 'TagSplitTrial');
+	fprintf('出现 %d 次\n', numel(i));
+	if ~isempty(i)
+		a = max(1, i(1)-200); b = min(numel(txt), i(end)+1500);
+		fprintf('%s\n', txt(a:b));
+	end
+end
+feature('HotLinks',0);d = dir('C:\Users\杨青宁\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\统一实验分析作图\+UniExp\@DataSet');
+for i=1:numel(d); fprintf('%s\n', d(i).name); end
+feature('HotLinks',0);p = 'C:\Users\杨青宁\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\统一实验分析作图\+UniExp\@DataSet\TagSplitTrial.mlx';
+t = string(fileread(p));
+fprintf('mlx 文本长度 %d\n', strlength(t));
+fprintf('%s\n', extractAfter(t, 1));
+feature('HotLinks',0);T = DS.Trials;
+fprintf('Trials 列: %s\n', strjoin(T.Properties.VariableNames, ', '));
+fprintf('Trials 行数 = %d\n', height(T));
+disp(T(1:3, :))
+if istable(T.SampleRange)
+	fprintf('SampleRange 是表: %s\n', strjoin(T.SampleRange.Properties.VariableNames,', '));
+	disp(T.SampleRange(1:5,:))
+end
+fprintf('TrialIndex 前几个: %s\n', mat2str(T.TrialIndex(1:5)'));
+feature('HotLinks',0);% 1) trial 间隔
+blk = B.BlockUID(17);
+t = DS.Trials.Time(DS.Trials.BlockUID==blk);
+dt = seconds(diff(t));
+fprintf('block17: %d trials, cue间隔 中位 %.1f s (%.1f~%.1f)\n', numel(t), median(dt), min(dt), max(dt));
+% 2) 全数据集的 cue 间隔
+allt = DS.Trials.Time; allb = DS.Trials.BlockUID;
+dsAll = [];
+for u = unique(allb)'
+	tt = allt(allb==u);
+	dsAll = [dsAll; seconds(diff(tt))]; %#ok<AGROW>
+end
+dsAll = dsAll(dsAll>0);
+fprintf('全体 3710 个间隔: 中位 %.1f s, 5%%~95%% = %.1f~%.1f s\n', median(dsAll), prctile(dsAll,5), prctile(dsAll,95));
+% 3) EventLog 里一个 block 的事件时间轴
+el = B.EventLog{B.BlockIndex==find(B.BlockUID==blk)};
+feature('HotLinks',0);iB = find(B.BlockUID == B.BlockUID(17));
+el = B.EventLog{iB};
+fprintf('iB=%d, class=%s\n', iB, class(el));
+if istable(el)
+	ev = string(el.Event); tt = seconds(el.Properties.RowTimes - el.Properties.RowTimes(1));
+	fprintf('%d 条事件，词表: %s\n', numel(ev), strjoin(cellstr(unique(ev))', ', '));
+	for i=1:min(26,numel(ev)); fprintf('  %7.2f s  %s\n', tt(i), ev(i)); end
+end
+feature('HotLinks',0);iB = find(B.BlockUID == B.BlockUID(17));
+el = B.EventLog{iB};
+ev = string(el.Event); tt = seconds(el.Properties.RowTimes - el.Properties.RowTimes(1));
+fprintf('%d 条事件，词表: %s\n', numel(ev), strjoin(cellstr(unique(ev))', ', '));
+for i=1:min(28,numel(ev)); fprintf('  %8.2f s  %s\n', tt(i), ev(i)); end
+feature('HotLinks',0);% CD1 是 cue 标记：直接用它在 CD2 网格上定位 cue
+iB = find(B.BlockUID == B.BlockUID(17));
+bt = B.BlockTags{iB};
+fprintf('BlockTags 列: %s, 高度 %d\n', strjoin(bt.Properties.VariableNames,', '), height(bt));
+cd1 = double(bt.CD1); cd2 = double(bt.CD2);
+fprintf('CD1 取值: %s  高值占比 %.3f\n', mat2str(unique(cd1(1:min(20000,end)))'), mean(cd1>median(cd1)+5));
+thr = median(cd1)+5;
+up = find(diff([0;cd1>thr;0])==1);
+fprintf('CD1 上升沿 %d 个，前 6 个在 %s 样本处\n', numel(up), mat2str(up(1:min(6,end))'));
+if numel(up)>1; fprintf('  上升沿间隔（样本）: %s → 中位 %.0f\n', mat2str(round(diff(up(1:min(5,end))'))'), median(diff(up))); end
+fprintf('→ 30 trial 对应 %d 个 CD1 脉冲\n', numel(up));
+feature('HotLinks',0);rate = nan(height(B),1); nTr = nan(height(B),1);
+for i = 1:height(B)
+	tt = DS.Trials.Time(DS.Trials.BlockUID == B.BlockUID(i));
+	sr = DS.Trials.SampleRange(DS.Trials.BlockUID == B.BlockUID(i), :);
+	if numel(tt) < 5 || ~istable(sr); continue; end
+	tag = double(sr.Tag);
+	dR = diff(tag); dT = seconds(diff(tt));
+	ok = dT > 0 & dR > 0;
+	if sum(ok) < 4; continue; end
+	rate(i) = median(dR(ok)./dT(ok));
+	nTr(i) = numel(tt);
+end
+ok = isfinite(rate);
+fprintf('可估 block 数 = %d / %d\n', sum(ok), height(B));
+fprintf('估计采样率: 中位 %.2f Hz,  5%%~95%% = %.2f~%.2f Hz\n', median(rate(ok)), prctile(rate(ok),5), prctile(rate(ok),95));
+edges = [0 10 20 40 60 200];
+h = histcounts(rate(ok), edges);
+for i=1:numel(h); fprintf('  [%3d,%3d) Hz : %d 个 block\n', edges(i), edges(i+1), h(i)); end
+fprintf('\n每 block trial 数: 中位 %.0f (%.0f~%.0f)\n', median(nTr(ok)), min(nTr(ok)), max(nTr(ok)));
+si = seconds(DT.SeriesInterval);
+g1 = ok & rate>20 & rate<45;  g2 = ok & rate<15;
+fprintf('\n~30 Hz 组 (%d 个): SeriesInterval 中位 %.4f s\n', sum(g1), median(si(g1),'omitnan'));
+fprintf('~8 Hz 组 (%d 个): SeriesInterval 中位 %.4f s\n', sum(g2), median(si(g2),'omitnan'));
+feature('HotLinks',0);iB = 17;
+fprintf('block17: mouse=%s phase=%s, nSamp=%d, 估计 %.2f Hz\n', ...
+	string(DT.Mouse(iB)), string(DT.Phase(iB)), numel(BS.BlockSignal{find(BS.BlockUID==B.BlockUID(iB),1)}), rate(iB));
+sel30 = find(ok & rate>20);
+fprintf('\n~30 Hz 的 block（%d 个）:\n', numel(sel30));
+for k = sel30'
+	fprintf('  iB=%3d  %-9s %-9s  %.2f Hz  nSamp=%d  nTrial=%d\n', k, string(DT.Mouse(k)), string(DT.Phase(k)), ...
+		rate(k), numel(BS.BlockSignal{find(BS.BlockUID==B.BlockUID(k),1)}), nTr(k));
+end
+feature('HotLinks',0);sel30 = find(ok & rate>20);
+fprintf('~30 Hz 的 block（%d 个）:\n', numel(sel30));
+for k = sel30'
+	fprintf('  iB=%3d  %-9s %-10s  %.2f Hz  nSamp=%d  nTrial=%d\n', k, char(DT.Mouse(k)), char(string(DT.Phase(k))), ...
+		rate(k), numel(BS.BlockSignal{find(BS.BlockUID==B.BlockUID(k),1)}), nTr(k));
+end
+feature('HotLinks',0);sel30 = find(ok & rate>20);
+fprintf('~30 Hz 的 block（%d 个）:\n', numel(sel30));
+ph = string(DT.Phase);
+for k = sel30'
+	if ismissing(ph(k)); p = '(无)'; else, p = char(ph(k)); end
+	fprintf('  iB=%3d  %-9s %-10s  %.2f Hz  nSamp=%d  nTrial=%d\n', k, char(DT.Mouse(k)), p, ...
+		rate(k), numel(BS.BlockSignal{find(BS.BlockUID==B.BlockUID(k),1)}), nTr(k));
+end
+mt = unique(string(DT.Mouse(sel30)));
+fprintf('涉及鼠: %s\n', strjoin(cellstr(mt)', ', '));
+fprintf('\n各鼠 block 采样率（中位）:\n');
+for m = reshape(unique(string(DT.Mouse)),1,[])
+	sel = ok & string(DT.Mouse)==m;
+	fprintf('  %-9s n=%2d  中位 %.2f Hz   范围 %.2f~%.2f\n', m, sum(sel), median(rate(sel)), min(rate(sel)), max(rate(sel)));
+end
+feature('HotLinks',0);bt = B.BlockTags{17};
+fprintf('class = %s\n', class(bt));
+disp(bt.Properties.VariableNames)
+if istimetable(bt)
+	disp(head(bt.Properties.RowTimes, 3))
+	fprintf('首/末时间: %s ~ %s\n', string(bt.Properties.RowTimes(1)), string(bt.Properties.RowTimes(end)));
+	fprintf('间隔（秒）: 中位 %.5f\n', median(seconds(diff(bt.Properties.RowTimes))));
+end
+fprintf('\n--- BlockSignals 有没有时间轴 ---\n');
+disp(DS.BlockSignals.Properties.VariableNames);
+feature('HotLinks',0);rate2 = nan(height(B),1);
+for i = 1:height(B)
+	el = B.EventLog{i};
+	sr = DS.Trials.SampleRange(DS.Trials.BlockUID == B.BlockUID(i), :);
+	if ~istimetable(el) || ~istable(sr) || height(sr) < 5; continue; end
+	isStart = string(el.Event) == "回合开始";
+	if sum(isStart) < 5; continue; end
+	ts = seconds(el.Properties.RowTimes(isStart) - el.Properties.RowTimes(1));
+	tag = double(sr.Tag);
+	n = min(numel(ts), numel(tag));
+	ts = ts(1:n); tag = tag(1:n);
+	okk = isfinite(ts) & isfinite(tag);
+	i1 = find(okk,1,'first'); i2 = find(okk,1,'last');
+	rate2(i) = (tag(i2) - tag(i1)) / (ts(i2) - ts(i1));
+end
+ok2 = isfinite(rate2);
+fprintf('EventLog 估计: 可估 %d 个 block\n', sum(ok2));
+fprintf('  <15 Hz 组: %d 个\n', sum(ok2 & rate2<15));
+fprintf('  >=15 Hz 组: %d 个\n', sum(ok2 & rate2>=15));
+both = ok & ok2;
+fprintf('\n两法一致性（%d 个 block）: 比值 中位 %.4f, 5%%~95%% = %.4f~%.4f\n', sum(both), ...
+	median(rate2(both)./rate(both)), prctile(rate2(both)./rate(both),5), prctile(rate2(both)./rate(both),95));
+fprintf('\nEventLog 法 - 每鼠中位:\n');
+for m = reshape(unique(string(DT.Mouse)),1,[])
+	s = ok2 & string(DT.Mouse)==m;
+	fprintf('  %-9s n=%2d  中位 %.3f Hz  范围 %.3f~%.3f\n', m, sum(s), median(rate2(s)), min(rate2(s)), max(rate2(s)));
+end
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+out = evalc("run('Step2_LickAxisStability.m')");
+i1 = strfind(out, '采样率'); i2 = strfind(out, '=== 每鼠'); i3 = strfind(out, '时长扫描'); i4 = strfind(out, 'Done.');
+fprintf('%s\n', out(i1(1):i2(1)+2200));
+fprintf('...\n%s\n', out(i3(1):min(numel(out), i3(1)+900)));
+feature('HotLinks',0);fprintf('%s\n', out(i3(1)+numel('时长扫描')-8:end));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+out1c = evalc("run('Step1c_LickCD2VsCalcium.m')");
+i = strfind(out1c, 'r_popMean_lick');
+fprintf('%s\n', out1c(i(1):min(numel(out1c), i(1)+700)));
+feature('HotLinks',0);i = strfind(out1c, 'r_popMean_lick        ：');
+j = strfind(out1c, 'null 最大');
+fprintf('%s\n', out1c(i(1):min(numel(out1c), j(end)+120)));
+feature('HotLinks',0);base = '\\Data-Server-2\个人数据\杨青宁\202610\';
+for f = ["Step1c_CD2_vs_Calcium_Summary.svg","Step2_LickAxisStability.svg","Step2b_LickAxisRatioVsDuration.svg"]
+	d = dir(base + f);
+	if isempty(d); fprintf('%-40s 缺失\n', f); else, fprintf('%-40s %7.0f B  %s\n', f, d.bytes, d.date); end
+end
+feature('HotLinks',0);dur = nan(height(B),1);
+for i = 1:height(B)
+	u = find(BS.BlockUID == B.BlockUID(i), 1, 'first');
+	if isempty(u); continue; end
+	dur(i) = numel(BS.BlockSignal{u}) / rBlk(i) / 60;
+end
+ok = isfinite(dur) & dur > 1;
+fprintf('真实 block 时长（分钟）: 中位 %.1f，5%%~95%% = %.1f~%.1f，范围 %.1f~%.1f\n', ...
+	median(dur(ok)), prctile(dur(ok),5), prctile(dur(ok),95), min(dur(ok)), max(dur(ok)));
+fprintf('总记录时长 = %.1f h（%d 个 block）\n', sum(dur(ok))/60, sum(ok));
+for m = reshape(unique(string(DT.Mouse)),1,[])
+	s = ok & string(DT.Mouse)==m;
+	fprintf('  %-9s n=%2d 中位 %5.1f min (%.1f~%.1f)\n', m, sum(s), median(dur(s)), min(dur(s)), max(dur(s)));
+end
+feature('HotLinks',0);iB = 1;   % vtf0233 的一个 8 Hz block
+fprintf('iB=%d mouse=%s rate=%.2f Hz\n', iB, char(DT.Mouse(iB)), rBlk(iB));
+bt = B.BlockTags{iB}; cd1 = double(bt.CD1); thr = median(cd1)+5;
+up = find(diff([0;cd1>thr;0])==1);
+sr = DS.Trials.SampleRange(DS.Trials.BlockUID == B.BlockUID(iB), :);
+tag = double(sr.Tag);
+fprintf('CD1 上升沿 %d 个，前 6: %s\n', numel(up), mat2str(up(1:min(6,end))'));
+fprintf('SampleRange.Tag 前 6:      %s\n', mat2str(tag(1:min(6,end))'));
+n = min(numel(up), numel(tag));
+fprintf('比值 中位 = %.3f（若=1 → Tag 与 BlockTags 同索引；若≈3.75 → Tag 是 30 Hz 帧）\n', median(up(1:n)./tag(1:n)));
+% 再看一个 30 Hz 的
+iB = 17; bt = B.BlockTags{iB}; cd1 = double(bt.CD1); thr = median(cd1)+5;
+up = find(diff([0;cd1>thr;0])==1);
+tag = double(DS.Trials.SampleRange(DS.Trials.BlockUID == B.BlockUID(iB), :).Tag);
+n = min(numel(up), numel(tag));
+fprintf('iB=17 (%.1f Hz) 比值 中位 = %.3f\n', rBlk(17), median(up(1:n)./tag(1:n)));
+feature('HotLinks',0);fprintf('%-5s %-9s %7s %9s %6s %6s %6s %s\n', 'iB','mouse','rate','TrialTagN','Start','Tag','End','ResampN');
+for iB = [1 17 3 40 28]
+	r0 = find(DS.Trials.BlockUID==B.BlockUID(iB),1);
+	h = height(DS.Trials.TrialTags{r0}); hr = height(DS.Trials.ResampledTags{r0});
+	sr = DS.Trials.SampleRange(r0, :);
+	fprintf('%-5d %-9s %7.2f %9d %6d %6d %6d %d\n', iB, char(DT.Mouse(iB)), rBlk(iB), h, sr.Start, sr.Tag, sr.End, hr);
+end
+H = nan(height(B),1);
+for i=1:height(B)
+	r0 = find(DS.Trials.BlockUID==B.BlockUID(i),1);
+	if ~isempty(r0); H(i) = height(DS.Trials.TrialTags{r0}); end
+end
+fprintf('\nTrialTags 行数取值: %s\n', mat2str(unique(H(~isnan(H)))'));
+feature('HotLinks',0);nB = height(B);
+blkDurMin = nan(nB,1); trialSpanMin = nan(nB,1); nTrial = nan(nB,1); winUsedMin = nan(nB,1);
+nResampled = nan(nB,1);
+for i = 1:nB
+	u = find(BS.BlockUID == B.BlockUID(i), 1, 'first');
+	if ~isempty(u); blkDurMin(i) = numel(BS.BlockSignal{u}) / rBlk(i) / 60; end
+	tt = DS.Trials.Time(DS.Trials.BlockUID == B.BlockUID(i));
+	if numel(tt) >= 2
+		trialSpanMin(i) = seconds(tt(end) - tt(1))/60;
+		nTrial(i) = numel(tt);
+		winUsedMin(i) = numel(tt) * 6/60;
+	end
+	r0 = find(DS.Trials.BlockUID == B.BlockUID(i), 1);
+	if ~isempty(r0); nResampled(i) = sum(cellfun(@(x) istable(x) && height(x)==48, DS.Trials.ResampledTags(DS.Trials.BlockUID==B.BlockUID(i)))); end
+end
+ok = isfinite(blkDurMin);
+fprintf('=== A. 时间覆盖（%d 个 block）===\n', sum(ok));
+fprintf('  imaging 总时长        : %6.1f h\n', sum(blkDurMin(ok))/60);
+fprintf('  首个~末个 trial 跨度   : %6.1f h  (%.0f%% of imaging)\n', sum(trialSpanMin(ok))/60, 100*sum(trialSpanMin(ok))/sum(blkDurMin(ok)));
+fprintf('  trial 事件窗(6s×nTrial): %6.1f h  (%.0f%% of imaging)\n', sum(winUsedMin(ok))/60, 100*sum(winUsedMin(ok))/sum(blkDurMin(ok)));
+fprintf('  总 trial 数            : %d\n', nansum(nTrial(ok)));
+fprintf('  有 48 点 ResampledTags : %d (%.0f%%)\n', nansum(nResampled(ok)), 100*nansum(nResampled(ok))/nansum(nTrial(ok)));
+fprintf('  每 block trial 数: 中位 %.0f (%.0f~%.0f)\n', median(nTrial(ok)), min(nTrial(ok)), max(nTrial(ok)));
+feature('HotLinks',0);ok = isfinite(blkDurMin) & isfinite(trialSpanMin) & isfinite(winUsedMin);
+fprintf('成像总时长            : %6.1f h\n', nansum(blkDurMin)/60);
+fprintf('首→末 trial 跨度      : %6.1f h  (%.0f%% of imaging)\n', nansum(trialSpanMin)/60, 100*nansum(trialSpanMin)/nansum(blkDurMin));
+fprintf('trial 事件窗(6s×nTrial): %6.1f h  (%.0f%% of imaging)\n', nansum(winUsedMin)/60, 100*nansum(winUsedMin)/nansum(blkDurMin));
+fprintf('→ 现有试次分析丢掉的成像时间 ≈ %.1f h\n\n', (nansum(blkDurMin)-nansum(winUsedMin))/60);
+
+% B. 行为通道覆盖（EventLog 各事件）
+evAll = strings(0,1); evBlk = [];
+for i = 1:nB
+	el = B.EventLog{i};
+	if ~istimetable(el); continue; end
+	evAll = [evAll; string(el.Event)]; %#ok<AGROW>
+end
+u = unique(evAll);
+fprintf('=== B. EventLog 事件覆盖（%d 个 block）===\n', nB);
+for k = 1:numel(u)
+	cnt = 0;
+	for i = 1:nB
+		el = B.EventLog{i};
+		if istimetable(el) && any(string(el.Event) == u(k)); cnt = cnt + 1; end
+	end
+	fprintf('  %-10s %3d / %d 个 block (%.0f%%)  总次数 %d\n', u(k), cnt, nB, 100*cnt/nB, sum(evAll==u(k)));
+end
+feature('HotLinks',0);% C. CD2 舔水通道覆盖
+nLickBlk = 0; lickFrac = nan(height(B),1); hasTags = false(height(B),1);
+for i = 1:height(B)
+	bt = B.BlockTags{i};
+	if ~istable(bt) || ~ismember('CD2', bt.Properties.VariableNames); continue; end
+	hasTags(i) = true;
+	c2 = double(bt.CD2); 
+	lickFrac(i) = mean(c2 > median(c2) + 5);
+end
+fprintf('=== C. BlockTags.CD2 覆盖 ===\n');
+fprintf('  有 BlockTags : %d / %d block\n', sum(hasTags), height(B));
+fprintf('  舔水占比>0   : %d / %d block (%.0f%%)\n', sum(hasTags & lickFrac>0), height(B), 100*sum(hasTags&lickFrac>0)/height(B));
+fprintf('  舔水时间占比 : 中位 %.1f%% (0~%.1f%%)\n', 100*median(lickFrac(hasTags),'omitnan'), 100*max(lickFrac));
+
+% D. 阶段/入组覆盖
+ph = string(DT.Phase);
+fprintf('\n=== D. Phase 覆盖（114 block / 11 鼠）===\n');
+for p = [unique(ph(~ismissing(ph)))', "(无标注)"]
+	if p == "(无标注)"; s = ismissing(ph); else, s = ph == p; end
+	fprintf('  %-10s %3d block  %2d 只鼠\n', p, sum(s), numel(unique(string(DT.Mouse(s)))));
+end
+usedPh = ["Naive","Learned","Transfer","Final"];
+fprintf('  → Step1c/Step2 只用了这 4 个阶段 = %d block（占 %.0f%%）\n', sum(ismember(ph,usedPh)), 100*sum(ismember(ph,usedPh))/height(B));
+feature('HotLinks',0);% E. Step1c/Step2 实际用到的连续数据量
+usedPh = ["Naive","Learned","Transfer","Final"];
+s4 = ismember(ph, usedPh);
+fprintf('=== E. 连续数据的使用情况 ===\n');
+fprintf('  全部 112 block            : %5.1f h\n', nansum(blkDurMin)/60);
+fprintf('  4 个标注阶段 54 block     : %5.1f h (%.0f%%)\n', nansum(blkDurMin(s4))/60, 100*nansum(blkDurMin(s4))/nansum(blkDurMin));
+fprintf('  Step2 真正入组 44 block   : %5.1f h (%.0f%%)\n', nansum(blkDurMin([blkG{:}]~=0))/60*0+0, 0);  % 占位
+feature('HotLinks',0);inG = false(height(B),1);
+for g = 1:numel(groups); inG(groups(g).blkIdx) = true; end
+fprintf('=== E. 连续数据的使用情况 ===\n');
+fprintf('  全部 112 block            : %5.1f h\n', nansum(blkDurMin)/60);
+fprintf('  4 个标注阶段 54 block     : %5.1f h (%.0f%%)\n', nansum(blkDurMin(s4))/60, 100*nansum(blkDurMin(s4))/nansum(blkDurMin));
+fprintf('  Step2 涉及 %d block        : %5.1f h (%.0f%%)\n', sum(inG), nansum(blkDurMin(inG))/60, 100*nansum(blkDurMin(inG))/nansum(blkDurMin));
+fprintf('  → 完全没碰的 %d block      : %5.1f h\n\n', sum(~inG), nansum(blkDurMin(~inG))/60);
+
+tot = 0;
+for g = 1:numel(groups)
+	p = sort(unique(string(groups(g).phase)));
+	n = numel(p);
+	if n >= 2; tot = tot + n*(n-1)/2; end
+end
+fprintf('=== F. 细胞配准导致的阶段配对缺口 ===\n');
+fprintf('  11 鼠 × C(4,2)=6 = 66 个阶段对，实际可比 %d 个 (%.0f%%)\n', tot, 100*tot/66);
+full4 = 0;
+for m = reshape(unique(string(DT.Mouse)),1,[])
+	mset = strings(0,1);
+	for g = 1:numel(groups)
+		if string(groups(g).mouse) == m; mset = [mset; string(groups(g).phase)]; end
+	end
+	if numel(unique(mset)) == 4; full4 = full4 + 1; end
+end
+fprintf('  四阶段全部配准的鼠: %d / 11\n', full4);
+feature('HotLinks',0);ph = string(DT.Phase);
+C = DS.Cells;
+fprintf('%-9s %-9s %-6s %5s  %-18s  %s\n', '鼠','阶段','采样Hz','nCell','CellUID范围','ZLayer 组成');
+for m = reshape(unique(string(DT.Mouse)),1,[])
+	idx = find(string(DT.Mouse)==m & ismember(ph, ["Naive","Learned","Transfer","Final"]));
+	for k = idx'
+		u = unique(double(BS.CellUID(BS.BlockUID==B.BlockUID(k))));
+		cm = C(ismember(double(C.CellUID), u), :);
+		zl = string(cm.ZLayer);
+		[uz,~,ic] = unique(zl);
+		cnt = accumarray(ic,1);
+		zlStr = strjoin(compose('%s×%d', uz, cnt)', ', ');
+		if ismissing(ph(k)); p='(无)'; else, p=char(ph(k)); end
+		fprintf('%-9s %-9s %-6.2f %5d  %5d..%-5d      %s\n', char(DT.Mouse(k)), p, rBlk(k), numel(u), min(u), max(u), zlStr);
+	end
+end
+feature('HotLinks',0);C = DS.Cells;
+fprintf('Cells 表: %d 行, unique CellUID = %d, 范围 %d..%d\n', height(C), numel(unique(double(C.CellUID))), min(double(C.CellUID)), max(double(C.CellUID)));
+rngs = [1 632; 633 1195; 1196 1615; 1616 2051; 2052 2192; 2193 2742; 2743 2980; 2981 3616; 3617 3994; 3995 4765; 4766 5108];
+fprintf('\n%-16s %-6s %s\n', 'Cells 里的 UID 段', 'n', 'Cells.Mouse');
+for r = 1:size(rngs,1)
+	sel = double(C.CellUID) >= rngs(r,1) & double(C.CellUID) <= rngs(r,2);
+	if ~any(sel); continue; end
+	fprintf('  %5d..%-5d %6d  %s\n', rngs(r,1), rngs(r,2), sum(sel), strjoin(cellstr(unique(string(C.Mouse(sel))))', ', '));
+end
+feature('HotLinks',0);C = DS.Cells;
+seg = @(x) strjoin(compose('%d..%d', x([true; diff(x)>1]), x([diff(x)>1; true]))', ', ');
+fprintf('%-9s %5s %7s  %-24s %7s  %s\n', '鼠','#blk','unionUID','BlockSignals 的 UID 段', 'Cells数', 'Cells 的 UID 段');
+for m = reshape(unique(string(DT.Mouse)),1,[])
+	idx = find(string(DT.Mouse)==m);
+	U = [];
+	for k = idx'; U = [U; double(BS.CellUID(BS.BlockUID==B.BlockUID(k)))]; end
+	U = sort(unique(U));
+	V = sort(double(C.CellUID(string(C.Mouse)==m)));
+	fprintf('%-9s %5d %7d  %-24s %7d  %s\n', m, numel(idx), numel(U), seg(U), numel(V), seg(V));
+end
+feature('HotLinks',0);fprintf('B 行数=%d, DT 行数=%d\n', height(B), height(DT));
+fprintf('B.DateTime 与 DT.DateTime 逐元素相同: %d\n', isequal(B.DateTime, DT.DateTime));
+fprintf('  %d / %d 行相同\n', sum(B.DateTime == DT.DateTime), height(B));
+fprintf('B.DateTime(1:3)  : %s\n', strjoin(string(B.DateTime(1:3))', ', '));
+fprintf('DT.DateTime(1:3) : %s\n', strjoin(string(DT.DateTime(1:3))', ', '));
+% 用 DateTime 重新对齐：DT 第 k 行对应的 B 行
+k = 1:5;
+for kk = k
+	ib = find(B.DateTime == DT.DateTime(kk), 1);
+	p = string(DT.Phase(kk));
+	if ismissing(p); p = "(无)"; end
+	fprintf('  DT#%d %-9s %-10s %s → B#%d (%s)\n', kk, string(DT.Mouse(kk)), p, string(DT.DateTime(kk)), ib, string(B.DateTime(ib)));
+end
+feature('HotLinks',0);eq = (B.DateTime == DT.DateTime);
+i0 = find(~eq, 1);
+fprintf('首个不一致行: %d\n', i0);
+fprintf('  B.DateTime(%d)  = %s\n', i0, string(B.DateTime(i0)));
+fprintf('  DT.DateTime(%d) = %s\n', i0, string(DT.DateTime(i0)));
+fprintf('两份 DateTime 集合是否相同（排序后）: %d\n', isequal(sort(B.DateTime), sort(DT.DateTime)));
+fprintf('重复 DateTime: B 有 %d 个, DT 有 %d 个\n', height(B)-numel(unique(B.DateTime)), height(DT)-numel(unique(DT.DateTime)));
+% DT 是否也带 BlockUID?
+disp(DT.Properties.VariableNames)
+feature('HotLinks',0);fprintf('B 按时序: %d ; DT 按时序: %d\n', issorted(B.DateTime), issorted(DT.DateTime));
+disp(B.Properties.VariableNames)
+fprintf('B.Mouse 前 5: %s\n', strjoin(string(B.Mouse(1:5))', ', '));
+feature('HotLinks',0);mouseOfB = strings(height(B),1); phaseOfB = strings(height(B),1);
+for j = 1:height(B)
+	k = find(DT.DateTime == B.DateTime(j), 1);
+	if isempty(k); continue; end
+	mouseOfB(j) = string(DT.Mouse(k));
+	p = string(DT.Phase(k)); if ismissing(p); p = "(无)"; end
+	phaseOfB(j) = p;
+end
+fprintf('映射成功 %d / %d\n', sum(mouseOfB ~= ""), height(B));
+fprintf('B 按时序: %d ; B.BlockIndex 是 1..%d 且差分全为 1: %d\n', issorted(B.DateTime), max(B.BlockIndex), all(diff(double(B.BlockIndex))==1));
+fprintf('\n%-4s %-20s %-9s %-10s | %-9s %-10s\n','B行','B.DateTime','B鼠(由DT映射)','B相位','DT同序鼠','DT同序相位');
+phDT = string(DT.Phase); phDT(ismissing(phDT)) = "(无)";
+for j = 1:min(20,height(B))
+	fprintf('%-4d %-20s %-9s %-10s | %-9s %-10s\n', j, string(B.DateTime(j)), mouseOfB(j), phaseOfB(j), string(DT.Mouse(j)), phDT(j));
+end
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+out = evalc("run('Step2_LickAxisStability.m')");
+i1 = strfind(out,'细胞匹配后'); i2 = strfind(out,'=== 每鼠');
+fprintf('%s\n', out(i1(1):i2(1)+1800));
+feature('HotLinks',0);fprintf('=== 修正后的 10 个组 ===\n');
+for g = 1:numel(groups)
+	fprintf('%-9s 组%-2d nCell=%4d  阶段: %s\n', groups(g).mouse, g, numel(groups(g).cells), strjoin(cellstr(groups(g).phase)', ' + '));
+end
+fprintf('\n=== 每鼠各阶段的细胞群（正确标签）===\n');
+seg = @(x) strjoin(compose('%d..%d', x([true; diff(x)>1]), x([diff(x)>1; true]))', ', ');
+for m = reshape(unique(bMouse),1,[])
+	if m == ""; continue; end
+	n = sum(bMouse==m);
+	fprintf('%-9s (%d session)\n', m, n);
+	idx = find(bMouse==m);
+	for k = idx'
+		u = sort(unique(double(BS.CellUID(BS.BlockUID==B.BlockUID(k)))));
+		fprintf('    %-20s %-10s %5d 个  %s\n', string(B.DateTime(k)), bPhase(k), numel(u), seg(u));
+	end
+end
+feature('HotLinks',0);seg = @(x) iSeg(x);
+fprintf('%-9s %-20s %-10s %5s  %s\n', '鼠','DateTime','Phase','nCell','UID 段');
+for m = reshape(unique(bMouse),1,[])
+	if m == ""; continue; end
+	for k = find(bMouse==m)'
+		u = sort(unique(double(BS.CellUID(BS.BlockUID==B.BlockUID(k)))));
+		fprintf('%-9s %-20s %-10s %5d  %s\n', m, string(B.DateTime(k)), bPhase(k), numel(u), seg(u));
+	end
+end
+feature('HotLinks',0);fprintf('%-9s %-20s %-10s %5s\n', '鼠','DateTime','Phase','nCell');
+setsByMouse = containers.Map();
+for m = reshape(unique(bMouse),1,[])
+	if m == ""; continue; end
+	kk = find(bMouse==m); sz = zeros(1,numel(kk));
+	for t = 1:numel(kk)
+		u = unique(double(BS.CellUID(BS.BlockUID==B.BlockUID(kk(t)))));
+		sz(t) = numel(u);
+		fprintf('%-9s %-20s %-10s %5d\n', m, string(B.DateTime(kk(t))), bPhase(kk(t)), sz(t));
+	end
+	fprintf('   → %d 个 session 的细胞数: %s\n\n', numel(kk), mat2str(sz));
+end
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+out1c = evalc("run('Step1c_LickCD2VsCalcium.m')");
+i = strfind(out1c, 'r_popMean_lick        ：'); j = strfind(out1c, 'null 最大');
+fprintf('%s\n', out1c(i(1):min(numel(out1c), j(end)+120)));
+fprintf('OK\n');
+feature('HotLinks',0);k = strfind(out, '配对总数'); 
+fprintf('%s\n', out(k(1):min(numel(out), k(1)+3000)));
+feature('HotLinks',0);k = strfind(out, '时长扫描'); fprintf('%s\n', out(k(1):end));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+Step2UseParallel = false;   %#ok<NASGU>
+out = evalc("run('Step2_LickAxisStability.m')");
+fprintf('组数/鼠：'); disp(out(strfind(out,'细胞匹配后得到'):strfind(out,'细胞匹配后得到')+40));
+for g = 1:numel(groups)
+	fprintf('%-9s nCell=%4d  阶段: %s\n', groups(g).mouse, numel(groups(g).cells), strjoin(cellstr(groups(g).phase)', ' + '));
+end
+feature('HotLinks',0);sel = find(bMouse == "yqn0240");
+ph = bPhase(sel);
+fprintf('yqn0240 共 %d 个 session\n', numel(sel));
+sets = cell(1,numel(sel));
+for t = 1:numel(sel)
+	sets{t} = sort(double(BS.CellUID(BS.BlockUID == B.BlockUID(sel(t)))));
+	fprintf('  %-20s %-8s %5d\n', string(B.DateTime(sel(t))), ph(t), numel(sets{t}));
+end
+use = ismember(ph, ["Naive","Learned","Transfer","Final"]);
+I = sets{find(use,1)};
+for t = find(use); I = intersect(I, sets{t}); end
+feature('HotLinks',0);u = find(use);
+I = sets{u(1)};
+for t = u(2:end)
+	I = I(ismember(I, sets{t}));
+end
+feature('HotLinks',0);fprintf('which ismember: %s\n', which('ismember'));
+fprintf('which intersect: %s\n', which('intersect'));
+allU = [];
+for t = find(use)'; allU = [allU; sets{t}(:)]; end
+[uu, ~, ic] = unique(allU);
+cnt = accumarray(ic, 1);
+I = uu(cnt == numel(find(use)));
+fprintf('四阶段（%d 块）交集 = %d 个细胞\n', sum(use), numel(I));
+uu2 = find(use);
+for a = 1:numel(uu2)
+	for b = a+1:numel(uu2)
+		A = sets{uu2(a)}; C = sets{uu2(b)};
+		nab = sum(histcounts(A, [C; Inf])) ;   % 占位，不用
+		J = sum(ismemberLocal(A, C)) / numel(uniqueLocal([A(:); C(:)]));
+		fprintf('  %s vs %s  J=%.3f\n', string(B.DateTime(sel(uu2(a)))), string(B.DateTime(sel(uu2(b)))), J);
+	end
+end
+feature('HotLinks',0);clear intersect ismember
+a = [1 2 3]; bb = [2 3 4];
+disp(intersect(a, bb)); disp(ismember(a, bb));
+fprintf('exist intersect=%d ismember=%d\n', exist('intersect'), exist('ismember'));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+out = evalc("run('Step2_LickAxisStability.m')");
+k1 = strfind(out,'细胞匹配后'); k2 = strfind(out,'采样率：');
+fprintf('%s\n', out(k1(1):k2(1)+100));
+feature('HotLinks',0);k = strfind(out,'=== 每鼠×高通截止');
+fprintf('%s\n', out(k(1):min(numel(out), k(1)+2200)));
+feature('HotLinks',0);k = strfind(out,'时长扫描'); fprintf('%s\n', out(k(1):end));
+fprintf('--- 图 ---\n');
+base = '\\Data-Server-2\个人数据\杨青宁\202610\';
+for f = ["Step2_LickAxisStability.svg","Step2b_LickAxisRatioVsDuration.svg"]
+	d = dir(base + f); fprintf('%-40s %7.0f B  %s\n', f, d.bytes, d.date);
+end
+feature('HotLinks',0);exportgraphics(f, 'D:\git\Transfer-Learning\中文图\_p1.png', 'Resolution', 300);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+out2 = evalc("run('Step2_LickAxisStability.m')");
+exportgraphics(f,  '_p1.png', 'Resolution', 300);
+exportgraphics(f2, '_p2.png', 'Resolution', 300);
+fprintf('导出完成，out 长度 %d\n', numel(out2));
+feature('HotLinks',0);exportgraphics(f,  'D:\git\Transfer-Learning\中文图\_p1.png', 'Resolution', 300);
+exportgraphics(f2, 'D:\git\Transfer-Learning\中文图\_p2.png', 'Resolution', 300);
+d1 = dir('D:\git\Transfer-Learning\中文图\_p1.png'); d2 = dir('D:\git\Transfer-Learning\中文图\_p2.png');
+fprintf('%d / %d bytes\n', d1.bytes, d2.bytes);
+feature('HotLinks',0);delete('D:\git\Transfer-Learning\中文图\_p1.png');
+delete('D:\git\Transfer-Learning\中文图\_p2.png');
+if exist('D:\git\Transfer-Learning\_p1.png','file'); delete('D:\git\Transfer-Learning\_p1.png'); end
+d = dir('D:\git\Transfer-Learning\*.png'); fprintf('根目录残留 png: %d\n', numel(d));
+for i=1:numel(d); fprintf('  %s\n', d(i).name); end
+fprintf('Done.\n');
+feature('HotLinks',0);delete('D:\git\Transfer-Learning\_p2.png');
+d = dir('D:\git\Transfer-Learning\*.png'); fprintf('根目录 png: %s\n', strjoin({d.name}, ', '));
+fprintf('图已重出：%d / %d\n', ...
+	exist('\\Data-Server-2\个人数据\杨青宁\202610\Step2_LickAxisStability.svg','file'), ...
+	exist('\\Data-Server-2\个人数据\杨青宁\202610\Step2b_LickAxisRatioVsDuration.svg','file'));
+feature('HotLinks',0);fprintf('Blocks.Design 取值:\n');
+[ud, ~, ic] = unique(string(B.Design));
+cnt = accumarray(ic, 1);
+for i = 1:numel(ud); fprintf('  %-14s %3d 个 block\n', ud(i), cnt(i)); end
+fprintf('\nDesign × Phase 交叉表:\n');
+phB = bPhase;
+[up, ~, ip] = unique(phB);
+fprintf('%-14s %s\n', 'Design\\Phase', sprintf('%10s', up));
+for i = 1:numel(ud)
+	row = zeros(1, numel(up));
+	for j = 1:numel(up); row(j) = sum(string(B.Design)==ud(i) & phB==up(j)); end
+	fprintf('%-14s %s\n', ud(i), sprintf('%10d', row));
+end
+feature('HotLinks',0);fprintf('%-9s %-20s %-12s %-9s\n','鼠','DateTime','Design','Phase');
+for m = reshape(unique(bMouse),1,[])
+	if m == ""; continue; end
+	kk = find(bMouse==m);
+	[~, o] = sort(B.DateTime(kk)); kk = kk(o);
+	fprintf('--- %s (%d session) ---\n', m, numel(kk));
+	for k = kk'
+		fprintf('%-9s %-20s %-12s %-9s\n', '', string(B.DateTime(k)), string(B.Design(k)), bPhase(k));
+	end
+end
+feature('HotLinks',0);totA=0; totB=0; totP=0;
+for m = reshape(unique(bMouse),1,[])
+	if m == ""; continue; end
+	kk = find(bMouse==m);
+	sA = kk(string(B.Design(kk))=="AudioWater" & bPhase(kk)~="Recall");
+	sB = kk(string(B.Design(kk))=="LightWater");
+	nA = numel(sA); nB = numel(sB);
+	pA = nA*(nA-1)/2; pB = nB*(nB-1)/2;
+	totA=totA+nA; totB=totB+nB; totP=totP+pA+pB;
+	fprintf('%-9s A: %2d 块 (%2d 对)   B: %2d 块 (%2d 对)   小计 %2d 对\n', m, nA, pA, nB, pB, pA+pB);
+end
+fprintf('\n合计: A %d 块、B %d 块，共 %d 对（现用 4 阶段 = 102 对）\n', totA, totB, totP);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+tic; out = evalc("run('Step2_LickAxisStability.m')"); fprintf('[%.0f s]\n', toc);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+tic; out = evalc("run('Step2_LickAxisStability.m')"); fprintf('[%.0f s]\n', toc);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+tic; out = evalc("run('Step2_LickAxisStability.m')"); fprintf('[%.0f s]\n', toc);
+k = strfind(out,'细胞匹配后'); k2 = strfind(out,'采样率：');
+fprintf('%s\n', out(k(1):k2(1)+90));
+k = strfind(out,'=== 序列分析'); fprintf('%s\n', out(k(1):min(numel(out), k(1)+1700)));
+feature('HotLinks',0);pairS = pair(~isPhase); gapH = [pairS.gapH]; iw = 1;
+cr = reshape([pairS.cosRatio], 5, [])'; cr = cr(:, iw);
+cc = reshape([pairS.cosCross], 5, [])'; cc = cc(:, iw);
+mo = string({pairS.mouse});
+fprintf('序列对 %d\n', numel(cr));
+fprintf('全体 Spearman: cosRatio vs 间隔 = %+.3f (p=%.2g)\n', corr(gapH(:), cr, 'type','Spearman'), ...
+	spearmanP(gapH(:), cr));
+feature('HotLinks',0);fprintf('全体 Spearman: cosRatio vs 间隔 = %+.3f\n', corr(gapH(:), cr, 'type','Spearman'));
+fprintf('             cosCross vs 间隔 = %+.3f\n', corr(gapH(:), cc, 'type','Spearman'));
+fprintf('\n每鼠 Spearman(cosRatio, 间隔):\n');
+for m = reshape(unique(mo),1,[])
+	sel = mo == m;
+	if sum(sel) < 4; continue; end
+	fprintf('  %-9s n=%2d  rho=%+.2f\n', m, sum(sel), corr(gapH(sel)', cr(sel), 'type','Spearman'));
+end
+fprintf('\n按"同天 / 隔天 / 更久"分组（每鼠先平均）：\n');
+grp = discretize(gapH, [0 18 36 1e9]);
+for g = 1:3
+	v = nan(numel(mice),1);
+	for mi = 1:numel(mice)
+		s = grp==g & mo==mice(mi);
+		if any(s); v(mi) = mean(cr(s), 'omitnan'); end
+	end
+	fprintf('  组%d: %3d 对, %2d 只鼠, 中位 cosRatio = %.3f\n', g, sum(grp==g), sum(isfinite(v)), median(v,'omitnan'));
+end
+feature('HotLinks',0);near = gapH < 18; far = gapH >= 36;
+dn = nan(numel(mice),1); df = nan(numel(mice),1);
+for mi = 1:numel(mice)
+	s = mo == mice(mi);
+	if any(s & near); dn(mi) = mean(cr(s & near), 'omitnan'); end
+	if any(s & far);  df(mi) = mean(cr(s & far),  'omitnan'); end
+end
+ok = isfinite(dn) & isfinite(df);
+fprintf('配对检验（同一只鼠，<18h 减 >36h），n=%d 只鼠\n', sum(ok));
+fprintf('  <18h  中位 %.3f\n', median(dn(ok)));
+fprintf('  >36h  中位 %.3f\n', median(df(ok)));
+fprintf('  Δ 中位 %+.3f   Wilcoxon p = %.4f\n', median(dn(ok)-df(ok)), signrank(dn(ok), df(ok)));
+for mi = find(ok)'; fprintf('  %-9s  <18h %.2f   >36h %.2f   Δ %+.2f\n', mice(mi), dn(mi), df(mi), dn(mi)-df(mi)); end
+feature('HotLinks',0);exportgraphics(f3, 'D:\git\Transfer-Learning\中文图\_p3.png', 'Resolution', 300);
+d = dir('D:\git\Transfer-Learning\中文图\_p3.png'); fprintf('%d bytes\n', d.bytes);
+base = '\\Data-Server-2\个人数据\杨青宁\202610\';
+d2 = dir(base + "Step2c_LickAxisVsSessionGap.svg"); fprintf('server: %d bytes\n', d2.bytes);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+tic; out = evalc("run('Step2_LickAxisStability.m')"); fprintf('[%.0f s]\n', toc);
+k = strfind(out,'=== 序列分析'); fprintf('%s\n', out(k(1):min(numel(out), k(1)+1200)));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;   %#ok<NASGU>
+tic; out = evalc("run('Step2_LickAxisStability.m')"); fprintf('[%.0f s]\n', toc);
+k = strfind(out,'间隔匹配对照'); fprintf('%s\n', out(k(1):min(numel(out), k(1)+700)));
+feature('HotLinks',0);delete('D:\git\Transfer-Learning\中文图\_p3.png');
+base = '\\Data-Server-2\个人数据\杨青宁\202610\';
+for f = ["Step2_LickAxisStability.svg","Step2b_LickAxisRatioVsDuration.svg","Step2c_LickAxisVsSessionGap.svg"]
+	d = dir(base + f); fprintf('%-38s %7.0f B  %s\n', f, d.bytes, d.date);
+end
+feature('HotLinks',0);fprintf('%-9s %-20s %-10s %-8s %5s %5s %5s %5s\n','鼠','DateTime','Design','Phase','cue','给水','命中','错失');
+for k = find(string(B.Design)=="LAu" | string(B.Design)=="LAuW")'
+	el = B.EventLog{k}; ev = string(el.Event);
+	fprintf('%-9s %-20s %-10s %-8s %5d %5d %5d %5d\n', bMouse(k), string(B.DateTime(k)), ...
+		string(B.Design(k)), bPhase(k), sum(ev=="声音响")+sum(ev=="灯光亮"), sum(ev=="给水"), sum(ev=="命中"), sum(ev=="错失"));
+end
+fprintf('\n--- 对照：普通 AudioWater Naive ---\n');
+for k = find(string(B.Design)=="AudioWater" & bPhase=="Naive")'
+	el = B.EventLog{k}; ev = string(el.Event);
+	fprintf('%-9s %-20s %-10s %-8s %5d %5d %5d %5d\n', bMouse(k), string(B.DateTime(k)), ...
+		string(B.Design(k)), bPhase(k), sum(ev=="声音响")+sum(ev=="灯光亮"), sum(ev=="给水"), sum(ev=="命中"), sum(ev=="错失"));
+end
+feature('HotLinks',0);for p = ["Learned","Transfer","Final"]
+	for k = find(bPhase==p)'
+		el = B.EventLog{k}; ev = string(el.Event);
+		fprintf('%-9s %-20s %-11s %-9s %5d %5d %5d %5d\n', bMouse(k), string(B.DateTime(k)), ...
+			string(B.Design(k)), p, sum(ev=="声音响")+sum(ev=="灯光亮"), sum(ev=="给水"), sum(ev=="命中"), sum(ev=="错失"));
+	end
+end
+feature('HotLinks',0);f = '\\Data-Server-2\个人数据\杨青宁\202603\PO抑制MOp成像.v5.mat';
+d = dir(f); fprintf('THInhibit: %s  %.2f GB  %s\n', d.name, d.bytes/2^30, d.date);
+f2 = '\\Data-Server-2\个人数据\杨青宁\202609\有延迟不舔不给水钙成像.v1.mat';
+d2 = dir(f2); if isempty(d2); fprintf('ALDelayed 路径不同，需查代码\n'); else, fprintf('ALDelayed: %.2f GB %s\n', d2.bytes/2^30, d2.date); end
+fprintf('内存占用: %.1f GB\n', sum([whos().bytes])/2^30);
+feature('HotLinks',0);% 先看代码里 THInhibit 的定义与预处理，判断是组间还是组内、CNO 还是光遗传
+fid = fopen('D:\git\Transfer-Learning\TransferLearning.m','r');
+txt = fread(fid, inf, '*char')'; fclose(fid);
+i = strfind(txt, 'THInhibit');
+for k = i
+	a = max(1, k-700); bb = min(numel(txt), k+500);
+	fprintf('----- 处 -----\n%s\n', txt(a:bb));
+end
+feature('HotLinks',0);tic; TH = TransferLearning.THInhibit(); fprintf('加载用时 %.0f s\n', toc);
+fprintf('TH: %d block, %d 只鼠\n', height(TH.Blocks), numel(unique(string(TH.DateTimes.Mouse))));
+fprintf('Design: %s\n', strjoin(cellstr(unique(string(TH.Blocks.Design)))', ', '));
+fprintf('Phase : %s\n', strjoin(cellstr(unique(string(TH.DateTimes.Phase)))', ', '));
+fprintf('时间范围: %s ~ %s\n', string(min(TH.DateTimes.DateTime)), string(max(TH.DateTimes.DateTime)));
+fprintf('内存 %.1f GB\n', sum([whos().bytes])/2^30);
+feature('HotLinks',0);BT = TH.Blocks; DTT = TH.DateTimes;
+% 按 DateTime 对齐
+mT = strings(height(BT),1); pT = strings(height(BT),1); dT = strings(height(BT),1);
+for j = 1:height(BT)
+	k = find(DTT.DateTime == BT.DateTime(j), 1);
+	if isempty(k); continue; end
+	mT(j) = string(DTT.Mouse(k));
+	p = string(DTT.Phase(k)); if ismissing(p); p = "(无)"; end
+	pT(j) = p; dT(j) = string(BT.Design(j));
+end
+for m = reshape(unique(mT),1,[])
+	kk = find(mT==m); [~,o] = sort(BT.DateTime(kk)); kk = kk(o);
+	fprintf('--- %s (%d session) ---\n', m, numel(kk));
+	for k = kk'
+		fprintf('    %-20s %-12s %-8s\n', string(BT.DateTime(k)), dT(k), pT(k));
+	end
+end
+fprintf('\nALB 时间范围: %s ~ %s\n', string(min(DT.DateTime)), string(max(DT.DateTime)));
+feature('HotLinks',0);BST = TH.BlockSignals;
+fprintf('%-11s %-20s %-12s %-8s %5s\n','鼠','DateTime','Design','Phase','nCell');
+for m = reshape(unique(mT),1,[])
+	sz = [];
+	for k = find(mT==m)'
+		u = unique(double(BST.CellUID(BST.BlockUID == BT.BlockUID(k))));
+		sz(end+1) = numel(u); %#ok<SAGROW>
+		fprintf('%-11s %-20s %-12s %-8s %5d\n', m, string(BT.DateTime(k)), dT(k), pT(k), numel(u));
+	end
+	fprintf('   → 该鼠各 session 细胞数: %s\n\n', mat2str(sz));
+end
+feature('HotLinks',0);fprintf('DS(ALB): %d ; TH: %d\n', exist('DS','var'), exist('TH','var'));
+durC = []; nCellC = [];
+for i = 1:height(B)
+	u = find(BS.BlockUID == B.BlockUID(i), 1, 'first');
+	if isempty(u); continue; end
+	durC(end+1) = numel(BS.BlockSignal{u}) / rBlk(i) / 60;
+	nCellC(end+1) = numel(unique(double(BS.CellUID(BS.BlockUID == B.BlockUID(i)))));
+end
+rT = nan(height(BT),1); durT = nan(height(BT),1); nCellT = nan(height(BT),1);
+for i = 1:height(BT)
+	u = find(BST.BlockUID == BT.BlockUID(i), 1, 'first');
+	if isempty(u); continue; end
+	nS = numel(BST.BlockSignal{u});
+	nCellT(i) = numel(unique(double(BST.CellUID(BST.BlockUID == BT.BlockUID(i)))));
+	tt = TH.Trials.Time(TH.Trials.BlockUID == BT.BlockUID(i));
+	sr = TH.Trials.SampleRange(TH.Trials.BlockUID == BT.BlockUID(i), :);
+	if numel(tt) >= 5 && istable(sr)
+		n = min(numel(tt), height(sr));
+		dR = diff(double(sr.Tag(1:n))); dT = seconds(diff(tt(1:n))); ok = dT>0 & dR>0;
+		if sum(ok) >= 4; rT(i) = median(dR(ok)./dT(ok)); end
+	end
+	if isfinite(rT(i)); durT(i) = nS / rT(i) / 60; end
+end
+fprintf('\n%-16s %-24s %-24s\n','','Ctrl (ALB)','TH');
+fprintf('%-16s %-24s %-24s\n','block 数', sprintf('%d', numel(durC)), sprintf('%d', sum(isfinite(durT))));
+fprintf('%-16s %-24s %-24s\n','session 时长(min)', sprintf('中位 %.1f (%.1f~%.1f)', median(durC), min(durC), max(durC)), ...
+	sprintf('中位 %.1f (%.1f~%.1f)', median(durT,'omitnan'), min(durT), max(durT)));
+fprintf('%-16s %-24s %-24s\n','细胞数', sprintf('中位 %d (%d~%d)', round(median(nCellC)), min(nCellC), max(nCellC)), ...
+	sprintf('中位 %d (%d~%d)', round(median(nCellT,'omitnan')), min(nCellT), max(nCellT)));
+fprintf('%-16s %-24s %-24s\n','采样率', sprintf('8Hz %d / 30Hz %d', sum(rBlk<15), sum(rBlk>=15)), ...
+	sprintf('中位 %.2f (%.2f~%.2f)', median(rT,'omitnan'), min(rT), max(rT)));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false; Step2Cohort = "ALB";   %#ok<NASGU>
+tic; outA = evalc("run('Step2_LickAxisStability.m')"); fprintf('[ALB %.0f s]\n', toc);
+Step2Cohort = "TH";   %#ok<NASGU>
+tic; outT = evalc("run('Step2_LickAxisStability.m')"); fprintf('[TH %.0f s]\n', toc);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false; Step2Cohort = "TH";   %#ok<NASGU>
+tic; outT = evalc("run('d:\git\Transfer-Learning\中文图\Step2_LickAxisStability.m')"); fprintf('[TH %.0f s]\n', toc);
+k = strfind(outT,'=== 序列分析'); fprintf('%s\n', outT(k(1):min(numel(outT), k(1)+1000)));
+feature('HotLinks',0);S = struct();
+for c = ["ALB","TH"]
+	L = load(fullfile('d:\git\Transfer-Learning\中文图', "_step2_pairs_" + c + ".mat"));
+	S.(c) = L;
+	fprintf('%s: %d 配对（序列 %d，阶段 %d），%d 只鼠\n', c, numel(L.pair), ...
+		sum(string({L.pair.kind})=="series"), sum(string({L.pair.kind})=="phase"), numel(L.mice));
+end
+fprintf('\n%-6s %-9s %-8s %-8s %-8s %-8s\n','队列','鼠','<18h','18-36h','36-72h','>72h');
+D = struct();
+for c = ["ALB","TH"]
+	L = S.(c); pr = L.pair(string({L.pair.kind})=="series"); mo = string({L.pair.mouse});
+	gp = [pr.gapH]; CR = reshape([pr.cosRatio], 5, [])';
+	for m = reshape(unique(mo),1,[])
+		v = nan(1,4);
+		for b = 1:4
+			s = mo==m & discretize(gp,[0 18 36 72 Inf])==b;
+			if any(s); v(b) = mean(CR(s,1), 'omitnan'); end
+		end
+		fprintf('%-6s %-9s %s\n', c, m, sprintf('%.3f   ', v));
+		if ~isfield(D,c); D.(c) = []; end
+		D.(c)(end+1,:) = v; %#ok<SAGROW>
+	end
+end
+feature('HotLinks',0);fprintf('%-6s %-11s %-8s %-8s %-8s %-8s\n','队列','鼠','<18h','18-36h','36-72h','>72h');
+D = struct('ALB', zeros(0,4), 'TH', zeros(0,4));
+for c = ["ALB","TH"]
+	L = S.(c); pr = L.pair(string({L.pair.kind})=="series"); mo = string({L.pair.mouse});
+	gp = [pr.gapH]; CR = reshape([pr.cosRatio], 5, [])';
+	for m = reshape(unique(mo),1,[])
+		v = nan(1,4);
+		for b = 1:4
+			s = mo==m & discretize(gp,[0 18 36 72 Inf])==b;
+			if any(s); v(b) = mean(CR(s,1), 'omitnan'); end
+		end
+		fprintf('%-6s %-11s %s\n', c, m, sprintf('%.3f  ', v));
+		D.(c)(end+1,:) = v;
+	end
+end
+feature('HotLinks',0);clear D
+DAL = nan(0,4); DTH = nan(0,4);
+for c = ["ALB","TH"]
+	L = S.(c); pr = L.pair(string({L.pair.kind})=="series"); mo = string({L.pair.mouse});
+	gp = [pr.gapH]; CR = reshape([pr.cosRatio], 5, [])';
+	fprintf('--- %s: %d 序列对, 鼠=%s\n', c, numel(pr), strjoin(cellstr(unique(mo))', ','));
+	acc = nan(0,4);
+	for m = reshape(unique(mo),1,[])
+		v = nan(1,4);
+		for b = 1:4
+			s = mo==m & discretize(gp,[0 18 36 72 Inf])==b;
+			if any(s); v(b) = mean(CR(s,1), 'omitnan'); end
+		end
+		acc = [acc; v];
+		fprintf('    %-11s %s\n', m, sprintf('%.3f  ', v));
+	end
+	if c == "ALB"; DAL = acc; else, DTH = acc; end
+end
+feature('HotLinks',0);L = S.ALB; pr = L.pair(string({L.pair.kind})=="series"); mo = string({L.pair.mouse});
+gp = [pr.gapH]; CRm = reshape([pr.cosRatio], 5, [])';
+fprintf('gp %s, CRm %s, mo %s\n', mat2str(size(gp)), mat2str(size(CRm)), mat2str(size(mo)));
+gb = discretize(gp, [0 18 36 72 Inf]);
+fprintf('gb %s, 各类计数 %s\n', mat2str(size(gb)), mat2str(histcounts(gb, 1:5)));
+m = unique(mo); m = m(1);
+fprintf('m=%s class=%s\n', m, class(m));
+s = mo==m & gb==1;
+feature('HotLinks',0);DAL = nan(0,4); DTH = nan(0,4);
+for c = ["ALB","TH"]
+	L = S.(c); pr = L.pair(string({L.pair.kind})=="series");
+	mo = string({pr.mouse});  gp = [pr.gapH]; CRm = reshape([pr.cosRatio], 5, [])';
+	gb = discretize(gp, [0 18 36 72 Inf]);
+	fprintf('--- %s: %d 序列对\n', c, numel(pr));
+	acc = nan(0,4);
+	for m = reshape(unique(mo),1,[])
+		v = nan(1,4);
+		for b = 1:4
+			s = mo==m & gb==b;
+			if any(s); v(b) = mean(CRm(s,1), 'omitnan'); end
+		end
+		acc = [acc; v];
+		fprintf('    %-11s %s\n', m, sprintf('%.3f  ', v));
+	end
+	if c == "ALB"; DAL = acc; else, DTH = acc; end
+end
+fprintf('\n%-6s %-5s %-8s %-8s %-8s %-8s\n','队列','n鼠','<18h','18-36h','36-72h','>72h');
+fprintf('%-6s %-5d %-8.3f %-8.3f %-8.3f %-8.3f\n','Ctrl', size(DAL,1), median(DAL(:,1),'omitnan'), median(DAL(:,2),'omitnan'), median(DAL(:,3),'omitnan'), median(DAL(:,4),'omitnan'));
+fprintf('%-6s %-5d %-8.3f %-8.3f %-8.3f %-8.3f\n','TH', size(DTH,1), median(DTH(:,1),'omitnan'), median(DTH(:,2),'omitnan'), median(DTH(:,3),'omitnan'), median(DTH(:,4),'omitnan'));
+a = DAL(:,1)-DAL(:,3); a = a(isfinite(a));
+b = DTH(:,1)-DTH(:,3); b = b(isfinite(b));
+fprintf('\nΔ(<18h − 36-72h)：Ctrl %+.3f (n=%d)  vs  TH %+.3f (n=%d)   ranksum p = %.4f\n', median(a), numel(a), median(b), numel(b), ranksum(a,b));
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+out = evalc("run('d:\git\Transfer-Learning\中文图\Step2d_THvsCtrl_SessionGap.m')");
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+out = evalc("run('d:\git\Transfer-Learning\中文图\Step2d_THvsCtrl_SessionGap.m')");
+fprintf('%s\n', out);
+exportgraphics(f, 'D:\git\Transfer-Learning\中文图\_p4.png', 'Resolution', 300);
+feature('HotLinks',0);delete('D:\git\Transfer-Learning\中文图\_p4.png');
+base = '\\Data-Server-2\个人数据\杨青宁\202610\';
+for f = ["Step2d_THvsCtrl_SessionGap.svg","Step2_LickAxisStability.svg","Step2_LickAxisStability_TH.svg", ...
+		"Step2c_LickAxisVsSessionGap.svg","Step2c_LickAxisVsSessionGap_TH.svg"]
+	d = dir(base + f);
+	if isempty(d); fprintf('%-42s 缺\n', f); else, fprintf('%-42s %7.0f B\n', f, d.bytes); end
+end
+delete('D:\git\Transfer-Learning\中文图\_step2_pairs_ALB.mat');
+delete('D:\git\Transfer-Learning\中文图\_step2_pairs_TH.mat');
+fprintf('临时 mat 已清理\n');
+feature('HotLinks',0);% 把两句话拆开算清楚
+a = DAL(:,1)-DAL(:,3); a = a(isfinite(a));   % Ctrl 的逐鼠 Δ
+b = DTH(:,1)-DTH(:,3); b = b(isfinite(b));   % TH 的逐鼠 Δ
+fprintf('Ctrl 逐鼠 Δ (%d 只): %s\n  均值 %.3f, SD %.3f\n', numel(a), sprintf('%.3f ', a), mean(a), std(a));
+fprintf('TH   逐鼠 Δ (%d 只): %s\n  均值 %.3f, SD %.3f\n\n', numel(b), sprintf('%.3f ', b), mean(b), std(b));
+
+% ranksum 在 n1=7, n2=3 时的最小可能 p
+w = nchoosek(1:10, 3); s = sum(w, 2);
+pmin = 2*min(arrayfun(@(t) mean(s<=t), min(s)), arrayfun(@(t) mean(s>=t), max(s)));
+fprintf('ranksum(n=7 vs n=3) 双侧最小可能 p = %.4f → 需要近乎完全分离才能显著\n\n', pmin);
+
+% 功效模拟：Ctrl SD 固定，看 TH 真实差异要多大才能 80% 功效
+rng(1); nRep = 3000;
+fprintf('%-10s %-14s %s\n','TH/Ctrl 倍数','TH 真实 Δ 均值','检验功效 (α=0.05)');
+for k = [1 1.5 2 3 5]
+	pw = 0;
+	for r = 1:nRep
+		x = mean(a) + std(a)*randn(7,1);
+		y = mean(a)*k + std(a)*randn(3,1);
+		pw = pw + (ranksum(x,y) < 0.05);
+	end
+	fprintf('%-10.1f %-14.3f %.2f\n', k, mean(a)*k, pw/nRep);
+end
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+Step2UseParallel = false;
+for c = ["ALB","TH"]
+	Step2Cohort = c;   %#ok<NASGU>
+	tic; evalc("run('d:\git\Transfer-Learning\中文图\Step2_LickAxisStability.m')"); fprintf('[%s %.0f s]\n', c, toc);
+end
+d = dir('Step2_pairs_*.mat');
+for i=1:numel(d); fprintf('%s  %.2f MB\n', d(i).name, d(i).bytes/2^20); end
+feature('HotLinks',0);d = dir('d:\git\Transfer-Learning\中文图\Step2_pairs_*.mat');
+for i=1:numel(d); fprintf('%s  %.2f MB\n', d(i).name, d(i).bytes/2^20); end
+fprintf('cwd=%s\n', pwd);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+out = evalc("run('d:\git\Transfer-Learning\中文图\Step2d_THvsCtrl_SessionGap.m')");
+fprintf('%s\n', out);
+exportgraphics(f, 'D:\git\Transfer-Learning\中文图\_p5.png', 'Resolution', 300);
+feature('HotLinks',0);cd('d:\git\Transfer-Learning\中文图');
+clear intersect ismember union setdiff
+out = evalc("run('d:\git\Transfer-Learning\中文图\Step2d_THvsCtrl_SessionGap.m')");
+i = strfind(out,'逐鼠'); fprintf('%s\n', out(i(2):min(numel(out), i(2)+330)));
+exportgraphics(f, 

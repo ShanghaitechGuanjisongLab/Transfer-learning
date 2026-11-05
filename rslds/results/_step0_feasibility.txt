@@ -1,0 +1,264 @@
+
+====================================================================================================
+队列 ALB：102 个会话
+====================================================================================================
+
+[阶段 × 设计] 会话数：
+  Phase=(无)          Design=AudioWater     n=28
+  Phase=(无)          Design=LightWater     n=20
+  Phase=Final        Design=LightWater     n=11
+  Phase=Learned      Design=AudioWater     n=11
+  Phase=Naive        Design=AudioWater     n=11
+  Phase=Naive        Design=LAu            n=4
+  Phase=Naive        Design=LAuW           n=6
+  Phase=Transfer     Design=LightWater     n=11
+
+--- vtf0233（13 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2024-04-21T07:53:00 Naive        LAu               550    28.7   7.984    60      30      30       0     0
+  2024-04-21T20:45:00 Naive        AudioWater        550    24.9   7.984    30      30       0      30    28
+  2024-04-22T08:33:00 (无)          AudioWater        550    36.0   7.984    30      30       0      30    30
+  2024-04-22T19:36:00 (无)          AudioWater        550    26.1   8.000    25      24       0      24    24
+  2024-04-23T07:23:00 (无)          AudioWater        550    17.7   7.984    30      30       0      30    30
+  2024-04-23T21:33:00 Learned      AudioWater        550    15.3   7.984    30      30       0      30    30
+  2024-04-24T07:55:00 Transfer     LightWater        550    18.7   7.984    26       0      26      26     3
+  2024-04-24T20:23:00 (无)          LightWater        550    17.5   7.984    28       0      28      28     7
+  2024-04-25T07:33:00 (无)          LightWater        550    16.6   8.000     0       0       0       0     0
+  2024-04-25T20:42:00 (无)          LightWater        550    18.5   7.984    30       0      30      30     9
+  2024-04-26T06:53:00 (无)          LightWater        550    19.9   7.984    15       0      14      14     6
+  2024-04-26T19:55:00 (无)          LightWater        550    18.7   7.984    30       0      30      30    27
+  2024-04-27T20:00:00 Final        LightWater        550    16.2   7.984    30       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 550/550~550)  Naive/LAu@2024-04-21T07:53:00  ×  Naive/AudioWater@2024-04-21T20:45:00
+    100.0%  ( 550/550~550)  Naive/LAu@2024-04-21T07:53:00  ×  (无)/AudioWater@2024-04-22T08:33:00
+    100.0%  ( 550/550~550)  Naive/LAu@2024-04-21T07:53:00  ×  (无)/AudioWater@2024-04-22T19:36:00
+    100.0%  ( 550/550~550)  Naive/LAu@2024-04-21T07:53:00  ×  (无)/AudioWater@2024-04-23T07:23:00
+    100.0%  ( 550/550~550)  Naive/LAu@2024-04-21T07:53:00  ×  Learned/AudioWater@2024-04-23T21:33:00
+    100.0%  ( 550/550~550)  Naive/LAu@2024-04-21T07:53:00  ×  Transfer/LightWater@2024-04-24T07:55:00
+
+--- vtf0352（9 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2025-04-11T07:08:00 Naive        LAuW              636    44.2   7.959    60      20      20      20    32
+  2025-04-11T18:47:00 Naive        AudioWater        636    32.0   7.959    30      30       0      30    25
+  2025-04-12T19:03:00 (无)          AudioWater        636    15.8   7.959    30      30       0      30    26
+  2025-04-13T06:57:00 (无)          AudioWater        636    23.4   7.959    25      24       0      24    24
+  2025-04-14T06:51:00 (无)          AudioWater        636    39.5   7.959    30      30       0      30    30
+  2025-04-14T19:04:00 Learned      AudioWater        636    25.4   7.959    30      30       0      30    30
+  2025-04-15T07:02:00 Transfer     LightWater        636    29.7   7.959    30       0      30      30    25
+  2025-04-15T20:20:00 (无)          LightWater        636    21.3   7.959    30       0      30      30    29
+  2025-04-16T08:10:00 Final        LightWater        636    19.9   7.959    30       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 636/636~636)  Naive/LAuW@2025-04-11T07:08:00  ×  Naive/AudioWater@2025-04-11T18:47:00
+    100.0%  ( 636/636~636)  Naive/LAuW@2025-04-11T07:08:00  ×  (无)/AudioWater@2025-04-12T19:03:00
+    100.0%  ( 636/636~636)  Naive/LAuW@2025-04-11T07:08:00  ×  (无)/AudioWater@2025-04-13T06:57:00
+    100.0%  ( 636/636~636)  Naive/LAuW@2025-04-11T07:08:00  ×  (无)/AudioWater@2025-04-14T06:51:00
+    100.0%  ( 636/636~636)  Naive/LAuW@2025-04-11T07:08:00  ×  Learned/AudioWater@2025-04-14T19:04:00
+    100.0%  ( 636/636~636)  Naive/LAuW@2025-04-11T07:08:00  ×  Transfer/LightWater@2025-04-15T07:02:00
+
+--- vtf0353（7 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2025-04-10T20:11:00 Naive        LAuW              343    30.4   8.024    60      20      20      20    33
+  2025-04-11T08:19:00 Naive        AudioWater        343    21.7   8.024    30      30       0      30    25
+  2025-04-11T19:37:00 Learned      AudioWater        343    34.9   8.024    30      30       0      30    30
+  2025-04-13T08:08:00 Transfer     LightWater        343    26.0   8.024    30       0      30      30    15
+  2025-04-13T18:54:00 (无)          LightWater        343    22.0   8.024    30       0      30      30    24
+  2025-04-14T07:45:00 (无)          LightWater        343    30.9   8.024    30       0      30      30    29
+  2025-04-14T19:43:00 Final        LightWater        343    24.7   8.024    30       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 343/343~343)  Naive/LAuW@2025-04-10T20:11:00  ×  Naive/AudioWater@2025-04-11T08:19:00
+    100.0%  ( 343/343~343)  Naive/LAuW@2025-04-10T20:11:00  ×  Learned/AudioWater@2025-04-11T19:37:00
+    100.0%  ( 343/343~343)  Naive/LAuW@2025-04-10T20:11:00  ×  Transfer/LightWater@2025-04-13T08:08:00
+    100.0%  ( 343/343~343)  Naive/LAuW@2025-04-10T20:11:00  ×  (无)/LightWater@2025-04-13T18:54:00
+    100.0%  ( 343/343~343)  Naive/LAuW@2025-04-10T20:11:00  ×  (无)/LightWater@2025-04-14T07:45:00
+    100.0%  ( 343/343~343)  Naive/LAuW@2025-04-10T20:11:00  ×  Final/LightWater@2025-04-14T19:43:00
+
+--- vtf0354（13 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2025-04-11T08:54:00 Naive        LAuW              378    38.5   7.903    40      15      12      13    14
+  2025-04-11T20:25:00 Naive        AudioWater        378    18.4   8.000     0       0       0       0     0
+  2025-04-13T08:50:00 (无)          AudioWater        378    34.9   7.903    28      28       0      28     8
+  2025-04-13T19:26:00 (无)          AudioWater        378    24.8   7.903    30      30       0      30    28
+  2025-04-14T08:29:00 (无)          AudioWater        378    22.0   7.903    30      30       0      30    22
+  2025-04-14T20:19:00 (无)          AudioWater        378    31.5   7.903    30      30       0      30    29
+  2025-04-15T08:18:00 Learned      AudioWater        378    25.6   7.903    30      30       0      30    30
+  2025-04-16T20:42:00 Transfer     LightWater        378    16.3   7.903    30       0      30      30     9
+  2025-04-17T09:45:00 (无)          LightWater        378    16.6   7.903    30       0      30      30     9
+  2025-04-18T09:40:00 (无)          LightWater        378    17.1   7.903    30       0      30      30    22
+  2025-04-18T20:29:00 (无)          LightWater        378    17.1   7.903    30       0      30      30    23
+  2025-04-19T10:15:00 (无)          LightWater        378    18.1   7.903    30       0      30      30    29
+  2025-04-19T21:56:00 Final        LightWater        378    21.1   7.903    30       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 378/378~378)  Naive/LAuW@2025-04-11T08:54:00  ×  Naive/AudioWater@2025-04-11T20:25:00
+    100.0%  ( 378/378~378)  Naive/LAuW@2025-04-11T08:54:00  ×  (无)/AudioWater@2025-04-13T08:50:00
+    100.0%  ( 378/378~378)  Naive/LAuW@2025-04-11T08:54:00  ×  (无)/AudioWater@2025-04-13T19:26:00
+    100.0%  ( 378/378~378)  Naive/LAuW@2025-04-11T08:54:00  ×  (无)/AudioWater@2025-04-14T08:29:00
+    100.0%  ( 378/378~378)  Naive/LAuW@2025-04-11T08:54:00  ×  (无)/AudioWater@2025-04-14T20:19:00
+    100.0%  ( 378/378~378)  Naive/LAuW@2025-04-11T08:54:00  ×  Learned/AudioWater@2025-04-15T08:18:00
+
+--- vtf1233（9 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2024-04-21T09:24:00 Naive        LAu               771    29.4   8.189    60      30      29       0     0
+  2024-04-21T20:00:00 Naive        AudioWater        771    23.1   8.189    30      30       0      30    25
+  2024-04-22T06:54:00 (无)          AudioWater        771    24.5   8.189    21      21       0      21    21
+  2024-04-22T20:20:00 (无)          AudioWater        771    26.6   8.000    30      30       0      30    30
+  2024-04-23T08:28:00 (无)          AudioWater        771    32.1   8.189    30      30       0      30    30
+  2024-04-23T20:38:00 Learned      AudioWater        771    16.6   8.189    30      30       0      30    29
+  2024-04-24T07:02:00 Transfer     LightWater        771    23.1   8.189    30       0      30      30    17
+  2024-04-24T19:28:00 (无)          LightWater        771    15.6   8.189    28       0      28      28    26
+  2024-04-25T08:47:00 Final        LightWater        771    17.3   8.189    30       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 771/771~771)  Naive/LAu@2024-04-21T09:24:00  ×  Naive/AudioWater@2024-04-21T20:00:00
+    100.0%  ( 771/771~771)  Naive/LAu@2024-04-21T09:24:00  ×  (无)/AudioWater@2024-04-22T06:54:00
+    100.0%  ( 771/771~771)  Naive/LAu@2024-04-21T09:24:00  ×  (无)/AudioWater@2024-04-22T20:20:00
+    100.0%  ( 771/771~771)  Naive/LAu@2024-04-21T09:24:00  ×  (无)/AudioWater@2024-04-23T08:28:00
+    100.0%  ( 771/771~771)  Naive/LAu@2024-04-21T09:24:00  ×  Learned/AudioWater@2024-04-23T20:38:00
+    100.0%  ( 771/771~771)  Naive/LAu@2024-04-21T09:24:00  ×  Transfer/LightWater@2024-04-24T07:02:00
+
+--- yqn0020（9 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2024-04-21T06:29:00 Naive        LAu               632    34.8   8.247    60      30      30       0     5
+  2024-04-21T07:12:00 Naive        AudioWater        632    18.4   8.247    30      29       0      29    11
+  2024-04-21T18:26:00 (无)          AudioWater        632    24.8   8.247    29      29       0      29    27
+  2024-04-22T06:08:00 (无)          AudioWater        632    27.0   8.247    30      30       0      30    30
+  2024-04-22T18:17:00 (无)          AudioWater        632    17.6   8.000    30      30       0      30    30
+  2024-04-23T06:16:00 (无)          AudioWater        632    31.6   8.000    30      30       0      30    29
+  2024-04-23T18:38:00 Learned      AudioWater        632    26.7   8.247    29      29       0      29    29
+  2024-04-24T05:57:00 Transfer     LightWater        632    30.2   8.247    30       0      29      29    24
+  2024-04-24T18:32:00 Final        LightWater        632    17.0   8.247    30       0      29      29    29
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 632/632~632)  Naive/LAu@2024-04-21T06:29:00  ×  Naive/AudioWater@2024-04-21T07:12:00
+    100.0%  ( 632/632~632)  Naive/LAu@2024-04-21T06:29:00  ×  (无)/AudioWater@2024-04-21T18:26:00
+    100.0%  ( 632/632~632)  Naive/LAu@2024-04-21T06:29:00  ×  (无)/AudioWater@2024-04-22T06:08:00
+    100.0%  ( 632/632~632)  Naive/LAu@2024-04-21T06:29:00  ×  (无)/AudioWater@2024-04-22T18:17:00
+    100.0%  ( 632/632~632)  Naive/LAu@2024-04-21T06:29:00  ×  (无)/AudioWater@2024-04-23T06:16:00
+    100.0%  ( 632/632~632)  Naive/LAu@2024-04-21T06:29:00  ×  Learned/AudioWater@2024-04-23T18:38:00
+
+--- yqn0133（11 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2024-05-14T09:23:00 Naive        LAu               238    18.9   8.033    40      20      20       0     0
+  2024-05-14T19:05:00 Naive        AudioWater        238    21.0   8.033    30      30       0      30    21
+  2024-05-15T08:46:00 (无)          AudioWater        238    25.0   8.033    30      30       0      30    28
+  2024-05-15T20:27:00 (无)          AudioWater        238    29.6   8.033    30      30       0      30    30
+  2024-05-16T08:09:00 (无)          AudioWater        238    30.2   8.033    30      30       0      30    30
+  2024-05-16T19:12:00 (无)          AudioWater        238    27.7   8.033    30      30       0      30    30
+  2024-05-17T08:35:00 Learned      AudioWater        238    20.8   8.033    30      30       0      30    30
+  2024-05-17T19:04:00 Transfer     LightWater        238    23.3   8.033    32       0      30      30    13
+  2024-05-18T08:34:00 (无)          LightWater        238    27.9   8.033    32       0      30      30    21
+  2024-05-18T20:35:00 (无)          LightWater        238    30.0   8.033    32       0      30      30    28
+  2024-05-19T09:05:00 Final        LightWater        238    22.0   8.033    32       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 238/238~238)  Naive/LAu@2024-05-14T09:23:00  ×  Naive/AudioWater@2024-05-14T19:05:00
+    100.0%  ( 238/238~238)  Naive/LAu@2024-05-14T09:23:00  ×  (无)/AudioWater@2024-05-15T08:46:00
+    100.0%  ( 238/238~238)  Naive/LAu@2024-05-14T09:23:00  ×  (无)/AudioWater@2024-05-15T20:27:00
+    100.0%  ( 238/238~238)  Naive/LAu@2024-05-14T09:23:00  ×  (无)/AudioWater@2024-05-16T08:09:00
+    100.0%  ( 238/238~238)  Naive/LAu@2024-05-14T09:23:00  ×  (无)/AudioWater@2024-05-16T19:12:00
+    100.0%  ( 238/238~238)  Naive/LAu@2024-05-14T09:23:00  ×  Learned/AudioWater@2024-05-17T08:35:00
+
+--- yqn0240（6 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2025-02-14T08:12:00 Naive        LAuW              563    34.6   8.205    60      20      20      20    13
+  2025-02-14T19:55:00 Naive        AudioWater        511    28.9   8.205    30      30       0      30    12
+  2025-02-15T07:55:00 (无)          AudioWater        561    23.5   8.205    30      29       0      29    28
+  2025-02-15T19:49:00 Learned      AudioWater        562    21.9   8.205    30      30       0      30    30
+  2025-02-16T07:40:00 Transfer     LightWater        560    26.2   8.205    30       0      30      30    25
+  2025-02-16T19:38:00 Final        LightWater        561    36.2   8.205    29       0      29      29    29
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 511/563~511)  Naive/LAuW@2025-02-14T08:12:00  ×  Naive/AudioWater@2025-02-14T19:55:00
+    100.0%  ( 561/563~561)  Naive/LAuW@2025-02-14T08:12:00  ×  (无)/AudioWater@2025-02-15T07:55:00
+    100.0%  ( 562/563~562)  Naive/LAuW@2025-02-14T08:12:00  ×  Learned/AudioWater@2025-02-15T19:49:00
+    100.0%  ( 560/563~560)  Naive/LAuW@2025-02-14T08:12:00  ×  Transfer/LightWater@2025-02-16T07:40:00
+    100.0%  ( 561/563~561)  Naive/LAuW@2025-02-14T08:12:00  ×  Final/LightWater@2025-02-16T19:38:00
+    100.0%  ( 561/561~562)  (无)/AudioWater@2025-02-15T07:55:00  ×  Learned/AudioWater@2025-02-15T19:49:00
+
+--- yqn0411（7 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2024-11-14T20:00:00 Naive        LAuW              420    39.5   8.280    58      19      19      20    35
+  2024-11-15T07:52:00 Naive        AudioWater        420    26.3   8.280    30      28       0      28    27
+  2024-11-15T20:08:00 (无)          AudioWater        420    14.9   8.280    31      29       0      29    26
+  2024-11-16T07:38:00 Learned      AudioWater        420    15.6   8.280    31      30       0      30    30
+  2024-11-16T19:28:00 Transfer     LightWater        420    21.1   8.280    31       0      29      29     7
+  2024-11-17T07:40:00 (无)          LightWater        420    32.3   8.280    30       0      28      28    25
+  2024-11-17T19:40:00 Final        LightWater        420    17.5   8.280    31       0      29      29    29
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 420/420~420)  Naive/LAuW@2024-11-14T20:00:00  ×  Naive/AudioWater@2024-11-15T07:52:00
+    100.0%  ( 420/420~420)  Naive/LAuW@2024-11-14T20:00:00  ×  (无)/AudioWater@2024-11-15T20:08:00
+    100.0%  ( 420/420~420)  Naive/LAuW@2024-11-14T20:00:00  ×  Learned/AudioWater@2024-11-16T07:38:00
+    100.0%  ( 420/420~420)  Naive/LAuW@2024-11-14T20:00:00  ×  Transfer/LightWater@2024-11-16T19:28:00
+    100.0%  ( 420/420~420)  Naive/LAuW@2024-11-14T20:00:00  ×  (无)/LightWater@2024-11-17T07:40:00
+    100.0%  ( 420/420~420)  Naive/LAuW@2024-11-14T20:00:00  ×  Final/LightWater@2024-11-17T19:40:00
+
+--- yqn1018（6 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2024-11-12T07:38:00 Naive        LAuW              436    31.1   8.243    59      20      20      19    23
+  2024-11-12T19:06:00 Naive        AudioWater        436    20.6   8.243    31      30       0      30    20
+  2024-11-13T06:54:00 Learned      AudioWater        436    24.6   8.243    32      30       0      30    30
+  2024-11-14T07:09:00 Transfer     LightWater        436    31.6   8.243    32       0      30      30    14
+  2024-11-14T19:16:00 (无)          LightWater        436    25.3   8.243    30       0      29      29    28
+  2024-11-15T07:07:00 Final        LightWater        436    23.3   8.243    30       0      29      29    29
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 436/436~436)  Naive/LAuW@2024-11-12T07:38:00  ×  Naive/AudioWater@2024-11-12T19:06:00
+    100.0%  ( 436/436~436)  Naive/LAuW@2024-11-12T07:38:00  ×  Learned/AudioWater@2024-11-13T06:54:00
+    100.0%  ( 436/436~436)  Naive/LAuW@2024-11-12T07:38:00  ×  Transfer/LightWater@2024-11-14T07:09:00
+    100.0%  ( 436/436~436)  Naive/LAuW@2024-11-12T07:38:00  ×  (无)/LightWater@2024-11-14T19:16:00
+    100.0%  ( 436/436~436)  Naive/LAuW@2024-11-12T07:38:00  ×  Final/LightWater@2024-11-15T07:07:00
+    100.0%  ( 436/436~436)  Naive/AudioWater@2024-11-12T19:06:00  ×  Learned/AudioWater@2024-11-13T06:54:00
+
+--- yqn1130（12 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2023-04-22T23:08:00 Naive        AudioWater        141    19.5   7.446    30      30       0      30     8
+  2023-04-23T13:19:00 (无)          AudioWater        141    17.3   7.446    30      30       0      30    21
+  2023-04-23T23:49:00 (无)          AudioWater        141    21.9   7.446    30      30       0      30    28
+  2023-04-24T11:52:00 (无)          AudioWater        141    17.1   7.446    30      30       0      30    30
+  2023-04-24T23:06:00 (无)          AudioWater        141    33.2   7.446    30      30       0      30    30
+  2023-04-25T11:40:00 (无)          AudioWater        141    36.5   7.446    30      30       0      30    30
+  2023-04-25T22:07:00 Learned      AudioWater        141    30.7   7.446    30      30       0      30    30
+  2023-04-26T09:54:00 Transfer     LightWater        141    27.7   7.446    30       0      30      30    20
+  2023-04-26T21:26:00 (无)          LightWater        141    27.1   7.446    30       0      30      30    30
+  2023-04-27T11:21:00 (无)          LightWater        141    18.8   7.446    30       0      30      30    30
+  2023-04-27T21:24:00 (无)          LightWater        141    18.6   7.446    30       0      30      30    30
+  2023-04-28T09:10:00 Final        LightWater        141    36.7   7.446    30       0      30      30    30
+  细胞交集（前 6 对，按占较小集合比例）：
+    100.0%  ( 141/141~141)  Naive/AudioWater@2023-04-22T23:08:00  ×  (无)/AudioWater@2023-04-23T13:19:00
+    100.0%  ( 141/141~141)  Naive/AudioWater@2023-04-22T23:08:00  ×  (无)/AudioWater@2023-04-23T23:49:00
+    100.0%  ( 141/141~141)  Naive/AudioWater@2023-04-22T23:08:00  ×  (无)/AudioWater@2023-04-24T11:52:00
+    100.0%  ( 141/141~141)  Naive/AudioWater@2023-04-22T23:08:00  ×  (无)/AudioWater@2023-04-24T23:06:00
+    100.0%  ( 141/141~141)  Naive/AudioWater@2023-04-22T23:08:00  ×  (无)/AudioWater@2023-04-25T11:40:00
+    100.0%  ( 141/141~141)  Naive/AudioWater@2023-04-22T23:08:00  ×  Learned/AudioWater@2023-04-25T22:07:00
+
+====================================================================================================
+队列 LightAudioBaseline：6 个会话
+====================================================================================================
+
+[阶段 × 设计] 会话数：
+  Phase=Naive        Design=LLw            n=2
+  Phase=Naive        Design=LightWater     n=4
+
+--- yqn0022（1 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2022-08-07T09:24:00 Naive        LLw               527    22.4   8.000    40       0      40      30     0
+  细胞交集（前 6 对，按占较小集合比例）：
+
+--- yqn0044（1 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2022-07-04T21:42:00 Naive        LLw               348    19.3   8.000    40       0      40      30     0
+  细胞交集（前 6 对，按占较小集合比例）：
+
+--- yqn0404（1 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2023-05-06T18:07:00 Naive        LightWater        612    16.6   8.267    30       0      30      30     0
+  细胞交集（前 6 对，按占较小集合比例）：
+
+--- yqn0440（1 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2023-05-06T18:55:00 Naive        LightWater        440    23.3   8.082    30       0      30      30     0
+  细胞交集（前 6 对，按占较小集合比例）：
+
+--- yqn1013（1 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2025-01-10T08:28:00 Naive        LightWater        446    40.3   7.712    30       0      30      30    21
+  细胞交集（前 6 对，按占较小集合比例）：
+
+--- yqn1014（1 个会话）---
+  datetime          phase        design          nCell  durMin      fs  nCue  nSound  nLight  nWater  nHit
+  2025-01-10T09:27:00 Naive        LightWater        333    50.6   8.294    30       0      29      29    25
+  细胞交集（前 6 对，按占较小集合比例）：

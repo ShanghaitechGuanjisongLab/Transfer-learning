@@ -1,0 +1,200 @@
+[
+  {
+    "group": "pooled",
+    "pair": "Learned-Transfer",
+    "metric": "tau",
+    "n_mouse": 11,
+    "within_med": 0.8417588083816431,
+    "null_med": 0.652551051133608,
+    "null_p95": 0.9192137699238732,
+    "p": 0.18018018018018017,
+    "n_over": 4
+  },
+  {
+    "group": "pooled",
+    "pair": "Learned-Transfer",
+    "metric": "geom",
+    "n_mouse": 11,
+    "within_med": 0.8947368421052632,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.6756756756756757,
+    "n_over": 0
+  },
+  {
+    "group": "pooled",
+    "pair": "Learned-Final",
+    "metric": "tau",
+    "n_mouse": 11,
+    "within_med": 0.8717482842898922,
+    "null_med": 0.587429240292081,
+    "null_p95": 0.9170639977363303,
+    "p": 0.18018018018018017,
+    "n_over": 1
+  },
+  {
+    "group": "pooled",
+    "pair": "Learned-Final",
+    "metric": "geom",
+    "n_mouse": 11,
+    "within_med": 0.8947368421052632,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.6936936936936937,
+    "n_over": 0
+  },
+  {
+    "group": "pooled",
+    "pair": "Transfer-Final",
+    "metric": "tau",
+    "n_mouse": 11,
+    "within_med": 0.7639951382048753,
+    "null_med": 0.5908598661325595,
+    "null_p95": 0.9155763821229231,
+    "p": 0.32432432432432434,
+    "n_over": 0
+  },
+  {
+    "group": "pooled",
+    "pair": "Transfer-Final",
+    "metric": "geom",
+    "n_mouse": 11,
+    "within_med": 0.8947368421052632,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.7837837837837838,
+    "n_over": 0
+  },
+  {
+    "group": "MOp2/3",
+    "pair": "Learned-Transfer",
+    "metric": "tau",
+    "n_mouse": 11,
+    "within_med": 0.7955517300977888,
+    "null_med": 0.5204159932056841,
+    "null_p95": 0.842073419937763,
+    "p": 0.11711711711711711,
+    "n_over": 4
+  },
+  {
+    "group": "MOp2/3",
+    "pair": "Learned-Transfer",
+    "metric": "geom",
+    "n_mouse": 11,
+    "within_med": 0.9473684210526316,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.25225225225225223,
+    "n_over": 0
+  },
+  {
+    "group": "MOp2/3",
+    "pair": "Learned-Final",
+    "metric": "tau",
+    "n_mouse": 11,
+    "within_med": 0.8423790849320167,
+    "null_med": 0.5168628355489325,
+    "null_p95": 0.8419576627429085,
+    "p": 0.06306306306306306,
+    "n_over": 6
+  },
+  {
+    "group": "MOp2/3",
+    "pair": "Learned-Final",
+    "metric": "geom",
+    "n_mouse": 11,
+    "within_med": 0.8947368421052632,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.7747747747747747,
+    "n_over": 0
+  },
+  {
+    "group": "MOp2/3",
+    "pair": "Transfer-Final",
+    "metric": "tau",
+    "n_mouse": 11,
+    "within_med": 0.8075185789861478,
+    "null_med": 0.5532110507423083,
+    "null_p95": 0.884608304785222,
+    "p": 0.14414414414414414,
+    "n_over": 2
+  },
+  {
+    "group": "MOp2/3",
+    "pair": "Transfer-Final",
+    "metric": "geom",
+    "n_mouse": 11,
+    "within_med": 0.8947368421052632,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.6846846846846847,
+    "n_over": 0
+  },
+  {
+    "group": "MOp5",
+    "pair": "Learned-Transfer",
+    "metric": "tau",
+    "n_mouse": 10,
+    "within_med": 0.9021405072481317,
+    "null_med": 0.6701456727897448,
+    "null_p95": 0.9318554654265685,
+    "p": 0.08791208791208792,
+    "n_over": 2
+  },
+  {
+    "group": "MOp5",
+    "pair": "Learned-Transfer",
+    "metric": "geom",
+    "n_mouse": 10,
+    "within_med": 0.9473684210526316,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.2087912087912088,
+    "n_over": 0
+  },
+  {
+    "group": "MOp5",
+    "pair": "Learned-Final",
+    "metric": "tau",
+    "n_mouse": 10,
+    "within_med": 0.8618550192838706,
+    "null_med": 0.6216311370233589,
+    "null_p95": 0.9328094464879944,
+    "p": 0.18681318681318682,
+    "n_over": 0
+  },
+  {
+    "group": "MOp5",
+    "pair": "Learned-Final",
+    "metric": "geom",
+    "n_mouse": 10,
+    "within_med": 0.9473684210526316,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.18681318681318682,
+    "n_over": 0
+  },
+  {
+    "group": "MOp5",
+    "pair": "Transfer-Final",
+    "metric": "tau",
+    "n_mouse": 10,
+    "within_med": 0.8374709177815729,
+    "null_med": 0.5794146258848059,
+    "null_p95": 0.9340300414727104,
+    "p": 0.21978021978021978,
+    "n_over": 2
+  },
+  {
+    "group": "MOp5",
+    "pair": "Transfer-Final",
+    "metric": "geom",
+    "n_mouse": 10,
+    "within_med": 0.9210526315789473,
+    "null_med": 0.8947368421052632,
+    "null_p95": 0.9473684210526316,
+    "p": 0.21978021978021978,
+    "n_over": 0
+  }
+]

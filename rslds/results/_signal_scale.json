@@ -1,0 +1,116 @@
+[
+  {
+    "file": "ALB_vtf0233_20240421-0753_LAu.mat",
+    "cohort": "ALB",
+    "shape": [
+      13755,
+      550
+    ],
+    "fs": 7.984322866765032,
+    "frac_neg": 0.0,
+    "glob_min": 10.901176452636719,
+    "glob_max": 937.4485473632812,
+    "glob_median": 183.02643585205078,
+    "cellmean_median": 183.89451579985206,
+    "cellmean_min": 34.57147264373125,
+    "cellmean_max": 472.90121260282126,
+    "cellstd_median": 12.181566303859716,
+    "cv_across_cells": 0.6158384212384049,
+    "frac_cellmean_neg": 0.0
+  },
+  {
+    "file": "ALB_vtf0233_20240421-2045_AudioWater.mat",
+    "cohort": "ALB",
+    "shape": [
+      11932,
+      550
+    ],
+    "fs": 7.984322866765032,
+    "frac_neg": 0.0017313259988419225,
+    "glob_min": -27.825347900390625,
+    "glob_max": 812.5616455078125,
+    "glob_median": 130.0615692138672,
+    "cellmean_median": 129.65234303898035,
+    "cellmean_min": -1.3231644027920983e-09,
+    "cellmean_max": 416.9689565256383,
+    "cellstd_median": 8.929578329268274,
+    "cv_across_cells": 0.6261601507193347,
+    "frac_cellmean_neg": 0.0036363636363636364
+  },
+  {
+    "file": "ALB_vtf0233_20240422-0833_AudioWater.mat",
+    "cohort": "ALB",
+    "shape": [
+      17260,
+      550
+    ],
+    "fs": 7.984322866765032,
+    "frac_neg": 0.0,
+    "glob_min": 11.069779396057129,
+    "glob_max": 747.8700561523438,
+    "glob_median": 95.50445175170898,
+    "cellmean_median": 96.35211977400618,
+    "cellmean_min": 29.78023415296959,
+    "cellmean_max": 292.32972839461553,
+    "cellstd_median": 9.296041071402826,
+    "cv_across_cells": 0.5727866451900696,
+    "frac_cellmean_neg": 0.0
+  },
+  {
+    "file": "LightAudioBaseline_yqn0022_20220807-0924_LLw.mat",
+    "cohort": "LightAudioBaseline",
+    "shape": [
+      10752,
+      527
+    ],
+    "fs": 8.0,
+    "frac_neg": 0.0,
+    "glob_min": 24.618955612182617,
+    "glob_max": 823.319580078125,
+    "glob_median": 45.83403396606445,
+    "cellmean_median": 45.98678464761802,
+    "cellmean_min": 32.11565351628122,
+    "cellmean_max": 157.12396787036033,
+    "cellstd_median": 2.5709120510662085,
+    "cv_across_cells": 0.2898672763730519,
+    "frac_cellmean_neg": 0.0
+  },
+  {
+    "file": "LightAudioBaseline_yqn0044_20220704-2142_LLw.mat",
+    "cohort": "LightAudioBaseline",
+    "shape": [
+      9266,
+      348
+    ],
+    "fs": 8.0,
+    "frac_neg": 0.0,
+    "glob_min": 22.65213394165039,
+    "glob_max": 769.140625,
+    "glob_median": 67.22776412963867,
+    "cellmean_median": 67.45916831763547,
+    "cellmean_min": 40.25757115164612,
+    "cellmean_max": 202.02013207346477,
+    "cellstd_median": 3.7399949298293973,
+    "cv_across_cells": 0.3380610709862686,
+    "frac_cellmean_neg": 0.0
+  },
+  {
+    "file": "LightAudioBaseline_yqn0404_20230506-1807_LightWater.mat",
+    "cohort": "LightAudioBaseline",
+    "shape": [
+      8210,
+      612
+    ],
+    "fs": 8.26652348021658,
+    "frac_neg": 0.0,
+    "glob_min": 18.493715286254883,
+    "glob_max": 638.7197875976562,
+    "glob_median": 42.09318733215332,
+    "cellmean_median": 41.89744420556872,
+    "cellmean_min": 29.571183045279238,
+    "cellmean_max": 113.92518747959299,
+    "cellstd_median": 2.4376685382984915,
+    "cv_across_cells": 0.31148042806209447,
+    "frac_cellmean_neg": 0.0
+  }
+]

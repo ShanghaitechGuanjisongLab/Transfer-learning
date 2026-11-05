@@ -1,0 +1,328 @@
+% refs.bib —— 新分析方法（漂移场 / 非平衡 / 动力学可识别性）参考文献
+% 生成日期：2026-10-22
+% 说明：所有条目的 DOI / 卷期页 / PMID 均已通过 Crossref、Europe PMC、
+%       Semantic Scholar 或 arXiv API 实查核对。标注 UNVERIFIED 的条目引用前请自行确认。
+%
+% 已修正的历史错误（勿再沿用）：
+%   1) eLife 59716 不是 Duncker & Sahani，而是 Luo et al. 2020（Neuropixels 慢性植入）
+%      → Duncker & Sahani 实为 Curr Opin Neurobiol 2021;70:163-170
+%   2) rSLDS 的 arXiv 编号是 1610.08466，不是 1610.08496
+%      （1610.08496 = Davies et al., Potts model on cubic graphs，无关）
+
+% ============================================================
+% A. 漂移场重建 + Fokker-Planck / Helmholtz 分解
+% ============================================================
+
+@article{friedrich1997description,
+  author  = {Friedrich, R. and Peinke, J.},
+  title   = {Description of a Turbulent Cascade by a {Fokker-Planck} Equation},
+  journal = {Physical Review Letters},
+  volume  = {78},
+  number  = {5},
+  pages   = {863--866},
+  year    = {1997},
+  doi     = {10.1103/PhysRevLett.78.863},
+  note    = {Published 3 February 1997}
+}
+
+@article{qiu2022mapping,
+  author  = {Qiu, Xiaojie and Zhang, Yan and Martin-Rufino, Jorge D. and Weng, Chen and
+             Hosseinzadeh, Shayan and Yang, Dian and Pogson, Alexis N. and Hein, Marco Y. and
+             Hoi Joseph Min, Kyung and Grody, Eric I. and Shurtleff, Matthew J. and
+             Yuan, Ruoxi and Xu, Shuangquan and Ma, Yan and Replogle, Joseph M. and
+             Lander, Eric S. and Darmanis, Spyros and Bahar, Ivet and Sankaran, Vijay G. and
+             Xing, Jinchuan and Weissman, Jonathan S.},
+  title   = {Mapping transcriptomic vector fields of single cells},
+  journal = {Cell},
+  volume  = {185},
+  number  = {4},
+  pages   = {690--711.e45},
+  year    = {2022},
+  doi     = {10.1016/j.cell.2021.12.045},
+  pmid    = {35108499},
+  note    = {Code: \url{https://github.com/aristoteleo/dynamo-release}}
+}
+
+% ============================================================
+% B. 非平衡 / 细致平衡检验（平衡吸引子 vs 驱动稳态）
+% ============================================================
+
+@article{battle2016broken,
+  author  = {Battle, Christopher and Broedersz, Chase P. and Fakhri, Nikta and
+             Geyer, Veikko F. and Howard, Jonathon and Schmidt, Christoph F. and
+             MacKintosh, Fred C.},
+  title   = {Broken detailed balance at mesoscopic scales in active biological systems},
+  journal = {Science},
+  volume  = {352},
+  number  = {6285},
+  pages   = {604--607},
+  year    = {2016},
+  doi     = {10.1126/science.aac8167},
+  pmid    = {27126047}
+}
+
+@article{mura2019mesoscopic,
+  author  = {Mura, Federica and Gradziuk, Grzegorz and Broedersz, Chase P.},
+  title   = {Mesoscopic non-equilibrium measures can reveal intrinsic features of the active driving},
+  journal = {Soft Matter},
+  volume  = {15},
+  number  = {40},
+  pages   = {8067--8076},
+  year    = {2019},
+  doi     = {10.1039/c9sm01169b},
+  pmid    = {31576897}
+}
+
+% ============================================================
+% C. 可识别性：从观测数据能推断多少动力学
+% ============================================================
+
+@article{duncker2021dynamics,
+  author  = {Duncker, Lea and Sahani, Maneesh},
+  title   = {Dynamics on the manifold: Identifying computational dynamical activity
+             from neural population recordings},
+  journal = {Current Opinion in Neurobiology},
+  volume  = {70},
+  pages   = {163--170},
+  year    = {2021},
+  doi     = {10.1016/j.conb.2021.10.014},
+  pmid    = {34837752},
+  note    = {Epub 2021-11-24}
+}
+
+% ============================================================
+% D. 神经流形 / 群体动力学背景
+% ============================================================
+
+@article{gallego2017neural,
+  author  = {Gallego, Juan A. and Perich, Matthew G. and Miller, Lee E. and Solla, Sara A.},
+  title   = {Neural Manifolds for the Control of Movement},
+  journal = {Neuron},
+  volume  = {94},
+  number  = {5},
+  pages   = {978--984},
+  year    = {2017},
+  doi     = {10.1016/j.neuron.2017.05.025},
+  pmid    = {28595054}
+}
+
+@article{gallego2018cortical,
+  author  = {Gallego, Juan A. and Perich, Matthew G. and Naufel, Stephanie N. and
+             Ethier, Christian and Solla, Sara A. and Miller, Lee E.},
+  title   = {Cortical population activity within a preserved neural manifold underlies
+             multiple motor behaviors},
+  journal = {Nature Communications},
+  volume  = {9},
+  number  = {1},
+  pages   = {4233},
+  year    = {2018},
+  doi     = {10.1038/s41467-018-06560-z},
+  pmid    = {30315158}
+}
+
+@article{vyas2020computation,
+  author  = {Vyas, Saurabh and Golub, Matthew D. and Sussillo, David and Shenoy, Krishna V.},
+  title   = {Computation Through Neural Population Dynamics},
+  journal = {Annual Review of Neuroscience},
+  volume  = {43},
+  pages   = {249--275},
+  year    = {2020},
+  doi     = {10.1146/annurev-neuro-092619-094115},
+  pmid    = {32640928}
+}
+
+@article{cunningham2014dimensionality,
+  author  = {Cunningham, John P. and Yu, Byron M.},
+  title   = {Dimensionality reduction for large-scale neural recordings},
+  journal = {Nature Neuroscience},
+  volume  = {17},
+  number  = {11},
+  pages   = {1500--1509},
+  year    = {2014},
+  doi     = {10.1038/nn.3776}
+}
+
+% ============================================================
+% E. 钙成像观测模型：反卷积（本项目所有动力学分析的前置步骤）
+% ============================================================
+
+@article{friedrich2017fast,
+  author  = {Friedrich, Johannes and Zhou, Pengcheng and Paninski, Liam},
+  title   = {Fast online deconvolution of calcium imaging data},
+  journal = {PLOS Computational Biology},
+  volume  = {13},
+  number  = {3},
+  pages   = {e1005423},
+  year    = {2017},
+  doi     = {10.1371/journal.pcbi.1005423},
+  pmid    = {28291787},
+  pmcid   = {PMC5370160}
+}
+
+% ============================================================
+% F. 误差变量衰减（我们的 A_hat ≈ A·rho_rel 偏倚）
+% ============================================================
+
+@misc{garon2026errorinvariables,
+  author  = {Garon, Isaac and Keeley, Stephen and Williams, Alex H.},
+  title   = {Tracking the Fidelity of Internal Neural Representations with
+             Error-In-Variables Regression},
+  year    = {2026},
+  howpublished = {bioRxiv preprint},
+  doi     = {10.64898/2026.04.22.720005},
+  note    = {Preprint, first posted 2026-04-24}
+}
+
+% ============================================================
+% G. 跨 session / 跨个体对齐（备选）
+% ============================================================
+
+@inproceedings{chen2015reduced,
+  author    = {Chen, Po-Hsuan (Cameron) and Chen, Janice and Yeshurun, Yaara and
+               Hasson, Uri and Haxby, James and Ramadge, Peter J.},
+  title     = {A Reduced-Dimension fMRI Shared Response Model},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {28},
+  year      = {2015}
+}
+
+% UNVERIFIED —— 出处未核实，引用前请确认
+% @article{seely2016tensor,
+%   author  = {Seely, Jeffrey S. and others},
+%   title   = {Tensor Analysis With n-Mode Generalized Canonical Correlation Analysis},
+%   journal = {Frontiers in Applied Mathematics and Statistics},
+%   year    = {2016}
+% }
+
+% ============================================================
+% H. 备选模型（非线性潜动力学）
+% ============================================================
+
+@inproceedings{linderman2016recurrent,
+  author    = {Linderman, Scott W. and Miller, Andrew C. and Adams, Ryan P. and
+               Blei, David M. and Paninski, Liam and Johnson, Matthew J.},
+  title     = {Recurrent switching linear dynamical systems},
+  booktitle = {Artificial Intelligence and Statistics (AISTATS)},
+  year      = {2017},
+  eprint    = {1610.08466},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML}
+}
+
+@inproceedings{chen2018neural,
+  author    = {Chen, Ricky T. Q. and Rubanova, Yulia and Bettencourt, Jesse and
+               Duvenaud, David},
+  title     = {Neural Ordinary Differential Equations},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {31},
+  year      = {2018},
+  eprint    = {1806.07366},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+
+@inproceedings{rubanova2019latent,
+  author    = {Rubanova, Yulia and Chen, Ricky T. Q. and Duvenaud, David},
+  title     = {Latent {ODEs} for Irregularly-Sampled Time Series},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {32},
+  year      = {2019},
+  eprint    = {1907.03907},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+
+% ============================================================
+% I. rSLDS 神经科学谱系（原有叙事所依托的实证）
+%    全部经 Europe PMC 实查；卷期页已按数据库原文更正
+% ============================================================
+
+@article{nair2023approximate,
+  author  = {Nair, Aditya and Karigo, Tomomi and Yang, Bin and Ganguli, Surya and
+             Schnitzer, Mark J. and Linderman, Scott W. and Anderson, David J. and
+             Kennedy, Ann},
+  title   = {An approximate line attractor in the hypothalamus encodes an aggressive state},
+  journal = {Cell},
+  volume  = {186},
+  number  = {1},
+  pages   = {178--193.e15},
+  year    = {2023},
+  doi     = {10.1016/j.cell.2022.11.027},
+  pmid    = {36608653},
+  pmcid   = {PMC9990527}
+}
+
+@article{mountoufaris2024line,
+  author  = {Mountoufaris, George and Nair, Aditya and Yang, Bin and Kim, Dong-Wook and
+             Vinograd, Arash and Kim, Sangsoo and Linderman, Scott W. and
+             Anderson, David J.},
+  title   = {A line attractor encoding a persistent internal state requires neuropeptide signaling},
+  journal = {Cell},
+  volume  = {187},
+  number  = {21},
+  pages   = {5998--6015.e18},
+  year    = {2024},
+  doi     = {10.1016/j.cell.2024.08.015},
+  pmid    = {39191257},
+  pmcid   = {PMC11490375}
+}
+
+@article{vinograd2024causal,
+  author  = {Vinograd, Arash and Nair, Aditya and Kim, Joseph H. and
+             Linderman, Scott W. and Anderson, David J.},
+  title   = {Causal evidence of a line attractor encoding an affective state},
+  journal = {Nature},
+  volume  = {634},
+  number  = {8035},
+  pages   = {910--918},
+  year    = {2024},
+  doi     = {10.1038/s41586-024-07915-x},
+  pmid    = {39142337},
+  pmcid   = {PMC11499281},
+  note    = {光遗传扰动 + 回归检验：吸引子的因果证据（新策略\emph{扰动/回归检验}的直接范本）}
+}
+
+@article{liu2024encoding,
+  author  = {Liu, Mengyu and Nair, Aditya and Coria, Nestor and
+             Linderman, Scott W. and Anderson, David J.},
+  title   = {Encoding of female mating dynamics by a hypothalamic line attractor},
+  journal = {Nature},
+  volume  = {634},
+  number  = {8035},
+  pages   = {901--909},
+  year    = {2024},
+  doi     = {10.1038/s41586-024-07916-w},
+  pmid    = {39142338},
+  pmcid   = {PMC11499253}
+}
+
+@article{nair2025neural,
+  author  = {Nair, Aditya and Vinograd, Arash and Liu, Mengyu and Mountoufaris, George and
+             Linderman, Scott W. and Anderson, David J.},
+  title   = {The neural computation of affective internal states in the hypothalamus:
+             A dynamical systems perspective},
+  journal = {Neuron},
+  volume  = {113},
+  number  = {23},
+  pages   = {3887--3907},
+  year    = {2025},
+  doi     = {10.1016/j.neuron.2025.11.003},
+  pmid    = {41344293},
+  note    = {Perspective/Review。\textbf{非开放获取}（Europe PMC: isOpenAccess=N）}
+}
+
+@article{leow2026cortical,
+  author  = {Leow, Yi Ning and Senol, Ezgi and Qian, Xin and Wang, Xiaona and
+             Nair, Aditya and Khoo, Olivia and Liu, Xiaoyan and Li, Yu Feng and
+             Wang, Ming and Sharma, Shreya and Zhang, Yi and Han, Xiao and
+             Fortier, Marc V. and Meaney, Michael J. and Chong, Yap Seng and
+             Fogel, Anna M. and McCrickerd, Keri and Tan, Ai Peng and Wang, Fang and
+             Yuan, Ti-Fei and Zhou, Jian Hong and Mohammad, Hazirah and Fu, Yuhao},
+  title   = {A cortical-hypothalamic neural circuit for compulsive eating in mice},
+  journal = {Neuron},
+  year    = {2026},
+  doi     = {10.1016/j.neuron.2026.07.005},
+  pmid    = {42532033},
+  note    = {Published online 2026-07-30. PII S0896-6273(26)00534-9.
+             非开放获取。作者列表可能不全（Europe PMC authorString 被截断）}
+}

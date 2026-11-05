@@ -1,5 +1,7 @@
 % Fig1B (English): AL Light vs LA Light learning curve + sigmoid fit
-% 来自 A2L_L.mat (AL Light, delayed: 1 s cue, water at cue+2.5 s) 和 L2A_L.mat (LA Light)，用1-7天数据
+% 来自 A2L_L_0928.mat (AL Light, delayed: 1 s cue, water at cue+2.5 s) 和 L2A_L_0928.mat (LA Light)，使用全部 block
+% 曲线不做 block 截断，各 block 的组均值±SEM 由 UniExp.LearningSummarize 自动补齐（缺失 block 记 NaN）
+% sigmoid 拟合含全部 block，且下渐近线固定为 0（lower=0，用户 2026-10-04 指定）
 % 统计口径（2026-09-13 用户裁定）：组间差异只引 blocks 1-7 线性混合模型 Group 效应 p；不做斜率置换检验
 
 %% --- 0. 项目加载 ---
@@ -18,8 +20,8 @@ if ~exist('UniExp.DataSet','class')
 end
 
 %% --- 1. 加载数据 ---
-DataSetA2L = UniExp.DataSet('\\Data-Server-2\个人数据\杨青宁\202607\行为学\A2L_L.mat');
-DataSetL   = UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\L2A_L_v3.mat");
+DataSetA2L = UniExp.DataSet('\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\A2L_L_0928.mat');
+DataSetL   = UniExp.DataSet("\\Data-Server-2\个人数据\杨青宁\202609\行为学数据\L2A_L_0928.mat");
 
 %% --- 2. 提取会话表（每鼠每 block 一行） ---
 % 尝试 TableQuery，兼容不同字段名
@@ -57,28 +59,30 @@ fprintf('AL Light: %d blocks, %d unique mice\n', ...
 fprintf('LA Light: %d blocks, %d unique mice\n', ...
 	height(SessL),   numel(unique(SessL.Mouse)));
 
-% 限制到 Block 1-7
-allBlocks7 = allBlocks(allBlocks.Block <= 7, :);
-if isempty(allBlocks7)
-	error('Fig1B:NoBlocks1to7', 'No blocks in range 1-7.');
+% 使用全部 block（不做 1-7 截断）
+allBlocksAll = allBlocks;
+if isempty(allBlocksAll)
+	error('Fig1B:EmptyData', 'No blocks available.');
 end
 
-% 重新编号 Block（1-7 连续）
-allBlocks7 = sortrows(allBlocks7, ["Group","Mouse","DateTime"]);
-allBlocks7 = iAddBlockIndex(allBlocks7);
+% 统计检验沿用既有口径：仍只用 blocks 1-7 的组效应 p（用户 2026-09-13 裁定）
+allBlocks7 = allBlocksAll(allBlocksAll.Block <= 7, :);
 
-%% --- 3. UniExp.LearningSummarize ---
-blockForSummary = allBlocks7(:, ["Mouse","DateTime","Performance","Group"]);
+%% --- 3. UniExp.LearningSummarize（全部 block；缺失 block 由该函数补齐） ---
+blockForSummary = allBlocksAll(:, ["Mouse","DateTime","Performance","Group"]);
 blockForSummary.Group = string(blockForSummary.Group);
 blockForSummary = sortrows(blockForSummary, ["Group","Mouse","DateTime"]);
 [~, SummaryL] = evalc('UniExp.LearningSummarize(blockForSummary)');
 
 [meanMat, semMat, x] = iUnpackLearningSummarize(SummaryL, ["AL_Light","LA_Light"]);
-nMat = iComputeNByBlock(allBlocks7, x, ["AL_Light","LA_Light"]);
+nMat = iComputeNByBlock(allBlocksAll, x, ["AL_Light","LA_Light"]);
 
-%% --- 4. 提取用于 sigmoid 拟合的数据 ---
-displayedAL = iFilterToDisplayedMice(allBlocks7(string(allBlocks7.Group) == "AL_Light", :));
-displayedL  = iFilterToDisplayedMice(allBlocks7(string(allBlocks7.Group) == "LA_Light", :));
+% 横轴长度：取数据最大 block 数与补齐后曲线长度的较大者
+xMax = max([max(allBlocksAll.Block), size(meanMat, 1), size(nMat, 1)]);
+
+%% --- 4. 提取用于 sigmoid 拟合的数据（全部 block） ---
+displayedAL = iFilterToDisplayedMice(allBlocksAll(string(allBlocksAll.Group) == "AL_Light", :));
+displayedL  = iFilterToDisplayedMice(allBlocksAll(string(allBlocksAll.Group) == "LA_Light", :));
 
 fitAL = iFitSigmoidCurve(displayedAL, "AL_Light");
 fitL  = iFitSigmoidCurve(displayedL,  "LA_Light");
@@ -91,7 +95,6 @@ fprintf('\n=== Two-way ANOVA (Group effect, all blocks 1-7) ===\n');
 fprintf('Group P = %.6g\n', groupP);
 
 %% --- 7. 绘图 ---
-xMax = 7;
 xSummary = (1:xMax).';
 xFit = linspace(max(0, min(xSummary) - 1), max(xSummary) + 1, 200).';
 alFitCurve = iSigmoidFromParams(fitAL.ParamRaw, xFit);
@@ -109,6 +112,8 @@ f = figure('Color', 'w', 'Name', 'Fig1B Learning curve');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
+f.PaperSize = [12, 8];
+f.PaperPositionMode = 'auto';
 
 ax = axes(f);
 hold(ax, 'on');
@@ -143,11 +148,7 @@ yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = yTop7 + 0.08 * yrange;
 textY = yPLine + 0.1 * yrange;
 plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-if groupP < 0.001
-	starStr = '＊＊＊＊'; 
-else
-	starStr = TransferLearning.Style.iFormatPText(groupP)
-end
+if groupP < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP); end
 text(ax, 4, textY, starStr, ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 
@@ -158,6 +159,13 @@ yticks(ax, yt(yt <= 1 + 1e-6));
 % 扩展 y 上限避免 title 与 P 值标注遮挡
 yl_ = ylim(ax);
 ylim(ax, [yl_(1), yl_(2) + 0.12 * (yl_(2) - yl_(1))]);
+
+allAxes = findall(f, 'Type', 'axes');
+for axItem = reshape(allAxes, 1, [])
+	if isprop(axItem, 'Toolbar') && ~isempty(axItem.Toolbar)
+		axItem.Toolbar.Visible = 'off';
+	end
+end
 svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1B_LearningCurve_Sigmoid.svg');
 
 %% --- 8. First-block hit rate bar ---
@@ -249,7 +257,8 @@ fprintf('Wrote: %s\n', svgPath);
 fprintf('Wrote: %s\n', svgPath2);
 fprintf('First-block bar P (BarScatterCompare, displayed) = %s\n', TransferLearning.Style.iFormatPText(optional2.MultiCompare.PValue(1)));
 
-assignin('base', 'Fig1B_AllBlocks', allBlocks7);
+assignin('base', 'Fig1B_AllBlocks', allBlocksAll);
+assignin('base', 'Fig1B_AllBlocks7', allBlocks7);
 assignin('base', 'Fig1B_FitAL', fitAL);
 assignin('base', 'Fig1B_FitL', fitL);
 assignin('base', 'Fig1B_AnovaGroupP', groupP);
@@ -362,7 +371,8 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 	xObs = double(T.Block(:)); yObs = double(T.Performance(:));
 	use = isfinite(xObs) & isfinite(yObs); xObs = xObs(use); yObs = yObs(use);
 	if isempty(xObs), error('Fig1B:NoDataForGroup', 'No data for %s.', char(groupName)); end
-	p0 = [iLogit(max(min(min(yObs), 0.45), 0.01)); log(0.8); max(median(xObs), 1)];
+	% lower 固定为 0：参数 p = [log(slope); midpoint]
+	p0 = [log(0.8); max(median(xObs), 1)];
 	obj = @(p) sum((yObs - iSigmoidFromParams(p, xObs)).^2, 'omitnan');
 	opt = optimset('Display', 'off', 'MaxFunEvals', 10000, 'MaxIter', 10000);
 	p = fminsearch(obj, p0, opt);
@@ -376,16 +386,13 @@ function fitOut = iFitSigmoidCurve(T, groupName)
 end
 
 function y = iSigmoidFromParams(p, x)
-	[lower, upper, slope, midpoint] = iDecodeSigmoidParams(p);
-	y = lower + (upper - lower) ./ (1 + exp(-slope .* (x - midpoint)));
+	[~, ~, slope, midpoint] = iDecodeSigmoidParams(p);
+	y = 1 ./ (1 + exp(-slope .* (x - midpoint)));
 end
 
+% 参数 p = [log(slope); midpoint]；下渐近线固定 0、上渐近线固定 1
 function [lower, upper, slope, midpoint] = iDecodeSigmoidParams(p)
-	lower = 1 ./ (1 + exp(-p(1))); upper = 1; slope = exp(p(2)); midpoint = p(3);
-end
-
-function y = iLogit(x)
-	x = min(max(x, 1e-6), 1 - 1e-6); y = log(x ./ (1 - x));
+	lower = 0; upper = 1; slope = exp(p(1)); midpoint = p(2);
 end
 
 function [bestMouse, stats] = iFindBestRepresentativeMouse(T)

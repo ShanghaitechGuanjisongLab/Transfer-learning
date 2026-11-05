@@ -1,0 +1,121 @@
+[
+ {
+  "mouse": "vtf0233",
+  "lambda_max": 0.9981230460827466,
+  "min_dist_to_1": 0.0018769539172533989,
+  "det_min": 2.478032703616616e-12,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "vtf0352",
+  "lambda_max": 1.0808912034795326,
+  "min_dist_to_1": 0.0020097426128833362,
+  "det_min": 9.701572692959702e-10,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "vtf0353",
+  "lambda_max": 1.0984437576542991,
+  "min_dist_to_1": 0.0026246078519381877,
+  "det_min": 4.130386692069332e-09,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "vtf0354",
+  "lambda_max": 1.0394322358812433,
+  "min_dist_to_1": 0.0030657311135200427,
+  "det_min": 2.123820178733334e-10,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "vtf1233",
+  "lambda_max": 0.9936888714250927,
+  "min_dist_to_1": 0.006311128574907343,
+  "det_min": 1.4630300703247554e-09,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "yqn0020",
+  "lambda_max": 1.0284122537580473,
+  "min_dist_to_1": 0.002036800148928375,
+  "det_min": 3.7748179581556614e-11,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "yqn0133",
+  "lambda_max": 1.0406894844721655,
+  "min_dist_to_1": 0.011729057295501383,
+  "det_min": 1.432760508886568e-08,
+  "dBIC": -1355.4222162019614,
+  "separation": 0.7100428112736354,
+  "fp_percentiles": [
+   9.382804138423118,
+   100.0
+  ],
+  "verdict": "双峰但分离差 / 定点在外"
+ },
+ {
+  "mouse": "yqn0240",
+  "lambda_max": 0.9974279188477952,
+  "min_dist_to_1": 0.0025720811522047526,
+  "det_min": 9.954002206204928e-12,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "yqn0411",
+  "lambda_max": 1.0922559625933626,
+  "min_dist_to_1": 0.006220316286391414,
+  "det_min": 1.9840650435113498e-07,
+  "dBIC": -1329.4832141617699,
+  "separation": 0.7428789177860341,
+  "fp_percentiles": [
+   83.1570925026198,
+   100.0
+  ],
+  "verdict": "双峰但分离差 / 定点在外"
+ },
+ {
+  "mouse": "yqn1018",
+  "lambda_max": 1.0955804098765078,
+  "min_dist_to_1": 0.007293899088529954,
+  "det_min": 4.259977679683284e-09,
+  "dBIC": null,
+  "separation": null,
+  "fp_percentiles": null,
+  "verdict": "无定点（近积分器）"
+ },
+ {
+  "mouse": "yqn1130",
+  "lambda_max": 1.132985960092295,
+  "min_dist_to_1": 0.005623068789453067,
+  "det_min": 1.9813288737775754e-07,
+  "dBIC": -729.6498394688606,
+  "separation": 0.21821417017146555,
+  "fp_percentiles": [
+   0.0,
+   78.34034293109026
+  ],
+  "verdict": "双峰但分离差 / 定点在外"
+ }
+]

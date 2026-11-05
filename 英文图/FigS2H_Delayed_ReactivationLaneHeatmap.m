@@ -15,6 +15,10 @@
 % 活跃判定：在 Learned 与 Transfer 两泳道 1.5s 处 > baseline(-3~0s)+3σ（同 S1E 的两任务泳道交集）
 % 绘图时段 cue -1 → +2.5 s（= S1E 的 -1~2 平移到延迟任务的给水时刻 +1.5 s）；
 % 泳道 2/3 画给水线 xline(1.5)（S1E 为 xline(1)）。
+% 版式取 FigS1E 调整后的样式：tiledlayout 用 TileSpacing='tight' 让各泳道之间留空，
+% 三个泳道都带小标题（Naive / Learned / Transfer）；Naive 泳道刻度仍只有 🔊（无给水）。
+%
+% 导出：\\Data-Server-2\个人数据\杨青宁\202610\English_FigS2H_Delayed_ReactivationLaneHeatmap.svg
 %
 % Execution:
 %   run('英文图/FigS2H_Delayed_ReactivationLaneHeatmap.m')
@@ -106,8 +110,8 @@ f = figure('Color', 'w', 'Name', 'English FigS2H Delayed Lane Heatmap');
 f.Units = 'centimeters';
 f.Position(3:4) = [12.0, 8.0]; % 120mm x 80mm
 
-Layout = tiledlayout(f, 1, 3, 'TileSpacing', 'none', 'Padding', 'tight');
-subTitles = ["", "Learned", "Transfer"];
+Layout = tiledlayout(f, 1, 3, 'TileSpacing', 'tight', 'Padding', 'tight');
+subTitles = ["Naive", "Learned", "Transfer"];
 
 [~, Axes] = UniExp.LanearHeatmap( ...
 	laneData, ...
@@ -172,7 +176,13 @@ end
 
 % --- 7) Export
 svgName = "English_FigS2H_Delayed_ReactivationLaneHeatmap.svg";
-svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
+outDir = "\\Data-Server-2\个人数据\杨青宁\202610";
+if ~isfolder(outDir)
+	mkdir(outDir);
+end
+TransferLearning.ApplyStandardExportStyle(f, 2);
+svgPath = fullfile(outDir, svgName);
+print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
 assignin('base', 'FigS2H_SortIdx', sortIdx);

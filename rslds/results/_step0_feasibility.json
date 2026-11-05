@@ -1,0 +1,5762 @@
+{
+  "ALB": {
+    "phase_design_counts": {
+      "Naive|LAu": 4,
+      "Naive|AudioWater": 11,
+      "(无)|AudioWater": 28,
+      "Learned|AudioWater": 11,
+      "Transfer|LightWater": 11,
+      "(无)|LightWater": 20,
+      "Final|LightWater": 11,
+      "Naive|LAuW": 6
+    },
+    "mice": {
+      "vtf0233": {
+        "n_sessions": 13,
+        "sessions": [
+          {
+            "datetime": "2024-04-21T07:53:00",
+            "phase": "Naive",
+            "design": "LAu",
+            "n_cell": 550,
+            "dur_min": 28.71,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 60,
+            "n_sound": 30,
+            "n_light": 30,
+            "n_water": 0,
+            "n_hit": 0
+          },
+          {
+            "datetime": "2024-04-21T20:45:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 550,
+            "dur_min": 24.91,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2024-04-22T08:33:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 550,
+            "dur_min": 36.03,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-22T19:36:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 550,
+            "dur_min": 26.11,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 25,
+            "n_sound": 24,
+            "n_light": 0,
+            "n_water": 24,
+            "n_hit": 24
+          },
+          {
+            "datetime": "2024-04-23T07:23:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 550,
+            "dur_min": 17.74,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-23T21:33:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 550,
+            "dur_min": 15.32,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-24T07:55:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 18.68,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 26,
+            "n_sound": 0,
+            "n_light": 26,
+            "n_water": 26,
+            "n_hit": 3
+          },
+          {
+            "datetime": "2024-04-24T20:23:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 17.55,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 28,
+            "n_sound": 0,
+            "n_light": 28,
+            "n_water": 28,
+            "n_hit": 7
+          },
+          {
+            "datetime": "2024-04-25T07:33:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 16.6,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 0,
+            "n_sound": 0,
+            "n_light": 0,
+            "n_water": 0,
+            "n_hit": 0
+          },
+          {
+            "datetime": "2024-04-25T20:42:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 18.53,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 9
+          },
+          {
+            "datetime": "2024-04-26T06:53:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 19.85,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 15,
+            "n_sound": 0,
+            "n_light": 14,
+            "n_water": 14,
+            "n_hit": 6
+          },
+          {
+            "datetime": "2024-04-26T19:55:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 18.68,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 27
+          },
+          {
+            "datetime": "2024-04-27T20:00:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 550,
+            "dur_min": 16.23,
+            "fs": 7.984322866765032,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "Naive/AudioWater@2024-04-21T20:45:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/AudioWater@2024-04-22T08:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/AudioWater@2024-04-22T19:36:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/AudioWater@2024-04-23T07:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "Learned/AudioWater@2024-04-23T21:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "Transfer/LightWater@2024-04-24T07:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T07:53:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/AudioWater@2024-04-22T08:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/AudioWater@2024-04-22T19:36:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/AudioWater@2024-04-23T07:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "Learned/AudioWater@2024-04-23T21:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "Transfer/LightWater@2024-04-24T07:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:45:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/AudioWater@2024-04-22T19:36:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/AudioWater@2024-04-23T07:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "Learned/AudioWater@2024-04-23T21:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "Transfer/LightWater@2024-04-24T07:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T08:33:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "(无)/AudioWater@2024-04-23T07:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "Learned/AudioWater@2024-04-23T21:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "Transfer/LightWater@2024-04-24T07:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T19:36:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "Learned/AudioWater@2024-04-23T21:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "Transfer/LightWater@2024-04-24T07:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T07:23:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "Transfer/LightWater@2024-04-24T07:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T21:33:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:55:00",
+            "b": "(无)/LightWater@2024-04-24T20:23:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:55:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:55:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:55:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:55:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:55:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-24T20:23:00",
+            "b": "(无)/LightWater@2024-04-25T07:33:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-24T20:23:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-24T20:23:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-24T20:23:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-24T20:23:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T07:33:00",
+            "b": "(无)/LightWater@2024-04-25T20:42:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T07:33:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T07:33:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T07:33:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T20:42:00",
+            "b": "(无)/LightWater@2024-04-26T06:53:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T20:42:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-25T20:42:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-26T06:53:00",
+            "b": "(无)/LightWater@2024-04-26T19:55:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-26T06:53:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-26T19:55:00",
+            "b": "Final/LightWater@2024-04-27T20:00:00",
+            "n_a": 550,
+            "n_b": 550,
+            "n_common": 550,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "vtf0352": {
+        "n_sessions": 9,
+        "sessions": [
+          {
+            "datetime": "2025-04-11T07:08:00",
+            "phase": "Naive",
+            "design": "LAuW",
+            "n_cell": 636,
+            "dur_min": 44.23,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 60,
+            "n_sound": 20,
+            "n_light": 20,
+            "n_water": 20,
+            "n_hit": 32
+          },
+          {
+            "datetime": "2025-04-11T18:47:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 636,
+            "dur_min": 32.04,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 25
+          },
+          {
+            "datetime": "2025-04-12T19:03:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 636,
+            "dur_min": 15.75,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 26
+          },
+          {
+            "datetime": "2025-04-13T06:57:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 636,
+            "dur_min": 23.4,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 25,
+            "n_sound": 24,
+            "n_light": 0,
+            "n_water": 24,
+            "n_hit": 24
+          },
+          {
+            "datetime": "2025-04-14T06:51:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 636,
+            "dur_min": 39.5,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2025-04-14T19:04:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 636,
+            "dur_min": 25.36,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2025-04-15T07:02:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 636,
+            "dur_min": 29.66,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 25
+          },
+          {
+            "datetime": "2025-04-15T20:20:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 636,
+            "dur_min": 21.31,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2025-04-16T08:10:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 636,
+            "dur_min": 19.93,
+            "fs": 7.958524703640694,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "Naive/AudioWater@2025-04-11T18:47:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "(无)/AudioWater@2025-04-12T19:03:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "(无)/AudioWater@2025-04-13T06:57:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "(无)/AudioWater@2025-04-14T06:51:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "Learned/AudioWater@2025-04-14T19:04:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "Transfer/LightWater@2025-04-15T07:02:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T07:08:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "(无)/AudioWater@2025-04-12T19:03:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "(无)/AudioWater@2025-04-13T06:57:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "(无)/AudioWater@2025-04-14T06:51:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "Learned/AudioWater@2025-04-14T19:04:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "Transfer/LightWater@2025-04-15T07:02:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T18:47:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-12T19:03:00",
+            "b": "(无)/AudioWater@2025-04-13T06:57:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-12T19:03:00",
+            "b": "(无)/AudioWater@2025-04-14T06:51:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-12T19:03:00",
+            "b": "Learned/AudioWater@2025-04-14T19:04:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-12T19:03:00",
+            "b": "Transfer/LightWater@2025-04-15T07:02:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-12T19:03:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-12T19:03:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T06:57:00",
+            "b": "(无)/AudioWater@2025-04-14T06:51:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T06:57:00",
+            "b": "Learned/AudioWater@2025-04-14T19:04:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T06:57:00",
+            "b": "Transfer/LightWater@2025-04-15T07:02:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T06:57:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T06:57:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T06:51:00",
+            "b": "Learned/AudioWater@2025-04-14T19:04:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T06:51:00",
+            "b": "Transfer/LightWater@2025-04-15T07:02:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T06:51:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T06:51:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-14T19:04:00",
+            "b": "Transfer/LightWater@2025-04-15T07:02:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-14T19:04:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-14T19:04:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-15T07:02:00",
+            "b": "(无)/LightWater@2025-04-15T20:20:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-15T07:02:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-15T20:20:00",
+            "b": "Final/LightWater@2025-04-16T08:10:00",
+            "n_a": 636,
+            "n_b": 636,
+            "n_common": 636,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "vtf0353": {
+        "n_sessions": 7,
+        "sessions": [
+          {
+            "datetime": "2025-04-10T20:11:00",
+            "phase": "Naive",
+            "design": "LAuW",
+            "n_cell": 343,
+            "dur_min": 30.43,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 60,
+            "n_sound": 20,
+            "n_light": 20,
+            "n_water": 20,
+            "n_hit": 33
+          },
+          {
+            "datetime": "2025-04-11T08:19:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 343,
+            "dur_min": 21.71,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 25
+          },
+          {
+            "datetime": "2025-04-11T19:37:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 343,
+            "dur_min": 34.92,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2025-04-13T08:08:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 343,
+            "dur_min": 25.97,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 15
+          },
+          {
+            "datetime": "2025-04-13T18:54:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 343,
+            "dur_min": 22.02,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 24
+          },
+          {
+            "datetime": "2025-04-14T07:45:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 343,
+            "dur_min": 30.92,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2025-04-14T19:43:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 343,
+            "dur_min": 24.74,
+            "fs": 8.023624743842769,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAuW@2025-04-10T20:11:00",
+            "b": "Naive/AudioWater@2025-04-11T08:19:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-10T20:11:00",
+            "b": "Learned/AudioWater@2025-04-11T19:37:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-10T20:11:00",
+            "b": "Transfer/LightWater@2025-04-13T08:08:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-10T20:11:00",
+            "b": "(无)/LightWater@2025-04-13T18:54:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-10T20:11:00",
+            "b": "(无)/LightWater@2025-04-14T07:45:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-10T20:11:00",
+            "b": "Final/LightWater@2025-04-14T19:43:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T08:19:00",
+            "b": "Learned/AudioWater@2025-04-11T19:37:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T08:19:00",
+            "b": "Transfer/LightWater@2025-04-13T08:08:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T08:19:00",
+            "b": "(无)/LightWater@2025-04-13T18:54:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T08:19:00",
+            "b": "(无)/LightWater@2025-04-14T07:45:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T08:19:00",
+            "b": "Final/LightWater@2025-04-14T19:43:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-11T19:37:00",
+            "b": "Transfer/LightWater@2025-04-13T08:08:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-11T19:37:00",
+            "b": "(无)/LightWater@2025-04-13T18:54:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-11T19:37:00",
+            "b": "(无)/LightWater@2025-04-14T07:45:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-11T19:37:00",
+            "b": "Final/LightWater@2025-04-14T19:43:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-13T08:08:00",
+            "b": "(无)/LightWater@2025-04-13T18:54:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-13T08:08:00",
+            "b": "(无)/LightWater@2025-04-14T07:45:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-13T08:08:00",
+            "b": "Final/LightWater@2025-04-14T19:43:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-13T18:54:00",
+            "b": "(无)/LightWater@2025-04-14T07:45:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-13T18:54:00",
+            "b": "Final/LightWater@2025-04-14T19:43:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-14T07:45:00",
+            "b": "Final/LightWater@2025-04-14T19:43:00",
+            "n_a": 343,
+            "n_b": 343,
+            "n_common": 343,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "vtf0354": {
+        "n_sessions": 13,
+        "sessions": [
+          {
+            "datetime": "2025-04-11T08:54:00",
+            "phase": "Naive",
+            "design": "LAuW",
+            "n_cell": 378,
+            "dur_min": 38.52,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 40,
+            "n_sound": 15,
+            "n_light": 12,
+            "n_water": 13,
+            "n_hit": 14
+          },
+          {
+            "datetime": "2025-04-11T20:25:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 378,
+            "dur_min": 18.42,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 0,
+            "n_sound": 0,
+            "n_light": 0,
+            "n_water": 0,
+            "n_hit": 0
+          },
+          {
+            "datetime": "2025-04-13T08:50:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 378,
+            "dur_min": 34.91,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 28,
+            "n_sound": 28,
+            "n_light": 0,
+            "n_water": 28,
+            "n_hit": 8
+          },
+          {
+            "datetime": "2025-04-13T19:26:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 378,
+            "dur_min": 24.76,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2025-04-14T08:29:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 378,
+            "dur_min": 21.99,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 22
+          },
+          {
+            "datetime": "2025-04-14T20:19:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 378,
+            "dur_min": 31.54,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2025-04-15T08:18:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 378,
+            "dur_min": 25.56,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2025-04-16T20:42:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 378,
+            "dur_min": 16.3,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 9
+          },
+          {
+            "datetime": "2025-04-17T09:45:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 378,
+            "dur_min": 16.56,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 9
+          },
+          {
+            "datetime": "2025-04-18T09:40:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 378,
+            "dur_min": 17.12,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 22
+          },
+          {
+            "datetime": "2025-04-18T20:29:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 378,
+            "dur_min": 17.05,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 23
+          },
+          {
+            "datetime": "2025-04-19T10:15:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 378,
+            "dur_min": 18.06,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2025-04-19T21:56:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 378,
+            "dur_min": 21.06,
+            "fs": 7.902746062137255,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "Naive/AudioWater@2025-04-11T20:25:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/AudioWater@2025-04-13T08:50:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/AudioWater@2025-04-13T19:26:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/AudioWater@2025-04-14T08:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/AudioWater@2025-04-14T20:19:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "Learned/AudioWater@2025-04-15T08:18:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2025-04-11T08:54:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/AudioWater@2025-04-13T08:50:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/AudioWater@2025-04-13T19:26:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/AudioWater@2025-04-14T08:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/AudioWater@2025-04-14T20:19:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "Learned/AudioWater@2025-04-15T08:18:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2025-04-11T20:25:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/AudioWater@2025-04-13T19:26:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/AudioWater@2025-04-14T08:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/AudioWater@2025-04-14T20:19:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "Learned/AudioWater@2025-04-15T08:18:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T08:50:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "(无)/AudioWater@2025-04-14T08:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "(无)/AudioWater@2025-04-14T20:19:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "Learned/AudioWater@2025-04-15T08:18:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-13T19:26:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "(无)/AudioWater@2025-04-14T20:19:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "Learned/AudioWater@2025-04-15T08:18:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T08:29:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "Learned/AudioWater@2025-04-15T08:18:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2025-04-14T20:19:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-15T08:18:00",
+            "b": "Transfer/LightWater@2025-04-16T20:42:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-15T08:18:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-15T08:18:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-15T08:18:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-15T08:18:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2025-04-15T08:18:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-16T20:42:00",
+            "b": "(无)/LightWater@2025-04-17T09:45:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-16T20:42:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-16T20:42:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-16T20:42:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2025-04-16T20:42:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-17T09:45:00",
+            "b": "(无)/LightWater@2025-04-18T09:40:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-17T09:45:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-17T09:45:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-17T09:45:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-18T09:40:00",
+            "b": "(无)/LightWater@2025-04-18T20:29:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-18T09:40:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-18T09:40:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-18T20:29:00",
+            "b": "(无)/LightWater@2025-04-19T10:15:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-18T20:29:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2025-04-19T10:15:00",
+            "b": "Final/LightWater@2025-04-19T21:56:00",
+            "n_a": 378,
+            "n_b": 378,
+            "n_common": 378,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "vtf1233": {
+        "n_sessions": 9,
+        "sessions": [
+          {
+            "datetime": "2024-04-21T09:24:00",
+            "phase": "Naive",
+            "design": "LAu",
+            "n_cell": 771,
+            "dur_min": 29.42,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 60,
+            "n_sound": 30,
+            "n_light": 29,
+            "n_water": 0,
+            "n_hit": 0
+          },
+          {
+            "datetime": "2024-04-21T20:00:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 771,
+            "dur_min": 23.14,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 25
+          },
+          {
+            "datetime": "2024-04-22T06:54:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 771,
+            "dur_min": 24.46,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 21,
+            "n_sound": 21,
+            "n_light": 0,
+            "n_water": 21,
+            "n_hit": 21
+          },
+          {
+            "datetime": "2024-04-22T20:20:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 771,
+            "dur_min": 26.63,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-23T08:28:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 771,
+            "dur_min": 32.13,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-23T20:38:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 771,
+            "dur_min": 16.59,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2024-04-24T07:02:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 771,
+            "dur_min": 23.1,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 17
+          },
+          {
+            "datetime": "2024-04-24T19:28:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 771,
+            "dur_min": 15.64,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 28,
+            "n_sound": 0,
+            "n_light": 28,
+            "n_water": 28,
+            "n_hit": 26
+          },
+          {
+            "datetime": "2024-04-25T08:47:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 771,
+            "dur_min": 17.29,
+            "fs": 8.188799150167933,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "Naive/AudioWater@2024-04-21T20:00:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "(无)/AudioWater@2024-04-22T06:54:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "(无)/AudioWater@2024-04-22T20:20:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "(无)/AudioWater@2024-04-23T08:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "Learned/AudioWater@2024-04-23T20:38:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "Transfer/LightWater@2024-04-24T07:02:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T09:24:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "(无)/AudioWater@2024-04-22T06:54:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "(无)/AudioWater@2024-04-22T20:20:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "(无)/AudioWater@2024-04-23T08:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "Learned/AudioWater@2024-04-23T20:38:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "Transfer/LightWater@2024-04-24T07:02:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T20:00:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:54:00",
+            "b": "(无)/AudioWater@2024-04-22T20:20:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:54:00",
+            "b": "(无)/AudioWater@2024-04-23T08:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:54:00",
+            "b": "Learned/AudioWater@2024-04-23T20:38:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:54:00",
+            "b": "Transfer/LightWater@2024-04-24T07:02:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:54:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:54:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T20:20:00",
+            "b": "(无)/AudioWater@2024-04-23T08:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T20:20:00",
+            "b": "Learned/AudioWater@2024-04-23T20:38:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T20:20:00",
+            "b": "Transfer/LightWater@2024-04-24T07:02:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T20:20:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T20:20:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T08:28:00",
+            "b": "Learned/AudioWater@2024-04-23T20:38:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T08:28:00",
+            "b": "Transfer/LightWater@2024-04-24T07:02:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T08:28:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T08:28:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T20:38:00",
+            "b": "Transfer/LightWater@2024-04-24T07:02:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T20:38:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T20:38:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:02:00",
+            "b": "(无)/LightWater@2024-04-24T19:28:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T07:02:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-04-24T19:28:00",
+            "b": "Final/LightWater@2024-04-25T08:47:00",
+            "n_a": 771,
+            "n_b": 771,
+            "n_common": 771,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "yqn0020": {
+        "n_sessions": 9,
+        "sessions": [
+          {
+            "datetime": "2024-04-21T06:29:00",
+            "phase": "Naive",
+            "design": "LAu",
+            "n_cell": 632,
+            "dur_min": 34.76,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 60,
+            "n_sound": 30,
+            "n_light": 30,
+            "n_water": 0,
+            "n_hit": 5
+          },
+          {
+            "datetime": "2024-04-21T07:12:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 632,
+            "dur_min": 18.44,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 29,
+            "n_light": 0,
+            "n_water": 29,
+            "n_hit": 11
+          },
+          {
+            "datetime": "2024-04-21T18:26:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 632,
+            "dur_min": 24.84,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 29,
+            "n_sound": 29,
+            "n_light": 0,
+            "n_water": 29,
+            "n_hit": 27
+          },
+          {
+            "datetime": "2024-04-22T06:08:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 632,
+            "dur_min": 27.05,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-22T18:17:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 632,
+            "dur_min": 17.6,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-04-23T06:16:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 632,
+            "dur_min": 31.58,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2024-04-23T18:38:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 632,
+            "dur_min": 26.67,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 29,
+            "n_sound": 29,
+            "n_light": 0,
+            "n_water": 29,
+            "n_hit": 29
+          },
+          {
+            "datetime": "2024-04-24T05:57:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 632,
+            "dur_min": 30.16,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 24
+          },
+          {
+            "datetime": "2024-04-24T18:32:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 632,
+            "dur_min": 16.98,
+            "fs": 8.246510709157736,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 29
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "Naive/AudioWater@2024-04-21T07:12:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "(无)/AudioWater@2024-04-21T18:26:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "(无)/AudioWater@2024-04-22T06:08:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "(无)/AudioWater@2024-04-22T18:17:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "(无)/AudioWater@2024-04-23T06:16:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "Learned/AudioWater@2024-04-23T18:38:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-04-21T06:29:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "(无)/AudioWater@2024-04-21T18:26:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "(无)/AudioWater@2024-04-22T06:08:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "(无)/AudioWater@2024-04-22T18:17:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "(无)/AudioWater@2024-04-23T06:16:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "Learned/AudioWater@2024-04-23T18:38:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-04-21T07:12:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-21T18:26:00",
+            "b": "(无)/AudioWater@2024-04-22T06:08:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-21T18:26:00",
+            "b": "(无)/AudioWater@2024-04-22T18:17:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-21T18:26:00",
+            "b": "(无)/AudioWater@2024-04-23T06:16:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-21T18:26:00",
+            "b": "Learned/AudioWater@2024-04-23T18:38:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-21T18:26:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-21T18:26:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:08:00",
+            "b": "(无)/AudioWater@2024-04-22T18:17:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:08:00",
+            "b": "(无)/AudioWater@2024-04-23T06:16:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:08:00",
+            "b": "Learned/AudioWater@2024-04-23T18:38:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:08:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T06:08:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T18:17:00",
+            "b": "(无)/AudioWater@2024-04-23T06:16:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T18:17:00",
+            "b": "Learned/AudioWater@2024-04-23T18:38:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T18:17:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-22T18:17:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T06:16:00",
+            "b": "Learned/AudioWater@2024-04-23T18:38:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T06:16:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-04-23T06:16:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T18:38:00",
+            "b": "Transfer/LightWater@2024-04-24T05:57:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-04-23T18:38:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-04-24T05:57:00",
+            "b": "Final/LightWater@2024-04-24T18:32:00",
+            "n_a": 632,
+            "n_b": 632,
+            "n_common": 632,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "yqn0133": {
+        "n_sessions": 11,
+        "sessions": [
+          {
+            "datetime": "2024-05-14T09:23:00",
+            "phase": "Naive",
+            "design": "LAu",
+            "n_cell": 238,
+            "dur_min": 18.86,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 40,
+            "n_sound": 20,
+            "n_light": 20,
+            "n_water": 0,
+            "n_hit": 0
+          },
+          {
+            "datetime": "2024-05-14T19:05:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 238,
+            "dur_min": 21.03,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 21
+          },
+          {
+            "datetime": "2024-05-15T08:46:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 238,
+            "dur_min": 25.0,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2024-05-15T20:27:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 238,
+            "dur_min": 29.57,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-05-16T08:09:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 238,
+            "dur_min": 30.23,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-05-16T19:12:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 238,
+            "dur_min": 27.73,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-05-17T08:35:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 238,
+            "dur_min": 20.82,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-05-17T19:04:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 238,
+            "dur_min": 23.26,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 32,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 13
+          },
+          {
+            "datetime": "2024-05-18T08:34:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 238,
+            "dur_min": 27.87,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 32,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 21
+          },
+          {
+            "datetime": "2024-05-18T20:35:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 238,
+            "dur_min": 30.0,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 32,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2024-05-19T09:05:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 238,
+            "dur_min": 21.95,
+            "fs": 8.032773001230321,
+            "decim_k": 1,
+            "n_trial": 32,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "Naive/AudioWater@2024-05-14T19:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "(无)/AudioWater@2024-05-15T08:46:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "(无)/AudioWater@2024-05-15T20:27:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "(无)/AudioWater@2024-05-16T08:09:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "(无)/AudioWater@2024-05-16T19:12:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "Learned/AudioWater@2024-05-17T08:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAu@2024-05-14T09:23:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "(无)/AudioWater@2024-05-15T08:46:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "(无)/AudioWater@2024-05-15T20:27:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "(无)/AudioWater@2024-05-16T08:09:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "(无)/AudioWater@2024-05-16T19:12:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "Learned/AudioWater@2024-05-17T08:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-05-14T19:05:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "(无)/AudioWater@2024-05-15T20:27:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "(无)/AudioWater@2024-05-16T08:09:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "(无)/AudioWater@2024-05-16T19:12:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "Learned/AudioWater@2024-05-17T08:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T08:46:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "(无)/AudioWater@2024-05-16T08:09:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "(无)/AudioWater@2024-05-16T19:12:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "Learned/AudioWater@2024-05-17T08:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-15T20:27:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T08:09:00",
+            "b": "(无)/AudioWater@2024-05-16T19:12:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T08:09:00",
+            "b": "Learned/AudioWater@2024-05-17T08:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T08:09:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T08:09:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T08:09:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T08:09:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T19:12:00",
+            "b": "Learned/AudioWater@2024-05-17T08:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T19:12:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T19:12:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T19:12:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-05-16T19:12:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-05-17T08:35:00",
+            "b": "Transfer/LightWater@2024-05-17T19:04:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-05-17T08:35:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-05-17T08:35:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-05-17T08:35:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-05-17T19:04:00",
+            "b": "(无)/LightWater@2024-05-18T08:34:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-05-17T19:04:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-05-17T19:04:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-05-18T08:34:00",
+            "b": "(无)/LightWater@2024-05-18T20:35:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-05-18T08:34:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-05-18T20:35:00",
+            "b": "Final/LightWater@2024-05-19T09:05:00",
+            "n_a": 238,
+            "n_b": 238,
+            "n_common": 238,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "yqn0240": {
+        "n_sessions": 6,
+        "sessions": [
+          {
+            "datetime": "2025-02-14T08:12:00",
+            "phase": "Naive",
+            "design": "LAuW",
+            "n_cell": 563,
+            "dur_min": 34.65,
+            "fs": 8.204781138328345,
+            "decim_k": 1,
+            "n_trial": 60,
+            "n_sound": 20,
+            "n_light": 20,
+            "n_water": 20,
+            "n_hit": 13
+          },
+          {
+            "datetime": "2025-02-14T19:55:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 511,
+            "dur_min": 28.85,
+            "fs": 8.204781138328345,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 12
+          },
+          {
+            "datetime": "2025-02-15T07:55:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 561,
+            "dur_min": 23.52,
+            "fs": 8.204781138328345,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 29,
+            "n_light": 0,
+            "n_water": 29,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2025-02-15T19:49:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 562,
+            "dur_min": 21.88,
+            "fs": 8.204781138328345,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2025-02-16T07:40:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 560,
+            "dur_min": 26.19,
+            "fs": 8.204781138328345,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 25
+          },
+          {
+            "datetime": "2025-02-16T19:38:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 561,
+            "dur_min": 36.22,
+            "fs": 8.204781138328345,
+            "decim_k": 1,
+            "n_trial": 29,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 29
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAuW@2025-02-14T08:12:00",
+            "b": "Naive/AudioWater@2025-02-14T19:55:00",
+            "n_a": 563,
+            "n_b": 511,
+            "n_common": 511,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.9076376554174067
+          },
+          {
+            "a": "Naive/LAuW@2025-02-14T08:12:00",
+            "b": "(无)/AudioWater@2025-02-15T07:55:00",
+            "n_a": 563,
+            "n_b": 561,
+            "n_common": 561,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.9964476021314387
+          },
+          {
+            "a": "Naive/LAuW@2025-02-14T08:12:00",
+            "b": "Learned/AudioWater@2025-02-15T19:49:00",
+            "n_a": 563,
+            "n_b": 562,
+            "n_common": 562,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.9982238010657194
+          },
+          {
+            "a": "Naive/LAuW@2025-02-14T08:12:00",
+            "b": "Transfer/LightWater@2025-02-16T07:40:00",
+            "n_a": 563,
+            "n_b": 560,
+            "n_common": 560,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.9946714031971581
+          },
+          {
+            "a": "Naive/LAuW@2025-02-14T08:12:00",
+            "b": "Final/LightWater@2025-02-16T19:38:00",
+            "n_a": 563,
+            "n_b": 561,
+            "n_common": 561,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.9964476021314387
+          },
+          {
+            "a": "Naive/AudioWater@2025-02-14T19:55:00",
+            "b": "(无)/AudioWater@2025-02-15T07:55:00",
+            "n_a": 511,
+            "n_b": 561,
+            "n_common": 510,
+            "frac_of_smaller": 0.9980430528375733,
+            "jaccard": 0.9074733096085409
+          },
+          {
+            "a": "Naive/AudioWater@2025-02-14T19:55:00",
+            "b": "Learned/AudioWater@2025-02-15T19:49:00",
+            "n_a": 511,
+            "n_b": 562,
+            "n_common": 510,
+            "frac_of_smaller": 0.9980430528375733,
+            "jaccard": 0.9058614564831261
+          },
+          {
+            "a": "Naive/AudioWater@2025-02-14T19:55:00",
+            "b": "Transfer/LightWater@2025-02-16T07:40:00",
+            "n_a": 511,
+            "n_b": 560,
+            "n_common": 508,
+            "frac_of_smaller": 0.9941291585127201,
+            "jaccard": 0.9023090586145648
+          },
+          {
+            "a": "Naive/AudioWater@2025-02-14T19:55:00",
+            "b": "Final/LightWater@2025-02-16T19:38:00",
+            "n_a": 511,
+            "n_b": 561,
+            "n_common": 509,
+            "frac_of_smaller": 0.9960861056751468,
+            "jaccard": 0.9040852575488455
+          },
+          {
+            "a": "(无)/AudioWater@2025-02-15T07:55:00",
+            "b": "Learned/AudioWater@2025-02-15T19:49:00",
+            "n_a": 561,
+            "n_b": 562,
+            "n_common": 561,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.998220640569395
+          },
+          {
+            "a": "(无)/AudioWater@2025-02-15T07:55:00",
+            "b": "Transfer/LightWater@2025-02-16T07:40:00",
+            "n_a": 561,
+            "n_b": 560,
+            "n_common": 559,
+            "frac_of_smaller": 0.9982142857142857,
+            "jaccard": 0.994661921708185
+          },
+          {
+            "a": "(无)/AudioWater@2025-02-15T07:55:00",
+            "b": "Final/LightWater@2025-02-16T19:38:00",
+            "n_a": 561,
+            "n_b": 561,
+            "n_common": 560,
+            "frac_of_smaller": 0.9982174688057041,
+            "jaccard": 0.99644128113879
+          },
+          {
+            "a": "Learned/AudioWater@2025-02-15T19:49:00",
+            "b": "Transfer/LightWater@2025-02-16T07:40:00",
+            "n_a": 562,
+            "n_b": 560,
+            "n_common": 560,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.99644128113879
+          },
+          {
+            "a": "Learned/AudioWater@2025-02-15T19:49:00",
+            "b": "Final/LightWater@2025-02-16T19:38:00",
+            "n_a": 562,
+            "n_b": 561,
+            "n_common": 561,
+            "frac_of_smaller": 1.0,
+            "jaccard": 0.998220640569395
+          },
+          {
+            "a": "Transfer/LightWater@2025-02-16T07:40:00",
+            "b": "Final/LightWater@2025-02-16T19:38:00",
+            "n_a": 560,
+            "n_b": 561,
+            "n_common": 559,
+            "frac_of_smaller": 0.9982142857142857,
+            "jaccard": 0.994661921708185
+          }
+        ]
+      },
+      "yqn0411": {
+        "n_sessions": 7,
+        "sessions": [
+          {
+            "datetime": "2024-11-14T20:00:00",
+            "phase": "Naive",
+            "design": "LAuW",
+            "n_cell": 420,
+            "dur_min": 39.5,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 58,
+            "n_sound": 19,
+            "n_light": 19,
+            "n_water": 20,
+            "n_hit": 35
+          },
+          {
+            "datetime": "2024-11-15T07:52:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 420,
+            "dur_min": 26.31,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 28,
+            "n_light": 0,
+            "n_water": 28,
+            "n_hit": 27
+          },
+          {
+            "datetime": "2024-11-15T20:08:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 420,
+            "dur_min": 14.92,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 31,
+            "n_sound": 29,
+            "n_light": 0,
+            "n_water": 29,
+            "n_hit": 26
+          },
+          {
+            "datetime": "2024-11-16T07:38:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 420,
+            "dur_min": 15.61,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 31,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-11-16T19:28:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 420,
+            "dur_min": 21.13,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 31,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 7
+          },
+          {
+            "datetime": "2024-11-17T07:40:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 420,
+            "dur_min": 32.27,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 28,
+            "n_water": 28,
+            "n_hit": 25
+          },
+          {
+            "datetime": "2024-11-17T19:40:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 420,
+            "dur_min": 17.47,
+            "fs": 8.27967569396681,
+            "decim_k": 1,
+            "n_trial": 31,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 29
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAuW@2024-11-14T20:00:00",
+            "b": "Naive/AudioWater@2024-11-15T07:52:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-14T20:00:00",
+            "b": "(无)/AudioWater@2024-11-15T20:08:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-14T20:00:00",
+            "b": "Learned/AudioWater@2024-11-16T07:38:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-14T20:00:00",
+            "b": "Transfer/LightWater@2024-11-16T19:28:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-14T20:00:00",
+            "b": "(无)/LightWater@2024-11-17T07:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-14T20:00:00",
+            "b": "Final/LightWater@2024-11-17T19:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-15T07:52:00",
+            "b": "(无)/AudioWater@2024-11-15T20:08:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-15T07:52:00",
+            "b": "Learned/AudioWater@2024-11-16T07:38:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-15T07:52:00",
+            "b": "Transfer/LightWater@2024-11-16T19:28:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-15T07:52:00",
+            "b": "(无)/LightWater@2024-11-17T07:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-15T07:52:00",
+            "b": "Final/LightWater@2024-11-17T19:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-11-15T20:08:00",
+            "b": "Learned/AudioWater@2024-11-16T07:38:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-11-15T20:08:00",
+            "b": "Transfer/LightWater@2024-11-16T19:28:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-11-15T20:08:00",
+            "b": "(无)/LightWater@2024-11-17T07:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2024-11-15T20:08:00",
+            "b": "Final/LightWater@2024-11-17T19:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-11-16T07:38:00",
+            "b": "Transfer/LightWater@2024-11-16T19:28:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-11-16T07:38:00",
+            "b": "(无)/LightWater@2024-11-17T07:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-11-16T07:38:00",
+            "b": "Final/LightWater@2024-11-17T19:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-11-16T19:28:00",
+            "b": "(无)/LightWater@2024-11-17T07:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-11-16T19:28:00",
+            "b": "Final/LightWater@2024-11-17T19:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-11-17T07:40:00",
+            "b": "Final/LightWater@2024-11-17T19:40:00",
+            "n_a": 420,
+            "n_b": 420,
+            "n_common": 420,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "yqn1018": {
+        "n_sessions": 6,
+        "sessions": [
+          {
+            "datetime": "2024-11-12T07:38:00",
+            "phase": "Naive",
+            "design": "LAuW",
+            "n_cell": 436,
+            "dur_min": 31.08,
+            "fs": 8.242997103835023,
+            "decim_k": 1,
+            "n_trial": 59,
+            "n_sound": 20,
+            "n_light": 20,
+            "n_water": 19,
+            "n_hit": 23
+          },
+          {
+            "datetime": "2024-11-12T19:06:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 436,
+            "dur_min": 20.62,
+            "fs": 8.242997103835023,
+            "decim_k": 1,
+            "n_trial": 31,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 20
+          },
+          {
+            "datetime": "2024-11-13T06:54:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 436,
+            "dur_min": 24.65,
+            "fs": 8.242997103835023,
+            "decim_k": 1,
+            "n_trial": 32,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2024-11-14T07:09:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 436,
+            "dur_min": 31.63,
+            "fs": 8.242997103835023,
+            "decim_k": 1,
+            "n_trial": 32,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 14
+          },
+          {
+            "datetime": "2024-11-14T19:16:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 436,
+            "dur_min": 25.35,
+            "fs": 8.242997103835023,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2024-11-15T07:07:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 436,
+            "dur_min": 23.28,
+            "fs": 8.242997103835023,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 29
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/LAuW@2024-11-12T07:38:00",
+            "b": "Naive/AudioWater@2024-11-12T19:06:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-12T07:38:00",
+            "b": "Learned/AudioWater@2024-11-13T06:54:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-12T07:38:00",
+            "b": "Transfer/LightWater@2024-11-14T07:09:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-12T07:38:00",
+            "b": "(无)/LightWater@2024-11-14T19:16:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/LAuW@2024-11-12T07:38:00",
+            "b": "Final/LightWater@2024-11-15T07:07:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-12T19:06:00",
+            "b": "Learned/AudioWater@2024-11-13T06:54:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-12T19:06:00",
+            "b": "Transfer/LightWater@2024-11-14T07:09:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-12T19:06:00",
+            "b": "(无)/LightWater@2024-11-14T19:16:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2024-11-12T19:06:00",
+            "b": "Final/LightWater@2024-11-15T07:07:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-11-13T06:54:00",
+            "b": "Transfer/LightWater@2024-11-14T07:09:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-11-13T06:54:00",
+            "b": "(无)/LightWater@2024-11-14T19:16:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2024-11-13T06:54:00",
+            "b": "Final/LightWater@2024-11-15T07:07:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-11-14T07:09:00",
+            "b": "(无)/LightWater@2024-11-14T19:16:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2024-11-14T07:09:00",
+            "b": "Final/LightWater@2024-11-15T07:07:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2024-11-14T19:16:00",
+            "b": "Final/LightWater@2024-11-15T07:07:00",
+            "n_a": 436,
+            "n_b": 436,
+            "n_common": 436,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      },
+      "yqn1130": {
+        "n_sessions": 12,
+        "sessions": [
+          {
+            "datetime": "2023-04-22T23:08:00",
+            "phase": "Naive",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 19.47,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 8
+          },
+          {
+            "datetime": "2023-04-23T13:19:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 17.27,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 21
+          },
+          {
+            "datetime": "2023-04-23T23:49:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 21.87,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 28
+          },
+          {
+            "datetime": "2023-04-24T11:52:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 17.06,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-24T23:06:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 33.21,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-25T11:40:00",
+            "phase": "(无)",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 36.52,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-25T22:07:00",
+            "phase": "Learned",
+            "design": "AudioWater",
+            "n_cell": 141,
+            "dur_min": 30.7,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 30,
+            "n_light": 0,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-26T09:54:00",
+            "phase": "Transfer",
+            "design": "LightWater",
+            "n_cell": 141,
+            "dur_min": 27.67,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 20
+          },
+          {
+            "datetime": "2023-04-26T21:26:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 141,
+            "dur_min": 27.07,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-27T11:21:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 141,
+            "dur_min": 18.79,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-27T21:24:00",
+            "phase": "(无)",
+            "design": "LightWater",
+            "n_cell": 141,
+            "dur_min": 18.58,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          },
+          {
+            "datetime": "2023-04-28T09:10:00",
+            "phase": "Final",
+            "design": "LightWater",
+            "n_cell": 141,
+            "dur_min": 36.67,
+            "fs": 7.4463300544559665,
+            "decim_k": 4,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 30
+          }
+        ],
+        "pairs": [
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/AudioWater@2023-04-23T13:19:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/AudioWater@2023-04-23T23:49:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/AudioWater@2023-04-24T11:52:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/AudioWater@2023-04-24T23:06:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/AudioWater@2023-04-25T11:40:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "Learned/AudioWater@2023-04-25T22:07:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Naive/AudioWater@2023-04-22T23:08:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/AudioWater@2023-04-23T23:49:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/AudioWater@2023-04-24T11:52:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/AudioWater@2023-04-24T23:06:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/AudioWater@2023-04-25T11:40:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "Learned/AudioWater@2023-04-25T22:07:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T13:19:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "(无)/AudioWater@2023-04-24T11:52:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "(无)/AudioWater@2023-04-24T23:06:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "(无)/AudioWater@2023-04-25T11:40:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "Learned/AudioWater@2023-04-25T22:07:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-23T23:49:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "(无)/AudioWater@2023-04-24T23:06:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "(无)/AudioWater@2023-04-25T11:40:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "Learned/AudioWater@2023-04-25T22:07:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T11:52:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "(无)/AudioWater@2023-04-25T11:40:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "Learned/AudioWater@2023-04-25T22:07:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-24T23:06:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-25T11:40:00",
+            "b": "Learned/AudioWater@2023-04-25T22:07:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-25T11:40:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-25T11:40:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-25T11:40:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-25T11:40:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/AudioWater@2023-04-25T11:40:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2023-04-25T22:07:00",
+            "b": "Transfer/LightWater@2023-04-26T09:54:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2023-04-25T22:07:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2023-04-25T22:07:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2023-04-25T22:07:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Learned/AudioWater@2023-04-25T22:07:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2023-04-26T09:54:00",
+            "b": "(无)/LightWater@2023-04-26T21:26:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2023-04-26T09:54:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2023-04-26T09:54:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "Transfer/LightWater@2023-04-26T09:54:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2023-04-26T21:26:00",
+            "b": "(无)/LightWater@2023-04-27T11:21:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2023-04-26T21:26:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2023-04-26T21:26:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2023-04-27T11:21:00",
+            "b": "(无)/LightWater@2023-04-27T21:24:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2023-04-27T11:21:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          },
+          {
+            "a": "(无)/LightWater@2023-04-27T21:24:00",
+            "b": "Final/LightWater@2023-04-28T09:10:00",
+            "n_a": 141,
+            "n_b": 141,
+            "n_common": 141,
+            "frac_of_smaller": 1.0,
+            "jaccard": 1.0
+          }
+        ]
+      }
+    }
+  },
+  "LightAudioBaseline": {
+    "phase_design_counts": {
+      "Naive|LLw": 2,
+      "Naive|LightWater": 4
+    },
+    "mice": {
+      "yqn0022": {
+        "n_sessions": 1,
+        "sessions": [
+          {
+            "datetime": "2022-08-07T09:24:00",
+            "phase": "Naive",
+            "design": "LLw",
+            "n_cell": 527,
+            "dur_min": 22.4,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 40,
+            "n_sound": 0,
+            "n_light": 40,
+            "n_water": 30,
+            "n_hit": 0
+          }
+        ],
+        "pairs": []
+      },
+      "yqn0044": {
+        "n_sessions": 1,
+        "sessions": [
+          {
+            "datetime": "2022-07-04T21:42:00",
+            "phase": "Naive",
+            "design": "LLw",
+            "n_cell": 348,
+            "dur_min": 19.3,
+            "fs": 8.0,
+            "decim_k": 1,
+            "n_trial": 40,
+            "n_sound": 0,
+            "n_light": 40,
+            "n_water": 30,
+            "n_hit": 0
+          }
+        ],
+        "pairs": []
+      },
+      "yqn0404": {
+        "n_sessions": 1,
+        "sessions": [
+          {
+            "datetime": "2023-05-06T18:07:00",
+            "phase": "Naive",
+            "design": "LightWater",
+            "n_cell": 612,
+            "dur_min": 16.55,
+            "fs": 8.26652348021658,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 0
+          }
+        ],
+        "pairs": []
+      },
+      "yqn0440": {
+        "n_sessions": 1,
+        "sessions": [
+          {
+            "datetime": "2023-05-06T18:55:00",
+            "phase": "Naive",
+            "design": "LightWater",
+            "n_cell": 440,
+            "dur_min": 23.31,
+            "fs": 8.081707799127482,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 0
+          }
+        ],
+        "pairs": []
+      },
+      "yqn1013": {
+        "n_sessions": 1,
+        "sessions": [
+          {
+            "datetime": "2025-01-10T08:28:00",
+            "phase": "Naive",
+            "design": "LightWater",
+            "n_cell": 446,
+            "dur_min": 40.34,
+            "fs": 7.711997440640528,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 30,
+            "n_water": 30,
+            "n_hit": 21
+          }
+        ],
+        "pairs": []
+      },
+      "yqn1014": {
+        "n_sessions": 1,
+        "sessions": [
+          {
+            "datetime": "2025-01-10T09:27:00",
+            "phase": "Naive",
+            "design": "LightWater",
+            "n_cell": 333,
+            "dur_min": 50.57,
+            "fs": 8.293623153498835,
+            "decim_k": 1,
+            "n_trial": 30,
+            "n_sound": 0,
+            "n_light": 29,
+            "n_water": 29,
+            "n_hit": 25
+          }
+        ],
+        "pairs": []
+      }
+    }
+  }
+}
