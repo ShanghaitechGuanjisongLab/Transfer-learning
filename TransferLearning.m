@@ -25,9 +25,11 @@ classdef(Abstract)TransferLearning
 		ColorLearned=[24,68,144];
 		Color12h=[119,62,139];
 		Color7d=[58,162,56];
-		Color
-		ColorA=[0.0547    0.0818    0.0163];
-		ColorB=[0.0796    0.7324    0.0000];
+		ColorTH=[226,122,32];
+		ColorHit=[0,0,27];
+		ColorMiss=[24,68,144];
+		ColorAudio=[119,62,139];
+		ColorLight=[58,162,56];
 		LearnedColor=[0.0547    0.0818    0.0163];
 		HeatmapPositive=[1.0000    0.0000    0.0000];
         HeatmapNegative=[0.0000    0.0000    1.0000];

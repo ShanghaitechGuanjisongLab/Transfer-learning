@@ -8,7 +8,7 @@
 % 权重：ALB 用 BuildCueChoiceDecoderData 的平衡权重 w1s；Vacation7 无现成解码器，
 % 按同一公式 w=(m1-m0)/sp² 在 +1 s 对 AudioWater(非 Recall) 回合计算（类别平衡下采样 100 次取平均）。
 
-thisDir = fileparts(mfilename('fullpath'));
+[thisDir,Filename] = fileparts(mfilename('fullpath'));
 if ~exist('UniExp.DataSet', 'class')
 	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
 	if exist(prjFile, 'file')
@@ -80,9 +80,7 @@ end
 xlabel(tlo,'Choice decoder weight');
 ylabel(tlo,'Cell count');
 
-svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig2F_ChoiceWeight_ReactivationStack.svg');
-fprintf('Wrote: %s\n', svgPath);
-assignin('base','Fig2F_Stack', struct('edges',edges,'ALB',WALB,'V7',WV7));
+svgPath = TransferLearning.ExportStandardFigure(f, 2, sprintf('English_%s.svg',Filename));
 
 %% ========== local functions ==========
 function [g, ok] = iGroupForMouse(DS, m, cids, baseMask, idx1s, kSigma)
