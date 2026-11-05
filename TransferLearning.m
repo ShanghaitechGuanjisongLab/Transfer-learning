@@ -21,13 +21,17 @@ classdef(Abstract)TransferLearning
 		LADelayed=memoize(@iLADelayed);
 		ALDelayedBehavior=memoize(@iALDelayedBehavior);
 		LADelayedBehavior=memoize(@iLADelayedBehavior);
-		NaiveColor=[0.6249    0.2188    0.9830];
-		TransferColor=[0.9386    0.4672    0.0384];
+		ColorNaive=[0,0,27];
+		ColorLearned=[24,68,144];
+		Color12h=[119,62,139];
+		Color7d=[58,162,56];
+		Color
 		ColorA=[0.0547    0.0818    0.0163];
 		ColorB=[0.0796    0.7324    0.0000];
 		LearnedColor=[0.0547    0.0818    0.0163];
 		HeatmapPositive=[1.0000    0.0000    0.0000];
-		HeatmapNegative=[0.0000    0.0000    1.0000];
+        HeatmapNegative=[0.0000    0.0000    1.0000];
+        Colors3=[166,61,76;96,153,208;96,76,63]
 	end
 	methods(Static)
 		function Clear()

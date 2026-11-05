@@ -6,7 +6,7 @@
 % Naive 两条线使用虚线以区分阶段
 %
 % Execution:
-%   run('英文图/FigS1F_ReactivationLaneMeanLines.m')
+%   run('英文图/Fig2C_ReactivationLaneMeanLines.m')
 
 
 DS = TransferLearning.AudioLightBaseline();
@@ -23,7 +23,7 @@ kSigma = 3;
 
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('Fig1H:No1s', 'Cannot find sample close to 1s.');
+	error('Fig2C:No1s', 'Cannot find sample close to 1s.');
 end
 
 % --- 2) Query 4 lanes (Median ZScore NTATS)
@@ -71,7 +71,7 @@ end
 %% 
 
 % --- 6) Plot
-f = figure('Color', 'w', 'Name', 'English FigS1F Lane Mean Lines');
+f = figure('Color', 'w');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 f.PaperUnits = 'centimeters';
@@ -87,7 +87,7 @@ ax.LineWidth = 2;
 
 laneColors2 = [230, 0, 18; 0, 112, 192] ./ 255;
 laneColors = laneColors2([1; 2; 1; 2], :);
-lineStyles = ["--"; "--"; "-"; "-"];
+lineStyles = [":"; ":"; "-"; "-"];
 
 hMain = MATLAB.Graphics.MultiShadowedLines(Y, E, 0.18, ...
 	Ax=ax, ...
@@ -122,13 +122,8 @@ if ~isfolder(outDirUNC)
 	mkdir(outDirUNC);
 end
 title(ax,'🔊💡 reactive cells', 'FontSize', 12, 'FontWeight', 'normal');
-svgName = "English_FigS1F_ReactivationLaneMeanLines.svg";
+svgName = "English_Fig2C_ReactivationLaneMeanLines.svg";
 svgPath = TransferLearning.ExportStandardFigure(f, 2, svgName);
-fprintf('Wrote: %s\n', svgPath);
-
-assignin('base', 'FigS1F_MeanLines_Y', Y);
-assignin('base', 'FigS1F_MeanLines_SEM', E);
-assignin('base', 'Fig1H_nCells', nCells);
 
 %% --- Local helpers
 

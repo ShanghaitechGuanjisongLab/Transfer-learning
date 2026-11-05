@@ -8,9 +8,7 @@
 %          光水为首学任务；*Always 给水回合不取）
 %
 % 样式（仿 中文图/Fig31B_LearningCurve_Combined.m）：逐会话 mean±SEM 空心圆点误差条
-% + 每组 sigmoid 拟合线；blocks 1-7 上方横线 + 显著性。
-% 统计口径（2026-09-13 用户裁定，沿用原 Fig1B）：组间差异只引 blocks 1-7 线性混合模型
-% （fitlme 'Performance ~ Session + Group + (1|Mouse)'）Group 效应 p；不做斜率置换检验。
+% + 每组 sigmoid 拟合线；图例仅显示三组散点，单列置于 southeast。
 % 斜率为 log-odds/会话：概率空间的每会话最大命中率增量 = k/4（见 Fig1D 头注释）。
 %
 % Outputs (SVG):
@@ -46,32 +44,28 @@ end
 
 allSessions = sortrows(allSessions, ["Group", "Mouse", "DateTime"]);
 allSessions = iAddSessionIndex(allSessions);
-summaryCurve = iSummarizeBySession(allSessions, ["7d", "12h", "Naive"]);
+summaryCurve = iSummarizeBySession(allSessions, ["12h", "7d", "Naive"]);
 
 fit7  = iFitSigmoidCurve(allSessions(allSessions.Group == "7d", :),   "7d");
 fit12 = iFitSigmoidCurve(allSessions(allSessions.Group == "12h", :),  "12h");
 fitN  = iFitSigmoidCurve(allSessions(allSessions.Group == "Naive", :), "Naive");
-
-groupP  = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performance', 'Session', 'Group', 'Mouse');
-sessions7 = allSessions(allSessions.Session <= 7, :);
-groupP7 = TransferLearning.Style.TwoWayAnovaGroupPValue(sessions7, 'Performance', 'Session', 'Group', 'Mouse');
 %%
 
-groupNames = ["7d", "12h", "Naive"];
-groupColors = [TransferLearning.ColorB; TransferLearning.TransferColor; TransferLearning.NaiveColor];
+groupNames = ["12h", "7d", "Naive"];
+groupColors = TransferLearning.Colors3 ./ 255;
 
 f = figure('Color', 'w', 'Name', 'English Fig1B light learning three cohorts sigmoid');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 8];
+f.Position(3:4) = [6, 8];
 f.PaperUnits = 'centimeters';
-f.PaperSize = [12, 8];
+f.PaperSize = [9, 8];
 f.PaperPositionMode = 'auto';
 ax = axes(f);
 hold(ax, 'on');
 
 xMax = max(summaryCurve.Session, [], 'omitnan');
 xFit = linspace(1, xMax, 200).';
-fits = {fit7, fit12, fitN};
+fits = {fit12, fit7, fitN};
 hMean = gobjects(3, 1);
 hFit = gobjects(3, 1);
 for i = 1:3
@@ -92,25 +86,11 @@ box(ax, 'off');
 grid(ax, 'off');
 title(ax, '');
 
-% Horizontal P-value line spanning blocks 1-7（口径：blocks 1-7 LMM Group 效应 p）
-yTop7 = 0;
-for i = 1:3
-	rows = summaryCurve.Group == groupNames(i) & summaryCurve.Session <= 7;
-	yTop7 = max(yTop7, max(summaryCurve.Mean(rows) + summaryCurve.Sem(rows), [], 'omitnan'));
-end
-yl = ylim(ax); yrange = yl(2) - yl(1);
-yPLine = yTop7 + 0.08 * yrange;
-textY = yPLine + 0.1 * yrange;
-plot(ax, [1, 7], [yPLine, yPLine], 'k-', 'LineWidth', 1);
-if groupP7 < 0.001, starStr = '＊＊＊＊'; else, starStr = TransferLearning.Style.iFormatPText(groupP7); end
-text(ax, 4, textY, starStr, ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontSize', 12);
 yt = yticks(ax);
 yticks(ax, yt(yt <= 1 + 1e-6));
 
-lg = legend(ax, [hMean(1), hFit(1), hMean(2), hFit(2), hMean(3), hFit(3)], ...
-	{'7d Mean ± SEM', '7d Sigmoid', '12h Mean ± SEM', '12h Sigmoid', 'Naive Mean ± SEM', 'Naive Sigmoid'}, ...
-	'Location', 'southoutside', 'NumColumns', 2);
+lg = legend(ax, hMean, {'12h', '7d', 'Naive'}, ...
+	'Location', 'southeast', 'NumColumns', 1);
 lg.Box = 'off';
 lg.FontSize = 10;
 
@@ -120,16 +100,16 @@ end
 
 svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig1B_LightLearning_ThreeCohorts.svg');
 
-fitTable = table(["7d"; "12h"; "Naive"], [fit7.Slope; fit12.Slope; fitN.Slope], ...
-	[fit7.Slope; fit12.Slope; fitN.Slope] / 4, [fit7.Midpoint; fit12.Midpoint; fitN.Midpoint], ...
-	[fit7.RSquared; fit12.RSquared; fitN.RSquared], ...
+fitTable = table(["12h"; "7d"; "Naive"], [fit12.Slope; fit7.Slope; fitN.Slope], ...
+	[fit12.Slope; fit7.Slope; fitN.Slope] / 4, [fit12.Midpoint; fit7.Midpoint; fitN.Midpoint], ...
+	[fit12.RSquared; fit7.RSquared; fitN.RSquared], ...
 	'VariableNames', {'Group', 'SlopeLogOdds', 'SlopeProbMax', 'Midpoint', 'RSquared'});
 assignin('base', 'Fig1B_ThreeCohorts_Raw', allSessions);
 assignin('base', 'Fig1B_ThreeCohorts_Summary', summaryCurve);
 assignin('base', 'Fig1B_ThreeCohorts_Fit', fitTable);
 
 fprintf('Wrote: %s\n', svgPath);
-fprintf('=== Fig1B 7d/12h/Naive 光水学习曲线 ===\n');
+fprintf('=== Fig1B 12h/7d/Naive 光水学习曲线 ===\n');
 for i = 1:3
 	g = groupNames(i);
 	sg = summaryCurve(summaryCurve.Group == g, :);
@@ -137,8 +117,6 @@ for i = 1:3
 		numel(unique(string(allSessions.Mouse(allSessions.Group == g)))), height(sg));
 end
 disp(fitTable);
-fprintf('LMM Group P (all blocks)  = %.4g\n', groupP);
-fprintf('LMM Group P (blocks 1-7)  = %.4g\n', groupP7);
 
 %% ========== local functions ==========
 
