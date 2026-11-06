@@ -58,8 +58,8 @@ f = figure('Color','w');
 f.Units='centimeters'; f.Position(3:4)=[21,8];
 tlo = tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact');
 sets = {WALB, '🔊→12h→💡'; WV7, '🔊→7d→💡'};
-colReact = [0.0001 0.0045 0.3319];   % reactivated 深蓝（底）
-colLA = [1.0000 0.4567 0.2322];      % learned-active 橙（上）
+colReact = TransferLearning.Color12h / 255;   % reactivated 底
+colLA = TransferLearning.ColorLearned / 255; % learned-active 未重激活（上）
 for iT = 1:2
 	W = sets{iT,1};
 	ax = nexttile(tlo);

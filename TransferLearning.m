@@ -33,7 +33,6 @@ classdef(Abstract)TransferLearning
 		LearnedColor=[0.0547    0.0818    0.0163];
 		HeatmapPositive=[1.0000    0.0000    0.0000];
         HeatmapNegative=[0.0000    0.0000    1.0000];
-        Colors3=[166,61,76;96,153,208;96,76,63]
 	end
 	methods(Static)
 		function Clear()

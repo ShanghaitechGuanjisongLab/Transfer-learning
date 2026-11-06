@@ -39,7 +39,7 @@ tVec = S.tVec;
 res = S.res;
 groupNames = ["12 h","7 d"];
 readoutNames = ["Audio-water self","Light-water transfer"];
-rowColors = [TransferLearning.ColorB;TransferLearning.TransferColor];
+
 
 curves = cell(2,2);
 nulls = cell(2,2);
@@ -81,7 +81,7 @@ fprintf('Transfer accuracy, 12 h versus 7 d: rank-sum p=%.4g\n',pTransferAccurac
 plotCurves = {[curves{1,1};curves{1,2}],curves{2,1},curves{2,2}};
 plotNames = {"Audio-water self","12 h","7 d"};
 %% 
-plotColors = [TransferLearning.LearnedColor;TransferLearning.TransferColor;TransferLearning.TransferColor];
+plotColors = [TransferLearning.ColorLearned;TransferLearning.Color12h;TransferLearning.Color7d] / 255;
 
 f = figure('Color','w','Name','English Fig3B local-window gap decoder');
 f.Units = 'centimeters';
