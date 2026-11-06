@@ -6,6 +6,9 @@
 %
 % 活跃判定：线索后 1 s 处 z-score > 基线(-3~0 s)均值 + 3σ
 % 输出单个 SVG，横向三个饼图
+%
+% 声/光/水 三个小图标用 patch/plot 手绘矢量图形（替代彩色 emoji）：
+% emoji 在矢量 SVG 中会退化成单色剪影、且依赖系统 Segoe UI Emoji 字体，不能用于投稿。
 
 % --- 0) Ensure project loaded
 if ~exist('UniExp.DataSet', 'class')
@@ -54,25 +57,45 @@ else
 end
 [transferActiveN, transferTotalN] = iUniqueCounts(transferTable);
 
-%% --- H: reuse fraction (Learned-active cells re-activated in Transfer first block) ---
+%% --- H: reuse fraction (per-mouse mean of P[Reactivated | Learned-active]) ---
+% 口径说明：
+%   pooled  = (所有鼠 Learned 活跃细胞中在 Transfer 首块也被激活的个数) / (所有 Learned 活跃细胞数)
+%   per-mouse = 先算每只鼠的复用比例，再对鼠取平均（与旧图 43H 的 84.6 / 15.4 一致）
+% 绘图用 per-mouse 平均，pooled 一并打印供核对。
 learnedActiveIDs = unique(uint64(learnedTable.CellUID(logical(learnedTable.IsActive))));
 transferActiveIDs = unique(uint64(transferTable.CellUID(logical(transferTable.IsActive))));
-reuseIDs = intersect(learnedActiveIDs, transferActiveIDs);
-nReuse = numel(reuseIDs);
+nReusePooled = numel(intersect(learnedActiveIDs, transferActiveIDs));
 [learnedActiveNDedup, ~] = iUniqueCounts(learnedTable(learnedTable.IsActive, :));
 nLearnedActiveDenom = learnedActiveNDedup;
 
+fracPerMouse = nan(height(firstTransfer), 1);
+for iMouse = 1:height(firstTransfer)
+	qLearnedOne = struct('Mouse', firstTransfer.Mouse(iMouse), 'Phase', 'Learned', 'Stimulus', 'AudioWater');
+	GLearnedOne = DS.QueryNTATS(qLearnedOne, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
+	learnedOne = iBuildActiveCellTable(GLearnedOne, idx1s, baseMask, kSigma, 'FigS1H:BadNTATS');
+	Lids = unique(uint64(learnedOne.CellUID(logical(learnedOne.IsActive))));
+	Tids = unique(uint64(transferTables{iMouse}.CellUID(logical(transferTables{iMouse}.IsActive))));
+	if ~isempty(Lids)
+		fracPerMouse(iMouse) = numel(intersect(Lids, Tids)) / numel(Lids);
+	end
+end
+fracReuse = mean(fracPerMouse, 'omitnan');
+fracReuseSem = std(fracPerMouse, 'omitnan') / sqrt(sum(isfinite(fracPerMouse)));
+nReuse = 100 * fracReuse;          % 传入饼图时用 0~100 作分子，分母 100
+nReuseDenom = 100;
+
 %% --- Plot: 3 pies side by side ---
-% 绘图逻辑照抄中文图43FG / 英文旧Fig1I 原版 iPlotOnePie：
-% 单饼原版为 6×4 cm、axes Position [0.22,0.12,0.56,0.78]（轴 3.36×3.12 cm）。
-% 合并版保持轴尺寸与高度不变，仅把每饼槽宽从 6.0 cm 压到 4.9 cm（总宽 14.7 cm <15 cm、高 4.0 cm）。
-slotCm = 4.9;
-axWCm = 3.36;
-axLeft0Cm = 0.3;
+% 样式参照 Guan-lab Nat Commun 2026 Fig.5g/k：
+%   普通饼图（非环形）、灰底 + 单一强调色、扇区间白色细缝、无图例/边框，
+%   强调扇区 = 彩色粗体名称（上）+ 黑色百分比（下），灰扇区 = 灰色粗体名称（上）+ 黑色百分比（下）。
+% 每个饼上方保留一行 6 pt 小字标题，用于区分 Learned / Transfer / Reactivation。
+% 尺寸遵循英文图规范：宽为 1.5 cm 的整倍数（12.0 = 8×1.5，≤182 mm）；基础高 4 cm；字号 6 pt。
+slotCm = 4.0;      % 每饼槽宽（三槽合计 12.0 cm）
+axWCm = 3.8;       % 轴宽（子图间距 0.2 cm）
 figWCm = 3 * slotCm;
 figHCm = 4.0;
 
-f = figure('Color', 'none', 'Name', 'English FigS1H Active Fraction Pies');
+f = figure('Color', 'w', 'Name', 'English FigS1H Active Fraction Pies');
 f.Units = 'centimeters';
 f.Position(3:4) = [figWCm, figHCm];
 f.PaperUnits = 'centimeters';
@@ -81,32 +104,49 @@ f.PaperPosition = [0, 0, figWCm, figHCm];
 f.PaperSize = [figWCm, figHCm];
 
 specs = { ...
-	learnedActiveN, learnedTotalN, sprintf('🔊💧\nactive cells'), 'fraction'; ...
-	transferActiveN, transferTotalN, sprintf('💡💧\nactive cells'), 'fraction'; ...
-	nReuse, nLearnedActiveDenom, sprintf('💡💧\nreactivated'), 'reuse'};
+	learnedActiveN,  learnedTotalN,  'Learned',      {},                   'Active',      {{'speaker', 'drop'}}, 'Inactive'; ...
+	transferActiveN, transferTotalN, 'Transfer',     {},                   'Active',      {{'bulb', 'drop'}},    'Inactive'; ...
+	nReuse,          nReuseDenom,    'Active cells', {{'speaker', 'drop'}}, 'Reactivated', {{'bulb', 'drop'}},    'Not reactivated'};
 for iP = 1:3
-	axLeftCm = (iP - 1) * slotCm + axLeft0Cm;
+	axLeftCm = (iP - 1) * slotCm + (slotCm - axWCm) / 2;
 	ax = axes(f, 'Units', 'normalized', ...
-		'Position', [axLeftCm / figWCm, 0.12, axWCm / figWCm, 0.78]);
-	iPlotOnePie(ax, specs{iP, 1}, specs{iP, 2}, specs{iP, 3}, specs{iP, 4});
+		'Position', [axLeftCm / figWCm, 0.16, axWCm / figWCm, 0.68]);
+	ttlIcons = iPeelIconCell(specs{iP, 4});
+	actIcons = iPeelIconCell(specs{iP, 6});
+	iPlotOnePie(ax, specs{iP, 1}, specs{iP, 2}, specs{iP, 3}, ttlIcons, ...
+		specs{iP, 5}, actIcons, specs{iP, 7});
 end
 
 set(findobj(f, 'Type', 'text'), 'FontSize', 6);
 
 %% --- Export ---
 svgName = "English_FigS1H_ActiveFractionPies.svg";
-svgPath = TransferLearning.ExportStandardFigureTransparent(f, 1, svgName);
+svgPath = TransferLearning.ExportStandardFigure(f, 1, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
 fprintf('Learned AudioWater active = %d / %d (%.4f)\n', learnedActiveN, learnedTotalN, learnedActiveN / learnedTotalN);
 fprintf('Transfer first-block active = %d / %d (%.4f)\n', transferActiveN, transferTotalN, transferActiveN / transferTotalN);
-fprintf('Reuse = %d / %d (%.4f)\n', nReuse, nLearnedActiveDenom, nReuse / nLearnedActiveDenom);
+fprintf('Reuse per-mouse mean = %.4f +- %.4f (n=%d)  -> %.1f%% reactivated / %.1f%% not\n', ...
+	fracReuse, fracReuseSem, sum(isfinite(fracPerMouse)), 100 * fracReuse, 100 * (1 - fracReuse));
+fprintf('Reuse pooled (for reference) = %d / %d (%.4f)\n', nReusePooled, nLearnedActiveDenom, ...
+	nReusePooled / nLearnedActiveDenom);
 
-summary = table(learnedActiveN, learnedTotalN, transferActiveN, transferTotalN, nReuse, nLearnedActiveDenom, ...
-	'VariableNames', {'LearnedActiveN', 'LearnedTotalN', 'TransferFirstActiveN', 'TransferFirstTotalN', 'ReuseN', 'ReuseDenominatorN'});
+summary = table(learnedActiveN, learnedTotalN, transferActiveN, transferTotalN, ...
+	fracReuse, fracReuseSem, nReusePooled, nLearnedActiveDenom, ...
+	'VariableNames', {'LearnedActiveN', 'LearnedTotalN', 'TransferFirstActiveN', 'TransferFirstTotalN', ...
+	'ReusePerMouseMean', 'ReusePerMouseSem', 'ReusePooledN', 'ReusePooledDenominatorN'});
 assignin('base', 'FigS1H_ActiveFractionSummary', summary);
 
 %% ========== Local helpers ==========
+
+function iconKinds = iPeelIconCell(c)
+% specs 中的图标列可能是 {}、{{'a','b'}} 两种写法，统一取出为 {'a','b'}
+if isempty(c)
+	iconKinds = {};
+else
+	iconKinds = c{1};
+end
+end
 
 function firstTransfer = iPerMouseFirstTransferLightWaterDateTime(DS)
 T = DS.TableQuery(["Mouse", "DateTime", "Phase", "Stimulus"]);
@@ -198,70 +238,155 @@ activeN = nnz(isActive);
 totalN = numel(cellUID);
 end
 
-function iPlotOnePie(ax, activeN, totalN, smallSliceLabel, pieMode)
-% 照抄中文图43FG / 英文旧Fig1I 的 iPlotOnePie 绘图逻辑
-if totalN > 0
-	frac = activeN / totalN;
+function iPlotOnePie(ax, numN, denN, ttlText, ttlIcons, activeLabel, activeIcons, inactiveLabel)
+% 普通饼图：灰底 + 单一强调色（参考 Guan-lab Nat Commun 2026 Fig.5k）
+%   - 强调扇区 = 彩色粗体名称 + 黑色百分比
+%   - 其余扇区 = 灰色粗体名称 + 黑色百分比
+%   - 扇区间 1 pt 白色细缝，无图例、无边框、无刻度
+%   - 标题与强调扇区标签均可带手绘矢量小图标（不用 emoji）
+hold(ax, 'on');
+if denN > 0
+	vals = [numN, max(denN - numN, 0)];
 else
-	frac = NaN;
+	vals = [NaN, NaN];
+end
+if ~all(isfinite(vals)) || sum(vals) <= 0
+	vals = [0, 1];
 end
 
-majorColor = 0.7922 .* [1 1 1];
-minorColor = [0, 0.6275, 0.9137];
+accentColor = [0, 0.6275, 0.9137];
+grayFillColor = [0.80, 0.80, 0.80];
+grayTextColor = [0.45, 0.45, 0.45];
+cols = [accentColor; grayFillColor];
+labelCols = [accentColor; grayTextColor];
+names = {activeLabel, inactiveLabel};
+iconKinds = activeIcons;
 
-if strcmp(pieMode, 'reuse')
-	% 旧 Fig1I/43H：valueVec = [pNon, pReuse]，标题=分母标签，侧标= reuse 扇区（第2扇区）
-	valueVec = [1 - frac, frac];
-	wedgeColors = [majorColor; minorColor];
-	titleText = sprintf('🔊💧\nactive cells');
-	sideText = smallSliceLabel;
-	sideWedge = 2;
-else
-	% 43F/G：valueVec = [pActive, pInactive]，标题=大扇区标签，侧标=小扇区中点角
-	valueVec = [frac, 1 - frac];
-	if valueVec(1) >= valueVec(2)
-		wedgeColors = [majorColor; minorColor];
-	else
-		wedgeColors = [minorColor; majorColor];
-	end
-	labelTexts = [string(smallSliceLabel), "all cells"];
-	[~, majorIdx] = max(valueVec);
-	[~, minorIdx] = min(valueVec);
-	titleText = iCapitalizeLeadingLetter(labelTexts(majorIdx));
-	sideText = labelTexts(1);
-	sideWedge = minorIdx;
+hP = pie(ax, vals);
+if numel(hP) >= 4
+	delete(hP(2:2:end));   % 去掉 pie 的自动外标签（导出时会被裁切）
+end
+for k = 1:numel(vals)
+	hP(2 * k - 1).FaceColor = cols(k, :);
+	hP(2 * k - 1).EdgeColor = 'w';
+	hP(2 * k - 1).LineWidth = 1;
+end
+ax.Visible = 'off';
+ax.DataAspectRatio = [1 1 1];
+
+frac = vals(:) / sum(vals);
+
+% --- 强调扇区（第 1 块，自 90° 顺时针起算）：标在饼右侧，图标修饰 Active/Reused 而不是阶段标题 ---
+angMid1 = 90 - 0.5 * frac(1) * 360;
+yMark = 1.02 * sind(angMid1);
+yMark = min(max(yMark, -0.55), 0.75);
+xMark = 0.95;
+
+tActive = text(ax, xMark, yMark + 0.09, names{1}, 'Color', labelCols(1, :), 'FontWeight', 'bold', ...
+	'FontSize', 6, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom', 'Clipping', 'off');
+drawnow;
+extA = tActive.Extent;
+
+iconS = 0.11;      % 单图标半高（data 单位）
+iconGap = 0.045;    % 图标间距
+textGap = 0.05;     % 图标组与文字的间距
+nIcon = numel(iconKinds);
+iconW = nIcon * 2 * iconS + (nIcon - 1) * iconGap;
+tActive.Position(1) = xMark + iconW + textGap;
+cyIcon = tActive.Position(2) + extA(4) / 2;
+for k = 1:nIcon
+	cx = xMark + iconS + (k - 1) * (2 * iconS + iconGap);
+	iDrawIcon(ax, iconKinds{k}, cx, cyIcon, iconS);
+end
+text(ax, xMark, yMark - 0.05, sprintf('%.1f%%', 100 * frac(1)), 'Color', 'k', ...
+	'FontSize', 6, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top', 'Clipping', 'off');
+
+% --- 灰扇区：标在饼正下方居中 ---
+if frac(2) > 0
+	text(ax, 0, -1.35, names{2}, 'Color', labelCols(2, :), 'FontWeight', 'bold', ...
+		'FontSize', 6, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Clipping', 'off');
+	text(ax, 0, -1.43, sprintf('%.1f%%', 100 * frac(2)), 'Color', 'k', ...
+		'FontSize', 6, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'Clipping', 'off');
 end
 
-MATLAB.Graphics.NestedPie( ...
-	{valueVec}, ...
-	WedgeColors={wedgeColors}, ...
-	LabelText=strings(1, 2), ...
-	PercentStatus="on", ...
-	PercentFontColor='k', ...
-	RhoLower=0.4, ...
-	LineWidth=0.5, ...
-	LabelOffset=0.16, ...
-	AxesHandle=ax);
-title(ax, titleText, 'FontSize', 6, 'FontWeight', 'normal');
+xlim(ax, [-1.60, 3.30]);
+ylim(ax, [-1.83, 1.68]);
 
-if all(isfinite(valueVec)) && sum(valueVec) > 0
-	startAngleDeg = [0, 360 * valueVec(1) / sum(valueVec)];
-	endAngleDeg = [startAngleDeg(2), 360];
-	thetaDeg = 0.5 * (startAngleDeg(sideWedge) + endAngleDeg(sideWedge));
-	theta = deg2rad(thetaDeg);
-	labelRadius = 1.12;
-	tx = labelRadius * cos(theta);
-	ty = labelRadius * sin(theta);
-	if tx >= 0
-		hAlign = 'left';
-		tx = tx + 0.005;
-	else
-		hAlign = 'right';
-		tx = tx - 0.005;
-	end
-	text(ax, tx, ty, sideText, 'FontSize', 6, 'FontWeight', 'normal', ...
-		'Color', minorColor, 'HorizontalAlignment', hAlign, ...
-		'VerticalAlignment', 'middle', 'Clipping', 'off');
+% --- 阶段标题：可带图标（第 3 个饼的分母就是 Learned 声水活跃细胞）---
+if isempty(ttlIcons)
+	text(ax, 0, 1.22, ttlText, 'Color', [0.25 0.25 0.25], 'FontSize', 6, ...
+		'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Clipping', 'off');
+else
+	iDrawTitleWithIcons(ax, ttlText, ttlIcons, iconS, iconGap, textGap);
+end
+end
+
+function iDrawTitleWithIcons(ax, ttlText, iconKinds, iconS, iconGap, textGap)
+% 标题行：手绘矢量小图标 + 文字，整体水平居中于 x = 0
+tTitle = text(ax, 0, 1.22, ttlText, 'Color', [0.25 0.25 0.25], 'FontSize', 6, ...
+	'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Clipping', 'off');
+drawnow;
+ext = tTitle.Extent;
+textW = ext(3);
+textH = ext(4);
+
+nIcon = numel(iconKinds);
+iconW = nIcon * 2 * iconS + (nIcon - 1) * iconGap;
+totalW = iconW + textGap + textW;
+xStart = -totalW / 2;
+tTitle.Position(1) = xStart + iconW + textGap + textW / 2;
+
+cy = 1.22 + textH / 2;
+for k = 1:nIcon
+	cx = xStart + iconS + (k - 1) * (2 * iconS + iconGap);
+	iDrawIcon(ax, iconKinds{k}, cx, cy, iconS);
+end
+end
+
+function iDrawIcon(ax, kind, cx, cy, s)
+% 手绘矢量小图标（替代 emoji），s = 半高，坐标为 data 单位
+% 每个图标先按自身原始高度归一化到总高 2s，保证三者视觉尺寸一致
+switch kind
+	case 'speaker'
+		colBody = [0.18 0.18 0.18];
+		q = s / 0.74;   % 原始高 1.48 → 半高 0.74
+		% 箱体
+		patch(ax, cx + [-0.95 -0.44 -0.44 -0.95] * q, cy + [-0.28 -0.28 0.28 0.28] * q, ...
+			colBody, 'EdgeColor', 'none');
+		% 喇叭口
+		patch(ax, cx + [-0.44 0.10 0.10 -0.44] * q, cy + [-0.28 -0.74 0.74 0.28] * q, ...
+			colBody, 'EdgeColor', 'none');
+		% 声波（两段弧）
+		th = linspace(-0.85, 0.85, 30);
+		for rr = [0.55 0.92]
+			plot(ax, cx + (0.14 + rr * cos(th)) * q, cy + rr * sin(th) * q, '-', ...
+				'Color', colBody, 'LineWidth', 1);
+		end
+	case 'bulb'
+		colBulb = [0.96 0.64 0.09];
+		colBase = [0.38 0.38 0.38];
+		q = s / 0.80;   % 原始高 1.60 → 半高 0.80
+		% 玻璃壳
+		th = linspace(0, 2 * pi, 60);
+		patch(ax, cx + 0.46 * q * cos(th), cy + 0.16 * q + 0.46 * q * sin(th), ...
+			colBulb, 'EdgeColor', 'none');
+		% 灯座
+		patch(ax, cx + [-0.22 -0.18 0.18 0.22] * q, cy + [-0.98 -0.62 -0.62 -0.98] * q, ...
+			colBase, 'EdgeColor', 'none');
+		% 光线
+		for ang = [90 45 135 18 162]
+			x1 = cx + 0.68 * q * cosd(ang);
+			y1 = cy + 0.16 * q + 0.68 * q * sind(ang);
+			x2 = cx + 0.94 * q * cosd(ang);
+			y2 = cy + 0.16 * q + 0.94 * q * sind(ang);
+			plot(ax, [x1 x2], [y1 y2], '-', 'Color', colBulb, 'LineWidth', 1);
+		end
+	case 'drop'
+		colDrop = [0.16 0.52 0.85];
+		q = s;          % 原始高 2.00 → 半高 1.00
+		xd = [0 0.24 0.44 0.48 0.36 0.18 0 -0.18 -0.36 -0.48 -0.44 -0.24];
+		yd = [1.00 0.52 0.10 -0.34 -0.72 -0.92 -1.00 -0.92 -0.72 -0.34 0.10 0.52];
+		patch(ax, cx + xd * q, cy + yd * q, colDrop, 'EdgeColor', 'none');
 end
 end
 

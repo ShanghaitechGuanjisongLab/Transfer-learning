@@ -15,7 +15,7 @@
 % Execution:
 %   TransferLearning.英文图3.E_SD1sVsDeltaHit_Moderates
 
-outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
+outDirUNC = fullfile('\\Data-Server-2\个人数据\杨青宁', char(datetime('now', 'Format', 'yyyyMM')));
 
 % --- Time axis
 xs = TransferLearning.Xs;
@@ -237,7 +237,7 @@ fprintf('Wrote: %s\n', cbSvgName);
 %% ===== 6) Export 2 histogram SVGs (57 mm × 16 mm) =====
 nBins = 40;
 binEdges = linspace(-1, 1, nBins + 1);
-pairColors = {TransferLearning.TransferColor; TransferLearning.NaiveColor};
+pairColors = {iRGB(TransferLearning.Color12h); iRGB(TransferLearning.ColorNaive)};
 histTitles = ["Transfer", "Naive"];
 
 histFigs = gobjects(1, 2);
@@ -606,6 +606,13 @@ cb.Box = 'off';
 
 TransferLearning.ExportStandardFigureTransparent(cbFig, 3, svgName);
 close(cbFig);
+end
+
+function c = iRGB(c)
+% 把 0–255 的颜色常量归一化到 0–1
+c = double(c(:)');
+if numel(c) ~= 3, c = [0 0 0]; end
+if max(c) > 1, c = c / 255; end
 end
 
 function [idx, ok] = iFindTimeIndex(xsSec, tSec, tolSec)
