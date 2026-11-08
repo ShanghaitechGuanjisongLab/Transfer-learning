@@ -1,4 +1,4 @@
-% 英文图5D：TH 抑制组与 12 h 对照组的分层重激活率比较。
+% 英文图5E：TH 抑制组与 12 h 对照组的分层重激活率比较。
 %
 % 重激活率 = P(Transfer 阶段活跃 | Learned 阶段活跃)，在 cue 后 +1 s 判定。
 % Learned 阶段取每鼠最后一个 Learned/AudioWater 会话，Transfer 阶段取每鼠
@@ -6,12 +6,12 @@
 % 分别计算。活跃判定：该细胞的中位数 z 分数 > 基线（−3～0 s）均值 + 3σ。
 % 数据与计算沿用英文图 S1G 所用的逐鼠逐层构造函数，不要求 Hit/Miss 分组。
 %
-% 样式与英文图5E一致：横轴为层，图例为组，不画逐鼠散点，
+% 样式与英文图5F一致：单个面板，横轴为层，图例为组，不画逐鼠散点，
 % 柱高表示跨鼠均值，误差条表示均值标准误，两组采用独立样本秩和检验。
 % 语义配色：12 h = Color12h，TH = ColorTH，RGB 原始值除以 255。
 %
 % 输出（SVG）：
-%   - English_Fig5D_THInhibitVsCtrl_ReactivationByLayer.svg
+%   - English_Fig5E_THInhibitVsCtrl_ReactivationByLayer.svg
 %
 % 执行要求：
 % - 保持脚本形式，不得改为函数。
@@ -30,7 +30,7 @@ RCtrl = iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer( ...
 RTH = iBuildProb_TransferGivenLearnedAudio_1s_PerMouseLayer( ...
 	DataSet = TransferLearning.THInhibit(), Source = "THInhibit", RequireHitMiss = false);
 if isempty(RCtrl) || isempty(RTH)
-	error('Fig5D:Empty', '未获得有效的重激活率数据。');
+	error('Fig5E:Empty', '未获得有效的重激活率数据。');
 end
 
 dataCell = {double(RCtrl.Prob23), double(RTH.Prob23); ...
@@ -39,14 +39,14 @@ layerLabels = ["MOp2/3", "MOp5"];
 groupLabels = ["12 h", "TH"];
 groupColors = [TransferLearning.Color12h; TransferLearning.ColorTH] / 255;
 pLayers = nan(1, 2);
-fprintf('=== 英文图5D：首个 Transfer 会话的分层重激活率 ===\n');
+fprintf('=== 英文图5E：首个 Transfer 会话的分层重激活率 ===\n');
 for iLayer = 1:2
 	vCtrl = dataCell{iLayer, 1};
 	vTH = dataCell{iLayer, 2};
 	vCtrl = vCtrl(isfinite(vCtrl));
 	vTH = vTH(isfinite(vTH));
 	if numel(vCtrl) < 2 || numel(vTH) < 2
-		error('Fig5D:InsufficientData', '%s 数据不足：12 h n=%d，TH n=%d。', ...
+		error('Fig5E:InsufficientData', '%s 数据不足：12 h n=%d，TH n=%d。', ...
 			layerLabels(iLayer), numel(vCtrl), numel(vTH));
 	end
 	pLayers(iLayer) = ranksum(vCtrl, vTH);
@@ -65,7 +65,7 @@ for iLayer = 1:2
 end
 
 %% ---------- 绘图：单面板，横轴为层，图例为组 ----------
-f = figure('Color', 'w', 'Name', 'English Fig5D TH inhibition reactivation by layer');
+f = figure('Color', 'w', 'Name', 'English Fig5E TH inhibition reactivation by layer');
 f.Units = 'centimeters';
 f.Position(3:4) = [6, 8];
 
@@ -83,9 +83,8 @@ iStyleBars(ax, barHandles, errorBars, groupColors);
 iOverridePText(optional, pLayers);
 legendHandle = optional.Legend;
 legendHandle.String = cellstr(groupLabels);
-legendHandle.Title.String = 'Group';
-legendHandle.Title.FontWeight = 'normal';
-legendHandle.Location = 'northeast';
+legendHandle.Location = 'southoutside';
+legendHandle.Orientation="horizontal";
 legendHandle.Box = 'off';
 xlabel(ax, 'Layer');
 ylabel(ax, 'Reactivation');
@@ -95,15 +94,15 @@ grid(ax, 'off');
 iRetunePValueLines(optional);
 
 TransferLearning.ApplyStandardExportStyle(f, 2);
-svgPath = TransferLearning.StandardFigureSvgPath('English_Fig5D_THInhibitVsCtrl_ReactivationByLayer.svg');
+svgPath = TransferLearning.StandardFigureSvgPath('English_Fig5E_THInhibitVsCtrl_ReactivationByLayer.svg');
 exportgraphics(f, svgPath, 'ContentType', 'vector', 'BackgroundColor', 'white');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig5D_TH_ReactivationByLayer', struct('Control12h', RCtrl, 'TH', RTH));
-assignin('base', 'Fig5D_TH_ReactivationPValues', ...
+assignin('base', 'Fig5E_TH_ReactivationByLayer', struct('Control12h', RCtrl, 'TH', RTH));
+assignin('base', 'Fig5E_TH_ReactivationPValues', ...
 	table(layerLabels(:), pLayers(:), 'VariableNames', {'Layer', 'RankSumP'}));
 
-%% ========== 局部函数：柱状图与显著性样式，同英文图5E ==========
+%% ========== 局部函数：柱状图与显著性样式，同英文图5F ==========
 function compareGroup = iWithinLayerCompareGroup(layerLabels, groupLabels, dimensionNames)
 layerPair = [layerLabels(:), layerLabels(:)];
 groupPair = repmat(groupLabels(1:2), numel(layerLabels), 1);

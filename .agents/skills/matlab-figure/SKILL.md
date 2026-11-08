@@ -7,6 +7,7 @@ description: MATLAB作图规范
 用户对作图的要求如果有不明确之处，优先发问，避免自己瞎猜后再让用户回头来改。
 MATLAB有时会自动旋转较长的xticklabels，这是符合审美的，不要手动调节这种旋转或增加边框留白，即使它“看起来出界了”
 不要手动设置xlim、ylim，仅在需要统一时使用MATLAB.Graphics.UnifyAxesLims
+希腊字母不要用转义语法，直接用原始字符，如ρ不要写成\rho
 # tiledlayout
 不要重复相同的xylabel：如果所有的x或ylabel都一样，则应只在Layout级别放置单个label。
 只有单个tile时，不准使用tiledlayout。
