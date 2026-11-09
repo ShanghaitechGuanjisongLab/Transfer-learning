@@ -3,8 +3,8 @@
 % Data source / definition: AnalyzeLearningSpeedMetricsComplete.m and
 % TransferLearning.Metrics.ResponseHeterogeneity (per-mouse SD of cell response z@cue+1s).
 %
-% Layout: one 2-D grouped table; rows = layer (MOp2/3, MOp5), columns = cohort (Naive, 12 h, 7 d).
-% Within each layer, BarScatterCompare tests all three pairwise cohort contrasts by Mann-Whitney rank-sum.
+% 上下两个 tile 分别比较 Naive-12 h、12 h-7 d；每个二维表的行是层，列是该 tile 的两个队列。
+% 每个 tile 独立使用 BarScatterCompare 默认的完整 ANOVA 与多重比较，不比较 Naive-7 d。
 % Colors are semantic constants ColorNaive/Color12h/Color7d (RGB 0-255, scaled to [0,1]).
 %
 % Input: Heterogeneity_PerMouse.csv from AnalyzeLearningSpeedMetricsComplete.m, in monthly output dir.
@@ -58,14 +58,9 @@ end
 dataTable = cell2table(dataCell, 'VariableNames', cellstr(cohorts), 'RowNames', cellstr(layers));
 dataTable.Properties.DimensionNames = {'Layer', 'Cohort'};
 
-% For each layer compare Naive-12h, Naive-7d and 12h-7d.
-pairs = ["Naive", "12 h"; "Naive", "7 d"; "12 h", "7 d"];
-layerPair = [repmat(layers(1), 3, 2); repmat(layers(2), 3, 2)];
-cohortPair = [pairs; pairs];
-GroupPair = table(layerPair, cohortPair, 'VariableNames', {'Layer', 'Cohort'});
-compareGroup = table(GroupPair);
+% 每层内保留两项以 12 h 为参照的队列比较。
+pairs = ["Naive", "12 h"; "12 h", "7 d"];
 colors = [TransferLearning.ColorNaive; TransferLearning.Color12h; TransferLearning.Color7d] / 255;
-colorTable = array2table(colors, 'VariableNames', {'R', 'G', 'B'}, 'RowNames', cellstr(cohorts));
 
 fprintf('=== Response heterogeneity by layer: Naive / 12 h / 7 d ===\n');
 for iL = 1:numel(layers)
@@ -74,40 +69,57 @@ for iL = 1:numel(layers)
 		fprintf('%-7s %-6s n=%2d mean=%.3f median=%.3f\n', layers(iL), cohorts(iG), numel(x), mean(x), median(x));
 	end
 end
+%% 
 
 f = figure('Color', 'w', 'Name', 'English Fig4E heterogeneity by layer Naive 12h 7d');
 f.Units = 'centimeters';
-f.Position(3:4) = [11, 7];
-ax = axes(f);
-[~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(dataTable, compareGroup, ...
-	colorTable, ax, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
-iStyleBars(ax, barHandles, errorBars, colors);
-
-legendHandle = optional.Legend;
-legendHandle.String = cellstr(cohorts);
-legendHandle.Title.String = 'Cohort';
-legendHandle.Title.FontWeight = 'normal';
-legendHandle.Location = 'northoutside';
-legendHandle.Orientation = 'horizontal';
-legendHandle.Box = 'off';
-xlabel(ax, 'Layer');
-ylabel(ax, 'Response heterogeneity (SD)');
-box(ax, 'off');
-grid(ax, 'off');
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
-
-iRetunePValueLines(optional);
+f.Position(3:4) = [9, 8];
+layout = tiledlayout(f, 2, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+axesHandles = gobjects(size(pairs, 1), 1);
+barsByTile = cell(size(pairs, 1), 1);
+errorsByTile = cell(size(pairs, 1), 1);
+comparisonsByTile = cell(size(pairs, 1), 1);
+for tileIndex = 1:size(pairs, 1)
+	tileCohorts = pairs(tileIndex, :);
+	[~, colorIndices] = ismember(tileCohorts, cohorts);
+	tileColors = colors(colorIndices, :);
+	tileData = dataTable(:, cellstr(tileCohorts));
+	layerPair = [layers(:), layers(:)];
+	cohortPair = repmat(tileCohorts, numel(layers), 1);
+	GroupPair = table(layerPair, cohortPair, 'VariableNames', {'Layer', 'Cohort'});
+	compareGroup = table(GroupPair);
+	colorTable = array2table(tileColors, 'VariableNames', {'R', 'G', 'B'}, 'RowNames', cellstr(tileCohorts));
+	ax = nexttile(layout, tileIndex);
+	[~, optional, barHandles, errorBars] = UniExp.BarScatterCompare(tileData, compareGroup, colorTable, ax, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
+	iStyleBars(ax, barHandles, errorBars, tileColors);
+	box(ax, 'off');
+	legendHandle = optional.Legend;
+	legendHandle.String = cellstr(tileCohorts);
+	legendHandle.Title.FontWeight = 'normal';
+	legendHandle.Location = 'eastoutside';
+	legendHandle.Box = 'off';
+	if tileIndex == 1
+		xticklabels(ax, {});
+	end
+	iRetunePValueLines(optional);
+	axesHandles(tileIndex) = ax;
+	barsByTile{tileIndex} = barHandles;
+	errorsByTile{tileIndex} = errorBars;
+	comparisonsByTile{tileIndex} = optional.MultiCompare;
+	fprintf('\n%s - %s\n', tileCohorts(1), tileCohorts(2));
+	disp(optional.MultiCompare(:, {'Layer', 'Cohort', 'PValue'}));
+end
+xlabel(layout, 'Layer');
+ylabel(layout, 'Response heterogeneity');
+title(layout, 'Transfer💡💧');
 TransferLearning.ApplyStandardExportStyle(f, 2);
+MATLAB.Graphics.UnifyAxesLims(axesHandles, @xlim, @ylim);
 
 % Keep error-bar caps visually consistent after standard styling / P-line layout.
-iUnifyErrorBarCapSizes(ax, barHandles, errorBars, 0.5);
+iUnifyErrorBarCapSizes(axesHandles, barsByTile, errorsByTile, 0.5);
 svgPath = TransferLearning.StandardFigureSvgPath('English_Fig4E_HeterogeneityByLayer_Naive12h7d.svg');
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
-
-% Export exact plotted values and pairwise p-values for reproducibility.
-assignin('base', 'Fig4E_HeterogeneityPerMouse', H);
-assignin('base', 'Fig4E_HeterogeneityGroupTests', optional.MultiCompare);
 
 %% ========== local functions ==========
 function iStyleBars(ax, barHandles, errorBars, groupColors)
@@ -135,19 +147,28 @@ end
 if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
 end
 
-function iUnifyErrorBarCapSizes(ax, barHandles, errorBars, capSizeRatio)
-axUnits = ax.Units;
-ax.Units = 'points';
-axWidth = ax.Position(3);
-ax.Units = axUnits;
-barWidth = barHandles(1).BarWidth;
-groupWidth = barHandles(1).GroupWidth;
-xRange = diff(xlim(ax));
-nBars = numel(barHandles);
-capSize = axWidth * barWidth * groupWidth * capSizeRatio / (xRange * nBars);
-for iRow = 1:height(errorBars)
-	eBar = errorBars.Object(iRow);
-	if isgraphics(eBar) && isprop(eBar, 'CapSize'), eBar.CapSize = capSize; end
+function iUnifyErrorBarCapSizes(axList, barHandlesList, errorBarsList, capSizeRatio)
+capSizes = nan(numel(axList), 1);
+for tileIndex = 1:numel(axList)
+	ax = axList(tileIndex);
+	axUnits = ax.Units;
+	ax.Units = 'points';
+	axWidth = ax.Position(3);
+	ax.Units = axUnits;
+	barHandles = barHandlesList{tileIndex};
+	barWidth = barHandles(1).BarWidth;
+	groupWidth = barHandles(1).GroupWidth;
+	xRange = diff(xlim(ax));
+	nBars = numel(barHandles);
+	capSizes(tileIndex) = axWidth * barWidth * groupWidth * capSizeRatio / (xRange * nBars);
+end
+capSize = mean(capSizes, 'omitnan');
+for tileIndex = 1:numel(errorBarsList)
+	errorBars = errorBarsList{tileIndex};
+	for iRow = 1:height(errorBars)
+		eBar = errorBars.Object(iRow);
+		if isgraphics(eBar) && isprop(eBar, 'CapSize'), eBar.CapSize = capSize; end
+	end
 end
 end
 
