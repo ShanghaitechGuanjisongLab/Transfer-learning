@@ -1,11 +1,11 @@
-% 中文图333E：迁移光水散度与重激活率的相关性（全细胞单 tile）
+% 英文图2O：迁移光水散度与重激活率的相关性（全细胞单 tile）
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
 
 ALB = TransferLearning.AudioLightBaseline();
 R = iBuildTransferReactivationTable(ALB);
 if isempty(R)
-	error('Fig333E:EmptyReuse', 'No valid mice for reactivation summary.');
+	error('Fig2O:EmptyReuse', 'No valid mice for reactivation summary.');
 end
 
 xs = TransferLearning.Xs;
@@ -17,7 +17,7 @@ end
 [idx0, ok0] = iFindTimeIndex(xsSec, 0, 0.25);
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok0 || ~ok1s
-	error('Fig333E:TimeIndexMissing', 'Cannot find 0 s or 1 s sample in TransferLearning.Xs.');
+	error('Fig2O:TimeIndexMissing', 'Cannot find 0 s or 1 s sample in TransferLearning.Xs.');
 end
 
 Div = iBuildTransferDivergenceTable(ALB, string(R.Mouse), R.DateTimeTransfer, idx0, idx1s);
@@ -27,7 +27,7 @@ dotColor = TransferLearning.TransferColor;
 fitColor = TransferLearning.ColorA;
 %% 
 
-f = figure('Color', 'w');
+f = figure('Color', 'w', 'Name', 'English Fig2O transfer divergence vs reactivation');
 f.Units = 'centimeters';
 f.Position(3:4) = [3, 4];
 
@@ -69,10 +69,10 @@ Stats.Rho(1) = rho;
 Stats.PValue(1) = p;
 Stats.N(1) = nnz(use);
 
-fprintf('\n=== Fig333E All ===\n');
+fprintf('\n=== Fig2O All ===\n');
 fprintf('n=%d, ρ=%.3f, p=%.4g\n', nnz(use), rho, p);
 
-svgPath = '中文图Fig44H_TransferDivergenceVsReactivation_ByLayer.svg';
+svgPath = 'English_Fig2O_TransferDivergenceVsReactivation_ByLayer.svg';
 title('Transfer 💡💧');
 svgPath = TransferLearning.ExportStandardFigure(f, 1, svgPath);
 
@@ -86,7 +86,7 @@ end
 baseMask = (xsSec >= -3) & (xsSec < 0);
 [idx1s, ok1s] = iFindTimeIndex(xsSec, 1, 0.25);
 if ~ok1s
-	error('Fig333E:No1s', 'Cannot find sample close to 1 s.');
+	error('Fig2O:No1s', 'Cannot find sample close to 1 s.');
 end
 
 TLearn = DS.TableQuery(["Mouse","DateTime"], Phase="Learned", Stimulus="AudioWater", Design="AudioWater");

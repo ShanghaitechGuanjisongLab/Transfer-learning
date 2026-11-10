@@ -8,9 +8,10 @@ description: MATLAB作图规范
 MATLAB有时会自动旋转较长的xticklabels，这是符合审美的，不要手动调节这种旋转或增加边框留白，即使它“看起来出界了”
 不要手动设置xlim、ylim，仅在需要统一时使用MATLAB.Graphics.UnifyAxesLims
 希腊字母不要用转义语法，直接用原始字符，如ρ不要写成\rho
+tiledlayout BarScatterCompare 图导出时，要先ApplyStandardExportStyle，然后PLineRetune，再print；这是因为先创建的tile中的P直线可能会在布局自动变化后变得不适应最终布局，所以需要最后再调一次。
 # tiledlayout
 不要重复相同的xylabel：如果所有的x或ylabel都一样，则应只在Layout级别放置单个label。
-只有单个tile时，不准使用tiledlayout。
+只有单个tile时，不准使用tiledlayout，也不准单独创建axes，直接调用画图命令就行。
 # 导出
 不要同时使用ApplyStandardExportStyle和ExportStandardFigure，因为ExportStandardFigure实际上就是ApplyStandardExportStyle并导出图像。ApplyStandardExportStyle通常是为了在应用标准格式后、导出图像之前增加更多自定义调整，那之后应该直接用MATLAB内置函数（如print）出图。
 但是，也不要在ApplyStandardExportStyle之后不做任何修改就直接导出，这种情况应合并为直接使用ExportStandardFigure。
