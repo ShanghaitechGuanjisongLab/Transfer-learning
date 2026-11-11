@@ -1,4 +1,4 @@
-% PCA 结果图（2×2）：复用已有 PCA（每数据集 4 阶段合并拟合），只重排版面
+% 英文图2B：PCA 结果图（2×2），复用已有 PCA（每数据集 4 阶段合并拟合），只重排版面
 %   上排（均来自 ALB，声→光）：Naive·AW      | Learned·AW
 %   下排：                     Naive·LW（LAB）| Transfer·LW（ALB）
 %
@@ -11,7 +11,7 @@
 %   - 四格统一轴跨度（各自保留中心）
 %
 % 依赖：tempdir/PCAstage_G.mat（由 PCA_StageProgression_ALBvsLAB_0to8s.m 生成，约 3–4 min 首次）
-% Output: English_PCA_2x2_NaiveLearnedTransfer.svg
+% 输出：English_Fig2B_PCA_2x2_NaiveLearnedTransfer.svg，以及每格自适应轴限的_tilescale版本。
 
 thisDir = fileparts(mfilename('fullpath'));
 cacheFile = fullfile(tempdir, 'PCAstage_G.mat');
@@ -63,7 +63,7 @@ tiles = {
 	1, 3, TransferLearning.TransferColor, "Transfer Light water", "ALB"
 };
 
-f = figure('Color', 'w', 'Name', 'PCA 2x2 Naive/Learned/Transfer');
+f = figure('Color', 'w', 'Name', 'English Fig2B PCA 2x2 Naive/Learned/Transfer');
 f.Units = 'centimeters';
 f.Position(3:4) = [12, 8];
 f.PaperUnits = 'centimeters';
@@ -74,7 +74,7 @@ f.PaperSize = [12, 8];
 nSeg = 64;
 AxisModes = ["unified", "tile"];   % unified = 四格同跨度可比；tile = 每格自适应（形状最大化）
 for iM = 1:numel(AxisModes)
-	set(f, 'Name', sprintf('PCA 2x2 [%s]', AxisModes(iM)));
+	set(f, 'Name', sprintf('English Fig2B PCA 2x2 [%s]', AxisModes(iM)));
 	delete(f.Children);
 	tlo = tiledlayout(f, 2, 2, 'TileSpacing', 'compact', 'Padding', 'tight');
 	axAll = gobjects(2, 2);
@@ -119,10 +119,10 @@ for iM = 1:numel(AxisModes)
 
 	TransferLearning.ApplyStandardExportStyle(f, 2);
 	if AxisModes(iM) == "unified"
-		fname = 'English_PCA_2x2_NaiveLearnedTransfer.svg';
+		fname = 'English_Fig2B_PCA_2x2_NaiveLearnedTransfer.svg';
 		lname = '_chk_2x2.svg';
 	else
-		fname = 'English_PCA_2x2_NaiveLearnedTransfer_tilescale.svg';
+		fname = 'English_Fig2B_PCA_2x2_NaiveLearnedTransfer_tilescale.svg';
 		lname = '_chk_2x2_tile.svg';
 	end
 	svgPath = TransferLearning.ExportStandardFigure(f, 2, fname);

@@ -33,7 +33,7 @@
 %   可以直接看"轨迹形态/幅度随阶段如何演变"；轴标签给出该行 PC1/PC2 的解释方差。
 %   行内 4 个 tile 统一轴跨度（UnifyAxesLims 的 Range 模式）。
 % 着色：线内时间渐变（cue 端近白 → 8 s 端为阶段色）；
-%   阶段色：Naive=NaiveColor(紫) / Learned=ColorA(近黑) / Transfer=TransferColor(橙) / Final=ColorB(绿)。
+%   阶段色：Naive=ColorNaive，Learned/Final=ColorLearned，Transfer=Color12h，RGB常量除以255后使用。
 %
 % Outputs (SVG):
 %   - English_PCA_StageProgression_4cohorts_0to8s_rowscale.svg
@@ -69,8 +69,7 @@ end
 addpath(fullfile(thisDir, '..'));
 
 stageNames  = ["Naive", "Learned", "Transfer", "Final"];
-stageColors = [TransferLearning.NaiveColor; TransferLearning.ColorA; ...
-	TransferLearning.TransferColor; TransferLearning.ColorB];
+stageColors = [TransferLearning.ColorNaive; TransferLearning.ColorLearned; TransferLearning.Color12h; TransferLearning.ColorLearned] / 255;
 
 DSnames   = ["ALB", "TH", "V7", "LAB"];
 DSlist    = {TransferLearning.AudioLightBaseline(), TransferLearning.THInhibit(), ...

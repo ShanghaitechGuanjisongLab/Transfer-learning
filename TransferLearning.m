@@ -30,6 +30,7 @@ classdef(Abstract)TransferLearning
 		ColorMiss=[213, 105, 127];
 		ColorAudio=[199, 184, 230];
 		ColorLight=[215, 208, 227];
+		ColorcFos=[231, 223, 216];
 	end
 	methods(Static)
 		function Clear()
