@@ -21,16 +21,30 @@ classdef(Abstract)TransferLearning
 		LADelayed=memoize(@iLADelayed);
 		ALDelayedBehavior=memoize(@iALDelayedBehavior);
 		LADelayedBehavior=memoize(@iLADelayedBehavior);
-		ColorNaive=[199, 184, 230];
-		ColorLearned=[215, 208, 227];
-		Color12h=[231, 223, 216];
-		Color7d=[243, 214, 208];
-		ColorTH=[248, 184, 158];
-		ColorHit=[243, 138, 126];
-		ColorMiss=[213, 105, 127];
-		ColorAudio=[199, 184, 230];
-		ColorLight=[215, 208, 227];
-		ColorcFos=[231, 223, 216];
+	%10 个常量直接取自 Mocha（Catppuccin）原色，按配对关系分配：
+		%未使用 Maroon(353°，与 Red 仅差 10°) 与 Sapphire(199°，与 Sky 仅差 10°)
+		%Naive↔Learned = Red 343° / Teal 170°（相隔 173°）
+		ColorNaive=[243, 139, 168];%#F38BA8 Red    H343 L0.75 未学
+		ColorLearned=[148, 226, 213];%#94E2D5 Teal H170 L0.73 学会
+		%12h↔7d = Peach 23° / Pink 316°（相隔 67°，同为暖调浅色）
+		Color12h=[250, 179, 135];%#FAB387 Peach  H23 L0.75 12h
+		Color7d=[245, 194, 231];%#F5C2E7 Pink   H316 L0.86 7d
+		%12h↔TH = Peach 23° / Mauve 267°（相隔 116°）
+		ColorTH=[203, 166, 247];%#CBA6F7 Mauve  H267 L0.81 丘脑抑制
+		%Hit↔Miss = Green 115° / Blue 217°（相隔 102°）
+		ColorHit=[166, 227, 161];%#A6E3A1 Green  H115 L0.76 命中
+		ColorMiss=[137, 180, 250];%#89B4FA Blue   H217 L0.76 未命中
+		%模态 / 指标：Sky 189° / Yellow 41° / Lavender 232°
+		ColorAudio=[137, 220, 235];%#89DCEB Sky    H189 L0.73 声音
+		ColorLight=[249, 226, 175];%#F9E2AF Yellow H41 L0.83 光
+		ColorcFos=[180, 190, 254];%#B4BEFE Lavender H232 L0.85 cFos
+		%曲线 / 阴影带用色：组别主色向黑混 35%（×0.65），保证浅色在白色背景上可读；
+		%bar 图仍用上面的原色。派生色自动跟随主色变化，不需要手工维护。
+		CurveNaive=round(TransferLearning.ColorNaive*0.65);
+		CurveLearned=round(TransferLearning.ColorLearned*0.65);
+		Curve12h=round(TransferLearning.Color12h*0.65);
+		Curve7d=round(TransferLearning.Color7d*0.65);
+		CurveTH=round(TransferLearning.ColorTH*0.65);
 	end
 	methods(Static)
 		function Clear()
