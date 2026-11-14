@@ -115,26 +115,15 @@ TrialCount = size(ResidualSets{1}, 2);
 Baseline = Time <= 1e-10;
 PostCue = Time > 1e-10;
 [~, SampleIndex] = min(abs(Time - 1));
-ShapeEnvelope = zeros(size(Time));
-Rising = Time > 0 & Time <= 1;
-Falling = Time > 1;
-ShapeEnvelope(Rising) = sin(pi * Time(Rising)).^2;
-ShapeEnvelope(Falling) = sin(pi * (Time(Falling) - 1) / (Time(end) - 1)).^2;
-ShapeEnvelope(SampleIndex) = 0;
-TrialPhases = (0:TrialCount-1) * (2*pi/TrialCount);
-CellPhases = [0 pi/4];
 Rows = cell(numel(ResidualSets), 1);
 for RowIndex = 1:numel(ResidualSets)
 	Residuals = ResidualSets{RowIndex};
 	Signals = reshape(MeanShape * MeanVector', [], 2, 1) + reshape(MeanShape, [], 1, 1) .* reshape(Residuals, 1, 2, TrialCount);
-	ShapeAmplitude = 0.30 * norm(Residuals, 'fro') / norm(ResidualSets{end}, 'fro');
 	MinimumTraceDistance = zeros(1, 2);
 	PeakTimes = zeros(2, TrialCount);
 	for CellIndex = 1:2
-		ShapeVariation = ShapeEnvelope .* sin(2*pi*max(Time, 0)/1.6 + TrialPhases + CellPhases(CellIndex));
-		ShapeVariation = ShapeVariation - mean(ShapeVariation, 2);
-		Responses = reshape(Signals(:, CellIndex, :), numel(Time), TrialCount) + ShapeAmplitude * ShapeVariation;
-		Signals(:, CellIndex, :) = reshape(Responses, numel(Time), 1, TrialCount);
+		Responses = reshape(Signals(:, CellIndex, :), numel(Time), TrialCount);
+		assert(max(abs(Responses ./ (MeanVector(CellIndex) + Residuals(CellIndex, :)) - MeanShape), [], 'all') < 1e-12, 'trial应仅有幅度差异，不应叠加形状变化。');
 		TraceDifferences = reshape(Responses(PostCue, :), [], TrialCount, 1) - reshape(Responses(PostCue, :), [], 1, TrialCount);
 		TraceDistances = squeeze(sqrt(mean(TraceDifferences.^2, 1)));
 		TraceDistances(1:TrialCount+1:end) = Inf;
@@ -142,6 +131,7 @@ for RowIndex = 1:numel(ResidualSets)
 		assert(MinimumTraceDistance(CellIndex) > 0.01, '合成trial存在整段重复的曲线。');
 		[~, PeakIndices] = max(Responses, [], 1);
 		PeakTimes(CellIndex, :) = reshape(Time(PeakIndices), 1, TrialCount);
+		assert(all(abs(PeakTimes(CellIndex, :) - 1) < 1e-10), '简单平滑trial应在1秒达峰。');
 	end
 	MeanSignals = mean(Signals, 3);
 	assert(max(abs(MeanSignals - MeanShape * MeanVector'), [], 'all') < 1e-12, '合成曲线的均值不一致。');
