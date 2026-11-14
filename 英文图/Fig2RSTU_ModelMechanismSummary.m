@@ -1,0 +1,510 @@
+% Fig2RSTU model mechanism summary for Naive vs Transfer CueB training.
+
+
+iEnsureTransferLearningProject();
+
+Fig5556Data = TransferLearning.LoadRnnFigureData();
+Params = Fig5556Data.Params;
+Cond = Fig5556Data.Cond;
+
+CacheFile = TransferLearning.CachePath('Fig2RSTU_ModelMechanismData.mat');
+if isfile(CacheFile)
+	Cached = load(CacheFile, 'MechanismData');
+	MechanismData = Cached.MechanismData;
+	assert(isequaln(MechanismData.Params, Params), '机制数据缓存参数不一致。');
+else
+	MechanismData = iBuildMechanismData(Params, Cond, Fig5556Data.ConditionNames, Fig5556Data.ConditionSeedValues);
+	save(CacheFile, 'MechanismData', '-v7.3');
+end
+%% 
+[fig, Stats] = iPlotFig2RSTU(MechanismData);
+svgName = 'English_Fig2RSTU_ModelMechanismSummary.svg';
+svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
+fprintf('Wrote: %s\n', svgPath);
+assignin('base', 'Fig2RSTU_ModelMechanismData', MechanismData);
+assignin('base', 'Fig2RSTU_ModelMechanismStats', Stats);
+assignin('base', 'Fig2RSTU_ModelMechanismSvgPath', svgPath);
+
+function Data = iBuildMechanismData(Params, Cond, conditionNames, conditionSeedValues)
+conditionNames = string(conditionNames);
+naiveSeedValues = conditionSeedValues(:, conditionNames == "Naive");
+TransferSeedValues = conditionSeedValues(:, conditionNames == "Transfer");
+naiveCond = Cond(Cond.Name == "Naive", :);
+TransferCond = Cond(Cond.Name == "Transfer", :);
+if height(naiveCond) ~= 1 || height(TransferCond) ~= 1
+	error('Fig2RSTU:MissingCondition', 'Expected one Naive and one Transfer condition row.');
+end
+
+iPrepareParallelWorkers();
+numMice = Params.NumMice;
+preFormalRows = cell(numMice, 1);
+unitRows = cell(numMice, 1);
+parfor mouseIndex = 1:numMice
+	[preNaive, unitsNaive] = iRunConditionDiagnostics(Params, naiveCond, "Naive", naiveSeedValues(mouseIndex), mouseIndex, false);
+	[preTransfer, unitsTransfer] = iRunConditionDiagnostics(Params, TransferCond, "Transfer", TransferSeedValues(mouseIndex), mouseIndex, true);
+	preFormalRows{mouseIndex} = [preNaive; preTransfer];
+	unitRows{mouseIndex} = [unitsNaive; unitsTransfer];
+end
+
+Data = struct();
+Data.Params = Params;
+Data.PreFormalTable = vertcat(preFormalRows{:});
+Data.UnitTable = vertcat(unitRows{:});
+end
+
+function [preFormalRow, unitRows] = iRunConditionDiagnostics(Params, condRow, displayCondition, seedValue, mouseIndex, doPretrain)
+rng(seedValue, 'twister');
+Mouse = TransferLearning.THModel.DrawMouse(Params);
+if doPretrain
+	[Mouse, pretrainResult] = TransferLearning.THModel.SimulatePretraining(Mouse, Params, condRow);
+	if ~pretrainResult.Reached
+		error('Fig2RSTU:PretrainDidNotReach', 'Mouse %d did not reach pretraining ceiling.', mouseIndex);
+	end
+end
+
+preFormalRow = iPreFormalConnectionRow(Mouse, displayCondition, mouseIndex);
+unitRows = iRunFirstThreeFormalUnits(Mouse, Params, condRow, displayCondition, mouseIndex);
+end
+
+function row = iPreFormalConnectionRow(Mouse, displayCondition, mouseIndex)
+sharedInhibitoryMask = Mouse.PreCueL23InhibitoryPattern(:) > 0 & Mouse.CueL23InhibitoryPattern(:) > 0;
+nonPositiveReadMask = Mouse.L5ReadoutPattern(:) <= 0;
+weights = Mouse.WI23ToL5Read(nonPositiveReadMask, sharedInhibitoryMask);
+
+row = table;
+row.Condition = string(displayCondition);
+row.Mouse = mouseIndex;
+row.SharedInhibitoryCount = nnz(sharedInhibitoryMask);
+row.NonPositiveReadCount = nnz(nonPositiveReadMask);
+row.SharedIToNonPosReadStrength = mean(max(weights(:), 0), 'omitnan');
+end
+
+function unitRows = iRunFirstThreeFormalUnits(Mouse, Params, condRow, displayCondition, mouseIndex)
+unitRows = table();
+firstPerfectUnit = NaN;
+for unitIndex = 1:min(3, Params.NumSessions)
+	if isfinite(firstPerfectUnit)
+		unitRows = [unitRows; iEmptyUnitRow(displayCondition, mouseIndex, unitIndex, false)]; %#ok<AGROW>
+		continue;
+	end
+	[oneRow, Mouse] = iRunOneFormalUnit(Mouse, Params, condRow, displayCondition, mouseIndex, unitIndex);
+	unitRows = [unitRows; oneRow]; %#ok<AGROW>
+	if oneRow.HitRate >= Params.Ceiling
+		firstPerfectUnit = unitIndex;
+	end
+end
+end
+
+function [row, Mouse] = iRunOneFormalUnit(Mouse, Params, condRow, displayCondition, mouseIndex, unitIndex)
+preWeights = iCollectCueL23ToPositiveReadoutWeights(Mouse, Params);
+numTrials = Params.NumTrials;
+isHit = false(numTrials, 1);
+noisePassAttempt = nan(numTrials, 1);
+nonPositiveReadActivity = nan(numTrials, 1);
+
+eta = Params.HebbRate;
+teachingSignalScale = TransferLearning.THModel.TeachingSignalScale(condRow, Params, false);
+l5ReadRows = Params.NL23 + Params.NL5RewardRecv + (1:Params.NL5Read);
+nonPositiveReadMask = Mouse.L5ReadoutPattern(:) <= 0;
+
+for trialIndex = 1:numTrials
+	[Mouse, noisePassState] = TransferLearning.THModel.RunNoiseCueBacktrainingUntilPass(Mouse, Params, eta);
+	noisePassAttempt(trialIndex) = noisePassState.Attempt;
+
+	cueInput = Mouse.CueInputPattern + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NCueInput, 1]);
+	inputIL23 = Mouse.CueL23InhibitoryPattern + Params.NoiseScale * TransferLearning.THModel.Randn([Params.NIL23, 1]);
+	initialActivity = noisePassState.InternalActivity;
+	l23Rows = 1:Params.NL23;
+	initialActivity(l23Rows) = TransferLearning.THModel.ClampActivity(initialActivity(l23Rows) + cueInput, Params);
+	zeroL5RewardRecvInput = TransferLearning.THModel.Zeros([Params.NL5RewardRecv, 1]);
+	zeroL5ReadInput = TransferLearning.THModel.Zeros([Params.NL5Read, 1]);
+
+	[Mouse, cueDecision] = TransferLearning.THModel.RunCueDecisionLearningFromState(Mouse, Params, initialActivity, noisePassState.InhibitoryState.L23, cueInput, zeroL5RewardRecvInput, zeroL5ReadInput, inputIL23, eta, teachingSignalScale, Params.RecurrentPasses, true);
+	isHit(trialIndex) = cueDecision.Hit;
+	internalHistory = TransferLearning.THModel.GatherValue(cueDecision.InternalHistory);
+	l5ReadHistory = internalHistory(l5ReadRows, :);
+	nonPositiveReadActivity(trialIndex) = mean(l5ReadHistory(nonPositiveReadMask, 2:end), 'all', 'omitnan');
+end
+
+postWeights = iCollectCueL23ToPositiveReadoutWeights(Mouse, Params);
+row = iEmptyUnitRow(displayCondition, mouseIndex, unitIndex, true);
+row.HitRate = mean(isHit, 'omitnan');
+row.NoiseBacktrainFrequency = mean(noisePassAttempt > 1, 'omitnan');
+row.NoiseExtraAttemptMean = mean(max(noisePassAttempt - 1, 0), 'omitnan');
+row.NonPositiveReadActivity = mean(nonPositiveReadActivity, 'omitnan');
+row.PositiveProjectionDelta = mean(max(postWeights.All(:), 0) - max(preWeights.All(:), 0), 'omitnan');
+row.PositiveProjectionDeltaE = mean(max(postWeights.E(:), 0) - max(preWeights.E(:), 0), 'omitnan');
+row.PositiveProjectionDeltaI = mean(max(postWeights.I(:), 0) - max(preWeights.I(:), 0), 'omitnan');
+end
+
+function weights = iCollectCueL23ToPositiveReadoutWeights(Mouse, Params)
+cueL23Columns = find(Mouse.CueInputPattern(:) > 0);
+positiveReadE = Mouse.L5ReadoutPattern(:) > 0;
+positiveReadI = Mouse.L5ReadInhibitoryReadoutPattern(:) > 0;
+l5ReadRows = Params.NL23 + Params.NL5RewardRecv + (1:Params.NL5Read);
+eRows = l5ReadRows(positiveReadE);
+iRows = find(positiveReadI);
+weights = struct();
+weights.E = Mouse.W_L23L5ToL23L5(eRows, cueL23Columns);
+weights.I = Mouse.WEI_L5Read(iRows, cueL23Columns);
+weights.All = [weights.E(:); weights.I(:)];
+end
+
+function row = iEmptyUnitRow(displayCondition, mouseIndex, unitIndex, didSimulate)
+row = table;
+row.Condition = string(displayCondition);
+row.Mouse = mouseIndex;
+row.Unit = unitIndex;
+row.DidSimulate = didSimulate;
+row.HitRate = NaN;
+row.NoiseBacktrainFrequency = NaN;
+row.NoiseExtraAttemptMean = NaN;
+row.NonPositiveReadActivity = NaN;
+row.PositiveProjectionDelta = NaN;
+row.PositiveProjectionDeltaE = NaN;
+row.PositiveProjectionDeltaI = NaN;
+end
+
+function [fig, Stats] = iPlotFig2RSTU(Data)
+palette = [TransferLearning.ColorNaive / 255;TransferLearning.Color12h / 255];
+CurvePalette = [TransferLearning.CurveNaive; TransferLearning.Curve12h] / 255;
+compareGroup = table([1 2], 'VariableNames', {'GroupPair'});
+preFormalTable = Data.PreFormalTable;
+unitTable = Data.UnitTable;
+
+fig = figure('Color', 'w', 'Name', 'Fig2RSTU model mechanism summary');
+fig.Units = 'centimeters';
+fig.Position(3:4) = [5, 22.2];
+fig.PaperUnits = 'centimeters';
+fig.PaperPositionMode = 'manual';
+fig.PaperPosition = [0, 0, 5, 22.2];
+fig.PaperSize = [5, 22.2];
+
+layout = tiledlayout(fig, 4, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+
+axConnection = nexttile(layout, 1);
+connectionNaive = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Naive"));
+connectionTransfer = iFiniteValues(preFormalTable.SharedIToNonPosReadStrength(preFormalTable.Condition == "Transfer"));
+[connectionPValue, connectionStats, ~] = iPlotBarComparison(axConnection, {connectionNaive, connectionTransfer}, compareGroup, palette, "Weight", ["Shared inh. cue", "→ L5E non-beh."]);
+
+axActivity = nexttile(layout, 2);
+firstUnitTable = unitTable(unitTable.Unit == 1 & unitTable.DidSimulate, :);
+activityNaive = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Naive"));
+activityTransfer = iFiniteValues(firstUnitTable.NonPositiveReadActivity(firstUnitTable.Condition == "Transfer"));
+[activityPValue, activityStats, ~] = iPlotBarComparison(axActivity, {activityNaive, activityTransfer}, compareGroup, palette, "Activity", ["L5E", "non-behavior"]);
+
+axNoise = nexttile(layout, 3);
+noiseLabelPosition = [0.96, 0.91; 0.96, 0.74];
+noiseLabelAlignment = ["right", "right"];
+noiseStats = iPlotLineComparison(axNoise, unitTable, "NoiseBacktrainFrequency", CurvePalette, "Frequency", ["Noise", "reverse-learning"], true, 3.75, 0.16, noiseLabelPosition, noiseLabelAlignment);
+
+axProjection = nexttile(layout, 4);
+projectionLabelPosition = [0.96, 0.25; 0.96, 0.91];
+projectionLabelAlignment = ["right", "right"];
+projectionStats = iPlotLineComparison(axProjection, unitTable, "PositiveProjectionDelta", CurvePalette, "Δweight", ["Cue E", "→ L5 readout"], true, 3.75, 0.18, projectionLabelPosition, projectionLabelAlignment);
+
+Stats = struct();
+Stats.Connection = struct('Summary', connectionStats, 'PValue', connectionPValue);
+Stats.Activity = struct('Summary', activityStats, 'PValue', activityPValue);
+Stats.Noise = noiseStats;
+Stats.Projection = projectionStats;
+
+iPrintBarStats('Shared inhibitory cue neurons → L5 excitatory non-readout weight', connectionStats, connectionPValue);
+iPrintBarStats('L5 excitatory non-readout activity', activityStats, activityPValue);
+iPrintLineStats('Noise anti-Hebb frequency', noiseStats);
+iPrintLineStats('Excitatory cue neurons → L5 readout Δweight', projectionStats);
+iSetAllTextTo12Pt(fig);
+end
+
+function [pValue, stats, optional] = iPlotBarComparison(ax, dataCell, compareGroup, palette, yLabelText, titleText)
+axes(ax);
+naiveValues = dataCell{1};
+TransferValues = dataCell{2};
+pValue = ranksum(naiveValues, TransferValues);
+[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataCell, compareGroup, 'AsteriskThreshold', 1);
+TransferLearning.Style.SetBarPValues(optional);
+fprintf('\n=== Fig2RSTU "%s" BarScatterCompare ===\n', titleText);
+if isfield(optional, 'MultiCompare') && ismember('PText', optional.MultiCompare.Properties.VariableNames)
+	fprintf('  PValue=%.5g PText="%s"\n', optional.MultiCompare.PValue, optional.MultiCompare.PText.String);
+end
+iStyleBarTile(ax, bars, errorBars, optional, palette, titleText);
+ylabel(ax, yLabelText);
+stats = table(["Naive"; "Transfer"], [numel(naiveValues); numel(TransferValues)], [mean(naiveValues, 'omitnan'); mean(TransferValues, 'omitnan')], [iSem(naiveValues); iSem(TransferValues)], ...
+	'VariableNames', {'Condition','N','Mean','Sem'});
+end
+
+function stats = iPlotLineComparison(ax, unitTable, metricName, palette, yLabelText, titleText, showXLabel, xLimitMax, yLimitMax, labelPosition, labelAlignment)
+[meanMat, semMat, countMat] = iUnitMeanSem(unitTable, metricName);
+[yCells, semCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat);
+axes(ax);
+lineHandles = MATLAB.Graphics.MultiShadowedLines(yCells, semCells, X=xCells, EdgeColors=palette);
+iStyleLineTile(ax, lineHandles, titleText, yLabelText, showXLabel, xLimitMax, yLimitMax);
+iAddLineEndLabels(ax, meanMat, palette, labelPosition, labelAlignment);
+
+pValues = nan(3, 1);
+for unitIndex = 1:3
+	naiveValues = iFiniteValues(unitTable.(metricName)(unitTable.Condition == "Naive" & unitTable.Unit == unitIndex & unitTable.DidSimulate));
+	TransferValues = iFiniteValues(unitTable.(metricName)(unitTable.Condition == "Transfer" & unitTable.Unit == unitIndex & unitTable.DidSimulate));
+	if numel(naiveValues) >= 2 && numel(TransferValues) >= 2
+		pValues(unitIndex) = ranksum(naiveValues, TransferValues);
+	end
+end
+stats = table((1:3)', countMat(:, 1), countMat(:, 2), meanMat(:, 1), meanMat(:, 2), semMat(:, 1), semMat(:, 2), meanMat(:, 2) - meanMat(:, 1), pValues, ...
+	'VariableNames', {'Unit','NaiveN','TransferN','NaiveMean','TransferMean','NaiveSem','TransferSem','TransferMinusNaive','PValue'});
+end
+
+function [meanMat, semMat, countMat] = iUnitMeanSem(unitTable, metricName)
+conditionList = ["Naive", "Transfer"];
+meanMat = nan(3, numel(conditionList));
+semMat = nan(3, numel(conditionList));
+countMat = zeros(3, numel(conditionList));
+for conditionIndex = 1:numel(conditionList)
+	conditionName = conditionList(conditionIndex);
+	for unitIndex = 1:3
+		values = iFiniteValues(unitTable.(metricName)(unitTable.Condition == conditionName & unitTable.Unit == unitIndex & unitTable.DidSimulate));
+		countMat(unitIndex, conditionIndex) = numel(values);
+		meanMat(unitIndex, conditionIndex) = mean(values, 'omitnan');
+		semMat(unitIndex, conditionIndex) = iSem(values);
+	end
+end
+end
+
+function [yCells, semCells, xCells] = iBuildCellsForMultiShadowedLines(meanMat, semMat)
+numLines = size(meanMat, 2);
+yCells = cell(1, numLines);
+semCells = cell(1, numLines);
+xCells = cell(1, numLines);
+for lineIndex = 1:numLines
+	yCells{lineIndex} = meanMat(:, lineIndex);
+	semCells{lineIndex} = semMat(:, lineIndex);
+	xCells{lineIndex} = (1:size(meanMat, 1))';
+end
+end
+
+function iStyleBarTile(ax, bars, errorBars, optional, palette, titleText)
+ax.FontSize = 12;
+ax.LineWidth = 0.5;
+ax.TickDir = 'out';
+ax.XTick = [1 2];
+ax.XTickLabel = {'Naive', 'Transfer'};
+ax.XTickLabelRotation = 25;
+iSetTitle(ax, titleText);
+box(ax, 'off');
+grid(ax, 'off');
+legend(ax, 'off');
+iHideToolbar(ax);
+iStyleBars(bars, palette);
+iStyleErrorBars(errorBars, palette);
+iStyleScatter(ax);
+iApplyPText(optional);
+end
+
+function iStyleLineTile(ax, ~, titleText, yLabelText, showXLabel, xLimitMax, yLimitMax)
+ax.FontSize = 12;
+ax.LineWidth = 0.5;
+ax.TickDir = 'out';
+ax.XLim = [0.75, xLimitMax];
+ax.XTick = 1:3;
+ax.XTickLabel = {'1', '2', '3'};
+if showXLabel
+	xlabel(ax, 'Block');
+end
+ylabel(ax, yLabelText);
+iSetTitle(ax, titleText);
+box(ax, 'off');
+grid(ax, 'off');
+iHideToolbar(ax);
+for lineObject = findobj(ax, 'Type', 'Line')'
+	lineObject.Marker = 'o';
+	lineObject.MarkerSize = 2;
+	lineObject.LineWidth = 1;
+end
+currentYLim = ylim(ax);
+ylim(ax, [0, max([currentYLim(2), yLimitMax, eps])]);
+end
+
+function iAddLineEndLabels(ax, meanMat, palette, labelPosition, labelAlignment)
+conditionLabels = ["Naive", "Transfer"];
+for conditionIndex = 1:numel(conditionLabels)
+	y = meanMat(:, conditionIndex);
+	lastIndex = find(isfinite(y), 1, 'last');
+	if isempty(lastIndex)
+		continue;
+	end
+	text(ax, labelPosition(conditionIndex, 1), labelPosition(conditionIndex, 2), conditionLabels(conditionIndex), ...
+		'Units', 'normalized', ...
+		'Color', palette(conditionIndex, :), ...
+		'HorizontalAlignment', char(labelAlignment(conditionIndex)), ...
+		'VerticalAlignment', 'middle', ...
+		'BackgroundColor', 'w', ...
+		'Margin', 0.5, ...
+		'FontSize', 12, ...
+		'Clipping', 'on');
+end
+end
+
+function iStyleBars(bars, palette)
+if isscalar(bars)
+	bars.FaceColor = 'flat';
+	numBars = numel(bars.YData);
+	bars.CData = repmat(palette, ceil(numBars / size(palette, 1)), 1);
+	bars.CData = bars.CData(1:numBars, :);
+	bars.BarWidth = 0.5;
+	bars.LineWidth = 1;
+	bars.EdgeColor = 'none';
+	bars.FaceAlpha = 1;
+else
+	for barIndex = 1:min(numel(bars), size(palette, 1))
+		bars(barIndex).FaceColor = palette(barIndex, :);
+		bars(barIndex).LineWidth = 1;
+		bars(barIndex).EdgeColor = 'none';
+		bars(barIndex).FaceAlpha = 1;
+	end
+end
+end
+
+function iSetTitle(ax, titleText)
+title(ax, cellstr(titleText), 'FontWeight', 'normal', 'FontSize', 12);
+end
+
+function iStyleErrorBars(errorBars, palette)
+if istable(errorBars) && ismember('Object', errorBars.Properties.VariableNames)
+	errorBarObjects = errorBars.Object(:);
+elseif isstruct(errorBars) && isfield(errorBars, 'Object')
+	errorBarObjects = errorBars.Object(:);
+else
+	return;
+end
+for errorBarObject = errorBarObjects'
+	if ~isgraphics(errorBarObject)
+		continue;
+	end
+	if isprop(errorBarObject, 'YNegativeDelta')
+		errorBarObject.YNegativeDelta(:) = 0;
+	end
+	errorBarObject.LineWidth = 1;
+	errorBarObject.LineStyle = 'none';
+	errorBarObject.HandleVisibility = 'off';
+	xData = double(errorBarObject.XData(:));
+	[~, colorIndex] = min(abs((1:size(palette, 1)).' - xData(1)));
+	errorBarObject.Color = palette(colorIndex, :);
+end
+end
+
+function iStyleScatter(ax)
+scatterObjects = findobj(ax, '-isa', 'matlab.graphics.chart.primitive.Scatter');
+for scatterObject = scatterObjects(:)'
+	scatterObject.LineWidth = 0.2;
+	if isprop(scatterObject, 'MarkerEdgeAlpha')
+		scatterObject.MarkerEdgeAlpha = 0.5;
+	end
+	if isprop(scatterObject, 'MarkerFaceAlpha')
+		scatterObject.MarkerFaceAlpha = 0.6;
+	end
+end
+end
+
+function iApplyPText(optional)
+if ~isstruct(optional) || ~isfield(optional, 'MultiCompare') || ~istable(optional.MultiCompare)
+	return;
+end
+if ismember('PText', optional.MultiCompare.Properties.VariableNames)
+	for textObject = optional.MultiCompare.PText(:)'
+		if isgraphics(textObject)
+			textObject.FontSize = 12;
+			textObject.Tag = 'PText';
+		end
+	end
+end
+if ismember('PLine', optional.MultiCompare.Properties.VariableNames)
+	for lineObject = optional.MultiCompare.PLine(:)'
+		if isgraphics(lineObject)
+			lineObject.LineWidth = 0.5;
+			lineObject.Tag = 'PLine';
+		end
+	end
+end
+end
+
+function iSetAllTextTo12Pt(fig)
+textHandles = findall(fig, '-property', 'FontSize');
+for handleIndex = 1:numel(textHandles)
+	textHandles(handleIndex).FontSize = 12;
+end
+layouts = findall(fig, '-isa', 'matlab.graphics.layout.TiledChartLayout');
+for layoutIndex = 1:numel(layouts)
+	for propertyName = ["Title", "XLabel", "YLabel"]
+		if isprop(layouts(layoutIndex), propertyName) && isprop(layouts(layoutIndex).(propertyName), 'FontSize')
+			layouts(layoutIndex).(propertyName).FontSize = 12;
+		end
+	end
+end
+end
+
+function values = iFiniteValues(values)
+values = double(values(:));
+values = values(isfinite(values));
+end
+
+function semValue = iSem(values)
+values = iFiniteValues(values);
+if isempty(values)
+	semValue = NaN;
+else
+	semValue = std(values, 0, 'omitnan') ./ sqrt(numel(values));
+end
+end
+
+function iPrintBarStats(labelText, stats, pValue)
+fprintf('\n=== Fig2RSTU %s ===\n', labelText);
+for rowIndex = 1:height(stats)
+	fprintf('%s: %.6g ± %.6g (n=%d)\n', stats.Condition(rowIndex), stats.Mean(rowIndex), stats.Sem(rowIndex), stats.N(rowIndex));
+end
+fprintf('ranksum p = %.6g\n', pValue);
+end
+
+function iPrintLineStats(labelText, stats)
+fprintf('\n=== Fig2RSTU %s ===\n', labelText);
+for rowIndex = 1:height(stats)
+	fprintf('unit %d: Naive %.6g ± %.6g (n=%d), Transfer %.6g ± %.6g (n=%d), diff %.6g, p %.6g\n', ...
+		stats.Unit(rowIndex), stats.NaiveMean(rowIndex), stats.NaiveSem(rowIndex), stats.NaiveN(rowIndex), ...
+		stats.TransferMean(rowIndex), stats.TransferSem(rowIndex), stats.TransferN(rowIndex), ...
+		stats.TransferMinusNaive(rowIndex), stats.PValue(rowIndex));
+end
+end
+
+function textValue = iFormatPValue(pValue)
+if ~isfinite(pValue)
+	textValue = 'p = NaN';
+elseif pValue < 0.001
+	textValue = 'p < 0.001';
+elseif pValue < 0.01
+	textValue = sprintf('p = %.3f', pValue);
+else
+	textValue = sprintf('p = %.2f', pValue);
+end
+end
+
+function iHideToolbar(ax)
+if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
+	ax.Toolbar.Visible = 'off';
+end
+end
+
+function iPrepareParallelWorkers()
+pool = gcp('nocreate');
+if isempty(pool)
+	parpool('local', 20);
+end
+end
+
+function iEnsureTransferLearningProject()
+if ~exist('TransferLearning', 'class')
+	thisFile = mfilename('fullpath');
+	thisDir = fileparts(thisFile);
+	projectFile = fullfile(thisDir, '..', 'Transferlearning.prj');
+	if exist(projectFile, 'file')
+		matlab.project.loadProject(projectFile);
+	end
+end
+end

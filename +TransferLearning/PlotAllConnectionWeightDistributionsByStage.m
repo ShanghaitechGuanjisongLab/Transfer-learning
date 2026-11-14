@@ -7,8 +7,8 @@ if ~all(isfield(StageWeightValues, {'Naive', 'PretrainFirstBlock', 'AfterPretrai
 	error('TransferLearning:MissingStageField', 'StageWeightValues must contain Naive, PretrainFirstBlock, and AfterPretrain fields.');
 end
 
-naiveColor = TransferLearning.NaiveColor;
-afterPretrainColor = TransferLearning.LearnedColor;
+naiveColor = TransferLearning.ColorNaive / 255;
+afterPretrainColor = TransferLearning.ColorLearned / 255;
 pretrainFirstBlockColor = (naiveColor + afterPretrainColor) / 2;
 stageNames = ["Naive", "After 1 block", "After 8 blocks"];
 stageFields = ["Naive", "PretrainFirstBlock", "AfterPretrain"];

@@ -10,8 +10,8 @@ heterogeneityLabels = ["L2/3 E", "L2/3 I", "L5 E", "L5 I"];
 groupFields = ["Naive", "AfterPretrain"];
 topGroupLabels = ["Naive", "CueA learned"];
 bottomGroupLabels = ["Naive", "Transfer"];
-topGroupColors = [TransferLearning.NaiveColor;TransferLearning.LearnedColor];
-bottomGroupColors = [TransferLearning.NaiveColor;TransferLearning.TransferColor];
+topGroupColors = [TransferLearning.ColorNaive; TransferLearning.ColorLearned] / 255;
+bottomGroupColors = [TransferLearning.ColorNaive; TransferLearning.Color12h] / 255;
 
 [weightData, weightMeanMat, weightSemMat, weightNMat] = iBuildMetricDataTable(WeightValues.MouseStd, classNames, classLabels, groupFields, topGroupLabels, ["ConnectionType", "Group"]);
 [heterogeneityData, heterogeneityMeanMat, heterogeneitySemMat, heterogeneityNMat] = iBuildMetricDataTable(WeightValues.Heterogeneity, heterogeneityNames, heterogeneityLabels, groupFields, bottomGroupLabels, ["CellType", "Group"]);
