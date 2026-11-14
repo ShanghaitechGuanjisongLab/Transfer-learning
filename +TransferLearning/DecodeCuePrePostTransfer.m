@@ -105,6 +105,11 @@ function R = DecodeCuePrePostTransfer(Task, tVec, NPerm)
 	foldSize = ceil(nTr / K);
 	foldTET = cell(K, 1);
 	foldMdl = cell(K, 1);
+	FoldX = cell(K, 1);
+	FoldMean = cell(K, 1);
+	FoldSD = cell(K, 1);
+	TrialFold = zeros(nTr, 1);
+	FoldStandardization = isfield(Task, 'FoldStandardization') && Task.FoldStandardization;
 	predCv = zeros(2 * nTr, 1);
 	trueCv = [zeros(nTr, 1); ones(nTr, 1)];
 	for k = 1:K
@@ -112,14 +117,26 @@ function R = DecodeCuePrePostTransfer(Task, tVec, NPerm)
 		teT = false(nTr, 1);
 		teT(perm(idxT)) = true;
 		teI = [teT; teT];
-		mF = fitclinear(xTrS(~teI, :), yTrAll(~teI), ...
+		if FoldStandardization
+			FoldMean{k} = mean(xTrAll(~teI, :), 1);
+			FoldSD{k} = std(xTrAll(~teI, :), 0, 1);
+			FoldSD{k}(FoldSD{k} == 0) = 1;
+			FoldX{k} = (xTrAll - FoldMean{k}) ./ FoldSD{k};
+			FoldX{k}(isnan(FoldX{k})) = 0;
+		else
+			FoldMean{k} = mu;
+			FoldSD{k} = sd;
+			FoldX{k} = xTrS;
+		end
+		mF = fitclinear(FoldX{k}(~teI, :), yTrAll(~teI), ...
 			'Learner', 'logistic', 'Regularization', 'lasso', 'Lambda', lam);
-		predCv(teI) = predict(mF, xTrS(teI, :));
+		predCv(teI) = predict(mF, FoldX{k}(teI, :));
 		foldTET{k} = teT;
 		foldMdl{k} = mF;
+		TrialFold(teT) = k;
 	end
 	accCv = mean(predCv == trueCv);
-	pPostS1 = iTimePointReadout(Task.XTrT, mu, sd, foldTET, foldMdl, nT);
+	pPostS1 = iTimePointReadout(Task.XTrT, FoldMean, FoldSD, foldTET, foldMdl, nT);
 	pPostS1T = mean(pPostS1, 1, 'omitnan');
 	fracPostS1T = mean(pPostS1 >= 0.5, 1, 'omitnan');
 
@@ -142,13 +159,13 @@ function R = DecodeCuePrePostTransfer(Task, tVec, NPerm)
 		foldMdlS = cell(K, 1);
 		for k = 1:K
 			teI = [foldTET{k}; foldTET{k}];
-			mF = fitclinear(xTrS(~teI, :), sy(~teI), ...
+			mF = fitclinear(FoldX{k}(~teI, :), sy(~teI), ...
 				'Learner', 'logistic', 'Regularization', 'lasso', 'Lambda', lam);
-			predS(teI) = predict(mF, xTrS(teI, :));
+			predS(teI) = predict(mF, FoldX{k}(teI, :));
 			foldMdlS{k} = mF;
 		end
 		saCv(iS) = mean(predS == trueCv);
-		nullS1(iS, :) = mean(iTimePointReadout(Task.XTrT, mu, sd, foldTET, foldMdlS, nT), 1, 'omitnan');
+		nullS1(iS, :) = mean(iTimePointReadout(Task.XTrT, FoldMean, FoldSD, foldTET, foldMdlS, nT), 1, 'omitnan');
 	end
 
 	pCv = (sum(saCv >= accCv) + 1) / (NPerm + 1);
@@ -174,6 +191,11 @@ function R = DecodeCuePrePostTransfer(Task, tVec, NPerm)
 		's1Acc', accCv, 's1p', pCv, 'pPostS1T', pPostS1T, 'fracPostS1T', fracPostS1T, ...
 		'pByT1', pByT1, 'null95S1', null95S1, 'pMaxStat1', pMaxStat1, ...
 		'Tests', Tests);
+	R.Shuffle = struct('AccuracyOOF', saCv, 'AccuracyTests', saTe, 'PPostOOF', nullS1, 'PPostTests', nullPP);
+	R.TrialFold = TrialFold;
+	R.FoldMean = FoldMean;
+	R.FoldSD = FoldSD;
+	R.FoldStandardization = FoldStandardization;
 	if nTest == 1
 		% Fig3D-compatible aliases for the single-test case
 		R.s2Acc = Tests(1).acc;
@@ -208,7 +230,7 @@ function pS = iTimePointReadout(XT, mu, sd, foldTET, foldMdl, nT)
 		bF = foldMdl{k}.Bias;
 		for iT = 1:nT
 			F = squeeze(XT(:, :, iT));
-			Fs = (F - mu) ./ sd;
+			Fs = (F - mu{k}) ./ sd{k};
 			Fs(isnan(Fs)) = 0;
 			pS(teT, iT) = 1 ./ (1 + exp(-(Fs(teT, :) * wF + bF)));
 		end

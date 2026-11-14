@@ -27,7 +27,13 @@ end
 function iSetAllFontSizes(Fig, fontSize)
 handles = findall(Fig, '-property', 'FontSize');
 for iH = 1:numel(handles)
-	handles(iH).FontSize = fontSize;
+	if isprop(handles(iH), 'LineWidth') && iShouldPreserveLineWidth(handles(iH))
+		OriginalLineWidth = handles(iH).LineWidth;
+		handles(iH).FontSize = fontSize;
+		handles(iH).LineWidth = OriginalLineWidth;
+	else
+		handles(iH).FontSize = fontSize;
+	end
 end
 iSetAxesFontMultipliers(Fig);
 iSetTiledLayoutTextFontSizes(Fig, fontSize);
@@ -154,16 +160,23 @@ function iSetAxisLineWidths(Fig, lineWidth)
 axesHandles = findall(Fig, 'Type', 'axes');
 for iA = 1:numel(axesHandles)
 	ax = axesHandles(iA);
+	if iShouldPreserveLineWidth(ax)
+		continue;
+	end
 	ax.LineWidth = lineWidth;
 	axisObjects = iAxesRulerObjects(ax);
 	for axisObj = axisObjects(:).'
-		axisObj.LineWidth = lineWidth;
+		if ~iShouldPreserveLineWidth(axisObj)
+			axisObj.LineWidth = lineWidth;
+		end
 	end
 end
 
 colorBars = findall(Fig, '-isa', 'matlab.graphics.illustration.ColorBar');
 for iC = 1:numel(colorBars)
-	colorBars(iC).LineWidth = lineWidth;
+	if ~iShouldPreserveLineWidth(colorBars(iC))
+		colorBars(iC).LineWidth = lineWidth;
+	end
 end
 end
 
@@ -175,7 +188,9 @@ end
 function iSetConstantLineWidths(Fig, lineWidth)
 handles = findall(Fig, '-isa', 'matlab.graphics.chart.decoration.ConstantLine');
 for iH = 1:numel(handles)
-	handles(iH).LineWidth = lineWidth;
+	if ~iShouldPreserveLineWidth(handles(iH))
+		handles(iH).LineWidth = lineWidth;
+	end
 end
 end
 
@@ -190,7 +205,7 @@ function iSetBarBaseLineWidths(Fig, Scale)
 barHandles = findall(Fig, 'Type', 'Bar');
 for barIndex = 1:numel(barHandles)
 	barHandle = barHandles(barIndex);
-	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine)
+	if isprop(barHandle, 'BaseLine') && isgraphics(barHandle.BaseLine) && ~iShouldPreserveLineWidth(barHandle.BaseLine)
 		barHandle.BaseLine.LineWidth = 0.5 * Scale;
 	end
 end
@@ -200,7 +215,7 @@ function iStyleSupplementalLines(Fig)
 handles = findall(Fig, 'Tag', 'TransferLearningSupplementalLine');
 for iH = 1:numel(handles)
 	h = handles(iH);
-	if isprop(h, 'LineWidth')
+	if isprop(h, 'LineWidth') && ~iShouldPreserveLineWidth(h)
 		h.LineWidth = h.LineWidth / 2;
 	end
 	if isprop(h, 'Color')
