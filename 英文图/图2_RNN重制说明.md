@@ -16,6 +16,10 @@ RNN 相关中文图已按英文图2的空闲字母重制。保留现有英文图
 | 2V | Transfer/TH inhibited模型学习曲线 | Fig63D | [Fig2V_ModelTHInhibitedLearningCurve.m](Fig2V_ModelTHInhibitedLearningCurve.m#L1) |
 | 2W | TH抑制模型的分层E/I异质性 | Fig63E | [Fig2W_ModelLayerNeuronHeterogeneity.m](Fig2W_ModelLayerNeuronHeterogeneity.m#L1) |
 
+# 后续新增图2H
+
+[Fig2H_DivergenceWithoutLearnedActive.m](Fig2H_DivergenceWithoutLearnedActive.m#L1) 展示12 h首个Transfer光水会话中，剔除最后Learned声水活跃细胞前后的逐鼠相对散度。仅保留MOp2/3和MOp5两tile，参照Hit/Miss Reactivation的逐鼠黑色连线、彩色散点及PLine配对signrank标注，不展示合并层或均值±SEM。分组标签All表示全部细胞，Without active表示剔除Learned声水活跃细胞。MOp2/3的11只鼠全部升高；这是细胞筛选后的关联结果，不是因果干预证据。
+
 # 数据与配色
 
 - 未找到可复用的原共享模型结果，因此调用中文脚本原来的 `BuildFig382383SharedModelData`，固定 `SeedBase=38238307`、50只模拟鼠、8个正式block、每block 30 trial、10000次置换及 `PermutationSeed=1`；结果通过原有验收。不修改模型参数、训练流程或显著性阈值。

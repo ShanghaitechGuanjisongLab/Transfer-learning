@@ -122,7 +122,7 @@ assignin('base', 'Fig5F_TH_DivergencePValues', ...
 
 %% ========== 局部函数 ==========
 function [mouseDiv, sessionDiv] = iCohortDivergence(DS, idx1s, phaseStart, phaseEnd)
-% 会话筛选沿用 Fig4D，逐会话散度按 Fig2O 计算。
+% 会话筛选沿用Fig4D，逐会话散度按英文图2F计算。
 Sess = iLightWaterSessions(DS);
 Sess = iKeepPureLW_NoMustWarn(DS, Sess);
 Sess = iKeepPhaseRange(DS, Sess, phaseStart, phaseEnd);

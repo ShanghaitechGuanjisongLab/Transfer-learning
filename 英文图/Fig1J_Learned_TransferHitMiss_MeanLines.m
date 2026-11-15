@@ -1,4 +1,4 @@
-% 英文图1P：声水学会、光水迁移命中/错失三条均值线
+% 英文图1J：声水学会、光水迁移命中/错失三条均值线
 
 if ~exist('UniExp.DataSet', 'class')
 	thisFile = mfilename('fullpath');
@@ -64,9 +64,9 @@ for iL = 1:3
 end
 %% 
 
-f = figure('Color', 'w', 'Name', 'English Fig1P Learned Transfer Hit Miss mean lines');
+f = figure('Color', 'w', 'Name', 'English Fig1J Learned Transfer Hit Miss mean lines');
 f.Units = 'centimeters';
-f.Position(3:4) = [12, 8];
+f.Position(3:4) = [13.5, 6];
 
 hold('on');
 
@@ -78,17 +78,15 @@ xline(0, '--');
 xline(1, '--');
 
 box('off');
-xlabel( 'Time');
-ylabel( 'z-score');
-XTL=string(xticklabels);
-[~,Index]=ismember([0,1],xticks);
-XTL(Index)=["🔊/💡", "💧"];
-xticklabels(XTL);
+Ax = gca;
+Ax.YAxis.Visible=false;
+xticks([0,1]);
+xticklabels(["🔊/💡", "💧"]);
 
-lg = legend(Patches, ["🔊Learned", "💡Hit", "💡Miss"],Location="northwest");
+lg = legend(Patches, ["🔊Learned", "💡Hit", "💡Miss"],Location="eastoutside");
 title('🔊💧 learned active cells');
-svgPath = 'English_Fig1P_Learned_TransferHitMiss_MeanLines.svg';
-svgPath = TransferLearning.ExportStandardFigure(f, 2, svgPath);
+svgPath = 'English_Fig1J_Learned_TransferHitMiss_MeanLines.svg';
+svgPath = TransferLearning.ExportStandardFigure(f, 3, svgPath);
 
 function X = iGetNtats3D(S)
 if istable(S)

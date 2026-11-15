@@ -1,13 +1,11 @@
-% 英文图2O：2×1 逐鼠散度柱状图（Undelayed），模仿英文图3E（Fig3E_DelayedVsUndelayed_DivergenceBarsByLayer）。
-% 相对 3E 的改动：
-%   - 去掉 Delayed 数据，只做 Undelayed；图上不再标 Undelayed/Delayed 范式信息；
-%   - tiledlayout 2 行 1 列：上 = 🔊 声任务（Naive vs Learned），下 = 💡 光任务（Naive vs 12h transfer）；
-%   - 二维分组表原 Paradigm 维度换成层维度（MOp2/3 / MOp5），行 = 层、列 = 阶段；
-%   - 配色按语义用 TransferLearning.ColorNaive/ColorLearned/Color12h（0-255，/255）：
-%       声列组 Naive=ColorNaive（深紫黑）、Learned=ColorLearned（深蓝）；
-%       光列组 Naive=ColorNaive（深紫黑）、12h=Color12h（紫）。
+% 英文图2F：2×1逐鼠散度柱状图（Undelayed），模仿英文图3E（Fig3E_DelayedVsUndelayed_DivergenceBarsByLayer）。
+% 相对3E的改动：
+%   - 去掉Delayed数据，只做Undelayed；图上不再标Undelayed/Delayed范式信息；
+%   - tiledlayout 2行1列：上 = 🔊声任务（Naive vs Learned），下 = 💡光任务（Naive vs 12h transfer）；
+%   - 二维分组表原Paradigm维度换成层维度（MOp2/3 / MOp5），行 = 层、列 = 阶段；
+%   - 配色按阶段语义使用TransferLearning.ColorNaive/ColorLearned/Color12h（原始RGB为0–255，绘图前除以255）：Naive=ColorNaive，Learned=ColorLearned，12h=Color12h；Naive在声、光两个任务中同色。
 %
-% 会话口径、回合集合、散度公式、时刻取法同 3E 的 Undelayed 半套（=英文图S2B 无延迟侧）：
+% 会话口径、回合集合、散度公式、时刻取法同3E的Undelayed半套（=英文图S2B无延迟侧）：
 %   💡 Naive = LAB+LAI 首个纯光水 Naive 会话（LAI 中 Naive 期出现过声水者整只排除）；
 %   💡 12h  = ALB 首个 Transfer 光水会话；
 %   🔊 Naive = ALB 首个 AudioOnly 会话；🔊 Learned = ALB 最后一个 AudioWater 会话（Recall 除外）；
@@ -19,7 +17,7 @@
 % AsteriskThreshold 0.05），不画每鼠散点。
 %
 % Outputs (SVG):
-%   - English_Fig2O_Undelayed_DivergenceBarsByLayer.svg
+%   - English_Fig2F_Undelayed_DivergenceBarsByLayer.svg
 %
 % Execution (hard requirement):
 % - Keep this file as a script (do NOT convert to function).
@@ -72,7 +70,7 @@ end
 %%
 
 % ---------- figure：2×1，行 = 任务 ----------
-f = figure('Color', 'w', 'Name', 'English Fig2O undelayed divergence bars by layer');
+f = figure('Color', 'w', 'Name', 'English Fig2F undelayed divergence bars by layer');
 f.Units = 'centimeters';
 f.Position(3:4) = [9, 8];
 
@@ -129,12 +127,12 @@ ylabel(tlo, 'Divergence');
 TransferLearning.ApplyStandardExportStyle(f, 2);
 % 统一各 tile 误差条 CapSize
 iUnifyErrorBarCapSizes(axAll(:).', barAll(:).', errAll(:).', 0.5);
-svgPath = TransferLearning.StandardFigureSvgPath('English_Fig2O_Undelayed_DivergenceBarsByLayer.svg');
+svgPath = TransferLearning.StandardFigureSvgPath('English_Fig2F_Undelayed_DivergenceBarsByLayer.svg');
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig2O_DivergenceByLayer', DivByLayer);
-assignin('base', 'Fig2O_GroupLabels', struct('Task', taskLabels, 'Tile', tileEmoji, ...
+assignin('base', 'Fig2F_DivergenceByLayer', DivByLayer);
+assignin('base', 'Fig2F_GroupLabels', struct('Task', tileEmoji, 'Tile', tileEmoji, ...
 	'Stage', {stageLabels}, 'Layer', layerLabels));
 
 %% ========== local functions ==========
