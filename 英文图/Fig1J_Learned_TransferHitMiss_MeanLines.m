@@ -83,7 +83,11 @@ Ax.YAxis.Visible=false;
 xticks([0,1]);
 xticklabels(["🔊/💡", "💧"]);
 
-lg = legend(Patches, ["🔊Learned", "💡Hit", "💡Miss"],Location="eastoutside");
+LegendLines = gobjects(size(Patches));
+for LineIndex = 1:numel(Patches)
+	LegendLines(LineIndex) = plot(Ax, [NaN NaN], '-', Color=Patches(LineIndex).EdgeColor, LineWidth=Patches(LineIndex).LineWidth);
+end
+lg = legend(LegendLines, ["🔊Learned", "💡Hit", "💡Miss"],Location="eastoutside");
 title('🔊💧 learned active cells');
 svgPath = 'English_Fig1J_Learned_TransferHitMiss_MeanLines.svg';
 svgPath = TransferLearning.ExportStandardFigure(f, 3, svgPath);
