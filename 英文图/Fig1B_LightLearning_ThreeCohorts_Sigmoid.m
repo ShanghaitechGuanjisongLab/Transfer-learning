@@ -52,7 +52,9 @@ fitN  = iFitSigmoidCurve(allSessions(allSessions.Group == "Naive", :), "Naive");
 %%
 
 groupNames = ["12h", "7d", "Naive"];
-groupColors = TransferLearning.Colors3 ./ 255;
+%最新配色：曲线/误差棒白底可读，用 Curve*（组主色向黑混 35%），顺序同上行 groupNames
+%（旧的 TransferLearning.Colors3 已不存在）
+groupColors = [TransferLearning.Curve12h(); TransferLearning.Curve7d(); TransferLearning.CurveNaive()] / 255;
 
 f = figure('Color', 'w', 'Name', 'English Fig1B light learning three cohorts sigmoid');
 f.Units = 'centimeters';

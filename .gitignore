@@ -43,3 +43,5 @@ tools
 resources/2*
 resources/c*
 **/Thumbs.db
+
+*.csv

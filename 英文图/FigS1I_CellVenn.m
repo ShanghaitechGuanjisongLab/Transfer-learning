@@ -5,8 +5,11 @@
 % 内圈 2(B, 橙) = Transfer 首个光水(LightWater)训练单元中活跃的细胞
 % A∩B = 复用细胞（Learned 活跃且在 Transfer 首块重新激活）
 %
-% 几何：圆的**面积**严格正比于细胞数（A/B 半径 = sqrt(n/nAll)），
-% 两圆圆心距 d 由「交集面积 = nAB 对应面积」数值求解，因此交集大小也是真实比例。
+% 几何：外圈(全部细胞)半径固定 = 1，两版图（12 h / 7 d）外圈大小完全一致。
+% 内圆半径用 **n^(1/4) 压缩映射**（r = (n/nAll)^(1/4)）而不是严格面积比例：
+%   严格面积比例下小集合会退化成几乎不可见的小点（7 d 组 B 只有 0.22 R，写不进文字），
+%   1/4 次方既保持「多则大、少则小」的单调关系，又能让小集合可见可标注。
+% 圆心距 d 仍按「交集面积 / B 面积 = nAB / nB」数值求解，交集相对 B 的大小仍按真实比例。
 
 if ~exist('UniExp.DataSet', 'class')
 	thisDir = fileparts(mfilename('fullpath'));
@@ -64,12 +67,8 @@ fprintf('A n B (reused)   = %d (%.2f%% of all, %.1f%% of A, %.1f%% of B)\n', ...
 fprintf('A only = %d | B only = %d | neither = %d\n', nAonly, nBonly, nNone);
 
 %% --- geometry ---
-% 只有内圆 A / B 及其交集严格按比例：
-%   rA : rB = sqrt(nA : nB)，交集面积 / (π rB²) = nAB / nB
-% 外圆仅作示意（半径 = 1），内圆整体缩放到「包围半径 = 0.78 R」，
-% 这样内圆足够大、可以把文字写进去。
-rB0 = 1;
-rA0 = sqrt(nA / nB);
+rA0 = (nA / nAll)^0.25;
+rB0 = (nB / nAll)^0.25;
 targetLens0 = (nAB / nB) * pi * rB0^2;
 lo = abs(rA0 - rB0) + 1e-9;
 hi = rA0 + rB0 - 1e-9;
@@ -78,14 +77,15 @@ if targetLens0 >= pi * min(rA0, rB0)^2
 else
 	d0 = fzero(@(dd) iLensArea(dd, rA0, rB0) - targetLens0, [lo, hi]);
 end
-s = 0.90 / (d0 / 2 + rA0);      % 缩放系数（内圆外接半径 = 0.90 R）
+s = min(1.10, 0.90 / (d0 / 2 + (rA0 + rB0) / 2));   % 内圆尽量撑满外圈（外接半径 ≈ 0.90 R，最多放大 10%）
 rA = s * rA0;
 rB = s * rB0;
 d = s * d0;
-cA = [-d / 2, 0];
-cB = [d / 2, 0];
-fprintf('geometry: rA=%.3f rB=%.3f d=%.3f (rA:rB=%.3f, expect %.3f)\n', ...
-	rA, rB, d, rA / rB, sqrt(nA / nB));
+cShift = (rA - rB) / 2;                         % 让两圆并集水平居中
+cA = [-d / 2, 0] + cShift;
+cB = [d / 2, 0] + cShift;
+fprintf('geometry: rA=%.3f rB=%.3f d=%.3f (rA:rB=%.3f, expect %.3f) scale=%.3f\n', ...
+	rA, rB, d, rA / rB, (nA / nB)^0.25, s);
 
 %% --- draw ---
 figWCm = 4.5;
@@ -130,24 +130,43 @@ fs = 6;
 text(ax, 0, 1.20, 'all cells', 'FontSize', fs, 'Color', [0.25 0.25 0.25], ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 
-% 各区域水平中心：按「文字所在高度」处的月牙区中心算，避免文字压到圆边
-yRef = 0.17;
+% 各区域水平中心：取标注最宽行（底行 `active`，y ≈ -0.24）处月牙区的中点，
+% 使文字左右留白均匀、不被圆边切到
+yRef = -0.24;
 hA = sqrt(max(rA^2 - yRef^2, 0));
 hB = sqrt(max(rB^2 - yRef^2, 0));
-xAonly = 0.5 * ((cA(1) - rA) + (cB(1) - hB));
-xBonly = 0.5 * ((cA(1) + hA) + (cB(1) + rB)) - 0.015;   % 稍向左留白
+xAonly = 0.5 * ((cA(1) - hA) + (cB(1) - hB));
+xBonly = 0.5 * ((cA(1) + hA) + (cB(1) + hB));
 xLensL = max(cA(1) - rA, cB(1) - rB);
 xLensR = min(cA(1) + rA, cB(1) + rB);
 xLens = 0.5 * (xLensL + xLensR);
 
-% A only / B only：直接写在内圆��牙区里
+% A only / B only：直接写在内圆形的月牙区里（半径够大时）
 iZoneLabel(ax, xAonly, sprintf('%.1f%%', 100 * nAonly / nAll), {'speaker', 'drop'}, colA);
-iZoneLabel(ax, xBonly, sprintf('%.1f%%', 100 * nBonly / nAll), {'bulb', 'drop'}, colB);
+if rB >= 0.30
+	iZoneLabel(ax, xBonly, sprintf('%.1f%%', 100 * nBonly / nAll), {'bulb', 'drop'}, colB);
+else
+	text(ax, cB(1), cB(2) + rB + 0.06, sprintf('%.1f%%', 100 * nBonly / nAll), 'FontSize', fs, ...
+		'Color', colB, 'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
+	text(ax, cB(1), cB(2) + rB + 0.02, 'active', 'FontSize', fs, 'Color', colB, ...
+		'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
+end
 
-% 交集太小（仅 0.1 R 宽），引线引到圆外
-plot(ax, [xLens, xLens + 0.045], [0.02, 0.44], '-', 'Color', colAB, 'LineWidth', 0.5);
-text(ax, xLens + 0.05, 0.48, sprintf('%.1f%%', 100 * nAB / nAll), 'FontSize', fs, 'Color', colAB, ...
-	'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
+% 交集标注：透镜够宽就直接写在里面（白字），否则用 0.5 pt 引线引到内圆之外的空白处
+lensW = xLensR - xLensL;
+txtLens = sprintf('%.1f%%', 100 * nAB / nAll);
+if lensW >= 0.42
+	text(ax, xLens, 0, txtLens, 'FontSize', fs, 'Color', [1 1 1], 'FontWeight', 'bold', ...
+		'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
+else
+	yTopA = iCircleTopY(cA, rA, xLens);
+	yTopB = iCircleTopY(cB, rB, xLens);
+	yLensTop = min(yTopA, yTopB);
+	yLab = min(max(yTopA, yTopB) + 0.16, 0.92);
+	plot(ax, [xLens, xLens], [yLensTop + 0.01, yLab], '-', 'Color', colAB, 'LineWidth', 0.5);
+	text(ax, xLens, yLab + 0.03, txtLens, 'FontSize', fs, 'Color', colAB, ...
+		'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
+end
 
 % neither
 text(ax, 0, -0.72, sprintf('%.1f%%', 100 * nNone / nAll), 'FontSize', fs, 'Color', [0.45 0.45 0.45], ...
@@ -172,6 +191,11 @@ assignin('base', 'FigS1I_VennSummary', summary);
 function iLeader(ax, x0, y0, x1, y1)
 % 从区域中心引一条 0.5 pt 细线到标注位置
 plot(ax, [x0 x1], [y0 y1], '-', 'Color', [0.35 0.35 0.35], 'LineWidth', 0.5);
+end
+
+function y = iCircleTopY(c, r, x)
+% 圆 c(1),c(2) 半径 r 在横坐标 x 处的上边界纵坐标
+y = c(2) + sqrt(max(r^2 - (x - c(1))^2, 0));
 end
 
 function iZoneLabel(ax, cx, pctTxt, iconKinds, col)

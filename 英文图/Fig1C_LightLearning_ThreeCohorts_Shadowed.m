@@ -46,7 +46,9 @@ summaryCurve = iSummarizeBySession(allSessions, ["12h", "7d", "Naive"]);
 %%
 
 groupNames = ["12h", "7d", "Naive"];
-groupColors = TransferLearning.Colors3 ./ 255;
+%最新配色：曲线/阴影带白底可读，用 Curve*（组主色向黑混 35%），顺序同上行 groupNames
+%（旧的 TransferLearning.Colors3 已不存在）
+groupColors = [TransferLearning.Curve12h(); TransferLearning.Curve7d(); TransferLearning.CurveNaive()] / 255;
 
 f = figure('Color', 'w', 'Name', 'English Fig1C light learning three cohorts shadowed');
 f.Units = 'centimeters';
@@ -86,7 +88,8 @@ else
 end
 lg.FontSize = 12;
 lg.Box = 'off';
-lg.Title.String = '💡💧';
+%emoji 在矢量 SVG 里无法保留（会被渲染成豆腐块），改用文字
+lg.Title.String = 'Light water';
 lg.Title.FontSize = 12;
 
 xlabel(ax, 'Block', 'FontSize', 12);

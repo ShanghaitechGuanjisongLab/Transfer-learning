@@ -59,34 +59,86 @@ fitN = iFitSigmoidCurvePerMouse_33(naiveSess, mouseMinN);
 fitT = iFitSigmoidCurvePerMouse_33(tranSess, mouseMaxT);
 %%
 
-fig = figure('Color', 'w', 'Name', 'English Fig1I extreme mouse learning');
-fig.Units = 'centimeters'; fig.Position(3:4) = [12, 8];
-fig.PaperUnits = 'centimeters'; fig.PaperSize = [12, 8]; fig.PaperPositionMode = 'auto';
-curveColors = [TransferLearning.ColorNaive; TransferLearning.Color12h] / 255;
-ax = axes(fig); hold(ax, 'on');
+% 浅色配色的可读性试验（原始版为 1）
+%   2  ：同色浅底粗线 + 加粗主线（浅底，实测无效）
+%   3  ：拟合线/描边整体加深，散点空心（可读但两色趋同）
+%   4  ：v2b —— 深底 + 浅芯（先深色粗线打底，再叠原浅色细线），保住原色相
+%   5  ：v2c —— 直接用 v2b 的深色边缘色作为主色（实线 + 实心标记）
+styleVersions = [5];
+styleTag = containers.Map({2, 3, 4, 5}, {'v2', 'v3', 'v2b', 'v2c'});
+curveColors = [TransferLearning.CurveNaive(); TransferLearning.Curve12h()] / 255;
+darkColors = iBlend(curveColors, [0 0 0], 0.42);
 xN = double(naiveSess.Session(:)); yN = double(naiveSess.Performance(:));
 xT = double(tranSess.Session(:)); yT = double(tranSess.Performance(:));
-hN = scatter(ax, xN, yN, 50, curveColors(1, :), 'o');
-hT = scatter(ax, xT, yT, 50, curveColors(2, :), 'o');
 xFit = linspace(min([xN; xT]) - 1, max([xN; xT]) + 1, 200)';
-plot(ax, xFit, iSigmoidFromFixedLowerParams(fitN.ParamRaw, xFit), '-', 'Color', curveColors(1, :), 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
-plot(ax, xFit, iSigmoidFromFixedLowerParams(fitT.ParamRaw, xFit), '-', 'Color', curveColors(2, :), 'LineWidth', 2.2, 'Tag', 'TransferLearningSupplementalLine');
-xlabel(ax, 'Block', 'FontSize', 12); ylabel(ax, 'Hit rate');
-ax.FontSize = 12; ax.LineWidth = 2; ax.Color = 'none';
-box(ax, 'off'); grid(ax, 'off');
-legend(ax, [hN, hT], {'Naive', '12 h'}, 'Location', 'best', 'Box', 'off');
-title(ax, 'Representative mice');
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
-TransferLearning.ApplyStandardExportStyle(fig, 2);
-ax.YTick(ax.YTick < 0 - eps | ax.YTick > 1 + eps) = [];
-svgPath = TransferLearning.StandardFigureSvgPath('English_Fig1I_ExtremeMouseScatterFit.svg');
-print(fig, svgPath, '-dsvg');
-fprintf('Wrote: %s\n', svgPath);
+yFitN = iSigmoidFromFixedLowerParams(fitN.ParamRaw, xFit);
+yFitT = iSigmoidFromFixedLowerParams(fitT.ParamRaw, xFit);
+
+for styleVersion = styleVersions
+	tag = styleTag(styleVersion);
+	fig = figure('Color', 'w', 'Name', sprintf('English Fig1I extreme mouse (%s)', tag));
+	fig.Units = 'centimeters'; fig.Position(3:4) = [12, 8];
+	fig.PaperUnits = 'centimeters'; fig.PaperSize = [12, 8]; fig.PaperPositionMode = 'auto';
+	ax = axes(fig); hold(ax, 'on');
+	% 轮廓从深到浅：拟合线轮廓越深、芯色仍用原色，保证组别色相可辨
+	switch styleVersion
+		case 2, outline = iBlend(curveColors, [1 1 1], 0.72); core = curveColors;
+		case 3, outline = [];                            core = darkColors;
+		case 5, outline = [];                            core = darkColors;   % v2c：深色即主色
+		otherwise, outline = darkColors;                 core = curveColors;   % v2b
+	end
+	if ~isempty(outline)
+		hHalo(1) = plot(ax, xFit, yFitN, '-', 'Color', outline(1, :), 'LineWidth', 6, 'HandleVisibility', 'off');
+		hHalo(2) = plot(ax, xFit, yFitT, '-', 'Color', outline(2, :), 'LineWidth', 6, 'HandleVisibility', 'off');
+	else
+		hHalo = gobjects(0);
+	end
+	hMain(1) = plot(ax, xFit, yFitN, '-', 'Color', core(1, :), 'LineWidth', 2.5, 'Tag', 'TransferLearningSupplementalLine');
+	hMain(2) = plot(ax, xFit, yFitT, '-', 'Color', core(2, :), 'LineWidth', 2.5, 'Tag', 'TransferLearningSupplementalLine');
+	% 散点：v2c 用主色实心 + 白描边；其余浅色/白色填充 + 深描边
+	if styleVersion == 5
+		hN = scatter(ax, xN, yN, 36, darkColors(1, :), 'o', 'filled');
+		hT = scatter(ax, xT, yT, 36, darkColors(2, :), 'o', 'filled');
+		hN.MarkerEdgeColor = [1 1 1];
+		hT.MarkerEdgeColor = [1 1 1];
+	else
+		faceColors = curveColors;
+		if styleVersion == 3, faceColors = [1 1 1; 1 1 1]; end
+		hN = scatter(ax, xN, yN, 36, faceColors(1, :), 'o', 'filled');
+		hT = scatter(ax, xT, yT, 36, faceColors(2, :), 'o', 'filled');
+		hN.MarkerEdgeColor = darkColors(1, :);
+		hT.MarkerEdgeColor = darkColors(2, :);
+	end
+	xlabel(ax, 'Block', 'FontSize', 12); ylabel(ax, 'Hit rate');
+	ax.FontSize = 12; ax.LineWidth = 2; ax.Color = 'none';
+	box(ax, 'off'); grid(ax, 'off');
+	lg = legend(ax, [hN, hT], {'Naive', '12 h'}, 'Location', 'best', 'Box', 'off');
+	title(ax, 'Representative mice');
+	if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar), ax.Toolbar.Visible = 'off'; end
+	% 先套标准样式，再覆盖线宽/标记，避免被样式函数重置
+	TransferLearning.ApplyStandardExportStyle(fig, 2);
+	hMain(1).LineWidth = 2.5;
+	hMain(2).LineWidth = 2.5;
+	for h = hHalo(:).'
+		h.LineWidth = 6;
+	end
+	hN.SizeData = 36; hT.SizeData = 36;
+	lg.FontSize = 12;
+	ax.YTick(ax.YTick < 0 - eps | ax.YTick > 1 + eps) = [];
+	svgPath = TransferLearning.StandardFigureSvgPath(sprintf('English_Fig1I_ExtremeMouseScatterFit_%s.svg', tag));
+	print(fig, svgPath, '-dsvg');
+	fprintf('Wrote: %s\n', svgPath);
+end
 fprintf('\n=== 英文图1I ===\n');
 fprintf('Naive 最低斜率鼠：%s，斜率=%.4f\n', mouseMinN, fitN.Slope);
 fprintf('12 h 最高斜率鼠：%s，斜率=%.4f\n', mouseMaxT, fitT.Slope);
 
 %% 局部函数
+function c = iBlend(c, target, w)
+%把颜色 c 向 target（如白色 / 黑色）混合，w 为 target 的权重
+c = c * (1 - w) + target .* w;
+end
+
 function out = iLightWaterSessionsByMouse(DS, sourceName, imagingCohort, startPhase, endPhase)
 	data = iQueryLightWaterBehaviorAll(DS);
 	if isempty(data), out = iEmptySess(); return; end

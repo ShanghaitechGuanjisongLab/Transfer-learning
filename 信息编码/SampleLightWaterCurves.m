@@ -1,9 +1,10 @@
 %% Sample LightWater learning curves: steepest vs shallowest slope
 % 从所有 Light Water 数据中找出 slope 最大和最小的单鼠（至少3个block）
 % 绘制各自的 learning curve + sigmoid fit
+% 配色：按当前 TransferLearning 色卡取组别颜色（ColorNaive / Color12h / Color7d，0–255 → /255）
 
 %% 0. 项目加载
-prjRoot = 'd:\Users\杨青宁\Documents\MATLAB\Transfer-learning';
+prjRoot = fileparts(fileparts(mfilename('fullpath')));
 if ~exist('UniExp.DataSet','class')
 	prjFile = fullfile(prjRoot, 'Transferlearning.prj');
 	if exist(prjFile,'file')
@@ -88,17 +89,18 @@ end
 %% 4. 绘制 sample 曲线
 f = figure('Color','w', 'Name','Sample LightWater curves');
 f.Units = 'centimeters';
-f.Position(3:4) = [16, 6];
-t = tiledlayout(f, 1, 2, 'TileSpacing', 'tight', 'Padding', 'compact');
+f.Position(3:4) = [12, 4.5];
+t = tiledlayout(f, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 
-colorMin = [0.6 0.3 0.8]; % 紫
-colorMax = [0.9 0.5 0.1]; % 橙
+% 两幅范例用色卡的“浅→深”两个端点：斜率越小越浅，越大越深
+colorMin = TransferLearning.ColorNaive / 255;  % [199 184 230]
+colorMax = TransferLearning.ColorMiss  / 255;  % [213 105 127]
 
 for iPlot = 1:2
 	if iPlot == 1
-		m = minMouse; grp = minGroup; clr = colorMin; titleStr = sprintf('Shallowest slope (%.3f)', minSlope);
+		m = minMouse; grp = minGroup; clr = colorMin; titleStr = sprintf('Shallowest slope (%.2f)', minSlope);
 	else
-		m = maxMouse; grp = maxGroup; clr = colorMax; titleStr = sprintf('Steepest slope (%.3f)', maxSlope);
+		m = maxMouse; grp = maxGroup; clr = colorMax; titleStr = sprintf('Steepest slope (%.2f)', maxSlope);
 	end
 	R = sortrows(allSessions(string(allSessions.Mouse) == m, :), 'DateTime');
 	x = double(R.Session);
@@ -107,27 +109,31 @@ for iPlot = 1:2
 	nexttile(t);
 	hold on;
 	% 散点
-	plot(x, y, 'o', 'Color', clr, 'MarkerFaceColor', clr, 'MarkerSize', 8, 'LineWidth', 1.5);
+	plot(x, y, 'o', 'Color', clr, 'MarkerFaceColor', clr, 'MarkerSize', 4, 'LineWidth', 1);
 	% sigmoid 拟合线
 	xFit = linspace(0.5, max(x)+1, 200);
 	obj = @(p) sum((y - (1 ./ (1 + exp(-abs(p(1)) .* (x - p(2)))))).^2);
 	p = fminsearch(obj, [0.5; median(x)], optimset('Display','off'));
 	yFit = 1 ./ (1 + exp(-abs(p(1)) .* (xFit - p(2))));
-	plot(xFit, yFit, '-', 'Color', clr, 'LineWidth', 2);
+	plot(xFit, yFit, '-', 'Color', clr, 'LineWidth', 1);
 
 	xlabel('Block'); ylabel('Hit rate');
 	xlim([0.5, max(x)+1]); ylim([0 1.02]);
 	title(titleStr, 'FontWeight','normal');
 	box off; grid off;
-	set(gca, 'FontSize', 12, 'LineWidth', 1.5);
-	text(mean(xlim), 0.95, sprintf('Mouse: %s\nGroup: %s\nSlope: %.3f', m, grp, abs(p(1))), ...
-		'HorizontalAlignment','center', 'VerticalAlignment','top', 'FontSize', 10);
+	% 说明文字放右下角（两幅曲线在该区域都无数据/拟合线）
+	axP = gca;
+	xR = axP.XLim;
+	text(axP, xR(2) - 0.05, 0.04, sprintf('Mouse: %s\nGroup: %s', m, grp), ...
+		'HorizontalAlignment','right', 'VerticalAlignment','bottom', 'FontSize', 6);
 end
 
 title(t, 'Sample LightWater learning curves', 'FontWeight','normal');
-svgPath = fullfile('\\Data-Server-2\个人数据\杨青宁\202607', 'SampleLightWaterCurves.svg');
-exportgraphics(f, svgPath, 'ContentType','vector');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'SampleLightWaterCurves.svg');
 fprintf('Wrote: %s\n', svgPath);
+localPng = fullfile(fileparts(mfilename('fullpath')), 'SampleLightWaterCurves.png');
+print(f, localPng, '-dpng', '-r600');
+fprintf('Wrote: %s\n', localPng);
 
 %% 本地函数（从 Fig33B 移植）
 function out = iLightWaterSessionsByMouse(DS, sourceName, startPhase, endPhase)

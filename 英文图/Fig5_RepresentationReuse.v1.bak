@@ -1,0 +1,157 @@
+% Fig5｜声→光迁移中的表征复用：层特异性与 7 天丢失
+%
+% 四联图（单图，1×4，高 4 cm，Scale 2）：
+%   (a) ① u_L（学会线索模板的独特方差），ALB，按层分        ← MOp2/3 p=0.031, MOp5 p=0.31
+%   (b) ②′ r（迁移"未舔试次"与学会模式的相关），ALB，按层分  ← 2/3 0.227(p=0.0098), L5 0.078(p=0.16)
+%   (c) ③ 细胞级混合模型 isTransfer 系数（V7 迁移期 − 学会期），按层分
+%          MOp2/3 −0.0061±0.0079 (p=0.44)；MOp5 −0.0205±0.0073 (p=0.0051)
+%          （对照：ALB 两层均无效应 +0.0070 / +0.0054）
+%   (d) ③ 的对照：线索模态判别 AUC（声 vs 光），ALB vs V7
+%          0.63 vs 0.73，组间交互 p=0.53 ⇒ 7 天未破坏感觉-模态编码
+%
+% 数据来源：
+%   (a) RepresentationReuse_FormalVarDecomp_MOp2-3.csv / _MOp5.csv   （subset == "all"）
+%   (b) RepresentationReuse_PartialActionClaim_MOp2-3.csv / _MOp5.csv（Cohort == "ALB"，r2_raw）
+%   (c) RepresentationReuse_MixedModel.m 的 M4 输出（fitglme 系数，见上）
+%   (d) RepresentationReuse_NaiveAxisToTransfer.csv（Window == "wA 0-1.5s"，AUC_AW_LW）
+%
+% 配色：TransferLearning.CodexPaletteLight（Latte，白底）
+%   Blue #1E66F5 → MOp2/3 ；Peach #FE640B → MOp5 ；Teal #179299 → ALB ；Mauve #8839EF → V7
+
+thisDir = fileparts(mfilename('fullpath'));
+addpath(fullfile(thisDir, '..'));
+if ~exist('UniExp.DataSet', 'class')
+	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
+	if exist(prjFile, 'file'), matlab.project.loadProject(prjFile); end
+end
+
+P = TransferLearning.CodexPaletteLight;
+cL23 = P(11, :) / 255;   % Blue
+cL5  = P(5,  :) / 255;   % Peach
+cALB = P(8,  :) / 255;   % Teal
+cV7  = P(2,  :) / 255;   % Mauve
+
+%% ---------- 读数据 ----------
+F1 = readtable(fullfile(thisDir, 'RepresentationReuse_FormalVarDecomp_MOp2-3.csv'));
+F2 = readtable(fullfile(thisDir, 'RepresentationReuse_FormalVarDecomp_MOp5.csv'));
+A1 = readtable(fullfile(thisDir, 'RepresentationReuse_PartialActionClaim_MOp2-3.csv'));
+A2 = readtable(fullfile(thisDir, 'RepresentationReuse_PartialActionClaim_MOp5.csv'));
+NT = readtable(fullfile(thisDir, 'RepresentationReuse_NaiveAxisToTransfer.csv'));
+
+vA = F1.uniq_L(F1.Subset == "all");
+vB = F2.uniq_L(F2.Subset == "all");
+wA = A1.r2_raw(A1.Cohort == "ALB");
+wB = A2.r2_raw(A2.Cohort == "ALB");
+
+% (c) 混合模型系数（来自 RepresentationReuse_MixedModel.m 的 M4 输出）
+betaL23 = [-0.0060605, +0.0070202];   % [V7, ALB]
+seL23   = [ 0.0078504,  0.0083203];
+betaL5  = [-0.0205330, +0.0053702];
+seL5    = [ 0.0073324,  0.0071175];
+
+selD = NT.Window == "wA 0-1.5s";
+dALB = NT.AUC_AW_LW(selD & startsWith(NT.Cohort, "ALB"));
+dALB = dALB(isfinite(dALB));
+dV7  = NT.AUC_AW_LW(selD & startsWith(NT.Cohort, "V7"));
+dV7  = dV7(isfinite(dV7));
+
+%% ---------- 画布 ----------
+f = figure('Color', 'w', 'Name', 'Fig5 representation reuse');
+f.Units = 'centimeters';
+f.Position(3:4) = [18, 4];
+f.PaperUnits = 'centimeters';
+f.PaperPositionMode = 'manual';
+f.PaperPosition = [0, 0, 18, 4];
+f.PaperSize = [18, 4];
+
+layout = tiledlayout(f, 1, 4, 'TileSpacing', 'compact', 'Padding', 'loose');
+FlagsBS = [UniExp.Flags.ShowScatter, UniExp.Flags.IndividualErrorbars];
+
+%% (a) ① u_L by layer
+axA = nexttile(layout);
+iBarScatter(axA, {vA, vB}, {cL23, cL5}, FlagsBS);
+title(axA, '(a)', 'FontWeight', 'normal');
+ylabel(axA, 'u_L');
+iAxisTail(axA, {'2/3', 'L5'});
+
+%% (b) ②′ r_miss by layer
+axB = nexttile(layout);
+iBarScatter(axB, {wA, wB}, {cL23, cL5}, FlagsBS);
+title(axB, '(b)', 'FontWeight', 'normal');
+ylabel(axB, 'r');
+iAxisTail(axB, {'2/3', 'L5'});
+
+%% (c) ③ 混合模型 β by layer（V7），ALB 作并排对照
+axC = nexttile(layout);
+hold(axC, 'on');
+xB = [1, 2];
+h1 = bar(axC, xB, betaL5, 'BarWidth', 0.55, 'FaceColor', 'flat', 'EdgeColor', 'none');
+h1.CData = [cL23; cL5];
+h2 = errorbar(axC, xB, betaL5, seL5, 'k', 'LineStyle', 'none', 'LineWidth', 1, 'CapSize', 3, 'HandleVisibility', 'off');
+iRecolorErrorbar(h2, {cL23, cL5});
+yline(axC, 0, '-', 'Color', [0.3 0.3 0.3], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+title(axC, '(c)', 'FontWeight', 'normal');
+ylabel(axC, 'β');
+iAxisTail(axC, {'2/3', 'L5'});
+
+%% (d) ③ 对照：模态判别 AUC，ALB vs V7
+axD = nexttile(layout);
+iBarScatter(axD, {dALB, dV7}, {cALB, cV7}, FlagsBS);
+title(axD, '(d)', 'FontWeight', 'normal');
+ylabel(axD, 'AUC');
+iAxisTail(axD, {'ALB', 'V7'});
+
+%% ---------- 导出 ----------
+svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig5_RepresentationReuse.svg');
+fprintf('Wrote: %s\n', svgPath);
+
+% 同时存一份本地副本用于视觉检查
+localSvg = fullfile(thisDir, '_fig5_check.svg');
+TransferLearning.Style.ApplyStandardFigureStyle(f, 2);
+print(f, localSvg, '-dsvg');
+fprintf('Local: %s\n', localSvg);
+
+%% ========== local ==========
+function iBarScatter(ax, dataCell, colors, flags)
+[~, optional, bars, errorBars] = UniExp.BarScatterCompare(dataCell, flags);
+bars.LineStyle = 'none';
+bars.FaceColor = 'flat';
+bars.CData = vertcat(colors{:});
+iRecolorErrorbar(errorBars, colors);
+if isfield(optional, 'ScatterLines') && ~isempty(optional.ScatterLines)
+	for sl = optional.ScatterLines(:)'
+		if ~isgraphics(sl), continue; end
+		if isprop(sl, 'MarkerFaceColor'), sl.MarkerFaceColor = [1 1 1]; end
+		if isprop(sl, 'MarkerEdgeColor'), sl.MarkerEdgeColor = [0.25 0.25 0.25]; end
+		if isprop(sl, 'Color'), sl.Color = [0.25 0.25 0.25]; end
+		if isprop(sl, 'MarkerSize'), sl.MarkerSize = 2; end
+		if isprop(sl, 'LineWidth'), sl.LineWidth = 0.5; end
+	end
+end
+if isfield(optional, 'MultiCompare') && istable(optional.MultiCompare)
+	iTagged = false;
+end
+hold(ax, 'on');
+end
+
+function iRecolorErrorbar(h, colors)
+if istable(h)
+	objs = h.Object;
+elseif isprop(h, 'Object')
+	objs = h.Object;
+else
+	objs = h;
+end
+for k = 1:numel(objs)
+	if ~isgraphics(objs(k)), continue; end
+	kk = min(k, numel(colors));
+	objs(k).Color = max(colors{kk} * 0.65, 0);
+end
+end
+
+function iAxisTail(ax, labels)
+ax.XLim = [0.5, 2.5];
+ax.XTick = [1, 2];
+ax.XTickLabel = labels;
+xtickangle(ax, 0);
+end

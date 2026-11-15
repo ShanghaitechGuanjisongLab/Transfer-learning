@@ -1,0 +1,158 @@
+% Fig5 补充：**交叉验证 RSA（表征不相似矩阵相关）**——真正几何层面的流形相似性指标
+%
+% 为什么需要：现有的相似性指标分四类——
+%   方向一致（跨细胞 r）· 可测性（split-half 可靠度）· 归因（模板独特方差）· 几何（Procrustes d / 能量比）
+% 其中"几何"那一类全部依赖 PC 基（基敏感性检验已显示 d 的显著性会随基变化）。
+% RSA 是唯一同时满足：不依赖降维、不假设线性模板、直接比较"表征几何"的指标。
+%
+% 做法（时间分辨的 RDM）：
+%   1. 每个阶段的数据来自缓存 PCAstage_G_MOp2-3.mat：cells × 65 帧 × 10 条超鼠线（0–8 s）
+%   2. 把 0–8 s 分成 8 个 1 s 的 bin → 每阶段的模式 = cells × 8
+%   3. 用**一半的线**（5 条）估一个 RDM：RDM[i,j] = 1 − corr(模式_i, 模式_j)
+%   4. 两阶段之间用**互相独立的两半**交叉比较（A1 vs B2、A2 vs B1），避免噪声自相关造成虚高
+%   5. 用各自的 split-half 可靠度做 Spearman–Brown 校正：r_corr = r_cross / sqrt(rel_A * rel_B)
+%   6. **偏相关**：把 |Δt|（两个 bin 的时间距离）作为协变量回归掉
+%      —— 否则任何平滑轨迹的 RDM 都由"时间邻近"主导，相关性会虚假地接近 1
+%   7. 置换检验：随机打乱 B 阶段的 bin 顺序重建 RDM（保持可靠度不变，只破坏几何），得零分布
+%
+% 输出：RepresentationReuse_RSA.csv
+
+thisDir = fileparts(mfilename('fullpath'));
+addpath(fullfile(thisDir, '..'));
+if ~exist('UniExp.DataSet', 'class')
+	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
+	if exist(prjFile, 'file'), matlab.project.loadProject(prjFile); end
+end
+warning('off', 'UniExp:Exception:Block_must_warn');
+
+nLines = 10; nBin = 8; nSplit = 100; nPerm = 500;
+rng(20261113, 'twister');
+cacheFile = fullfile(tempdir, 'PCAstage_G_MOp2-3.mat');
+assert(exist(cacheFile, 'file') == 2, 'RSA:NoCache', '缺 %s', cacheFile);
+Cs = load(cacheFile, 'PCAstage_G', 'DSnames');
+G = Cs.PCAstage_G; dsNames = string(Cs.DSnames(:));
+cohorts = ["ALB", "V7"];
+stageNames = ["Naive", "Learned", "Transfer", "Final"];
+
+% 要比较的阶段对（第一对是主结论，其余是对照）
+pairs = [2 3; 2 4; 2 1; 3 4];   % Learned-Transfer / Learned-Final / Learned-Naive / Transfer-Final
+
+%% ---------- 每阶段：cells × nBin × nLines ----------
+XB = cell(2, 4);
+for k = 1:2
+	iDS = find(dsNames == cohorts(k), 1);
+	common = G{iDS, 1}.CellUID;
+	for iS = 2:4, common = intersect(common, G{iDS, iS}.CellUID); end
+	common = sort(unique(common));
+	for iS = 1:4
+		[ok, loc] = ismember(common, G{iDS, iS}.CellUID);
+		assert(all(ok));
+		X = double(G{iDS, iS}.NTATS.Data(loc, :, :));   % cells × 65 × 10
+		nT = size(X, 2);
+		edges = round(linspace(0, nT, nBin + 1));
+		B = nan(size(X, 1), nBin, size(X, 3));
+		for b = 1:nBin
+			B(:, b, :) = mean(X(:, (edges(b) + 1):edges(b + 1), :), 2, 'omitnan');
+		end
+		XB{k, iS} = B;
+	end
+	fprintf('%s: %d 个四阶段共有细胞, %d 个时间 bin\n', cohorts(k), numel(common), nBin);
+end
+
+%% ---------- RSA ----------
+Rows = {};
+fprintf('\n===== 交叉验证 RSA（时间 bin RDM，偏掉 |Δt|，%d 次分裂 × %d 次置换）=====\n', nSplit, nPerm);
+for k = 1:2
+	nm = cohorts(k);
+	for p = 1:size(pairs, 1)
+		iA = pairs(p, 1); iB = pairs(p, 2);
+		XA = XB{k, iA}; XBk = XB{k, iB};
+		rAll = nan(nSplit, 1); relA = nan(nSplit, 1); relB = nan(nSplit, 1);
+		nullAll = nan(nSplit, nPerm);
+		for s = 1:nSplit
+			% 每个阶段拆成两半的线
+			pa = randperm(nLines); ha1 = pa(1:nLines/2); ha2 = pa(nLines/2+1:end);
+			pb = randperm(nLines); hb1 = pb(1:nLines/2); hb2 = pb(nLines/2+1:end);
+			RA1 = iRDM(XA, ha1); RA2 = iRDM(XA, ha2);
+			RB1 = iRDM(XBk, hb1); RB2 = iRDM(XBk, hb2);
+			relA(s) = iSB(iPA(RA1, RA2, iLag(nBin)));
+			relB(s) = iSB(iPA(RB1, RB2, iLag(nBin)));
+			% 交叉：用互相独立的半（A1–B2、A2–B1）
+			r1 = iPA(RA1, RB2, iLag(nBin));
+			r2 = iPA(RA2, RB1, iLag(nBin));
+			rAll(s) = mean([r1, r2], 'omitnan');
+			% 置换零分布：打乱 B 的 bin 顺序（保持可靠度、破坏几何）
+			for q = 1:nPerm
+				ord = randperm(nBin);
+				RB1p = iRDM(XBk, hb1, ord); RB2p = iRDM(XBk, hb2, ord);
+				nullAll(s, q) = mean([iPA(RA1, RB2p, iLag(nBin)), iPA(RA2, RB1p, iLag(nBin))], 'omitnan');
+			end
+		end
+		rc = mean(rAll) / sqrt(mean(relA) * mean(relB));
+		nullC = mean(nullAll, 1) / sqrt(mean(relA) * mean(relB));
+		pv = (1 + sum(nullC >= rc)) / (1 + numel(nullC));
+		fprintf('%-4s %-18s r_cross=%.3f  rel: %.2f / %.2f  ⇒ r_corrected=%.3f   置换 p=%.4g\n', ...
+			nm, stageNames(iA) + "→" + stageNames(iB), mean(rAll), mean(relA), mean(relB), rc, pv);
+		Rows(end+1, :) = {nm, stageNames(iA) + "→" + stageNames(iB), mean(rAll), ...
+			mean(relA), mean(relB), rc, pv}; %#ok<SAGROW>
+	end
+end
+Tab = cell2table(Rows, 'VariableNames', ["Cohort", "StagePair", "r_cross", ...
+	"rel_A", "rel_B", "r_corrected", "p_perm"]);
+writetable(Tab, fullfile(thisDir, 'RepresentationReuse_RSA.csv'));
+fprintf('\nWrote: %s\n', fullfile(thisDir, 'RepresentationReuse_RSA.csv'));
+
+%% ========== local ==========
+function R = iRDM(X, lines, ord)
+% X: cells × nBin × nLines；lines: 用哪些线；ord: 可选，重排 bin 顺序
+if nargin < 3 || isempty(ord), ord = 1:size(X, 2); end
+P = squeeze(mean(X(:, ord, lines), 3, 'omitnan'));   % cells × nBin
+nB = size(P, 2);
+R = nan(nB * (nB - 1) / 2, 1);
+c = 0;
+for i = 1:nB - 1
+	for j = i + 1:nB
+		c = c + 1;
+		R(c) = 1 - iCorr(P(:, i), P(:, j));
+	end
+end
+end
+
+function v = iLag(nBin)
+% 与 iRDM 同样顺序的 |Δt|
+v = nan(nBin * (nBin - 1) / 2, 1);
+c = 0;
+for i = 1:nBin - 1
+	for j = i + 1:nBin
+		c = c + 1;
+		v(c) = j - i;
+	end
+end
+end
+
+function r = iPA(y1, y2, cov)
+% 偏 Spearman：两边先取秩，再把协变量（|Δt|）回归掉，残差求相关
+ok = isfinite(y1) & isfinite(y2) & isfinite(cov);
+if sum(ok) < 10, r = NaN; return; end
+a = tiedrank(y1(ok)); b = tiedrank(y2(ok)); m = tiedrank(cov(ok));
+X = [ones(numel(m), 1), m];
+ra = a - X * (X \ a);
+rb = b - X * (X \ b);
+r = iCorr(ra, rb);
+end
+
+function rel = iSB(r)
+% Spearman-Brown
+rel = NaN;
+if isfinite(r) && r > -1, rel = 2 * r / (1 + r); end
+end
+
+function r = iCorr(a, b)
+ok = isfinite(a) & isfinite(b);
+if sum(ok) < 10, r = NaN; return; end
+a = a(ok); b = b(ok);
+a = a - mean(a); b = b - mean(b);
+sa = norm(a); sb = norm(b);
+if sa == 0 || sb == 0, r = NaN; return; end
+r = (a' * b) / (sa * sb);
+end

@@ -9,7 +9,8 @@ if ~exist('UniExp.DataSet', 'class')
 	prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
 	if exist(prjFile, 'file'), matlab.project.loadProject(prjFile); end
 end
-
+%注意：本脚本里 TransferLearning.<属性>() 一被调用，+TransferLearning 包就无法再用类名解析，
+%所以包函数必须在取色之前全部用完（取色在绘图段）。
 naiveSessions = TransferLearning.DelayComparison.CohortBlocks("UndelayedImagingNaive");
 naiveSessions = naiveSessions(isfinite(naiveSessions.Performance), :);
 naiveSessions.Group = repmat("Naive", height(naiveSessions), 1);
@@ -43,7 +44,7 @@ groupPAll = TransferLearning.Style.TwoWayAnovaGroupPValue(allSessions, 'Performa
 statistics = table(groupP7, groupPAll, 'VariableNames', {'GroupPBlocks1To7', 'GroupPAllBlocks'});
 %%
 
-groupColors = [TransferLearning.ColorNaive; TransferLearning.Color7d] / 255;
+groupColors = [TransferLearning.CurveNaive(); TransferLearning.Curve7d()] / 255;
 meanCurves = cell(1, 2); semCurves = cell(1, 2); xCurves = cell(1, 2);
 for cohortIndex = 1:2
 	use = summaryCurve.Group == cohorts(cohortIndex);
@@ -57,8 +58,7 @@ fig.Units = 'centimeters'; fig.Position(3:4) = [9, 8];
 ax = axes(fig); hold(ax, 'on');
 patches = MATLAB.Graphics.MultiShadowedLines(meanCurves, semCurves, X=xCurves, EdgeColors=groupColors);
 legendHandle = legend(ax, patches(1:2), cellstr(cohorts), 'Location', 'best', 'Box', 'off');
-legendHandle.Title.String = '💡💧';
-legendHandle.Title.FontName = 'Segoe UI Emoji';
+legendHandle.Title.String = 'Light water';
 xlabel(ax, 'Block'); ylabel(ax, 'Hit rate');
 title(ax, TransferLearning.Style.iFormatPText(groupP7));
 box(ax, 'off'); grid(ax, 'off');

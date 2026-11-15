@@ -37,7 +37,12 @@
 
 % ---------- 可调参数 ----------
 nLines   = 10;            % 每细胞把回合平均成多少条轨迹
-LayerKeep = "MOp2/3";     % 细胞层筛选；置为 "" 则不筛选
+% 细胞层筛选；置为 "" 则不筛选。允许在 base 工作区预设 LayerKeep 以做分层结果（缓存要分开存）。
+if exist('LayerKeep', 'var') && (isstring(LayerKeep) || ischar(LayerKeep)) && strlength(string(LayerKeep)) >= 0
+	% 沿用外部设定
+else
+	LayerKeep = "MOp2/3";
+end
 tWin      = [0, 8];       % 分析窗（cue 后，秒）
 tBase     = [-3, 0];      % z-score 基线窗（cue 前，秒）
 nOut      = 65;           % 重采样后时间点数（0:0.125:8）
@@ -49,7 +54,7 @@ SmoothFrames = 1;   % 仅显示：0/1 = 不平滑（实测 3 帧平滑几乎改�
 %   "row"  = 一行 4 块共用同一 xlim/ylim ⇒ 行内位置/幅度可直接比
 %   "tile" = 每块按自己的轨迹自适应 ⇒ 每个阶段的形状得到最大展现，但子图间不可比
 AxisModes = ["row", "tile"];
-ExportSvg = true;
+if ~exist('ExportSvg', 'var') || ~islogical(ExportSvg), ExportSvg = true; end
 
 thisDir = fileparts(mfilename('fullpath'));
 if ~exist('UniExp.DataSet', 'class')
@@ -61,8 +66,9 @@ end
 addpath(fullfile(thisDir, '..'));
 
 stageNames  = ["Naive", "Learned", "Transfer", "Final"];
-stageColors = [TransferLearning.NaiveColor; TransferLearning.ColorA; ...
-	TransferLearning.TransferColor; TransferLearning.ColorB];
+%类里已无 NaiveColor/ColorA/TransferColor/ColorB，改用与 ALB 版一致的本地 RGB
+stageColors = [TransferLearning.ColorNaive; TransferLearning.ColorLearned; ...
+	TransferLearning.Color12h; TransferLearning.ColorLearned] / 255;
 
 DSnames   = ["ALD"];
 DSlist    = {TransferLearning.ALDelayed()};

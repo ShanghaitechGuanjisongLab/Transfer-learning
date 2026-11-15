@@ -30,13 +30,19 @@ if exist(dlyCache, 'file') ~= 2
 	run(fullfile(thisDir, 'PCA_StageProgression_Delayed_0to8s.m'));
 	save(dlyCache, 'G', 'DSnames', 'stageNames');
 end
-Dz = load(dlyCache, 'G', 'DSnames');
-G = [G4; {Dz.G{1, 1}, Dz.G{1, 2}, Dz.G{1, 3}, Dz.G{1, 4}}];
-names = [names4; "ALD"];
+G = G4; names = names4;
+% 延迟组（ALD）是另一套任务（cue+0.5 s delay+响应窗），当前分析默认**不纳入**。
+% 需要时在 base 里设 IncludeALD = true。
+if ~exist('IncludeALD', 'var') || ~islogical(IncludeALD), IncludeALD = false; end
+if IncludeALD && exist(dlyCache, 'file') == 2
+	Dz = load(dlyCache, 'G', 'DSnames');
+	G = [G4; {Dz.G{1, 1}, Dz.G{1, 2}, Dz.G{1, 3}, Dz.G{1, 4}}];
+	names = [names4; "ALD"];
+end
 nDS = numel(names);
 
-rowColor = [TransferLearning.ColorA; TransferLearning.TransferColor; ...
-	TransferLearning.ColorB; TransferLearning.NaiveColor; [0.13 0.52 0.60]];
+%类里已无 ColorA/TransferColor/ColorB/NaiveColor，改用本地 RGB（0-1）
+rowColor = [243 139 168; 203 166 247; 245 194 231; 148 226 213; 33 133 153] / 255;
 iALB = find(names == "ALB", 1);
 
 %% ---------- 每队列×阶段：群体轨迹（细胞加权）+ 每鼠轨迹 ----------
