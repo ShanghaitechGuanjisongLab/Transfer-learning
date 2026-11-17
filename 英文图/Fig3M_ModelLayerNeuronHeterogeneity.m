@@ -1,6 +1,6 @@
-% Fig2W model learning-process heterogeneity by layer and neuron type.
+% 英文图3M：TH抑制模型的分层与神经元类型异质性（原英文图2W）。
 
-svgName = 'English_Fig2W_ModelLayerNeuronTypeHeterogeneityBars.svg';
+svgName = 'English_Fig3M_ModelLayerNeuronTypeHeterogeneityBars.svg';
 iEnsureTransferLearningProject();
 
 Fig5556Data = TransferLearning.LoadRnnFigureData();
@@ -12,10 +12,10 @@ Heterogeneity.THInhibited = Fig5556Data.Heterogeneity.THOff;
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig2W_ModelLayerNeuronTypeHeterogeneity', Heterogeneity);
-assignin('base', 'Fig2W_ModelLayerNeuronTypeRunInfo', RunInfo);
-assignin('base', 'Fig2W_ModelLayerNeuronTypeSummary', SummaryTable);
-assignin('base', 'Fig2W_ModelLayerNeuronTypeSvgPath', svgPath);
+assignin('base', 'Fig3M_ModelLayerNeuronTypeHeterogeneity', Heterogeneity);
+assignin('base', 'Fig3M_ModelLayerNeuronTypeRunInfo', RunInfo);
+assignin('base', 'Fig3M_ModelLayerNeuronTypeSummary', SummaryTable);
+assignin('base', 'Fig3M_ModelLayerNeuronTypeSvgPath', svgPath);
 
 function iEnsureTransferLearningProject()
 if ~exist('TransferLearning', 'class')
@@ -36,7 +36,7 @@ groupFields = ["Normal", "THInhibited"];
 groupLabels = ["Normal", "TH inhibited"];
 groupColors = [TransferLearning.Color12h / 255; TransferLearning.ColorTH / 255];
 
-fig = figure('Color', 'w', 'Name', 'Fig2W layer and neuron type heterogeneity bars');
+fig = figure('Color', 'w', 'Name', 'Fig3M layer and neuron type heterogeneity bars');
 fig.Units = 'centimeters';
 fig.Position(3:4) = [9, 8];
 fig.PaperUnits = 'centimeters';
