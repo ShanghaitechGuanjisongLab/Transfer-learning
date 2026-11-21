@@ -4,7 +4,7 @@ if ~exist('TransferLearning', 'class')
 	matlab.project.loadProject(fullfile(ThisDir, '..', 'Transferlearning.prj'));
 end
 ModelData = TransferLearning.LoadRnnFigureData();
-Colors = [TransferLearning.CurveNaive; TransferLearning.Curve12h] / 255;
+Colors = [TransferLearning.ColorNaive; TransferLearning.Color12h] / 255;
 [Figure, Stats] = TransferLearning.PlotRnnLearningCurve(ModelData.Performance.Naive, ModelData.Performance.Transfer, ModelData.Sigmoid.Fig54C, ["Naive", "Transfer"], Colors);
 Figure.Name = 'English Fig3I model Naive Transfer learning';
 SvgPath = TransferLearning.ExportStandardFigure(Figure, 2, 'English_Fig3I_ModelNaiveTransferLearningCurve.svg');

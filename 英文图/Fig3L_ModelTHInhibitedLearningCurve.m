@@ -4,7 +4,7 @@ if ~exist('TransferLearning', 'class')
 	matlab.project.loadProject(fullfile(ThisDir, '..', 'Transferlearning.prj'));
 end
 ModelData = TransferLearning.LoadRnnFigureData();
-Colors = [TransferLearning.Curve12h; TransferLearning.CurveTH] / 255;
+Colors = [TransferLearning.Color12h; TransferLearning.ColorTH] / 255;
 [Figure, Stats] = TransferLearning.PlotRnnLearningCurve(ModelData.Performance.Transfer, ModelData.Performance.THOff, ModelData.Sigmoid.Fig383D, ["Transfer", "TH inhibited"], Colors);
 Figure.Name = 'English Fig3L model TH inhibited learning';
 SvgPath = TransferLearning.ExportStandardFigure(Figure, 2, 'English_Fig3L_ModelTHInhibitedLearningCurve.svg');
