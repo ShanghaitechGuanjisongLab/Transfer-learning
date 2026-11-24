@@ -1,6 +1,6 @@
-% Fig2Q model first formal training unit L5 response heatmap.
+% 英文图3J：首个正式训练单元的L5响应热图（原英文图2Q）。
 
-svgName = 'English_Fig2Q_ModelFirstFormalUnitDecisionHeatmap.svg';
+svgName = 'English_Fig3J_ModelFirstFormalUnitDecisionHeatmap.svg';
 if ~exist('TransferLearning', 'class')
 	thisFile = mfilename('fullpath');
 	thisDir = fileparts(thisFile);
@@ -16,6 +16,7 @@ Params = Fig5556Data.Params;
 Cond = Fig5556Data.Cond;
 FormalRunInfo = Fig5556Data.HeatmapRunInfo;
 
+% 缓存名沿用原Fig2Q前缀，避免已有缓存失效触发重算。
 CacheFile = TransferLearning.CachePath('Fig2Q_ModelHeatmapData.mat');
 if isfile(CacheFile)
 	Cached = load(CacheFile, 'HeatmapData', 'RunInfo', 'Params');
@@ -44,10 +45,10 @@ end
 svgPath = TransferLearning.ExportStandardFigure(fig, 2, svgName);
 fprintf('Wrote: %s\n', svgPath);
 
-assignin('base', 'Fig2Q_ModelDecisionHeatmapData', HeatmapData);
-assignin('base', 'Fig2Q_ModelDecisionHeatmapRunInfo', RunInfo);
-assignin('base', 'Fig2Q_ModelDecisionHeatmapPlotData', PlotData);
-assignin('base', 'Fig2Q_ModelDecisionHeatmapSvgPath', svgPath);
+assignin('base', 'Fig3J_ModelDecisionHeatmapData', HeatmapData);
+assignin('base', 'Fig3J_ModelDecisionHeatmapRunInfo', RunInfo);
+assignin('base', 'Fig3J_ModelDecisionHeatmapPlotData', PlotData);
+assignin('base', 'Fig3J_ModelDecisionHeatmapSvgPath', svgPath);
 
 function HeatmapData = iBuildThreeColumnFullCellHeatmapData(PretrainFullCellHeatmapData, FormalFullCellHeatmapData)
 HeatmapData = FormalFullCellHeatmapData;

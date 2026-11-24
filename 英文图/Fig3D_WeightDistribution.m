@@ -74,17 +74,14 @@ SvgPath = TransferLearning.ExportStandardFigure(Fig, 2, 'English_Fig3D_WeightDis
 fprintf('3D细胞：总计%d，base %d，cued %d，未加权零系数%d。\n', TotalCells, numel(WBase), numel(WCued), NZero);
 
 %% 插图
-FigInset = figure('Color', 'none', 'Name', '英文图3D插图：逐鼠base/cued平均绝对cue权重');
+FigInset = figure;
 FigInset.Units = 'centimeters';
 FigInset.Position(3:4) = [4, 4];
-FigInset.PaperUnits = 'centimeters';
-FigInset.PaperSize = [4, 4];
-FigInset.PaperPositionMode = 'auto';
 DataCell = {double(PerMouseBase(:)), double(PerMouseCued(:))};
 CompareGroup = table([1 2], 'VariableNames', {'GroupPair'});
 [~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataCell, UniExp.Flags.empty, CompareGroup, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 AxInset = gca;
-set(AxInset, 'XTick', [1, 2], 'XTickLabel', {'base', 'cued'});
+set(AxInset, 'XTick', [1, 2], 'XTickLabel', {'    base', '    cued'});
 ylabel(AxInset, 'Mean |w|');
 if isscalar(Bars)
 	Bars.FaceColor = 'flat';
@@ -134,9 +131,4 @@ end
 box(AxInset, 'off');
 AxInset.Color = 'none';
 legend(AxInset, 'off');
-if isprop(AxInset, 'Toolbar') && ~isempty(AxInset.Toolbar)
-	AxInset.Toolbar.Visible = 'off';
-end
-SvgInset = TransferLearning.ExportStandardFigureTransparent(FigInset, 1, 'English_Fig3D_PerMouseMeanWeight_Inset.svg');
-Fig3D_WeightStats = struct('WBase', WBase, 'WCued', WCued, 'TotalCells', TotalCells, 'NZero', NZero, 'Mice', Mice, 'PairedMice', PairedNames, 'PerMouseBase', PerMouseBase, 'PerMouseCued', PerMouseCued, 'PPaired', PPaired, 'Edges', Edges, 'CountsBase', CountsBase, 'CountsCued', CountsCued, 'SourceCache', CueData.SourceCache, 'WeightType', CueData.WeightType, 'Figure', Fig, 'InsetFigure', FigInset, 'Axes', AxMain, 'InsetAxes', AxInset, 'InsetOptional', Optional, 'SvgPath', SvgPath, 'SvgInset', SvgInset);
-assignin('base', 'Fig3D_WeightStats', Fig3D_WeightStats);
+SvgInset = TransferLearning.ExportStandardFigureTransparent(FigInset, 2, 'English_Fig3D_PerMouseMeanWeight_Inset.svg');

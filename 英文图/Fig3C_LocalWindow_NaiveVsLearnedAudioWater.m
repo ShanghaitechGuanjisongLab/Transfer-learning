@@ -81,7 +81,7 @@ ColorTable = array2table(Colors, 'VariableNames', {'R', 'G', 'B'}, 'RowNames', c
 %% 
 Fig = figure('Color', 'w', 'Name', '英文图3C：两种训练在Learned及12 h测试中的解码差值');
 Fig.Units = 'centimeters';
-Fig.Position(3:4) = [6, 8];
+Fig.Position(3:4) = [6, 11];
 Ax = gca;
 [~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataTable, CompareGroup, ColorTable, Ax, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 StyleBars(Ax, Bars, ErrorBars, Colors);

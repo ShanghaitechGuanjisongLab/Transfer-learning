@@ -38,33 +38,8 @@ classdef(Abstract)TransferLearning
 		ColorAudio=[137, 220, 235];%#89DCEB Sky    H189 L0.73 声音
 		ColorLight=[249, 226, 175];%#F9E2AF Yellow H41 L0.83 光
 		ColorcFos=[180, 190, 254];%#B4BEFE Lavender H232 L0.85 cFos
-		%Codex CLI 默认主题 = Catppuccin，取自上游 palette.json 的 accent，按官方 order
-		%order: Pink/Mauve/Red/Maroon/Peach/Yellow/Green/Teal/Sky/Sapphire/Blue/Lavender
-		%已去掉 Rosewater 与 Flamingo：前者两组中都最淡，后者与 Rosewater/Pink 难以区分
-		%深色背景（Codex 默认）用 Mocha
-		CodexPalette=[245, 194, 231; 203, 166, 247; 243, 139, 168; ...
-			235, 160, 172; 250, 179, 135; 249, 226, 175; 166, 227, 161; 148, 226, 213; ...
-			137, 220, 235; 116, 199, 236; 137, 180, 250; 180, 190, 254];
-		%浅色背景（白底论文图）用 Latte，同上顺序
-		CodexPaletteLight=[234, 118, 203; 136, 57, 239; 210, 15, 57; ...
-			230, 69, 83; 254, 100, 11; 223, 142, 29; 64, 160, 43; 23, 146, 153; ...
-			4, 165, 229; 32, 159, 181; 30, 102, 245; 114, 135, 253];
 	end
 	methods(Static)
-		function Clear()
-			clearAllMemoizedCaches;
-			clear TransferLearning;
-		end
-		%曲线 / 阴影带用色：组别主色向黑混 35%（×0.65），保证浅色在白色背景上可读；
-		%bar 图仍用 Color* 原色。派生色自动跟随主色，不需要手工维护。
-		%例外：Pink(#F5C2E7) 饱和度只有 0.21，×0.65 后变成灰紫，与曲线版 Red 几乎同色，
-		%因此 7d 的曲线色不用比例压暗，而是保持同一色相(316°)把饱和度提到 0.50 → #D96CBC。
-		%注：故意用静态方法而不是 Constant 属性，以避免类提前载入
-		function C=CurveNaive(), C=round(TransferLearning.ColorNaive*0.65); end
-		function C=CurveLearned(), C=round(TransferLearning.ColorLearned*0.65); end
-		function C=Curve12h(), C=round(TransferLearning.Color12h*0.65); end
-		function C=Curve7d(), C=[217, 108, 188]; end%#D96CBC 深品红，与 CurveNaive 区分
-		function C=CurveTH(), C=round(TransferLearning.ColorTH*0.65); end
 		function MS=MeanSem(Data,ReduceDimension,ConcatDimension)
 			[Mean,Sem]=MATLAB.DataFun.MeanSem(Data,ReduceDimension);
 			MS=cat(ConcatDimension,Mean,Sem);

@@ -45,3 +45,4 @@ resources/c*
 **/Thumbs.db
 
 *.csv
+**/_*
