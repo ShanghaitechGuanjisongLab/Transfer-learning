@@ -1,4 +1,4 @@
-% Fig1 神经反应热图 2×3（仅保留 Learned 阶段活跃细胞）
+% Fig1E 神经反应热图 2×3（仅保留 Learned 阶段活跃细胞）
 %
 %  行 1  12 h : TransferLearning.AudioLightBaseline（11 只）
 %  行 2  7 d  : TransferLearning.Vacation7        （6 只）
@@ -26,8 +26,7 @@ end
 
 %% 参数
 kSigma = 3;        %活跃阈值：baseline mean + kSigma * baseline SD
-climZ  = 3;        %色标固定 ±climZ（对称）——数据 |z| 中位数 0.26、p95≈1.85、p99≈6.7、max≈55，
-                   % 用 ±2 会把 4.5% 的点饱和掉，颜色几乎分不出层次
+%色标上限在数据算完后设为 sqrt(max|z|)（见下方 cMax）
 dsList   = {TransferLearning.AudioLightBaseline(), TransferLearning.Vacation7()};
 phaseCol = ["Naive", "Learned", "Transfer"];
 stimCol  = ["AudioOnly", "AudioWater", "LightWater"];
@@ -130,30 +129,38 @@ blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
 vv = cellfun(@(x) x(:), M, 'UniformOutput', false);
 allV = vertcat(vv{:});
 aAll = abs(allV(isfinite(allV)));
-cMax = climZ;
-fprintf('色标范围 ±%.2f（固定）；|z|>%.0f 占 %.2f%%（p95=%.2f, p99=%.2f, max=%.1f）\n', ...
-	cMax, cMax, 100 * mean(aAll > cMax), prctile(aAll, 95), prctile(aAll, 99), max(aAll));
+cMax = sqrt(max(aAll));          % 色标上限 = |z| 最大值的平方根
+fprintf('色标范围 ±%.2f（= sqrt(max|z|)=sqrt(%.1f)）；|z|>cMax 占 %.2f%%（p95=%.2f, p99=%.2f, max=%.1f）\n', ...
+	cMax, max(aAll), 100 * mean(aAll > cMax), prctile(aAll, 95), prctile(aAll, 99), max(aAll));
 
 %% 画图
 figW = 9.0; figH = 9.0; figScale = 2;   % 成品 90 × 90 mm（画布 ×figScale，字号 6 pt）
 f = figure('Color', 'w', 'Name', 'Fig1 learned-active response heatmap 2x3');
 f.Units = 'centimeters';
 f.Position(3:4) = [figW figH] * figScale;
-t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'loose');
 
-for r = 1:2
+		for r = 1:2
 	for c = 1:3
 		ax = nexttile(t, (r - 1) * 3 + c);
 		imagesc(ax, xsShow, 1:size(M{r, c}, 1), M{r, c});
+		hold(ax, 'on');                 % 否则后面的 plot/text 会替换掉热图
 		axis(ax, 'xy');
-		%两条参考虚线：0 s（线索开始）用点线，1 s 用短线
-		xline(ax, 0, ':', 'Color', [0 0 0], 'LineWidth', 0.5, 'HandleVisibility', 'off');
-		xline(ax, 1, '--', 'Color', [0 0 0], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+		nCellC = size(M{r, c}, 1);
+		%两条参考虚线：0 s（线索开始）用点线，1 s 用短线（只跨数据行，不进 emoji 带）
+		plot(ax, [0 0], [0.5, nCellC + 0.5], ':', 'Color', [0 0 0], 'LineWidth', 0.5, ...
+			'HandleVisibility', 'off');
+		plot(ax, [1 1], [0.5, nCellC + 0.5], '--', 'Color', [0 0 0], 'LineWidth', 0.5, ...
+			'HandleVisibility', 'off');
 		clim(ax, [-cMax cMax]);
 		colormap(ax, blueWhiteRed);
 		ax.XLim = [xsShow(1) xsShow(end)];
 		if r == 2
-			xlabel(ax, 'Time (s)');
+			if c == 2                     % 三列共用同一个 Time (s)，只保留中间一条
+				xlabel(ax, 'Time (s)');
+				ylX = ylim(ax);
+				ax.XLabel.Position(2) = ylX(1) - 0.23 * (ylX(2) - ylX(1));   % 把轴标题压低，给 emoji 让位
+			end
 		else
 			ax.XTickLabel = [];
 		end
@@ -166,7 +173,22 @@ for r = 1:2
 		ax.XTick = [-1 0 1 2];
 		ax.XTickLabelRotation = 0;
 		box(ax, 'off');
-		axForCb = ax;	end
+
+		% 下排：emoji 放在刻度数字与 'Time (s)' 之间（轴外，Clipping off）
+		if r == 2
+			yl = ylim(ax);
+			yEmo = yl(1) - 0.15 * (yl(2) - yl(1));
+			cueEmoji = ["🔊", "🔊", "💡"];      % 列 1/2 = 声线索，列 3 = 光线索
+			text(ax, 0, yEmo, cueEmoji(c), 'FontName', 'Segoe UI Emoji', 'FontSize', 6, ...
+				'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Clipping', 'off');
+			if c > 1                            % 列 1 是 audio only，没有水
+				text(ax, 1, yEmo, "💧", 'FontName', 'Segoe UI Emoji', 'FontSize', 6, ...
+					'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Clipping', 'off');
+			end
+		end
+
+		axForCb = ax;
+	end
 end
 
 cb = colorbar(axForCb);
@@ -178,5 +200,5 @@ f.PaperUnits = 'centimeters';
 f.PaperSize = [figW figH] * figScale;
 f.PaperPosition = [0 0 figW figH] * figScale;
 f.PaperPositionMode = 'manual';
-p = TransferLearning.ExportStandardFigure(f, figScale, 'English_Fig1_ResponseHeatmap_2x3.svg');
+p = TransferLearning.ExportStandardFigure(f, figScale, 'English_Fig1E_ResponseHeatmap_2x3.svg');
 fprintf('\nWrote: %s\n', p);

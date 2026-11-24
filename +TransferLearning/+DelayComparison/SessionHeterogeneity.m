@@ -3,7 +3,7 @@ function T = SessionHeterogeneity(DS, Sess, Stimulus, TimeSec, Layer)
 %   T = SessionHeterogeneity(DS, Sess, Stimulus, TimeSec, Layer) pools all
 %   sessions of Sess (Mouse, DateTime), takes each cell's median response at
 %   TimeSec per session, averages those over sessions, and returns the SD
-%   across cells of one ZLayer. Same definition as Fig1H_SlopeVsHeterogeneity.
+%   across cells of one ZLayer. Same definition as Fig_SlopeVsHeterogeneity.
 arguments
 	DS
 	Sess table

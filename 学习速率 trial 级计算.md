@@ -224,7 +224,7 @@ LS 把每个 session 均值当**等方差**连续观测：接近天花板（0.9�
 | `+TransferLearning/+DelayComparison/FitSigmoidGroup.m` | 单条曲线的 LS 拟合 |
 | `英文图/AnalyzePenaltyAblation.m` | 惩罚项消融（full / noJeff / noPrior / MLE + LS 对照） |
 | `英文图/AnalyzePenalizedSlopeVsHeterogeneity.m` | 斜率 × 响应异质性，三口径并列（LS / trial MLE / trial 惩罚） |
-| `英文图/Fig1C_PenalizedSigmoidSlopeHistogram.m` | 斜率分布直方图（惩罚版） |
+| `英文图/Fig_PenalizedSigmoidSlopeHistogram.m` | 斜率分布直方图（惩罚版） |
 | `英文图/Fig4D_SigmoidSlopeVsHeterogeneity.m` | 12 h 队列斜率 vs 异质性散点（会话级 LS） |
 
 ---
@@ -233,6 +233,6 @@ LS 把每个 session 均值当**等方差**连续观测：接近天花板（0.9�
 
 - [ ] 主分析是否正式切到 **trial MLE**（去掉两个惩罚项）—— 结论不变，但方法学更简单
 - [ ] `Fig4D` 是否按 trial MLE 重出（斜率范围 0.79–3.56，图形基本不变）
-- [ ] `Fig1_MetricBars_ThreeGroups.m` / `Fig1_MetricBars_Pairwise.m` 的 slope 子图是否换成 trial 级
+- [ ] `Fig_MetricBars_ThreeGroups.m` / `Fig_MetricBars_Pairwise.m` 的 slope 子图是否换成 trial 级
 - [ ] Naive 组是否剔除 2025 批异常鼠（`yqn1013` / `yqn1014`；后者仅 2 个点、首点 0.87，LS 下 k=10.8 为退化解）
 - [ ] 将 5 条参考文献计入 `refs.bib`

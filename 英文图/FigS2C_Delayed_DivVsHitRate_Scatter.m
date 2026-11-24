@@ -1,5 +1,5 @@
 % English FigS2C: first-block hit rate vs divergence（延迟任务版）——模仿英文图1F
-% （英文图/Fig1F_DivVsHitRate_Scatter.m），Naive/Transfer 两组散点 + 合并拟合线。
+% （英文图/Fig_DivVsHitRate_Scatter.m），Naive/Transfer 两组散点 + 合并拟合线。
 %
 % 数据源（均取每鼠首个光水训练会话，只取 LightLearnWater 回合）：
 %   Naive    = TransferLearning.LADelayed（有延迟光声钙成像，光水转声水，延迟任务）
@@ -110,7 +110,7 @@ lgd.Box = 'off';
 
 iText(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
-title('💡💧')
+title('')
 
 fprintf('\n=== FigS2C (delayed) first-block hit rate vs divergence (cue +1.5 s, LightLearnWater only) ===\n');
 disp(Data);

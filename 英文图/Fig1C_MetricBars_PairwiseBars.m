@@ -1,4 +1,4 @@
-% Fig1_MetricBars_PairwiseBars.m —— 1C：按「指标」分组输出
+% Fig1C_MetricBars_PairwiseBars.m —— 1C：按「指标」分组输出
 %
 %   A 图（40 × 80 mm）：每个指标一张，Naive vs 12h（上）与 Naive vs 7d（下）上下叠放，共享 y 轴范围与居中 y 轴标题
 %   B 图（30 × 40 mm）：12h vs 7d 单图（每个指标一张）
@@ -7,8 +7,8 @@
 % 样式：bar 无边框 + 单向手绘误差棒（压在散点之上）+ 逐鼠散点（点色 = 柱色，细描边）
 %       + 括号上的数值 p（不显著写 n.s.）。
 %
-% 输出：English_Fig1_<Metric>_NaiveVs12h_NaiveVs7d.svg
-%       English_Fig1_<Metric>_12hVs7d.svg
+% 输出：English_Fig1C_<Metric>_NaiveVs12h_NaiveVs7d.svg
+%       English_Fig1C_<Metric>_12hVs7d.svg
 
 clear variables; close all;
 cd('d:\git\Transfer-Learning');
@@ -62,7 +62,7 @@ for m = 1:3
 	for j = 1:2
 		yBr = max(yBr, iBracketY(sets{j}{1}, sets{j}{2}));
 	end
-	outA = sprintf('English_Fig1_%s_NaiveVs12h_NaiveVs7d', metricTag(m));
+	outA = sprintf('English_Fig1C_%s_NaiveVs12h_NaiveVs7d', metricTag(m));
 	f = iNewFig(aW, aH, outA);
 	hT = gobjects(1, 2);
 	for j = 1:2
@@ -84,7 +84,7 @@ for m = 1:3
 	close(f);
 
 	% ---------- B：12h vs 7d（单图） ----------
-	outB = sprintf('English_Fig1_%s_12hVs7d', metricTag(m));
+	outB = sprintf('English_Fig1C_%s_12hVs7d', metricTag(m));
 	f = iNewFig(bW, bH, outB);
 	axm = axes(f, 'Position', [0.240 0.200 0.700 0.660]);
 	iMetricBar(axm, v12, v7, groupColors([2 3], :), gLabel([2 3]), pv127, ...

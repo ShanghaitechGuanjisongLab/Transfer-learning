@@ -10,7 +10,7 @@
 %   对该鼠的 block 序号 x（每鼠按 DateTime 排序）与命中率 y 拟合
 %       y = (1) / (1 + exp(-slope * (x - midpoint)))
 %   下渐近线固定 0、上渐近线固定 1，slope / midpoint 自由（fminsearch，初值同
-%   Fig1B_LearningCurve_Sigmoid）；slope 即学习速度（单位 1/block）。
+%   Fig_LearningCurve_Sigmoid）；slope 即学习速度（单位 1/block）。
 %   拟合要求：≥2 个 block 且命中率不是常数，否则该鼠不纳入。
 %   组统计：均值±SEM、中位数[Q1, Q3]；组间比较用 Mann-Whitney U（ranksum，双侧）。
 %

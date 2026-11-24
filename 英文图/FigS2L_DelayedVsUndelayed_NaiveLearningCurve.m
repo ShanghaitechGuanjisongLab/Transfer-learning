@@ -3,7 +3,7 @@
 % - Undelayed（实线）：英文图/FigS1D_UndelayedLearningCurveAndFirstBlock.m 的 Naive 口径
 %   （LightAudioBaseline + LAPureBehavior + LAInterspersed；LAInterspersed 中 Naive 期
 %   混入 AudioWater 的鼠整只剔除）。
-% - Delayed（虚线）：英文图/Fig1B_LearningCurve_Sigmoid.m 的 LA Light 口径
+% - Delayed（虚线）：英文图/Fig_LearningCurve_Sigmoid.m 的 LA Light 口径
 %   （L2A_L_0928.mat：cue 1 s，给水在 cue + 2.5 s）。
 %
 % 口径：每鼠每 session 一个 block，横轴为每鼠 block 序号，纵轴为光水命中率；

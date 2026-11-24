@@ -1,7 +1,7 @@
 function P = BehaviorDataPath(Name)
 %BEHAVIORDATAPATH Full path of the behaviour-only transfer-learning datasets.
 %   Name is "L2A_L" (light->water naive, undelayed) or "A2L_L" (audio->light
-%   transfer, undelayed), as used by Fig1B_LearningCurve_Sigmoid.
+%   transfer, undelayed), as used by Fig_LearningCurve_Sigmoid.
 arguments
 	Name (1,1) string {mustBeMember(Name, ["L2A_L","A2L_L"])}
 end

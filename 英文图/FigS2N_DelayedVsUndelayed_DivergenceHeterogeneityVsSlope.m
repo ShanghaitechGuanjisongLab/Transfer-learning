@@ -2,7 +2,7 @@
 %
 % 左列 = 原数据（Undelayed）：naive = LightAudioBaseline + LAInterspersed（Naive 期混入
 % AudioWater 的鼠整只剔除），transfer = AudioLightBaseline；口径同
-% 英文图/Fig1G_DivergenceVsSlope_Scatter.m 与 英文图/Fig1H_SlopeVsHeterogeneity.m。
+% 英文图/Fig_DivergenceVsSlope_Scatter.m 与 英文图/Fig_SlopeVsHeterogeneity.m。
 % 右列 = 延迟数据（Delayed）：TransferLearning.ALDelayed 的光水学习（迁移阶段）。LADelayed
 % （延迟 naive）每鼠只有 1 个 session，无法拟合 sigmoid slope，故不进入右列。
 % 两组合并后的版本见 英文图/FigS2O_AllGroupsMerged_DivergenceHeterogeneityVsSlope.m。

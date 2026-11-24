@@ -1,5 +1,5 @@
 % English FigS3B: sigmoid learning slope vs response heterogeneity on ALDelayed
-% （英文图/Fig1H_SlopeVsHeterogeneity 的 Delayed 版；用户裁定只用 ALDelayed 单组，
+% （英文图/Fig_SlopeVsHeterogeneity 的 Delayed 版；用户裁定只用 ALDelayed 单组，
 % 不画 Naive/Transfer 对比——LADelayed 目前仅 1 个光水会话拟合不出学习斜率）。
 %
 % Slope: 每鼠全部 LightLearnWater 会话 block hit rate 的 sigmoid 拟合（同 Fig1H/Fig1G 管线，

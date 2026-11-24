@@ -1,6 +1,6 @@
 % English Fig4G: TH 抑制 vs 12 h 对照，三个行为指标的柱图（first block / blocks to 50% / sigmoid slope）
 %
-% 版式照 英文图/Fig1_MetricBars_Pairwise.m：每指标一张 18×40 mm 小图、6 pt、
+% 版式照 英文图/Fig_MetricBars_Pairwise.m：每指标一张 18×40 mm 小图、6 pt、
 %   柱宽 3 mm、单向手绘误差棒、PLine 星号置于柱顶。
 %
 % 数据口径与 英文图/Fig4E_THInhibitVs12h_PenalizedSigmoidSlopeHistogram.m 完全一致：

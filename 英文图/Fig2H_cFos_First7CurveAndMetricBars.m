@@ -5,7 +5,7 @@
 %
 % 说明（为什么另起一个脚本）：
 %   Fig2H_cFosInhibitVsControl_LearningCurve.m 画的是【全部 block】+ 阴影带；
-%   这里按 Fig1_ThreeCohorts_LearningCurve 的口径，改成【只展示 1–7 个 block】的
+%   这里按 Fig_ThreeCohorts_LearningCurve 的口径，改成【只展示 1–7 个 block】的
 %   实心点 + 对称误差棒 + 连线（不画拟合、不加阴影带）。
 %
 % 配色（最新 Catppuccin）：

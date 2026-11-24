@@ -3,7 +3,7 @@
 % 组别：
 % - Undelayed（实线）：英文图/FigS1D_UndelayedLearningCurveAndFirstBlock.m 的 Transfer 口径
 %   （AudioLightBaseline + ALPureBehavior）。
-% - Delayed（虚线）：英文图/Fig1B_LearningCurve_Sigmoid.m 的 AL Light 口径
+% - Delayed（虚线）：英文图/Fig_LearningCurve_Sigmoid.m 的 AL Light 口径
 %   （A2L_L_0928.mat：cue 1 s，给水在 cue + 2.5 s）。
 %
 % 口径：每鼠每 session 一个 block（同一天多个 block 取会话均值），横轴为每鼠 block 序号；

@@ -2,8 +2,8 @@
 %
 % 布局：
 %   中部: E 全细胞散点 (AW vs LW z-score@1s, 弱响应细胞)
-%   下方: F1 按🔊💧正/负分组的💡💧 z-score (对应E的x轴分割)
-%   左侧: F2 按💡💧正/负分组的🔊💧 z-score (对应E的y轴分割, 水平条形图)
+%   下方: F1 按正/负分组的 z-score (对应E的x轴分割)
+%   左侧: F2 按正/负分组的 z-score (对应E的y轴分割, 水平条形图)
 %
 % Output: SVG to \\Data-Server-2\个人数据\张天夫\202602
 %
@@ -103,7 +103,7 @@ for mi = 1:nMice
 	allAW.Append(awMatched(modMask));
 	allLW.Append(lwMatched(modMask));
 
-	% F1: split by 🔊💧 sign -> 💡💧
+	% F1: split by  sign -> 
 	awPos = modMask & awMatched > 0;
 	awNeg = modMask & awMatched < 0;
 	if sum(awPos) >= 3 && sum(awNeg) >= 3
@@ -111,7 +111,7 @@ for mi = 1:nMice
 		meanLW_AWneg(mi) = mean(lwMatched(awNeg));
 	end
 
-	% F2: split by 💡💧 sign -> 🔊💧
+	% F2: split by  sign -> 
 	lwPos = modMask & lwMatched > 0;
 	lwNeg = modMask & lwMatched < 0;
 	if sum(lwPos) >= 3 && sum(lwNeg) >= 3
@@ -170,8 +170,8 @@ hold(axE, 'off');
 xlim(axE, [-1.3 1.3]); ylim(axE, [-1.3 1.3]);
 axE.FontSize = fs;
 axE.XTick = [-1 0 1]; axE.YTick = [-1 0 1];
-xlh = xlabel(axE, '🔊💧 z-score');
-ylh = ylabel(axE, '💡💧 z-score');
+xlh = xlabel(axE, ' z-score');
+ylh = ylabel(axE, ' z-score');
 box(axE, 'off');
 
 % Shift labels to center across scatter + gap + bar panels
@@ -190,7 +190,7 @@ end
 text(axE, 0.03, 0.97, pStr, 'Units', 'normalized', 'FontSize', fs, ...
 	'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 
-% ===== Top: bar (F1: split by 🔊💧 sign -> 💡💧 z-score) =====
+% ===== Top: bar (F1: split by  sign ->  z-score) =====
 axT = axes(f, 'Position', [sX sY+sH+G sW bhT]);
 
 valsN1 = meanLW_AWneg(vPN1); valsP1 = meanLW_AWpos(vPN1);
@@ -226,7 +226,7 @@ axT.XAxisLocation = 'bottom';  % +/- on scatter side (bottom = closer to scatter
 axT.YAxisLocation = 'left';
 box(axT, 'off');
 
-% ===== Right: barh (F2: split by 💡💧 sign -> 🔊💧 z-score) =====
+% ===== Right: barh (F2: split by  sign ->  z-score) =====
 axR = axes(f, 'Position', [sX+sW+G sY bwR sH]);
 
 valsN2 = meanAW_LWneg(vPN2); valsP2 = meanAW_LWpos(vPN2);

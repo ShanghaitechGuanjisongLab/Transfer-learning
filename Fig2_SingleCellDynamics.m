@@ -6,7 +6,7 @@
 %   7dayTransfer AW 学会 → 7 d → LW   Vacation7(Transfer→Final)
 %
 % A  旧任务（AW）学会后，cue +1 s 的单细胞响应分布（rising / suppressed 两类）
-% B  首个新任务（LW）block 的群体轨迹 PCA —— 待接入 Fig1D_DivergencePCA_L23 的轨迹计算
+% B  首个新任务（LW）block 的群体轨迹 PCA —— 待接入 Fig_DivergencePCA_L23 的轨迹计算
 % C  首个 LW block 的试次间相对散度（L2/3）
 % D  同上（L5，阴性对照）
 % E  散度（L2/3）vs 首 block 命中率
@@ -136,7 +136,7 @@ text(axB, 0.5, 0.62, 'First light-water block, PCA trajectory', 'Units', 'normal
 	'HorizontalAlignment', 'center', 'FontSize', 8, 'FontWeight', 'bold');
 text(axB, 0.5, 0.40, {'naive: trajectories fan out','transfer: trajectories run parallel'}, ...
 	'Units', 'normalized', 'HorizontalAlignment', 'center', 'FontSize', 7, 'Color', [0.4 0.4 0.4]);
-text(axB, 0.5, 0.16, 'pending: Fig1D_DivergencePCA_L23 pipeline', 'Units', 'normalized', ...
+text(axB, 0.5, 0.16, 'pending: Fig_DivergencePCA_L23 pipeline', 'Units', 'normalized', ...
 	'HorizontalAlignment', 'center', 'FontSize', 7, 'Color', [0.6 0.6 0.6], 'Interpreter', 'none');
 title(axB, 'Population trajectory (planned)', 'FontWeight', 'normal', 'FontSize', 8);
 

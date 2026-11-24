@@ -5,7 +5,7 @@
 %   Undelayed cohorts follow the session definitions of
 %   English_FigS1D_UndelayedLearningCurve (imaging: LAB + LAPB + LAI for the
 %   naive stage, ALB + ALPB for the transfer stage).
-%   Delayed behaviour cohorts are the Fig1B_LearningCurve_Sigmoid data
+%   Delayed behaviour cohorts are the Fig_LearningCurve_Sigmoid data
 %   (L2A_L_0928 for the naive stage, A2L_L_0928 for the transfer stage:
 %   1 s cue with water at cue + 2.5 s).
 %   Delayed imaging cohorts are LADelayed (light->water, naive) and ALDelayed

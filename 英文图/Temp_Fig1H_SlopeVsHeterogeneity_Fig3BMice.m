@@ -1,9 +1,9 @@
-% Fig1H_SlopeVsHeterogeneity (formerly newSlopeVsHeterogeneity):
+% Fig_SlopeVsHeterogeneity (formerly newSlopeVsHeterogeneity):
 % Fig3C mice, Fig1B sigmoid slope, Fig3C heterogeneity
 
 outDirUNC = fullfile('\\Data-Server-2\个人数据\张天夫', char(datetime('now', 'Format', 'yyyyMM')));
-svgName = 'English_Fig1H_SlopeVsHeterogeneity.svg';
-scriptCopyName = 'Fig1H_SlopeVsHeterogeneity.m';
+svgName = 'English_Fig_SlopeVsHeterogeneity.svg';
+scriptCopyName = 'Fig_SlopeVsHeterogeneity.m';
 dataCsvName = 'newSlopeVsHeterogeneity_Data.csv';
 statsCsvName = 'newSlopeVsHeterogeneity_Stats.csv';
 naiveDataCsvName = 'newSlopeVsHeterogeneity_NaiveData.csv';

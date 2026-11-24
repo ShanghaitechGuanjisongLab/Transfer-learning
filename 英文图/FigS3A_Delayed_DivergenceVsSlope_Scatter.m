@@ -1,5 +1,5 @@
 % English FigS3A: per-mouse divergence vs sigmoid learning slope on ALDelayed
-% （英文图/Fig1G_DivergenceVsSlope_Scatter 的 Delayed 版；用户裁定只用 ALDelayed 单组，
+% （英文图/Fig_DivergenceVsSlope_Scatter 的 Delayed 版；用户裁定只用 ALDelayed 单组，
 % 不画 Naive/Transfer 对比——LADelayed 目前仅 1 个光水会话拟合不出学习斜率）。
 %
 % Divergence: 英文图/Fig1G 口径——每鼠首个 LightLearnWater 会话（transfer/光水学习首块；

@@ -1,5 +1,5 @@
 % 临时图（暂不赋予图号）：ALDelayed 光水 transfer 群体轨迹 PCA（仅 MOp2/3 细胞，单 tile）。
-% 模仿英文图1D（英文图/Fig1D_DivergencePCA_L23.m）的做法，但只画 transfer 一组：
+% 模仿英文图1D（英文图/Fig_DivergencePCA_L23.m）的做法，但只画 transfer 一组：
 % 数据源 TransferLearning.ALDelayed（有延迟不舔不给水钙成像，声水转光水，延迟任务）。
 % 该库无 Phase 列：transfer 会话 = 每鼠首个含 LightLearnWater 回合的 DateTime（等价 Transfer 首块），
 % 与英文图/ALDelayed_DivVsHitRate_Scatter.m 口径一致；本图用该会话全部光水回合

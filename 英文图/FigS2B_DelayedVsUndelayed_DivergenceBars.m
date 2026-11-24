@@ -1,10 +1,10 @@
 % FigS2B（英文图）：光/声两 tile 的逐鼠散度柱状图（2×1），中文图54B 的二维分组表条形样式
 % （+TransferLearning/PlotPreFormalConnectionWeightStdBars.m）+ 英文图1E 的散度口径
-% （英文图/Fig1E_LightWater_NaiveVsTransfer_DivByLayer.m）。
+% （英文图/Fig_LightWater_NaiveVsTransfer_DivByLayer.m）。
 %
 % 组覆盖与英文图/FigS2A_DelayedVsUndelayed_DivergencePCA_L23.m 完全一致的 8 组：
-%   上 tile = 光（💡）：💡💧Naive + 💡💧Transfer × {Undelayed, Delayed}；
-%   下 tile = 声（🔊）：🔊Naive + 🔊💧Learned × {Undelayed, Delayed}。
+%   上 tile = 光（）：Naive + Transfer × {Undelayed, Delayed}；
+%   下 tile = 声（）：Naive + Learned × {Undelayed, Delayed}。
 %   光-Undelayed 两组用英文图1D 口径（Naive = LightAudioBaseline+LAInterspersed 首个纯 LW
 %   Naive 会话，LAI 中 Naive 期出现过 AudioWater 的鼠整只排除；Transfer = AudioLightBaseline
 %   首个 Transfer LW 会话）；其余会话取法同 FigS2A（含 Undelayed 声侧只保留两阶段都有的鼠、
@@ -66,7 +66,7 @@ paradigmLabels = ["Undelayed", "Delayed"];
 stageLabels = {["Naive", "Transfer"], ["Naive", "Learned"]};   % {光 tile, 声 tile}
 stageColors = {[TransferLearning.NaiveColor; TransferLearning.TransferColor], ...
 	[TransferLearning.NaiveColor; TransferLearning.ColorB]};
-tileEmoji = ["💡", "🔊"];
+tileEmoji = ["", ""];
 tileOrder = [1, 2];   % 上=光，下=声
 % Spec{tile, stage, paradigm} = struct('Sess',…,'Stim',…,'IdxT',…)
 Spec = cell(2, 2, 2);

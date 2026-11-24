@@ -1,6 +1,6 @@
 % English FigS1J：声水（LAB 方向，光→声）行为学 —— 学习曲线 + 三指标柱图
 %
-% 会话口径与 英文图/Fig1L_AudioWater_NaiveVsTransfer_LearningCurve.m 完全一致：
+% 会话口径与 英文图/Fig_AudioWater_NaiveVsTransfer_LearningCurve.m 完全一致：
 %   Naive    = AudioLightBaseline（成像）+ ALPureBehavior（纯行为），Phase Naive→Learned
 %   Transfer = LightAudioBaseline（成像）+ LAPureBehavior（纯行为），Phase Transfer→Final
 %   只取 AudioWater 回合；每个 Mouse×DateTime 先算命中率，再跨鼠汇总。

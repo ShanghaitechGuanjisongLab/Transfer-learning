@@ -189,7 +189,7 @@ fitP = polyfit(xAll, yAll, 1);
 xFit = [min(xAll), max(xAll)];
 yFit = polyval(fitP, xFit);
 plot(ax, xFit, yFit, '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine');
-    ylabel(ax, '💡💧 first block hit rate');
+    ylabel(ax, ' first block hit rate');
     legendHandle = legend(ax, [hNaive, hTransfer], {'Naive', 'Transfer'}, 'Location', 'northoutside', 'Orientation', 'horizontal');
     legendHandle.FontSize = 12;
     legendHandle.Box = 'off';
@@ -225,7 +225,7 @@ plot(ax, xFit, yFit, '-', 'Color', 'k', 'Tag', 'TransferLearningSupplementalLine
    	rho = NaN;
    	pValue = NaN;
    end
-   ylabel(ax, 'Reactivation of 🔊 cells');
+   ylabel(ax, 'Reactivation of  cells');
    iSLabel(ax, 0.97, 0.97, rho, pValue);
 grid(ax, 'off');
 

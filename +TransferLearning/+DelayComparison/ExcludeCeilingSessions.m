@@ -1,6 +1,6 @@
 function T = ExcludeCeilingSessions(T)
 %EXCLUDECEILINGSESSIONS Drop training sessions from the first perfect session.
-%   Same rule as Fig1H_SlopeVsHeterogeneity: for each mouse keep the sessions
+%   Same rule as Fig_SlopeVsHeterogeneity: for each mouse keep the sessions
 %   before the first session whose hit rate reaches 1; mice whose first
 %   session is already perfect are dropped, as are mice left with fewer than
 %   two sessions.

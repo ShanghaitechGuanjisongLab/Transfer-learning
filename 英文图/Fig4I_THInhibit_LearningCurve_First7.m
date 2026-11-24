@@ -1,6 +1,6 @@
 % English Fig4I: TH 抑制组 vs 12 h 对照组 —— 光水学习曲线（只展示前 7 个 block）
 %
-% 版式照 英文图/Fig1_ThreeCohorts_LearningCurve.m / Fig2H_cFos_First7CurveAndMetricBars.m：
+% 版式照 英文图/Fig_ThreeCohorts_LearningCurve.m / Fig2H_cFos_First7CurveAndMetricBars.m：
 %   逐鼠逐 block 命中率 → 组均值 ± SEM，实心点 + 手绘对称误差棒 + 连线（不画拟合、不加阴影带），
 %   只展示 1–7 个 block；显著性用一条横线跨越 1–7，星号居中放在横线上方。
 %

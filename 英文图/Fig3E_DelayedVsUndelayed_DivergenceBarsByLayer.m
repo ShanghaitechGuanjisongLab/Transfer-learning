@@ -1,11 +1,11 @@
 % 英文图3E：2×2 逐鼠散度柱状图，把英文图S2B 按 MOp2/3 与 MOp5 拆开。
-% 行 = 层（上 = MOp2/3，下 = MOp5），列 = 模态（左 = 💡 光，右 = 🔊 声）。
+% 行 = 层（上 = MOp2/3，下 = MOp5），列 = 模态（左 =  光，右 =  声）。
 % 会话口径、回合集合、散度公式、时刻取法与 英文图/FigS2B_DelayedVsUndelayed_DivergenceBars.m 完全一致，
-% 仅把细胞集合分成 MOp2/3 与 MOp5 两层分别计算（分层实现同 英文图/Fig1E_LightWater_NaiveVsTransfer_DivByLayer.m）。
+% 仅把细胞集合分成 MOp2/3 与 MOp5 两层分别计算（分层实现同 英文图/Fig_LightWater_NaiveVsTransfer_DivByLayer.m）。
 %
 % 组覆盖（每 tile 内 X 轴 = 范式 Undelayed/Delayed，条形颜色 = 阶段）：
-%   光列：💡💧Naive（NaiveColor 紫）+ 💡💧Transfer（TransferColor 橙）× {Undelayed, Delayed}；
-%   声列：🔊Naive（NaiveColor 紫）+ 🔊💧Learned（ColorB 绿）× {Undelayed, Delayed}。
+%   光列：Naive（NaiveColor 紫）+ Transfer（TransferColor 橙）× {Undelayed, Delayed}；
+%   声列：Naive（NaiveColor 紫）+ Learned（ColorB 绿）× {Undelayed, Delayed}。
 % 散度：逐鼠逐组取该会话全部目标回合，QueryNTS ZScore（基线 1:24）构建 细胞×回合×时间 CTT，
 % 取指定时刻的 细胞×回合 矩阵 X，div = sqrt( sum(var(X,[],2)) / sum(mean(X,2).^2) )；
 % Delayed 取 +1.5 s，Undelayed 取 +1 s。每层独立计算，柱高 = 逐鼠均值 ± s.e.m.。
@@ -53,7 +53,7 @@ paradigmLabels = ["Undelayed", "Delayed"];
 stageLabels = {["Naive", "Transfer"], ["Naive", "Learned"]};   % {光, 声}
 stageColors = {[TransferLearning.NaiveColor; TransferLearning.TransferColor], ...
 	[TransferLearning.NaiveColor; TransferLearning.ColorB]};
-tileEmoji = ["💡", "🔊"];   % 列：左光右声
+tileEmoji = ["", ""];   % 列：左光右声
 layerLabels = ["MOp2/3", "MOp5"];   % 行：上 2/3 下 5
 Spec = cell(2, 2, 2);
 Spec{1, 1, 1} = struct('Sess', sessNU, 'Stim', "LightWater");

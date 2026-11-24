@@ -4,7 +4,7 @@ function Fit = FitSigmoidGroup(T, GroupName, LowerFixed)
 %   midpoint, with the upper asymptote fixed at 1 (spec of
 %   FigS1D_UndelayedLearningCurveAndFirstBlock and Fig1G).
 %   Fit = FitSigmoidGroup(T, GroupName, true) additionally fixes the lower
-%   asymptote at 0 (spec of Fig1B_LearningCurve_Sigmoid).
+%   asymptote at 0 (spec of Fig_LearningCurve_Sigmoid).
 arguments
 	T table
 	GroupName (1,1) string

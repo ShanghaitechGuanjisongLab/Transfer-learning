@@ -84,7 +84,7 @@ box(ax,'off');
 grid(ax,'off');
 ax.TickLabelInterpreter = 'none';
 ax.XTick = [0 1];
-ax.XTickLabel = {"🔊/💡", "💧"};
+ax.XTickLabel = {"/", ""};
 if isprop(ax.XAxis, 'FontName')
 	ax.XAxis.FontName = 'Segoe UI Emoji';
 end
@@ -95,10 +95,10 @@ ylabel(ax, 'z-score', 'FontSize', 12);
 
 xlabel(ax, 'Time (s)', 'FontSize', 12);
 
-labels = {'🔊', '💡 Hit', '💡 Miss'};
+labels = {'', ' Hit', ' Miss'};
 lgd = legend(Patches, labels, 'Location', MATLAB.Graphics.OptimizedLegendLocation(Patches), 'Box','off', 'FontSize', 12);
 lgd.FontName = 'Segoe UI Emoji';
-title('🔊💧 active cells', 'FontSize', 12, 'FontWeight', 'normal');
+title(' active cells', 'FontSize', 12, 'FontWeight', 'normal');
 
 allText = findall(f, 'Type', 'Text');
 for iText = 1:numel(allText)

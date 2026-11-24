@@ -1,6 +1,6 @@
 % English Fig1F mimic on ALDelayed: first-Light-block hit rate vs inter-trial divergence at cue +1.5 s.
 % 数据源：TransferLearning.ALDelayed（有延迟不舔不给水钙成像，声水转光水，延迟任务）。
-% 与英文图1F（英文图/Fig1F_DivVsHitRate_Scatter.m）口径一致：每鼠取首个 Light 训练会话（首个含 LightLearnWater 回合的 DateTime，本库无 Phase 列，等价 Transfer 首块），命中率=该会话 LightLearnWater 回合 Behavior 均值，散度=全体细胞 inter-trial 散度；唯一差别是散度取样点用 cue +1.5 s（延迟任务的反应时刻）而非 +1 s。
+% 与英文图1F（英文图/Fig_DivVsHitRate_Scatter.m）口径一致：每鼠取首个 Light 训练会话（首个含 LightLearnWater 回合的 DateTime，本库无 Phase 列，等价 Transfer 首块），命中率=该会话 LightLearnWater 回合 Behavior 均值，散度=全体细胞 inter-trial 散度；唯一差别是散度取样点用 cue +1.5 s（延迟任务的反应时刻）而非 +1 s。
 % 散度定义同 Fig1F：z-score 后逐回合减 cue onset 值，取指定时刻的 细胞×回合 矩阵 X，div = sqrt( sum(var(X,[],2)) / sum(mean(X,2).^2) )。
 % 相关性：Spearman。
 
@@ -96,7 +96,7 @@ lgd.Box = 'off';
 
 iText(ax, 0.97, 0.97, iPLabel(p), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'right', 'VerticalAlignment', 'top', 'FontSize', 12);
-title('💡💧')
+title('')
 
 fprintf('\n=== ALDelayed first-Light-block hit rate vs divergence (cue +1.5 s) ===\n');
 disp(Data);
