@@ -183,7 +183,7 @@ end
 xlim(ax, [-1.05, 1.05]);
 ylim(ax, [-1.05, 1.05]);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS1I_CellVenn_7day.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig1F_CellVenn_7day.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summary = table(nAll, nA, nB, nAB, nAonly, nBonly, nNone, ...

@@ -90,9 +90,28 @@ for im = 1:numel(mice)
 				aucAct   = iAUC(pWO, [pLO; pAO]);      % 动作对照（应 ≈0.5）
 				p1 = iPermAUC(pLO, pAO, nPerm);
 				p2 = iPermAUC(pWO, [pLO; pAO], nPerm);
+				% ---- (一b) 正对照：动作轴能不能读出来（证明方法对动作有灵敏度）----
+				%   wAct 用同一条光线索的"有动作 LW"与"无动作 LO"定义，
+				%   再拿去区分声线索下的 AW vs AO（换线索仍可分辨 ⇒ 动作轴不依赖线索身份）；
+				%   WO（无线索、只给水+舔）应落在"有动作"端。
+				wAct = V.LW - V.LO;
+				aucActTrain = NaN; aucActCV = NaN; aucActCross = NaN; aucActWO = NaN; p3 = NaN; p4 = NaN; p5 = NaN;
+				if norm(wAct) > 0
+					qLW = B.LW.' * wAct;  qLO = B.LO.' * wAct;
+					qAW = B.AW.' * wAct;  qAO = B.AO.' * wAct;
+					qWO = B.WO.' * wAct;
+					aucActTrain = iAUC(qLW, qLO);              % 训练分离（in-sample，仅作参考）
+					aucActCV    = iSplitHalfAUC(B.LW, B.LO);    % 主指标：同线索内分半交叉验证
+					aucActCross = iAUC(qAW, qAO);              % 换线索推广（动作轴是否与线索无关）
+					aucActWO    = iAUC(qWO, [qLO; qAO]);       % 纯动作条件（无线索）
+					p3 = iPermAUC(qAW, qAO, nPerm);
+					p4 = iPermAUC(qWO, [qLO; qAO], nPerm);
+					p5 = iPermAUC(B.LW.' * wAct, B.LO.' * wAct, nPerm);
+				end
 				Dec(end+1, :) = {string(m), string(ph), string(win(iw).Name), numel(cells), ...
 					size(B.LW, 2), size(B.AW, 2), size(B.LO, 2), size(B.AO, 2), size(B.WO, 2), ...
-					aucTrain, aucNoAct, p1, aucAct, p2}; %#ok<SAGROW>
+					aucTrain, aucNoAct, p1, aucAct, p2, ...
+					aucActTrain, aucActCV, aucActCross, p3, aucActWO, p4, p5}; %#ok<SAGROW>
 				% ---- (二) 加性方差分解 ----
 				sCue = 0.5*(norm(V.LW - V.AW)^2 + norm(V.LO - V.AO)^2);
 				sAct = 0.5*(norm(V.LW - V.LO)^2 + norm(V.AW - V.AO)^2);
@@ -109,7 +128,8 @@ A.Properties.VariableNames = ["Mouse", "Phase", "Window", "NCells", ...
 	"SS_Cue", "SS_Act", "SS_Int", "Frac_Cue", "Frac_Act", "Frac_Int"];
 Dec.Properties.VariableNames = ["Mouse", "Phase", "Window", "NCells", ...
 	"nLW", "nAW", "nLO", "nAO", "nWO", "AUC_Train", "AUC_NoAction", "p_NoAction", ...
-	"AUC_ActionCtrl", "p_ActionCtrl"];
+	"AUC_ActionCtrl", "p_ActionCtrl", ...
+	"AUC_ActTrain", "AUC_ActCV", "AUC_ActCross", "p_ActCross", "AUC_ActWO", "p_ActWO", "p_ActTrain"];
 
 writetable(Dec, fullfile(thisDir, 'RepresentationReuse_CueVsAction_LAI_AUC.csv'));
 writetable(A,   fullfile(thisDir, 'RepresentationReuse_CueVsAction_LAI_VarDecomp.csv'));
@@ -140,6 +160,35 @@ for iw = 1:numel(win)
 	fprintf('%-12s n=%2d session=%2d | AUC(无动作 线索判别)=%.2f±%.2f p=%.3g | AUC(纯动作 对照)=%.2f±%.2f p=%.3g\n', ...
 		win(iw).Name, sum(sel), sum(ok), mean(d1(ok)), std(d1(ok))/sqrt(sum(ok)), iSafeP(d1(ok)-0.5), ...
 		mean(d2(isfinite(d2))), std(d2(isfinite(d2)))/sqrt(sum(isfinite(d2))), iSafeP(d2(isfinite(d2))-0.5));
+end
+
+fprintf('\n=============== (一b) 正对照：动作轴能否读出"舔/给水"===============\n');
+fprintf('%-9s %-9s %-12s %10s %10s %10s %10s %10s\n', ...
+	'鼠', 'Phase', '窗口', 'AUC训练', 'AUC_CV', 'AUC跨线索', 'AUC_WO', 'p(WO)');
+for i = 1:height(Dec)
+	fprintf('%-9s %-9s %-12s %10.2f %10.2f %10.2f %10.2f %10.3f\n', ...
+		Dec.Mouse(i), Dec.Phase(i), Dec.Window(i), ...
+		Dec.AUC_ActTrain(i), Dec.AUC_ActCV(i), Dec.AUC_ActCross(i), ...
+		Dec.AUC_ActWO(i), Dec.p_ActWO(i));
+end
+fprintf('\n--- 组水平（动作轴，逐鼠均值）---\n');
+for iw = 1:numel(win)
+	sel = strcmp(Dec.Window, win(iw).Name);
+	if ~any(sel), continue; end
+	u = unique(Dec.Mouse(sel));
+	e0 = nan(numel(u), 1); e1 = nan(numel(u), 1); e2 = nan(numel(u), 1);
+	for i = 1:numel(u)
+		s = sel & Dec.Mouse == u(i);
+		e0(i) = mean(Dec.AUC_ActCV(s), 'omitnan');
+		e1(i) = mean(Dec.AUC_ActCross(s), 'omitnan');
+		e2(i) = mean(Dec.AUC_ActWO(s), 'omitnan');
+	end
+	ok = isfinite(e0) & isfinite(e1) & isfinite(e2);
+	fprintf('%-12s n=%2d | AUC_CV(动作 同线索)=%.2f±%.2f p=%.3g | 跨线索=%.2f±%.2f p=%.3g | 纯动作WO=%.2f±%.2f p=%.3g\n', ...
+		win(iw).Name, sum(ok), ...
+		mean(e0(ok)), std(e0(ok))/sqrt(sum(ok)), iSafeP(e0(ok)-0.5), ...
+		mean(e1(ok)), std(e1(ok))/sqrt(sum(ok)), iSafeP(e1(ok)-0.5), ...
+		mean(e2(ok)), std(e2(ok))/sqrt(sum(ok)), iSafeP(e2(ok)-0.5));
 end
 
 fprintf('\n=============== (二) 群体响应方差分解（线索 vs 动作 vs 交互）===============\n');
@@ -216,4 +265,18 @@ end
 function p = iSafeP(x)
 x = x(isfinite(x));
 if numel(x) < 3 || all(x == 0), p = NaN; else, p = signrank(x); end
+end
+
+function a = iSplitHalfAUC(X1, X2)
+% 同条件内分半：一半试次拟合判别轴，另一半试次评 AUC，两折互换后平均
+if size(X1, 2) < 4 || size(X2, 2) < 4, a = NaN; return; end
+n1 = size(X1, 2); p1 = randperm(n1); h1 = floor(n1/2);
+n2 = size(X2, 2); p2 = randperm(n2); h2 = floor(n2/2);
+A1 = X1(:, p1(1:h1)); B1 = X1(:, p1(h1+1:end));
+A2 = X2(:, p2(1:h2)); B2 = X2(:, p2(h2+1:end));
+w  = mean(A1, 2, 'omitnan') - mean(A2, 2, 'omitnan');
+a1 = iAUC(B1.' * w, B2.' * w);
+w2 = mean(B1, 2, 'omitnan') - mean(B2, 2, 'omitnan');
+a2 = iAUC(A1.' * w2, A2.' * w2);
+a = mean([a1 a2], 'omitnan');
 end

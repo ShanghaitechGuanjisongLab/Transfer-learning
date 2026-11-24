@@ -19,7 +19,7 @@ addpath(fullfile(thisDir, '..'));
 warning('off', 'UniExp:Exception:Block_must_warn');
 
 tAll = linspace(-3, 3, 48)';
-iW = find(tAll >= 0 & tAll <= 1.5);
+iW = find(tAll >= 0 & tAll <= 1.5);   % 取完整响应窗（不声称“无舔”，故无需限制在 1 s）
 nBoot = 200; rng(20261113, 'twister');
 if ~exist('LayerSel', 'var'), LayerSel = "MOp2/3"; end
 

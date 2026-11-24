@@ -50,7 +50,7 @@ for g = unique(Slope.Group, 'stable').'
 end
 
 metricTitle = ["First block", "Blocks to 50%", "Sigmoid slope"];
-metricYlab = ["Hit rate", "Blocks", "Sigmoid slope"];
+metricYlab = ["Hit rate", "Blocks to 50%", "Sigmoid slope"];
 M = {double(Summ.FirstPerf), double(Summ.BlocksToHalf), double(Slope.Slope)};
 G = {string(Summ.Group), string(Summ.Group), string(Slope.Group)};
 

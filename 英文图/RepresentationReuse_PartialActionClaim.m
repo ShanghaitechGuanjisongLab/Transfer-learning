@@ -29,7 +29,7 @@ addpath(fullfile(thisDir, '..'));
 warning('off', 'UniExp:Exception:Block_must_warn');
 
 tAll = linspace(-3, 3, 48)';
-iW = find(tAll >= 0 & tAll <= 1.5);
+iW = find(tAll >= 0 & tAll <= 1);   % ⚠ 必须与 hit/miss 判定窗一致（miss 仅保证 1 s 内无舔）
 nBoot = 200; rng(20261113, 'twister');
 if ~exist('LayerSel', 'var'), LayerSel = ""; end   % ""=全部；"MOp2/3"；"MOp5"
 
@@ -43,59 +43,72 @@ Rows = {};
 for ic = 1:numel(cfg)
 	DS = cfg(ic).DS;
 	fprintf('\n=============== %s ===============\n', cfg(ic).Name);
-	fprintf('%-9s %6s %5s %5s | %8s %8s | %8s %8s | %6s\n', ...
-		'鼠', 'nCell', 'nHit', 'nMis', 'r1(hit)', 'r2(miss)', 'r1⊥', 'r2⊥', 'u占vHit');
 	for m = unique(iMouse(DS))'
-		dtL = iFirst(DS, m, "Learned", "AudioWater");
-		dtT = iFirst(DS, m, "Transfer", "LightWater");
-		if isnat(dtL) || isnat(dtT), continue; end
-		nAW = iQuery(DS, m, dtL, "AudioWater");
-		nLW = iQuery(DS, m, dtT, "LightWater");
-		if isempty(nAW) || isempty(nLW), continue; end
-		cells = intersect(nAW.CellUID, nLW.CellUID);
-		if strlength(LayerSel) > 0
-			Cx = DS.Cells; Cx.CellUID = uint64(Cx.CellUID); Cx.ZLayer = string(Cx.ZLayer);
-			[okm, idxm] = ismember(cells, Cx.CellUID);
-			keepm = false(size(cells)); keepm(okm) = Cx.ZLayer(idxm(okm)) == LayerSel;
-			cells = cells(keepm);
-		end
-		if numel(cells) < 50, continue; end
-		[MAW, bAW] = iMatBeh(DS, nAW, cells, iW);
-		[MLW, bLW] = iMatBeh(DS, nLW, cells, iW);
-		okAH = find(bAW == 1); okH = find(bLW == 1); okM = find(bLW == 0);
-		if numel(okAH) < 5 || numel(okM) < 4, continue; end
+	dtL = iFirst(DS, m, "Learned", "AudioWater");
+	dtT = iFirst(DS, m, "Transfer", "LightWater");
+	if isnat(dtL) || isnat(dtT), continue; end
+	nAW = iQuery(DS, m, dtL, "AudioWater");
+	nLW = iQuery(DS, m, dtT, "LightWater");
+	% 独立动作模板：Naive 阶段、仅给水无线索（与 Learned/Transfer 不同日、不同刺激）
+	dtW = iFirst(DS, m, "Naive", "WaterOnly");
+	if isnat(dtW), continue; end
+	nWO = iQuery(DS, m, dtW, "WaterOnly");
+	if isempty(nAW) || isempty(nLW) || isempty(nWO), continue; end
+	cells = intersect(intersect(nAW.CellUID, nLW.CellUID), nWO.CellUID);
+	if strlength(LayerSel) > 0
+		Cx = DS.Cells; Cx.CellUID = uint64(Cx.CellUID); Cx.ZLayer = string(Cx.ZLayer);
+		[okm, idxm] = ismember(cells, Cx.CellUID);
+		keepm = false(size(cells)); keepm(okm) = Cx.ZLayer(idxm(okm)) == LayerSel;
+		cells = cells(keepm);
+	end
+	if numel(cells) < 50, continue; end
+	[MAW, bAW] = iMatBeh(DS, nAW, cells, iW);
+	[MLW, bLW] = iMatBeh(DS, nLW, cells, iW);
+	MWO = iMat(nWO, cells, iW);
+	okAH = find(bAW == 1); okH = find(bLW == 1); okM = find(bLW == 0);
+	if numel(okAH) < 5 || numel(okM) < 4, continue; end
 
-		vL = mean(MAW(:, okAH), 2, 'omitnan');
-		vH = mean(MLW(:, okH), 2, 'omitnan');
-		vM = mean(MLW(:, okM), 2, 'omitnan');
-		relL = iRel(MAW(:, okAH), nBoot);
-		relH = iRel(MLW(:, okH), nBoot);
-		relM = iRel(MLW(:, okM), nBoot);
+	vL = mean(MAW(:, okAH), 2, 'omitnan');
+	vH = mean(MLW(:, okH), 2, 'omitnan');
+	vM = mean(MLW(:, okM), 2, 'omitnan');
+	vA = mean(MWO, 2, 'omitnan');   % 独立动作模板
+	relL = iRel(MAW(:, okAH), nBoot);
+	relH = iRel(MLW(:, okH), nBoot);
+	relM = iRel(MLW(:, okM), nBoot);
 
-		r1r = iCorr(vL, vH);
-		r2r = iCorr(vL, vM);
-		r1 = min(iAdj(r1r, relL, relH), 1);
-		r2 = min(iAdj(r2r, relL, relM), 1);
-		% 动作方向（本 session 内 hit−miss），在 hit 侧与 miss 侧都能定义
-		u = vH - vM; u = u / norm(u);
-		vLp = vL - (vL.' * u) * u;
-		vHp = vH - (vH.' * u) * u;
-		vMp = vM - (vM.' * u) * u;
-		r1p = min(iAdj(iCorr(vLp, vHp), relL, relH), 1);
-		r2p = min(iAdj(iCorr(vLp, vMp), relL, relM), 1);
-		r1pr = iCorr(vLp, vHp); r2pr = iCorr(vLp, vMp);
-		fracU = norm((vH.' * u) * u) / max(norm(vH), eps);
+	r1r = iCorr(vL, vH);
+	r2r = iCorr(vL, vM);
+	r1 = min(iAdj(r1r, relL, relH), 1);
+	r2 = min(iAdj(r2r, relL, relM), 1);
+	% 动作轴 1：session 内 hit − miss（会导致 r1⊥ ≡ r2⊥，仅供对照）
+	u = vH - vM; u = u / norm(u);
+	vLp = vL - (vL.' * u) * u;
+	vHp = vH - (vH.' * u) * u;
+	vMp = vM - (vM.' * u) * u;
+	r1p = min(iAdj(iCorr(vLp, vHp), relL, relH), 1);
+	r2p = min(iAdj(iCorr(vLp, vMp), relL, relM), 1);
+	r1pr = iCorr(vLp, vHp); r2pr = iCorr(vLp, vMp);
+	fracU = norm((vH.' * u) * u) / max(norm(vH), eps);
+	% 动作轴 2（推荐）：独立 Naive/WaterOnly 模板 —— 不与目标共享试次，r1 与 r2 不再恒等
+	uA = vA / norm(vA);
+	vLa = vL - (vL.' * uA) * uA;
+	vHa = vH - (vH.' * uA) * uA;
+	vMa = vM - (vM.' * uA) * uA;
+	r1ar = iCorr(vLa, vHa); r2ar = iCorr(vLa, vMa);
+	r1a = min(iAdj(r1ar, relL, relH), 1);
+	r2a = min(iAdj(r2ar, relL, relM), 1);
+	fracUA = norm((vH.' * uA) * uA) / max(norm(vH), eps);
 
-		fprintf('%-9s %6d %5d %5d | %8.2f %8.2f | %8.2f %8.2f | %6.2f\n', string(m), numel(cells), ...
-			numel(okH), numel(okM), r1, r2, r1p, r2p, fracU);
-		Rows(end+1, :) = {string(cfg(ic).Name), string(m), numel(cells), numel(okH), numel(okM), ...
-			r1, r2, r1p, r2p, fracU, relL, relH, relM, r1r, r2r, r1pr, r2pr}; %#ok<SAGROW>
+	Rows(end+1, :) = {string(cfg(ic).Name), string(m), numel(cells), numel(okH), numel(okM), ...
+		r1, r2, r1p, r2p, fracU, relL, relH, relM, r1r, r2r, r1pr, r2pr, ...
+		r1a, r2a, r1ar, r2ar, fracUA}; %#ok<SAGROW>
 	end
 end
 
 T = cell2table(Rows, 'VariableNames', ["Cohort", "Mouse", "NCells", "nHit", "nMiss", ...
 	"r1_hit", "r2_miss", "r1_orth", "r2_orth", "fracU", "rel_Lrn", "rel_Hit", "rel_Miss", ...
-	"r1_raw", "r2_raw", "r1_orth_raw", "r2_orth_raw"]);
+	"r1_raw", "r2_raw", "r1_orth_raw", "r2_orth_raw", ...
+	"r1_orthA", "r2_orthA", "r1_orthA_raw", "r2_orthA_raw", "fracUA"]);
 suffix = "";
 if strlength(LayerSel) > 0, suffix = "_" + replace(LayerSel, "/", "-"); end
 csvPath = fullfile(thisDir, "RepresentationReuse_PartialActionClaim" + suffix + ".csv");

@@ -38,8 +38,8 @@ end
 
 %% 统计（组间双侧秩和检验）
 pairIdx = [1 2; 2 3; 1 3];
-metricName = ["Sigmoid slope", "Blocks to 50%", "First block"];
-ylab = ["Sigmoid slope", "Blocks to 50%", "Hit rate"];
+metricName = ["Learning speed", "Blocks to 50%", "First block"];
+ylab = ["Learning speed", "Blocks to 50%", "Hit rate"];
 
 pMat = nan(3, 3);   % metric × pair
 fprintf('\n=== 三组学习速度指标 ===\n');
@@ -62,7 +62,7 @@ for m = 1:3
 end
 
 %% 画图 + 导出
-figNames = ["English_Fig1_MetricBars_SigmoidSlope.svg", ...
+figNames = ["English_Fig1_MetricBars_LearningSpeed.svg", ...
 	"English_Fig1_MetricBars_BlocksTo50.svg", ...
 	"English_Fig1_MetricBars_FirstBlock.svg"];
 for m = 1:3
@@ -102,6 +102,11 @@ for k = 1:3
 	b(k) = bar(ax, k, y(k), 0.38, 'FaceColor', cols(k, :), 'EdgeColor', 'none', 'LineWidth', 0.5);
 	% 单向 errorbar（只向上）
 	errorbar(ax, k, y(k), 0, e(k), 'Color', cols(k, :), 'LineWidth', 0.5, 'CapSize', 2);
+	% 逐鼠散点（叠在柱上）
+	v = data{k};  v = v(isfinite(v));
+	jit = (rand(numel(v), 1) - 0.5) * 0.20;
+	scatter(ax, k + jit, v, 4, 'o', 'filled', 'MarkerFaceColor', cols(k, :) * 0.60, ...
+		'MarkerEdgeColor', 'none');
 end
 ax.XTick = 1:3;
 ax.XTickLabel = cellstr(labels);
@@ -119,7 +124,7 @@ EBall = errorbar(ax, 1:3, y(:).', zeros(1, 3), e(:).', 'LineStyle', 'none', ...
 nP = size(pairs, 1);
 txt = strings(nP, 1);
 for k = 1:nP
-	txt(k) = string(TransferLearning.Style.iFormatPStars(pVals(k)));
+	txt(k) = string(iFmtP(pVals(k)));
 end
 D = table(repmat(EBall, nP, 1), repmat(EBall, nP, 1), pairs(:, 1), pairs(:, 2), txt, ...
 	'VariableNames', ["ObjectA", "ObjectB", "IndexA", "IndexB", "Text"]);
@@ -129,6 +134,17 @@ end
 
 function p = iRS(a, b)
 [p, ~] = TransferLearning.BehaviorSessions.iRanksumSafe(a, b);
+end
+
+function s = iFmtP(p)
+% 直接把数值 p 写在括号上方（不再用星号）
+if ~isfinite(p)
+	s = 'n.s.';
+elseif p < 1e-3
+	s = '<0.001';
+else
+	s = sprintf('%.3f', p);
+end
 end
 
 function s = iSEM(x)

@@ -1,4 +1,5 @@
-% English FigS1I: Venn/欧拉图 —— 全细胞 vs Learned 声水活跃 vs Transfer 光水活跃
+% Fig1F：Venn/欧拉图 —— 全细胞 vs Learned 声水活跃 vs Transfer 光水活跃（12 h 队列）
+% （原英语 FigS1I，2026-11 面板重编号时定为 Fig1F；7 d 对照版见 FigS1I_CellVenn_7day.m）
 %
 % 外圈(最大圆) = 该队列全部被成像细胞（Learned 与 Transfer 数据集的细胞并集）
 % 内圈 1(A, 蓝) = Learned 阶段对声水(AudioWater)活跃的细胞（active 判据：cue +1 s 处 z > 基线均值 + 3σ）
@@ -58,7 +59,7 @@ nAonly = nA - nAB;
 nBonly = nB - nAB;
 nNone = nAll - nA - nB + nAB;
 
-fprintf('=== FigS1I Venn ===\n');
+fprintf('=== Fig1F Venn (12 h) ===\n');
 fprintf('All cells        = %d\n', nAll);
 fprintf('A  learned AW active = %d (%.2f%% of all)\n', nA, 100 * nA / nAll);
 fprintf('B  transfer LW active= %d (%.2f%% of all)\n', nB, 100 * nB / nAll);
@@ -90,7 +91,7 @@ fprintf('geometry: rA=%.3f rB=%.3f d=%.3f (rA:rB=%.3f, expect %.3f) scale=%.3f\n
 %% --- draw ---
 figWCm = 4.5;
 figHCm = 4.0;
-f = figure('Color', 'w', 'Name', 'English FigS1I Cell Venn');
+f = figure('Color', 'w', 'Name', 'Fig1F Cell Venn (12 h)');
 f.Units = 'centimeters';
 f.Position(3:4) = [figWCm, figHCm];
 f.PaperUnits = 'centimeters';
@@ -179,7 +180,7 @@ end
 xlim(ax, [-1.05, 1.05]);
 ylim(ax, [-1.05, 1.05]);
 
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_FigS1I_CellVenn.svg');
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig1F_CellVenn.svg');
 fprintf('Wrote: %s\n', svgPath);
 
 summary = table(nAll, nA, nB, nAB, nAonly, nBonly, nNone, ...

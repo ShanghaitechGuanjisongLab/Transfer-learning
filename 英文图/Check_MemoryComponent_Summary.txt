@@ -1,0 +1,23 @@
+方向1 主判据（ITI 舔水平均 z > 3）
+            Stage             nEntry    nCellTotal    nSet1Total    nSet2Total    ObsTotal    ExpTotal    Ratio     NullMean    P    P_lower     P_upper  
+    ______________________    ______    __________    __________    __________    ________    ________    ______    ________    _    _______    __________
+
+    "LearnedAW+TransferLW"      22        10210          118            42           7        0.47686     14.679     0.463      1       1       0.00049975
+
+
+
+方向1 敏感性（舔水特异：lick−nonlick > 1 SD 且置换 p < 0.05）
+            Stage             nEntry    nCellTotal    nSet1Total    nSet2Total    ObsTotal    ExpTotal    Ratio     NullMean    P    P_lower     P_upper  
+    ______________________    ______    __________    __________    __________    ________    ________    ______    ________    _    _______    __________
+
+    "LearnedAW+TransferLW"      22        10210          118           188           25        2.2829     10.951     2.295      1       1       0.00049975
+
+
+
+方向2（hit 1 s vs miss 2 s）
+       Stage        nEntry    nCellTotal    nSet1Total    nSet2Total    ObsTotal    ExpTotal    Ratio     NullMean        P         P_lower     P_upper  
+    ____________    ______    __________    __________    __________    ________    ________    ______    ________    __________    _______    __________
+
+    "TransferLW"      11         5105          783           1092         322        174.33     1.8471     174.01     0.00049975       1       0.00049975
+
+

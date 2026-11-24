@@ -46,9 +46,19 @@ if ~isempty(naiveCD2) || ~isempty(contCD2)
     end
 end
 
-%% --- 自定义颜色映射 ---
+%% --- 颜色映射（最新配色原色，不压暗：浅色调 → 分组色）---
+% 起点不是纯白，而是分组色的 12% 淡色调，使低值区也带色，色棒对比更明显；
+% 终点仍为调色板原色（不做 ×系数 压暗）。
 nColors = 256;
-cmapGreen=MATLAB.ElMat.LinSpace([1,1,1],[0.5414	0.0000	0.8231],256,1);
+tint = 0.12;
+rampNaive = iRGB(TransferLearning.ColorNaive);
+rampTransfer = iRGB(TransferLearning.Color12h);
+startNaive = 1 - tint * (1 - rampNaive);
+startTransfer = 1 - tint * (1 - rampTransfer);
+cmapNaive = MATLAB.ElMat.LinSpace(startNaive, rampNaive, nColors, 1);
+cmapTransfer = MATLAB.ElMat.LinSpace(startTransfer, rampTransfer, nColors, 1);
+colorNaive = rampNaive;
+colorTransfer = rampTransfer;
 
 %% --- 绘图 ---
 f = figure('Color','w', 'Name','FigS1B first-block lick raster (CD2 color)');
@@ -57,15 +67,16 @@ f.Position(3:4) = [9,8];
 
 layout = tiledlayout(f, 2, 1, 'TileSpacing','tight','Padding','tight');
 
-xlineColor = [0.0017	0.3805	0.0000];
+xlineColor = [0.35 0.35 0.35];   % 事件线用中性灰，避免与色阶混色
 
 % --- Top: Naive ---
 axTop = nexttile(layout, 1);
 if ~isempty(naiveCD2)
     imagesc(axTop, xsWin, 1:size(naiveCD2,1), naiveCD2);
-    colormap(axTop, cmapGreen);
+    colormap(axTop, cmapNaive);
+    clim(axTop, [0 1]);
 end
-title(axTop, 'Naive');
+title(axTop, 'Naive', 'Color', colorNaive);
 axTop.XAxis.Visible = 'off';
 xlim(axTop, [-1, 3]);
 box(axTop,'off');
@@ -76,9 +87,10 @@ xline(axTop, 1,'--', 'Color', xlineColor);
 axBot = nexttile(layout, 2);
 if ~isempty(contCD2)
     imagesc(axBot, xsWin, 1:size(contCD2,1), contCD2);
-    colormap(axBot, cmapGreen);
+    colormap(axBot, cmapTransfer);
+    clim(axBot, [0 1]);
 end
-title(axBot, 'Transfer');
+title(axBot, 'Transfer', 'Color', colorTransfer);
 xlim(axBot, [-1, 3]);
 box(axBot,'off');
 xline(axBot, 0,'--', 'Color', xlineColor);
@@ -86,16 +98,20 @@ xline(axBot, 1,'--', 'Color', xlineColor);
 
 xlabel(axBot, 'Time (s)');
 ylabel(layout, 'Trial');
-title(layout, '💡💧 first block');
+title(layout, 'Light→water first block');
 
 
-% --- Colorbar ---
-cb = colorbar(axBot);
-cb.Layout.Tile = 'east';
-cb.Label.String = 'Lick probability';
+% --- Colorbar（每个面板各自一条，与面板色阶一致；CLim 统一 0–1）---
+cbTop = colorbar(axTop);
+cbTop.Layout.Tile = 'east';
+cbTop.Ticks = [];          % 刻度只在下方面板标一次，避免两条 cbar 数字挤压
+cbBot = colorbar(axBot);
+cbBot.Layout.Tile = 'east';
+cbBot.Ticks = 0:0.5:1;
+cbBot.Label.String = 'Lick (CD2, a.u.)';
 
 TransferLearning.Style.ApplyStandardFigureStyle(f, 2);
-axBot.XTickLabels(ismember(axBot.XTick,[0,1])) = {'💡','💧'};
+axBot.XTickLabels(ismember(axBot.XTick,[0,1])) = {'Cue','Water'};
 svgPath = TransferLearning.StandardFigureSvgPath('English_FigS1B_LickRaster.svg');
 print(f, svgPath, '-dsvg');
 fprintf('Wrote: %s\n', svgPath);
@@ -178,4 +194,8 @@ try
 end
 catch
 end
+end
+
+function c = iRGB(v)
+c = double(v(:)') / 255;
 end

@@ -1,6 +1,8 @@
 % 逐 trial 斜率计算的示意：同一只鼠，两种数据层级的拟合
 %
-% (a) 逐 trial：每个试次的 0/1 结果为观测，二项似然拟合 sigmoid（下限 0、上限 1）
+% (a) 逐 trial：每个试次的 0/1 结果为观测，二项似然拟合 sigmoid
+%     —— 与正文数值完全同一算法：TransferLearning.FitPenalizedSigmoid（下限 0、上限 1，
+%        含 Jeffreys/Fisher 信息惩罚与 log(k)~N(0,2^2) 弱惩罚）
 % (b) 会话均值：每个 block 的命中率（±SEM）为观测，最小二乘拟合同模型
 %
 % 目的：直观说明"斜率 k 从哪些数据算出来"，以及两种口径为何给出不同的 k。
@@ -22,8 +24,11 @@ x = double(dtIdx(ok));
 y = y(ok);
 nBlock = max(x);
 
-% --- 逐 trial MLE
-[kMle, midMle] = iFitMLE(x, y);
+% --- 逐 trial：惩罚版二项 sigmoid（与正文/Fig1C/Fig4G 完全同一算法）
+fitTL = TransferLearning.FitPenalizedSigmoid(x, y, FixLowerZero = true);
+kTL = fitTL.Slope;
+midTL = fitTL.Midpoint;
+lowTL = fitTL.Lower;
 % --- 会话级 LS
 perf = splitapply(@mean, y, findgroups(x));
 sem = splitapply(@(v) std(v) / sqrt(numel(v)), y, findgroups(x));
@@ -31,8 +36,8 @@ b = (1:nBlock)';
 objLS = @(p) sum((perf - 1 ./ (1 + exp(-exp(p(1)) .* (b - p(2))))).^ 2);
 pLS = fminsearch(objLS, [log(0.8); median(b)], optimset('Display', 'off'));
 kLS = exp(pLS(1));
-fprintf('%s：%d block / %d trial\n  逐 trial MLE k=%.2f (mid %.2f)\n  会话级 LS  k=%.2f (mid %.2f)\n', ...
-	mouse, nBlock, numel(x), kMle, midMle, kLS, pLS(2));
+fprintf('%s：%d block / %d trial\n  逐 trial 惩罚版 k=%.2f (mid %.2f)\n  会话级 LS     k=%.2f (mid %.2f)\n', ...
+	mouse, nBlock, numel(x), kTL, midTL, kLS, pLS(2));
 
 % --- 颜色
 cMain = TransferLearning.CurveNaive() / 255;      % 主色（曲线用加深版）
@@ -58,14 +63,14 @@ for bi = 1:nBlock
 end
 hMiss = scatter(ax1, xJit(y == 0), zeros(sum(y == 0), 1), 6, cDot, 'o', 'filled');
 hHit = scatter(ax1, xJit(y == 1), ones(sum(y == 1), 1), 6, cDot, 'o', 'filled');
-plot(ax1, xFit, 1 ./ (1 + exp(-kMle * (xFit - midMle))), '-', 'Color', cFit, ...
+plot(ax1, xFit, lowTL + (1 - lowTL) ./ (1 + exp(-kTL * (xFit - midTL))), '-', 'Color', cFit, ...
 	'LineWidth', 1, 'Tag', 'TransferLearningSupplementalLine');
 ax1.XLim = [0.5 nBlock + 0.5];
 ax1.XTick = 1:nBlock;
 xlabel(ax1, 'Block');
 ylabel(ax1, 'Outcome');
 title(ax1, 'Trial level', 'FontWeight', 'normal');
-text(ax1, 0.57, 0.30, sprintf('k = %.2f', kMle), 'Units', 'normalized', ...
+text(ax1, 0.57, 0.30, sprintf('k = %.2f', kTL), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'FontSize', 6, 'Color', cFit);
 text(ax1, 0.57, 0.18, sprintf('%d trials', numel(x)), 'Units', 'normalized', ...
 	'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'FontSize', 5.5, 'Color', cGray);
@@ -102,29 +107,6 @@ p = TransferLearning.ExportStandardFigure(fig, 1, 'English_Fig1_SlopeEstimation_
 fprintf('Wrote: %s\n', p);
 
 %% ---------------------------------------------------------------
-function [k, mid] = iFitMLE(x, y)
-%逐 trial 二项似然（无惩罚），多起点取最优，k 上限 200
-starts = [log(0.2) median(x); log(0.8) median(x); log(2) median(x); log(6) median(x)];
-best = inf; pBest = [NaN NaN];
-for i = 1:size(starts, 1)
-	p = fminsearch(@(p) iNLL(p, x, y), starts(i, :), ...
-		optimset('Display', 'off', 'MaxFunEvals', 5000, 'MaxIter', 2000));
-	o = iNLL(p, x, y);
-	if isfinite(o) && o < best
-		best = o; pBest = p;
-	end
-end
-k = exp(min(pBest(1), log(200)));
-mid = pBest(2);
-end
-
-function o = iNLL(p, x, y)
-k = exp(min(p(1), log(200)));
-pr = 1 ./ (1 + exp(-k * (x - p(2))));
-pr = min(max(pr, 1e-12), 1 - 1e-12);
-o = -sum(y .* log(pr) + (1 - y) .* log(1 - pr));
-end
-
 function c = iBlend(c, target, w)
 c = c * (1 - w) + target .* w;
 end

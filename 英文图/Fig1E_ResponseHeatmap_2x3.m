@@ -26,7 +26,8 @@ end
 
 %% 参数
 kSigma = 3;        %活跃阈值：baseline mean + kSigma * baseline SD
-climPct = 95;      %色标取 |z| 的百分位（越小颜色越饱和）
+climZ  = 3;        %色标固定 ±climZ（对称）——数据 |z| 中位数 0.26、p95≈1.85、p99≈6.7、max≈55，
+                   % 用 ±2 会把 4.5% 的点饱和掉，颜色几乎分不出层次
 dsList   = {TransferLearning.AudioLightBaseline(), TransferLearning.Vacation7()};
 phaseCol = ["Naive", "Learned", "Transfer"];
 stimCol  = ["AudioOnly", "AudioWater", "LightWater"];
@@ -128,12 +129,13 @@ blueWhiteRed = [linspace(0,1,nHalf)', linspace(0,1,nHalf)', ones(nHalf,1); ...
 				 ones(nHalf,1), linspace(1,0,nHalf)', linspace(1,0,nHalf)'];
 vv = cellfun(@(x) x(:), M, 'UniformOutput', false);
 allV = vertcat(vv{:});
-cMax = prctile(abs(allV(isfinite(allV))), climPct);
-cMax = max(cMax, 0.5);
-fprintf('色标范围 ±%.2f（|z| 的 %d 分位）\n', cMax, climPct);
+aAll = abs(allV(isfinite(allV)));
+cMax = climZ;
+fprintf('色标范围 ±%.2f（固定）；|z|>%.0f 占 %.2f%%（p95=%.2f, p99=%.2f, max=%.1f）\n', ...
+	cMax, cMax, 100 * mean(aAll > cMax), prctile(aAll, 95), prctile(aAll, 99), max(aAll));
 
 %% 画图
-figW = 9.0; figH = 6.8; figScale = 2;
+figW = 9.0; figH = 9.0; figScale = 2;   % 成品 90 × 90 mm（画布 ×figScale，字号 6 pt）
 f = figure('Color', 'w', 'Name', 'Fig1 learned-active response heatmap 2x3');
 f.Units = 'centimeters';
 f.Position(3:4) = [figW figH] * figScale;

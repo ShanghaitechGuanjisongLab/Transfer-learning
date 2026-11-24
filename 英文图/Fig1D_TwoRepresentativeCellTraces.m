@@ -25,9 +25,9 @@ LAB = TransferLearning.LightAudioBaseline();
 LAI = TransferLearning.LAInterspersed();
 [naiveRep, transferRep] = iPickRepresentatives(LAB, LAI, ALB, (xsSec >= -3) & (xsSec < 0), idx1s, 3); %[output:839089ef]
 
-colorNaive = TransferLearning.NaiveColor;
-colorLearned = TransferLearning.LearnedColor;
-colorTransfer = TransferLearning.TransferColor;
+colorNaive = TransferLearning.ColorNaive / 255;
+colorLearned = TransferLearning.ColorLearned / 255;
+colorTransfer = TransferLearning.Color12h / 255;
 
 f = figure('Name', 'English Fig1D two representative cell traces', Units='centimeters'); %[output:3b858469]
 f.Position(3:4) = [9, 4]; %[output:3b858469]

@@ -41,8 +41,8 @@ switch CohortName
 end
 fprintf('\n########## 队列：%s ##########\n', CohortName);
 Rows = {};
-fprintf('%-9s %6s %4s %5s | %7s | %8s %8s | %8s %8s %8s\n', ...
-	'鼠', 'nCell', 'hit', 'miss', 'AUC(动作轴)', 'R2[CL]', 'uL_前', 'R2[CLu]', 'uL_后', 'uC_后', 'uU(动作)');
+	fprintf('%-9s %6s %4s %5s | %7s %7s | %8s %8s | %8s %8s %8s\n', ...
+	'鼠', 'nCell', 'hit', 'miss', 'AUC(动作轴)', 'AUC_CV', 'R2[CL]', 'uL_前', 'R2[CLu]', 'uL_后', 'uC_后', 'uU(动作)');
 for m = unique(iMouse(DS))'
 	[dts, stim] = iList(DS, m);
 	isN = stim == "LightOnly"; isA = stim == "AudioOnly";
@@ -78,6 +78,7 @@ for m = unique(iMouse(DS))'
 	% 动作轴的效度检查（全程）
 	uAll = mean(MLW(:, okH), 2, 'omitnan') - mean(MLW(:, okM), 2, 'omitnan');
 	aucU = iAUC(iProj(MLW(:, okH), uAll), iProj(MLW(:, okM), uAll));
+	aucUCV = iSplitHalfAUC(MLW(:, okH), MLW(:, okM));   % 正对照主指标：未见试次上的 hit vs miss 解码
 	% 目标（未舔试次均值模式）的可信度：split-half → Spearman-Brown
 	rh = nan(20, 1);
 	for s2 = 1:20
@@ -109,22 +110,24 @@ for m = unique(iMouse(DS))'
 	end
 
 	fprintf('%-9s %6d %4d %5d | %7.2f %6.2f | %8.3f %8.3f | %8.3f %8.3f %8.3f\n', string(m), numel(cells), ...
-		numel(okH), numel(okM), aucU, relTarget, mean(r2a, 'omitnan'), mean(uLa, 'omitnan'), ...
+		numel(okH), numel(okM), aucU, aucUCV, relTarget, mean(r2a, 'omitnan'), mean(uLa, 'omitnan'), ...
 		mean(r2b, 'omitnan'), mean(uLb, 'omitnan'), mean(uCb, 'omitnan'), mean(uUb, 'omitnan'));
-	Rows(end+1, :) = {string(m), numel(cells), numel(okH), numel(okM), aucU, relTarget, ...
+	Rows(end+1, :) = {string(m), numel(cells), numel(okH), numel(okM), aucU, aucUCV, relTarget, ...
 		mean(r2a, 'omitnan'), mean(uLa, 'omitnan'), ...
 		mean(r2b, 'omitnan'), mean(uLb, 'omitnan'), mean(uCb, 'omitnan'), mean(uUb, 'omitnan')}; %#ok<SAGROW>
 end
 
 T = cell2table(Rows, 'VariableNames', ["Mouse", "NCells", "nHit", "nMiss", "AUC_actionAxis", ...
-	"Rel_target", "R2_CL", "uniqL_before", "R2_CLu", "uniqL_after", "uniqC_after", "uniqU_after"]);
+	"AUC_actionAxisCV", "Rel_target", "R2_CL", "uniqL_before", "R2_CLu", "uniqL_after", ...
+	"uniqC_after", "uniqU_after"]);
 csvPath = fullfile(thisDir, sprintf('RepresentationReuse_WithinTransferActionAxis_%s.csv', CohortName));
 writetable(T, csvPath);
 fprintf('\nWrote: %s\n', csvPath);
 
 fprintf('\n=============== 组水平（逐鼠，均值 ± SEM；p 为 vs 0 的 signrank）===============\n');
 f = @(x) sprintf('%+.3f±%.3f', mean(x, 'omitnan'), std(x, 'omitnan')/sqrt(sum(isfinite(x))));
-fprintf('n=%d 鼠 | 动作轴效度 AUC(hit vs miss)=%s\n', height(T), f(T.AUC_actionAxis));
+fprintf('n=%d 鼠 | 动作轴效度 AUC(hit vs miss, 全数据)=%s | AUC_CV(未见试次)=%s (vs 0.5, p=%.3g)\n', ...
+	height(T), f(T.AUC_actionAxis), f(T.AUC_actionAxisCV), iSafeP(T.AUC_actionAxisCV - 0.5));
 fprintf('  目标可信度 rel(miss 均值模式, split-half)=%s  ⇒ R² 上限受此限制\n', f(T.Rel_target));
 fprintf('  校正后的 R²[CL]/rel=%s ，unique_L/rel=%s\n', ...
 	f(T.R2_CL ./ T.Rel_target), f(T.uniqL_before ./ T.Rel_target));
@@ -243,4 +246,18 @@ end
 function p = iSafeP(x)
 x = x(isfinite(x));
 if numel(x) < 3 || all(x == 0), p = NaN; else, p = signrank(x); end
+end
+
+function a = iSplitHalfAUC(X1, X2)
+% 同条件内分半：一半试次拟合判别轴，另一半评 AUC，两折互换后平均
+if size(X1, 2) < 4 || size(X2, 2) < 4, a = NaN; return; end
+n1 = size(X1, 2); p1 = randperm(n1); h1 = floor(n1/2);
+n2 = size(X2, 2); p2 = randperm(n2); h2 = floor(n2/2);
+A1 = X1(:, p1(1:h1)); B1 = X1(:, p1(h1+1:end));
+A2 = X2(:, p2(1:h2)); B2 = X2(:, p2(h2+1:end));
+w  = mean(A1, 2, 'omitnan') - mean(A2, 2, 'omitnan');
+a1 = iAUC(iProj(B1, w), iProj(B2, w));
+w2 = mean(B1, 2, 'omitnan') - mean(B2, 2, 'omitnan');
+a2 = iAUC(iProj(A1, w2), iProj(A2, w2));
+a = mean([a1 a2], 'omitnan');
 end

@@ -49,7 +49,7 @@ f.PaperPositionMode = 'manual';
 f.PaperPosition = [0, 0, 3, 4];
 f.PaperSize = [3, 4];
 
-ax = axes(f);
+ax = axes(f, 'Position', [0.225, 0.155, 0.705, 0.775]);
 hold(ax,'on');
 
 rho = NaN;
@@ -59,31 +59,48 @@ if nnz(mask) >= 4 && std(x(mask)) > 0 && std(y(mask)) > 0
 end
 fprintf('Spearman ρ = %.4f (n = %d)\n', rho, nnz(mask));
 
-% 12 h Transfer散点使用组别主色，拟合线使用同色系轻色辅助线。
-scatterColor = TransferLearning.Color12h / 255;
-fitColor = TransferLearning.Color12h / 255;
-scatter(ax, x(mask), y(mask), 5, scatterColor,'filled');
+colData = TransferLearning.Color12h / 255;
+colFit  = [0.62 0.62 0.62];      % 淡灰色拟合线
 
-% 拟合线：实线，打特殊标签供 ExportStandardFigure 减半宽度 & 淡化颜色
-if nnz(mask) >= 2 && std(x(mask)) > 0
+% ---- 散点（plot 圆点：避免 ScatterAxPadding 改写轴限）----
+plot(ax, x(mask), y(mask), 'o', 'MarkerSize', 3.6, 'MarkerFaceColor', colData, ...
+	'MarkerEdgeColor', 'none');
+
+% ---- 线性拟合线（淡灰细线；不画置信带，显著性以 Spearman 为准）----
+if nnz(mask) >= 3 && std(x(mask)) > 0
 	pFit = polyfit(x(mask), y(mask), 1);
-	xFit = [min(x(mask)) max(x(mask))];
-	yFit = polyval(pFit, xFit);
-	plot(ax, xFit, yFit, '-', 'Color', fitColor, 'Tag', 'TransferLearningSupplementalLine');
+	xf = linspace(min(x(mask)), max(x(mask)), 60)';
+	hFit = plot(ax, xf, polyval(pFit, xf), '-', 'Color', colFit, 'LineWidth', 0.5);
+	setappdata(hFit, 'TransferLearningPreserveLineWidth', true);
 end
-grid(ax,'off');
-box(ax,'off');
-xlabel(ax, '🔊 learned cells reactivation');
-ylabel(ax, '💡💧 hit rate');
 
+% ---- 轴样式：L 形、朝外刻度、无上/右框 ----
+ax.Box = 'off';
+ax.LineWidth = 0.75;
+ax.TickDir = 'out';
+ax.TickLength = [0.025 0.025];
+ax.FontSize = 6;
+% 轴限留边：略低于 0 起始，散点不贴轴、原点两个 0 也不会挤在同一个角上
+xPad = 0.06 * (max(x(mask)) - min(x(mask)));
+xlim(ax, [min(x(mask)) - xPad, max(x(mask)) + xPad]);
+ylim(ax, [-0.02, 1.00]);
+xlabel(ax, 'reactivation');
+ylabel(ax, 'hit rate');
+
+% ---- 顶部彩色标题（对应 Fig3d 的 'CS period'）----
+title(ax, 'transfer', 'Color', colData, 'FontWeight', 'bold', 'FontSize', 6);
+
+% ---- 统计结果写在左上角 ----
 if isfinite(p) && isfinite(rho)
+	star = '';
+	if p < 0.05, star = ' *'; end
 	if p < 0.001
-		labelStr = sprintf('Spear. ρ = %.2f\np < 0.001', rho);
+		labelStr = {sprintf('\\rho = %.2f%s', rho, star), 'p < 0.001'};
 	else
-		labelStr = sprintf('Spear. ρ = %.2f\np = %.3f', rho, p);
+		labelStr = {sprintf('\\rho = %.2f%s', rho, star), sprintf('p = %.3f', p)};
 	end
-	text(ax, 0.95, 0.05, labelStr, 'Units','normalized', ...
-		'HorizontalAlignment','right', 'VerticalAlignment','bottom');
+	text(ax, 0.04, 0.96, labelStr, 'Units', 'normalized', 'FontSize', 6, ...
+		'Color', [0.1 0.1 0.1], 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 end
 
 % Export

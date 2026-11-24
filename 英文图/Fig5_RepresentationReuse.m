@@ -293,8 +293,8 @@ albN = albN(oka); albL = albL(oka);
 Fd = Tfd1(Tfd1.Subset == "all", :);
 uC = Fd.uniq_C; uL = Fd.uniq_L; uA = Fd.uniq_A;
 
-wA = Tpa1.r2_raw(Tpa1.Cohort == "ALB"); wA = wA(isfinite(wA));
-wB = Tpa2.r2_raw(Tpa2.Cohort == "ALB"); wB = wB(isfinite(wB));
+wA = Tpa1.r2_orthA_raw(Tpa1.Cohort == "ALB"); wA = wA(isfinite(wA));   % 剔除**独立**动作模板(Naive/WaterOnly)后
+wB = Tpa2.r2_orthA_raw(Tpa2.Cohort == "ALB"); wB = wB(isfinite(wB));
 
 stageOrder = ["Naive", "Learned", "Transfer", "Final"];
 % (g) 用 A3 里同一口径（公共 PC 空间 + 逐鼠 bootstrap）的能量比；
@@ -310,118 +310,122 @@ end
 %% ================= C. 画布 =================
 f = figure('Color', 'w', 'Name', 'Fig5 representation reuse v2');
 f.Units = 'centimeters';
-f.Position(3:4) = [20, 12.5];
+f.Position = [2, 2, 20, 18.5];
 f.PaperUnits = 'centimeters';
 f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, 20, 12.5];
-f.PaperSize = [20, 12.5];
+f.PaperPosition = [0, 0, 20, 18.5];
+f.PaperSize = [20, 18.5];
 
-tlo = tiledlayout(f, 3, 4, 'TileSpacing', 'compact', 'Padding', 'compact');
+% 左列：阶段轨迹竖排（共享 PC 轴标签）；右侧：统计说明横行
+tOuter = tiledlayout(f, 1, 5, 'TileSpacing', 'compact', 'Padding', 'compact');
+tLeft  = tiledlayout(tOuter, 4, 1, 'TileSpacing', 'compact', 'Padding', 'none');
+tLeft.Layout.Tile = 1;
+tRight = tiledlayout(tOuter, 4, 3, 'TileSpacing', 'compact', 'Padding', 'none');
+tRight.Layout.Tile = 2; tRight.Layout.TileSpan = [1 4];
 
 % ---------- (a) ① ALB Naive vs Learned ----------
-axA = nexttile(tlo);
+axA = nexttile(tLeft, 1);
 iGrad(axA, TR{1, 1}, cNaive, nSeg, smoothFrames);
 iGrad(axA, TR{1, 2}, cLearned, nSeg, smoothFrames);
 iTailPCA(axA); title(axA, '(a)', 'FontWeight', 'normal');
-ylabel(axA, 'PC2'); xlabel(axA, 'PC1');
 
 % ---------- (b) ② ALB Learned vs Transfer ----------
-axB = nexttile(tlo);
+axB = nexttile(tLeft, 2);
 iGrad(axB, TR{1, 2}, cLearned, nSeg, smoothFrames);
 iGrad(axB, TR{1, 3}, cTransfer, nSeg, smoothFrames);
 iTailPCA(axB); title(axB, '(b)', 'FontWeight', 'normal');
 
 % ---------- (c) ④ V7 Learned vs Transfer ----------
-axC = nexttile(tlo);
+axC = nexttile(tLeft, 3);
 iGrad(axC, TR{2, 2}, cLearned, nSeg, smoothFrames);
 iGrad(axC, TR{2, 3}, cTransfer, nSeg, smoothFrames);
 iTailPCA(axC); title(axC, '(c)', 'FontWeight', 'normal');
 
-% ② 与 ④ 共用坐标框（幅度可直接比）；(d) 也在同一 PC 空间
-MATLAB.Graphics.UnifyAxesLims([axB, axC], @xlim, @ylim);
-
 % ---------- (d) ③ ALB Transfer hit vs miss ----------
-axD = nexttile(tlo);
+axD = nexttile(tLeft, 4);
 iGrad(axD, TRc{1}, cHit, nSeg, smoothFrames);
 iGrad(axD, TRc{2}, cMiss, nSeg, smoothFrames);
-iTailPCA(axD); title(axD, '(d)', 'FontWeight', 'normal');
+iTailPCA(axD); title(axD, '(d)', 'FontWeight', 'normal'); xlabel(axD, 'PC1');
 MATLAB.Graphics.UnifyAxesLims([axB, axC, axD], @xlim, @ylim);
+% 四个轨迹面板共享同一对轴标签 → 只在 Layout 级别放一次
+ylabel(tLeft, 'PC2');   % 四个轨迹面板共享纵轴标签
 
-% 全局图例（放在整图下方）
-hold(axA, 'on');
+
+% ---------- (g) ② 三模板独特方差（横向条形：标签可用全称）----------
+axG = nexttile(tRight, 4, [1 2]);
+gC = 100 * uC ./ Fd.R2_full;
+gL = 100 * uL ./ Fd.R2_full; gA = 100 * uA ./ Fd.R2_full;
+iBarScatterH(axG, {gC, gL, gA}, {cTmplC, cLearned, cTmplA}, {'Cue', 'Learned', 'Action'});
+axG.XTick = [0 50 100];
+xlabel(axG, 'u (% of R^2)'); iTailQ(axG);
+gV = {gC, gL, gA};
+for k = 1:3
+	m = mean(gV{k}, 'omitnan');
+text(axG, max(m, 0) + 6, k + 0.30, sprintf('%.1f', m), 'HorizontalAlignment', 'left', ...
+	'VerticalAlignment', 'bottom', 'HandleVisibility', 'off');
+end
+		title(axG, '(g)', 'FontWeight', 'normal');
+
+% ---------- (i) ③ 未舔试次的相关 ----------
+axI = nexttile(tRight, 6);
+iBarScatter(axI, {wA, wB}, {cL23, cL5});
+axI.XTick = [1 2]; axI.XTickLabel = {'2/3', 'L5'};
+ylabel(axI, 'r_\perp'); iTailQ(axI);
+		title(axI, '(h)', 'FontWeight', 'normal');
+
+% ---------- (j) RSA 时间对应性 ----------
+		axJ = nexttile(tRight, 7, [1 2]);
+iTwoSeries(axJ, {PkR{1}(:, 1), PkR{1}(:, 2), PkR{1}(:, 3), selALB}, ...
+	{PkR{2}(:, 1), PkR{2}(:, 2), PkR{2}(:, 3), selV7}, cALB, cV7);
+axJ.XTick = [1 2 3 4];
+		axJ.XTickLabel = {'L→T', 'L→N', 'T→F', 'Δ(L→T)−(L→N)'};
+		ylabel(axJ, 'temporal peakness'); iTailQ(axJ);
+		title(axJ, '(i)', 'FontWeight', 'normal');
+		% (j) 内在维度（twoNN，与 PR 仅 ρ=0.50，非冗余）
+		axJ2 = nexttile(tRight, 9);
+		iTwoSeries(axJ2, {msPick("ALB", "N→L", "ID_A"), msPick("ALB", "N→L", "ID_B")}, ...
+			{msPick("V7", "N→L", "ID_A"),  msPick("V7", "N→L", "ID_B")}, cALB, cV7, true);
+		axJ2.XTick = [1 2]; axJ2.XTickLabel = {'Naive', 'Learned'};
+		ylabel(axJ2, 'twoNN ID'); iTailQ(axJ2);
+		title(axJ2, '(j)', 'FontWeight', 'normal');
+
+% ---------- (k) 子空间一致性（A）+ 有效维度（D）----------
+% A：各阶段各自独立估子空间（不共用 PCA 基）→ 主角度 overlap，按同阶段 split-half 归一化
+% D：participation ratio（去时间均值）——排除"复用由维度塔缩产生"
+MS = readtable(fullfile(thisDir, 'Check_ManifoldSimilarity_MOp2-3_k3_w8000ms.csv'));
+msPick = @(c, pn, v) MS{MS.Cohort == c & MS.Pair == pn, v};
+		% ---------- (e) 子空间一致性：overlap（按同阶段 split-half 归一化）----------
+	axK1 = nexttile(tRight, 1, [1 2]);
+		iTwoSeries(axK1, {msPick("ALB", "N→T", "ovRatio"), msPick("ALB", "L→T", "ovRatio"), msPick("ALB", "T→F", "ovRatio")}, ...
+			{msPick("V7", "N→T", "ovRatio"),  msPick("V7", "L→T", "ovRatio"),  msPick("V7", "T→F", "ovRatio")}, cALB, cV7);
+		axK1.XTick = [1 2 3]; axK1.XTickLabel = {'N→T', 'L→T', 'T→F'};
+		ylabel(axK1, 'overlap'); iTailQ(axK1);
+		title(axK1, '(e)', 'FontWeight', 'normal');
+		% ---------- (g) 有效维度：participation ratio（中位数柱，抵抗 V7 的 PR=12.3 离群点）----------
+		axK2 = nexttile(tRight, 3);
+		iTwoSeries(axK2, {msPick("ALB", "N→L", "PR_A"), msPick("ALB", "N→L", "PR_B")}, ...
+			{msPick("V7", "N→L", "PR_A"),  msPick("V7", "N→L", "PR_B")}, cALB, cV7, true);
+		axK2.XTick = [1 2]; axK2.XTickLabel = {'Naive', 'Learned'};
+		ylabel(axK2, 'PR'); iTailQ(axK2);
+		title(axK2, '(f)', 'FontWeight', 'normal');
+
+% ---------- 全局图例（右区末行第 3 格，两列竖排）----------
+axL = nexttile(tRight, 10, [1 3]);
+axL.Box = 'off'; axL.XColor = 'none'; axL.YColor = 'none';
+axL.XTick = []; axL.YTick = []; axL.Color = 'none';
+hold(axL, 'on');
 namesL = {'Naive', 'Learned', 'Transfer', 'hit', 'miss', 'ALB', 'V7'};
 colsL  = {cNaive, cLearned, cTransfer, cHit, cMiss, cALB, cV7};
 hL = gobjects(1, numel(namesL));
 for i = 1:numel(namesL)
-	hs = plot(axA, nan, nan, '-', 'Color', colsL{i} * 0.58, 'LineWidth', 2.2, 'HandleVisibility', 'off');
-	hL(i) = plot(axA, nan, nan, '-', 'Color', colsL{i}, 'LineWidth', 1.5, 'DisplayName', namesL{i});
+	hs = plot(axL, nan, nan, '-', 'Color', colsL{i} * 0.58, 'LineWidth', 2.2, 'HandleVisibility', 'off');
+	hL(i) = plot(axL, nan, nan, '-', 'Color', colsL{i}, 'LineWidth', 1.5, 'DisplayName', namesL{i});
 	setappdata(hs, 'TransferLearningPreserveLineWidth', true);
 	setappdata(hL(i), 'TransferLearningPreserveLineWidth', true);
 end
-lgd = legend(axA, hL, 'Orientation', 'vertical', 'Box', 'off');
-lgd.NumColumns = 2;
-lgd.Layout.Tile = 12;
-lgd.Layout.TileSpan = [1 1];
-
-% ---------- (e) ① 探针可靠度：学习前后 + 给水对照（LAI 正交设计）----------
-axE = nexttile(tlo);
-iPairLine(axE, {wcN, wcA, wcW}, {cNaive, cLearned, cTransfer}, {'before', 'after', '+water'});
-ylabel(axE, 'rel.'); iTailQ(axE);
-title(axE, '(e)', 'FontWeight', 'normal');
-
-% ---------- (f) ① 同一队列（ALB）的 matched-trial 可靠度 ----------
-axF = nexttile(tlo);
-iPairLine(axF, {albN, albL}, {cNaive, cLearned}, {'Naive', 'Learned'});
-iTailQ(axF);
-title(axF, '(f)', 'FontWeight', 'normal');
-
-% ---------- (g) ② 三模板独特方差 ----------
-axG = nexttile(tlo);
-iBarScatter(axG, {uC, uL, uA}, {cTmplC, cLearned, cTmplA});
-axG.XTick = [1 2 3]; axG.XTickLabel = {'u_C', 'u_L', 'u_A'};
-ylabel(axG, 'unique R^2'); iTailQ(axG);
-title(axG, '(g)', 'FontWeight', 'normal');
-
-% ---------- (h) ④ 以 Learned 为锚的能量比（Transfer vs Final）----------
-axH = nexttile(tlo);
-hold(axH, 'on');
-iStage = [3 4];                  % Transfer, Final；Learned = 1 用虚线示意
-xx = 1:2;
-plot(axH, xx - 0.03, yER(1, iStage), '-', 'Color', cALB, 'LineWidth', 1.2);
-plot(axH, xx + 0.03, yER(2, iStage), '-', 'Color', cV7, 'LineWidth', 1.2);
-plot(axH, xx - 0.03, yER(1, iStage), 'o', 'MarkerSize', 4, 'MarkerFaceColor', cALB, 'MarkerEdgeColor', 'none');
-plot(axH, xx + 0.03, yER(2, iStage), 'o', 'MarkerSize', 4, 'MarkerFaceColor', cV7, 'MarkerEdgeColor', 'none');
-for k = 1:2
-	cc = cALB; dx = -0.03; if k == 2, cc = cV7; dx = 0.03; end
-	for j = 1:2
-		iS = iStage(j);
-		if isfinite(eER(k, iS)) && eER(k, iS) > 0
-			errorbar(axH, xx(j) + dx, yER(k, iS), eER(k, iS), 'Color', cc, ...
-				'LineStyle', 'none', 'LineWidth', 0.8, 'CapSize', 3);
-		end
-	end
-end
-yline(axH, 1, ':', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.6, 'HandleVisibility', 'off');
-xlim(axH, [0.5 2.5]); axH.XTick = xx; axH.XTickLabel = {'Transfer', 'Final'};
-ylabel(axH, 'energy'); iTailQ(axH);
-title(axH, '(h)', 'FontWeight', 'normal');
-
-% ---------- (i) ③ 未溼试次的相关 ----------
-axI = nexttile(tlo);
-iBarScatter(axI, {wA, wB}, {cL23, cL5});
-axI.XTick = [1 2]; axI.XTickLabel = {'2/3', 'L5'};
-ylabel(axI, 'r'); iTailQ(axI);
-title(axI, '(i)', 'FontWeight', 'normal');
-
-% ---------- (j) RSA 时间对应性（跨 2 列）----------
-axJ = nexttile(tlo);
-axJ.Layout.TileSpan = [1 2];
-iTwoSeries(axJ, {PkR{1}(:, 1), PkR{1}(:, 2), PkR{1}(:, 3), selALB}, ...
-	{PkR{2}(:, 1), PkR{2}(:, 2), PkR{2}(:, 3), selV7}, cALB, cV7);
-axJ.XTick = [1 2 3 4];
-axJ.XTickLabel = {'(L→T)', '(L→N)', '(T→F)', '(L→T)−(L→N)'};
-ylabel(axJ, 'temporal peakness'); iTailQ(axJ);
-title(axJ, '(j)', 'FontWeight', 'normal');
+lgd = legend(axL, hL, 'Orientation', 'vertical', 'Box', 'off');
+lgd.NumColumns = 7;
+lgd.FontSize = 8;
 
 %% ---------- 导出 ----------
 svgPath = TransferLearning.ExportStandardFigure(f, 2, 'English_Fig5_RepresentationReuse.svg');
@@ -476,8 +480,9 @@ ax.Box = 'off';
 ax.LineWidth = 1;
 end
 
-function iTwoSeries(ax, A, B, cA, cB)
-% 每个 group 两根柱（两队列）+ 逐鼠散点
+function iTwoSeries(ax, A, B, cA, cB, useMed)
+% 每个 group 两根柱（两队列）+ 逐鼠散点；useMed=true 时柱高用中位数（对离群点稳健）
+if nargin < 6, useMed = false; end
 hold(ax, 'on');
 n = numel(A);
 for g = 1:n
@@ -486,7 +491,11 @@ for g = 1:n
 		else,      v = B{g}; cc = cB; dx = 0.17; end
 		v = v(:); v = v(isfinite(v));
 		if isempty(v), continue; end
-		m = mean(v); se = std(v) / sqrt(numel(v));
+		if useMed
+			m = median(v); se = 1.2533 * std(v) / sqrt(numel(v));
+		else
+			m = mean(v); se = std(v) / sqrt(numel(v));
+		end
 		bar(ax, g + dx, m, 0.28, 'FaceColor', cc, 'EdgeColor', 'none', 'HandleVisibility', 'off');
 		errorbar(ax, g + dx, m, se, 'Color', cc, 'LineStyle', 'none', ...
 			'LineWidth', 1, 'CapSize', 3, 'HandleVisibility', 'off');
@@ -525,6 +534,30 @@ function d = iDNoRot(A, B)
 a = A - mean(A, 1); b = B - mean(B, 1);
 a = a / norm(a, 'fro'); b = b / norm(b, 'fro');
 d = 2 - 2 * sum(a(:) .* b(:));
+end
+
+function iBarScatterH(ax, D, colors, labs)
+hold(ax, 'on');
+nG = numel(D);
+for k = 1:nG
+	v = D{k}(:); v = v(isfinite(v));
+	if isempty(v), continue; end
+	m = mean(v); s = std(v) / sqrt(numel(v));
+	barh(ax, k, m, 0.55, 'FaceColor', colors{k}, 'EdgeColor', 'none');
+	errorbar(ax, m, k, s, 'horizontal', 'Color', colors{k}, 'LineStyle', 'none', ...
+	'LineWidth', 1, 'CapSize', 3, 'HandleVisibility', 'off');
+	plot(ax, v, k + (rand(numel(v), 1) - 0.5) * 0.26, 'o', 'MarkerSize', 2.2, ...
+	'MarkerFaceColor', 'none', 'MarkerEdgeColor', colors{k}, 'LineWidth', 0.4);
+end
+% 按数据范围自动加边距（左侧留 4%，避免 y 轴标签贴住柱子与负值散点）
+xv = []; for kk = 1:nG, xv = [xv; D{kk}(:)]; end
+xv = xv(isfinite(xv));
+lo = min([0; xv]); hi = max([0; xv]);
+padx = 0.04 * max(hi - lo, eps);
+xlim(ax, [lo - padx, hi + padx]);
+ylim(ax, [0.5 nG + 0.5]);
+ax.YTick = 1:nG; ax.YTickLabel = labs;
+xline(ax, 0, '-', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 end
 
 function iBarScatter(ax, D, colors)
