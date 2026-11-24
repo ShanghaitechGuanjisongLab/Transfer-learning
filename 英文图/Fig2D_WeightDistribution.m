@@ -1,4 +1,4 @@
-% 英文图3D：Learned声水cue前后解码器的base/cued细胞绝对系数分布及逐鼠均值插图。
+% 英文图2D：Learned声水cue前后解码器的base/cued细胞绝对系数分布及逐鼠均值插图。
 % 直接使用原1 s LASSO缓存的全部AudioLightBaseline鼠；负系数支持base判别，正系数支持cued判别。
 % 零系数不归入任一组，但保留在全部解码细胞的比例分母中；两组逐鼠均值采用配对符号秩检验。
 
@@ -42,12 +42,12 @@ PerMouseBase = PerMouseBase(PairedMice);
 PerMouseCued = PerMouseCued(PairedMice);
 PairedNames = Mice(PairedMice);
 PPaired = signrank(PerMouseBase, PerMouseCued, 'method', 'exact');
-fprintf('3D逐鼠绝对cue系数：base %.6f ± %.6f，cued %.6f ± %.6f，n=%d，配对p=%.9g。\n', mean(PerMouseBase), std(PerMouseBase) / sqrt(numel(PerMouseBase)), mean(PerMouseCued), std(PerMouseCued) / sqrt(numel(PerMouseCued)), numel(PerMouseBase), PPaired);
+fprintf('2D逐鼠绝对cue系数：base %.6f ± %.6f，cued %.6f ± %.6f，n=%d，配对p=%.9g。\n', mean(PerMouseBase), std(PerMouseBase) / sqrt(numel(PerMouseBase)), mean(PerMouseCued), std(PerMouseCued) / sqrt(numel(PerMouseCued)), numel(PerMouseBase), PPaired);
 ColorBase = TransferLearning.ColorMiss / 255;
 ColorCued = TransferLearning.ColorHit / 255;
 
 %% 主图
-Fig = figure('Color', 'w', 'Name', '英文图3D：base/cued绝对cue权重分布');
+Fig = figure('Color', 'w', 'Name', '英文图2D：base/cued绝对cue权重分布');
 Fig.Units = 'centimeters';
 Fig.Position(3:4) = [9, 8];
 Fig.PaperUnits = 'centimeters';
@@ -70,8 +70,8 @@ legend(AxMain, 'Location', 'northeast', 'Box', 'off');
 if isprop(AxMain, 'Toolbar') && ~isempty(AxMain.Toolbar)
 	AxMain.Toolbar.Visible = 'off';
 end
-SvgPath = TransferLearning.ExportStandardFigure(Fig, 2, 'English_Fig3D_WeightDistribution.svg');
-fprintf('3D细胞：总计%d，base %d，cued %d，未加权零系数%d。\n', TotalCells, numel(WBase), numel(WCued), NZero);
+SvgPath = TransferLearning.ExportStandardFigure(Fig, 2, 'English_Fig2D_WeightDistribution.svg');
+fprintf('2D细胞：总计%d，base %d，cued %d，未加权零系数%d。\n', TotalCells, numel(WBase), numel(WCued), NZero);
 
 %% 插图
 FigInset = figure;
@@ -131,4 +131,4 @@ end
 box(AxInset, 'off');
 AxInset.Color = 'none';
 legend(AxInset, 'off');
-SvgInset = TransferLearning.ExportStandardFigureTransparent(FigInset, 2, 'English_Fig3D_PerMouseMeanWeight_Inset.svg');
+SvgInset = TransferLearning.ExportStandardFigureTransparent(FigInset, 2, 'English_Fig2D_PerMouseMeanWeight_Inset.svg');

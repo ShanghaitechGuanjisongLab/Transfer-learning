@@ -1,4 +1,4 @@
-% 英文图3C：二维分组表比较3B两种训练的±1 s时点差，只展示Learned声水与12 h首Transfer block两个测试集。
+% 英文图2C：二维分组表比较3B两种训练的±1 s时点差，只展示Learned声水与12 h首Transfer block两个测试集。
 % 横向分组为测试集，颜色为Naive声与Learned声水训练；只比较同一测试集内的两种训练，不画跨测试集比较。
 % 直接将BarScatterCompare返回的PText改成双侧精确配对符号秩检验的两项Holm结果，默认ANOVA值另存。
 % 短分组名、二维表、分组柱样式、p线调距及导出顺序沿用Fig5F_THInhibitVsCtrl_DivergenceByLayer。
@@ -10,7 +10,7 @@ if ~exist('UniExp.DataSet', 'class')
 		matlab.project.loadProject(PrjFile);
 	end
 end
-CacheDir = fileparts(TransferLearning.CachePath('Fig3C_TrainingComparison.mat'));
+CacheDir = fileparts(TransferLearning.CachePath('Fig2C_TrainingComparison.mat'));
 SourceCSV = fullfile(CacheDir, 'Fig3B_LocalWindow_2x4_Post1000ms_PerMouse.csv');
 if ~isfile(SourceCSV)
 	TransferLearning.ComputeLocalWindowGapDecoderMatrix();
@@ -55,9 +55,9 @@ Selected.Metric = repmat("PPostAtPlus1sMinusPPostAtMinus1s", height(Selected), 1
 for TestIndex = 1:2
 	NaiveRows = sortrows(Selected(Selected.Test == TestKeys(TestIndex) & Selected.Training == TrainKeys(1), :), {'Dataset', 'Mouse'});
 	LearnedRows = sortrows(Selected(Selected.Test == TestKeys(TestIndex) & Selected.Training == TrainKeys(2), :), {'Dataset', 'Mouse'});
-	assert(isequal(NaiveRows.Mouse, LearnedRows.Mouse) && isequal(NaiveRows.Dataset, LearnedRows.Dataset), 'Fig3C:UnpairedMice', '两种训练必须使用相同且顺序一致的鼠。');
+	assert(isequal(NaiveRows.Mouse, LearnedRows.Mouse) && isequal(NaiveRows.Dataset, LearnedRows.Dataset), 'Fig2C:UnpairedMice', '两种训练必须使用相同且顺序一致的鼠。');
 	assert(height(NaiveRows) == numel(unique(NaiveRows.Mouse)) && all(isfinite([NaiveRows.Delta; LearnedRows.Delta])));
-	assert(isequal(NaiveRows.NCells, LearnedRows.NCells), 'Fig3C:DifferentCells', '两种训练必须使用相同的共同细胞。');
+	assert(isequal(NaiveRows.NCells, LearnedRows.NCells), 'Fig2C:DifferentCells', '两种训练必须使用相同的共同细胞。');
 	DataCell{TestIndex, 1} = NaiveRows.Delta;
 	DataCell{TestIndex, 2} = LearnedRows.Delta;
 	MouseNames{TestIndex} = NaiveRows.Mouse;
@@ -79,9 +79,9 @@ CompareGroup = table(GroupPair);
 Colors = [TransferLearning.ColorNaive; TransferLearning.ColorLearned] / 255;
 ColorTable = array2table(Colors, 'VariableNames', {'R', 'G', 'B'}, 'RowNames', cellstr(TrainLabels));
 %% 
-Fig = figure('Color', 'w', 'Name', '英文图3C：两种训练在Learned及12 h测试中的解码差值');
+Fig = figure('Color', 'w', 'Name', '英文图2C：两种训练在Learned及12 h测试中的解码差值');
 Fig.Units = 'centimeters';
-Fig.Position(3:4) = [6, 11];
+Fig.Position(3:4) = [6, 10];
 Ax = gca;
 [~, Optional, Bars, ErrorBars] = UniExp.BarScatterCompare(DataTable, CompareGroup, ColorTable, Ax, UniExp.Flags.IndividualErrorbars, 'AsteriskThreshold', 0.05);
 StyleBars(Ax, Bars, ErrorBars, Colors);
@@ -100,7 +100,7 @@ if ismember('GroupPair', Comparisons.Properties.VariableNames) && istable(Compar
 	ComparisonGroups = Comparisons.GroupPair;
 end
 ComparisonTests = string(ComparisonGroups.Test);
-assert(istable(Comparisons) && height(Comparisons) == 2 && all(ComparisonTests(:, 1) == ComparisonTests(:, 2)), 'Fig3C:UnexpectedComparisons', '只允许两个同测试集内的训练比较。');
+assert(istable(Comparisons) && height(Comparisons) == 2 && all(ComparisonTests(:, 1) == ComparisonTests(:, 2)), 'Fig2C:UnexpectedComparisons', '只允许两个同测试集内的训练比较。');
 PairedStats.AnovaP = nan(2, 1);
 Comparisons.DisplayedPValue = nan(height(Comparisons), 1);
 Comparisons.DisplayedMethod = repmat("PairedSignedRankExactTwoSidedHolm2", height(Comparisons), 1);
@@ -119,7 +119,7 @@ for ComparisonIndex = 1:height(Comparisons)
 end
 Optional.MultiCompare = Comparisons;
 RetunePValueLines(Optional);
-TransferLearning.ExportStandardFigure(Fig,2,'English_Fig3C_LocalWindow_NaiveVsLearnedAudioWater.svg');
+TransferLearning.ExportStandardFigure(Fig,2,'English_Fig2C_LocalWindow_NaiveVsLearnedAudioWater.svg');
 
 function StyleBars(Ax, Bars, ErrorBars, GroupColors)
 for BarIndex = 1:numel(Bars)

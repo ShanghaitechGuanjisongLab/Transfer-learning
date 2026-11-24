@@ -1,8 +1,9 @@
-% 英文图3E：learned-active细胞的base/cued cue解码权重及reactivated子群堆叠直方图。
+% 英文图2E：learned-active细胞的base/cued cue解码权重及reactivated子群堆叠直方图。
 % 左为AudioLightBaseline，右为Vacation7；两者均使用原Learned声水1 s LASSO缓存的全部可用鼠。
-% 负系数支持base判别，正系数支持cued判别；零系数单独记录，不归入任一权重组。
+% 负系数支持base判别，正系数支持cued判别；零系数画在以0为中心的分箱，不归入任一权重组。
+% 配色按语义：learned-active=ColorLearned（学会），reactivated=各队列迁移时点色（12 h=Color12h，7 d=Color7d）。
 % 活跃与重激活判定保持原定义：末次非Recall声水和首次Transfer光水，+1 s处高于基线均值加3σ。
-% 每柱内reactivated堆底，learned-active且未reactivated堆顶，不显示其他细胞。
+% 每柱内reactivated堆底，learned-active且未reactivated堆顶，不显示其他细胞；纵轴按队列内learned-active总数归一为占比。
 
 [ThisDir, Filename] = fileparts(mfilename('fullpath'));
 if ~exist('UniExp.DataSet', 'class')
@@ -20,42 +21,48 @@ BaseMask = Xs >= -3 & Xs < 0;
 KSigma = 3;
 Datasets = {TransferLearning.AudioLightBaseline(), TransferLearning.Vacation7()};
 WeightsByCohort = cell(2, 1);
-GroupSummary = table();
+SummaryRows = cell(2, 1);
 for DatasetIndex = 1:2
 	DS = Datasets{DatasetIndex};
 	Models = CueData.Cohorts{DatasetIndex};
-	Weights = struct('Weights', zeros(0, 1), 'Group', zeros(0, 1), 'Mouse', strings(0, 1), 'CellUIDs', uint64([]));
-	UsedMice = strings(0, 1);
+	WeightParts = cell(numel(Models), 1);
+	GroupParts = cell(numel(Models), 1);
+	MouseParts = cell(numel(Models), 1);
+	UIDParts = cell(numel(Models), 1);
 	for MouseIndex = 1:numel(Models)
 		Model = Models{MouseIndex};
 		[Groups, Valid] = GroupForMouse(DS, Model.Mouse, Model.CellUIDs, BaseMask, Index1s, KSigma);
-		assert(Valid, 'Fig3E:MissingContext', '%s缺少Learned或Transfer活跃判定情境。', Model.Mouse);
-		Weights.Weights = [Weights.Weights; Model.Weights];
-		Weights.Group = [Weights.Group; Groups];
-		Weights.Mouse = [Weights.Mouse; repmat(Model.Mouse, Model.NCells, 1)];
-		Weights.CellUIDs = [Weights.CellUIDs; Model.CellUIDs];
-		UsedMice(end + 1, 1) = Model.Mouse;
+		assert(Valid, 'Fig2E:MissingContext', '%s缺少Learned或Transfer活跃判定情境。', Model.Mouse);
+		WeightParts{MouseIndex} = Model.Weights(:);
+		GroupParts{MouseIndex} = Groups(:);
+		MouseParts{MouseIndex} = repmat(string(Model.Mouse), Model.NCells, 1);
+		UIDParts{MouseIndex} = Model.CellUIDs(:);
 	end
+	Weights = struct( ...
+		'Weights', vertcat(WeightParts{:}), ...
+		'Group', vertcat(GroupParts{:}), ...
+		'Mouse', vertcat(MouseParts{:}), ...
+		'CellUIDs', vertcat(UIDParts{:}));
 	WeightsByCohort{DatasetIndex} = Weights;
-	GroupSummary = [GroupSummary; table(CueData.DatasetNames(DatasetIndex), numel(UsedMice), numel(Weights.Weights), nnz(Weights.Group >= 1), nnz(Weights.Group == 2), nnz(Weights.Group >= 1 & Weights.Weights < 0), nnz(Weights.Group >= 1 & Weights.Weights > 0), nnz(Weights.Group >= 1 & Weights.Weights == 0), 'VariableNames', {'Dataset', 'NMice', 'NDecoderCells', 'NLearnedActive', 'NReactivated', 'NBaseWeighted', 'NCuedWeighted', 'NZeroLearnedActive'})];
+	SummaryRows{DatasetIndex} = table(CueData.DatasetNames(DatasetIndex), numel(Models), numel(Weights.Weights), nnz(Weights.Group >= 1), nnz(Weights.Group == 2), nnz(Weights.Group >= 1 & Weights.Weights < 0), nnz(Weights.Group >= 1 & Weights.Weights > 0), nnz(Weights.Group >= 1 & Weights.Weights == 0), 'VariableNames', {'Dataset', 'NMice', 'NDecoderCells', 'NLearnedActive', 'NReactivated', 'NBaseWeighted', 'NCuedWeighted', 'NZeroLearnedActive'});
 end
+GroupSummary = vertcat(SummaryRows{:});
 
 %% 作图
-DisplayedWeights = [];
-for DatasetIndex = 1:2
-	Weights = WeightsByCohort{DatasetIndex};
-	DisplayedWeights = [DisplayedWeights; Weights.Weights(Weights.Group >= 1 & Weights.Weights ~= 0)];
-end
-MaxWeight = max(abs(DisplayedWeights));
-assert(isfinite(MaxWeight) && MaxWeight > 0);
-Edges = linspace(-MaxWeight, MaxWeight, 41);
+% 分箱边界取(整数+0.5)×BinWidth，使0恰为箱中心：零权重落在中心箱，不会被划入base或cued侧。
+DisplayedWeights = cellfun(@(W) W.Weights(W.Group >= 1), WeightsByCohort, 'UniformOutput', false);
+[MinWeight, MaxWeight] = bounds(vertcat(DisplayedWeights{:}));
+BinWidth = (MaxWeight - MinWeight) / 40;
+FirstEdgeIndex = floor(MinWeight / BinWidth - 0.5);
+LastEdgeIndex = ceil(MaxWeight / BinWidth - 0.5);
+Edges = ((FirstEdgeIndex:LastEdgeIndex) + 0.5) * BinWidth;
 BinCenters = Edges(1:end - 1) + diff(Edges) / 2;
-Fig = figure('Color', 'w', 'Name', '英文图3E：base/cued cue权重与重激活子群');
+Fig = figure('Color', 'w', 'Name', '英文图2E：base/cued cue权重与重激活子群');
 Fig.Units = 'centimeters';
-Fig.Position(3:4) = [21, 8];
-Layout = tiledlayout(Fig, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+Fig.Position(3:4) = [9, 8];
+Layout = tiledlayout(Fig, 1, 2, 'TileSpacing', 'tight', 'Padding', 'tight');
 Titles = ["🔊→12h→💡", "🔊→7d→💡"];
-ColorReact = TransferLearning.Color12h / 255;
+ColorReact = [TransferLearning.Color12h; TransferLearning.Color7d] / 255;
 ColorLearnedActive = TransferLearning.ColorLearned / 255;
 CountsByCohort = cell(2, 1);
 Axes = gobjects(1, 2);
@@ -64,30 +71,30 @@ for DatasetIndex = 1:2
 	Weights = WeightsByCohort{DatasetIndex};
 	Ax = nexttile(Layout);
 	hold(Ax, 'on');
-	CountsReact = histcounts(Weights.Weights(Weights.Group == 2 & Weights.Weights ~= 0), Edges);
-	CountsLearnedActive = histcounts(Weights.Weights(Weights.Group == 1 & Weights.Weights ~= 0), Edges);
+	CountsReact = histcounts(Weights.Weights(Weights.Group == 2), Edges);
+	CountsLearnedActive = histcounts(Weights.Weights(Weights.Group == 1), Edges);
 	Counts = [CountsReact(:), CountsLearnedActive(:)];
-	assert(sum(Counts, 'all') == nnz(Weights.Group >= 1 & Weights.Weights ~= 0));
+	TotalCells = sum(Counts, 'all');
+	assert(TotalCells > 0, 'Fig2E:EmptyCohort', '%s没有learned-active细胞。', Titles(DatasetIndex));
+	Counts = Counts / TotalCells;
 	Handles = bar(Ax, BinCenters, Counts, 1, 'stacked', 'EdgeColor', 'none');
-	Handles(1).FaceColor = ColorReact;
+	Handles(1).FaceColor = ColorReact(DatasetIndex, :);
 	Handles(2).FaceColor = ColorLearnedActive;
 	xline(Ax, 0, ':', 'HandleVisibility', 'off');
 	box(Ax, 'off');
 	title(Ax, Titles(DatasetIndex));
 	if DatasetIndex == 1
-		legend(Ax, Handles, {'reactivated', 'learned-active'}, 'Box', 'off', 'Location', 'northwest');
+		DummyReact7d = bar(Ax, NaN, NaN, FaceColor=ColorReact(2, :), EdgeColor='none');
+		L = legend(Ax, [Handles(1), DummyReact7d, Handles(2)], {'reactivated (12h)', 'reactivated (7d)', 'learned-active'}, Box='off', Orientation='horizontal');
+		L.Layout.Tile = 'north';
 	end
 	CountsByCohort{DatasetIndex} = Counts;
 	Axes(DatasetIndex) = Ax;
 	Bars{DatasetIndex} = Handles;
 end
-xlabel(Layout, 'Cue decoder weight (base < 0; cued > 0)');
-ylabel(Layout, 'Cell count');
+xlabel(Layout, 'Decoder weight (base < 0; cued > 0)');
+ylabel(Layout, 'Cell fraction');
 SvgPath = TransferLearning.ExportStandardFigure(Fig, 2, sprintf('English_%s.svg', Filename));
-Fig3E_CueWeightStats = struct('WeightsByCohort', {WeightsByCohort}, 'Summary', GroupSummary, 'Edges', Edges, 'CountsByCohort', {CountsByCohort}, 'SourceCache', CueData.SourceCache, 'WeightType', CueData.WeightType, 'Figure', Fig, 'Axes', Axes, 'Bars', {Bars}, 'SvgPath', SvgPath);
-assignin('base', 'Fig3E_CueWeightStats', Fig3E_CueWeightStats);
-save(TransferLearning.CachePath('Fig3E_CueWeight_Reactivation_Results.mat'), 'WeightsByCohort', 'GroupSummary', 'Edges', 'CountsByCohort');
-disp(GroupSummary);
 
 function [Groups, Valid] = GroupForMouse(DS, Mouse, CellUIDs, BaseMask, Index1s, KSigma)
 Groups = zeros(numel(CellUIDs), 1);
