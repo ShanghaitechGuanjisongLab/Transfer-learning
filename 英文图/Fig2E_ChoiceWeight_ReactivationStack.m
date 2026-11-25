@@ -85,7 +85,7 @@ for DatasetIndex = 1:2
 	title(Ax, Titles(DatasetIndex));
 	if DatasetIndex == 1
 		DummyReact7d = bar(Ax, NaN, NaN, FaceColor=ColorReact(2, :), EdgeColor='none');
-		L = legend(Ax, [Handles(1), DummyReact7d, Handles(2)], {'reactivated (12h)', 'reactivated (7d)', 'learned-active'}, Box='off', Orientation='horizontal');
+		L = legend(Ax, [Handles(1), DummyReact7d, Handles(2)], {'reactivated (12h)', 'reactivated (7d)', 'learned-active'}, Box='off');
 		L.Layout.Tile = 'north';
 	end
 	CountsByCohort{DatasetIndex} = Counts;

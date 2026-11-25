@@ -65,7 +65,7 @@ title(LegendHandle,'Trained from');
 title(Layout,'Tested with')
 xlabel(Layout, 'Time from cue onset (s)');
 ylabel(Layout, 'P(cued)');
-LegendHandle.Layout.Tile = 'south';
+LegendHandle.Layout.Tile = 'southoutside';
 TransferLearning.ApplyStandardExportStyle(Fig, 2);
 MATLAB.Graphics.UnifyAxesLims(Axes(:), @xlim, @ylim);
 for PlotColumn = 1:NColumns
