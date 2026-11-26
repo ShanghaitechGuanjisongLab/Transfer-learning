@@ -1,24 +1,13 @@
 % Fig1C_MetricBars_PairwiseBars.m —— 1C：按「指标」分组输出
 %
-%   A 图（40 × 80 mm）：每个指标一张，Naive vs 12h（上）与 Naive vs 7d（下）上下叠放，共享 y 轴范围与居中 y 轴标题
-%   B 图（30 × 40 mm）：12h vs 7d 单图（每个指标一张）
+%   图（40 × 80 mm）：每个指标一张，Naive vs 12h（上）与 Naive vs 7d（下）上下叠放，共享 y 轴范围与居中 y 轴标题
 %   指标：First block hit rate / Blocks to 50% / Learning speed（= 原 Sigmoid slope）
 %
 % 样式：bar 无边框 + 单向手绘误差棒（压在散点之上）+ 逐鼠散点（点色 = 柱色，细描边）
 %       + 括号上的数值 p（不显著写 n.s.）。
 %
 % 输出：English_Fig1C_<Metric>_NaiveVs12h_NaiveVs7d.svg
-%       English_Fig1C_<Metric>_12hVs7d.svg
 
-clear variables; close all;
-cd('d:\git\Transfer-Learning');
-if ~any(strcmpi(strsplit(path, pathsep), 'd:\git\Transfer-Learning'))
-	addpath('d:\git\Transfer-Learning');
-end
-if ~exist('UniExp.DataSet', 'class')
-	matlab.project.loadProject('d:\git\Transfer-Learning\Transferlearning.prj');
-end
-warning('off', 'UniExp:Exception:Block_must_warn');
 
 gName  = ["Naive", "Transfer", "7dayTransfer"];
 gLabel = ["Naive", "12h", "7d"];
@@ -39,10 +28,7 @@ pairIdx   = {[1 2], [1 3], [2 3]};
 fprintf('\n=== 1C 两柱对比图（按指标分组输出） ===\n');
 % A 图：Naive vs 12h（上）｜ Naive vs 7d（下）上下叠放，40 × 80 mm
 aW = 4.0;  aH = 8.0;
-axAX = 0.235;  axAW = 0.730;  axAH = 0.400;
-axAY = [0.555 0.075];   % [上 下]
-% B 图：12h vs 7d 单图，30 × 40 mm
-bW = 3.0;  bH = 4.0;
+%% 
 
 for m = 1:3
 	vN  = M{m}(G{m} == gName(1));  vN = vN(isfinite(vN));
@@ -64,36 +50,22 @@ for m = 1:3
 	end
 	outA = sprintf('English_Fig1C_%s_NaiveVs12h_NaiveVs7d', metricTag(m));
 	f = iNewFig(aW, aH, outA);
+	Layout = tiledlayout(f, 2, 1, TileSpacing='compact', Padding='compact');
+	TileAxes = gobjects(1, 2);
 	hT = gobjects(1, 2);
 	for j = 1:2
-		axm = axes(f, 'Position', [axAX, axAY(j), axAW, axAH]);
+		axm = nexttile(Layout, j);
+		TileAxes(j) = axm;
 		hT(j) = iMetricBar(axm, sets{j}{1}, sets{j}{2}, sets{j}{3}, sets{j}{4}, sets{j}{5}, "", yBr);
 	end
+	MATLAB.Graphics.UnifyAxesLims(TileAxes(:), @xlim, @ylim);
 	% 统一字体/线宽；散点尺寸与描边宽度自己控制，不被覆盖
-	TransferLearning.Style.ApplyStandardFigureStyle(f, 1, PreserveScatterStyle = true);
-	% 共享 y 轴标题：整列垂直居中（不挂在单个面板上）
-	axO = axes(f, 'Position', [0 0 1 1], 'Visible', 'off');
-	hold(axO, 'on');
-	xlim(axO, [0 1]);  ylim(axO, [0 1]);
-	text(axO, 0.062, 0.5, metricYlab(m), 'Rotation', 90, ...
-		'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', ...
-		'FontSize', 6, 'Color', [0 0 0]);
+	TransferLearning.Style.ApplyStandardFigureStyle(f, 2, PreserveScatterStyle = true);
+	% 共享 y 轴标题：Layout 级（两个 tile 的 y 范围已统一，标题即整列垂直居中）
+	ylabel(Layout, metricYlab(m));
 	svgPath = TransferLearning.StandardFigureSvgPath([outA '.svg']);
 	print(f, svgPath, '-dsvg');
 	fprintf('Wrote: %s\n', svgPath);
-	close(f);
-
-	% ---------- B：12h vs 7d（单图） ----------
-	outB = sprintf('English_Fig1C_%s_12hVs7d', metricTag(m));
-	f = iNewFig(bW, bH, outB);
-	axm = axes(f, 'Position', [0.240 0.200 0.700 0.660]);
-	iMetricBar(axm, v12, v7, groupColors([2 3], :), gLabel([2 3]), pv127, ...
-		metricYlab(m), iBracketY(v12, v7));
-	TransferLearning.Style.ApplyStandardFigureStyle(f, 1, PreserveScatterStyle = true);
-	svgPath = TransferLearning.StandardFigureSvgPath([outB '.svg']);
-	print(f, svgPath, '-dsvg');
-	fprintf('Wrote: %s\n', svgPath);
-	close(f);
 end
 
 %% ================= 局部函数 =================

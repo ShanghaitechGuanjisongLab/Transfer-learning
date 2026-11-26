@@ -25,10 +25,10 @@ classdef(Abstract)TransferLearning
 		%未使用 Maroon(353°，与 Red 仅差 10°) 与 Sapphire(199°，与 Sky 仅差 10°)
 		%Naive↔Learned = Red 343° / Teal 170°（相隔 173°）
 		ColorNaive=[243, 139, 168];%#F38BA8 Red    H343 L0.75 未学
-		ColorLearned=[148, 226, 213];%#94E2D5 Teal H170 L0.73 学会
+		ColorLearned=[245, 194, 231];%#94E2D5 Teal H170 L0.73 学会
 		%12h↔7d = Peach 23° / Pink 316°（相隔 67°，同为暖调浅色）
 		Color12h=[250, 179, 135];%#FAB387 Peach  H23 L0.75 12h
-		Color7d=[245, 194, 231];%#F5C2E7 Pink   H316 L0.86 7d
+		Color7d=[148, 226, 213];%#F5C2E7 Pink   H316 L0.86 7d
 		%12h↔TH = Peach 23° / Mauve 267°（相隔 116°）
 		ColorTH=[203, 166, 247];%#CBA6F7 Mauve  H267 L0.81 丘脑抑制
 		%Hit↔Miss = Green 115° / Blue 217°（相隔 102°）

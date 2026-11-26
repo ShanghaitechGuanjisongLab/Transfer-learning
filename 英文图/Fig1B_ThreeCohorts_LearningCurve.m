@@ -9,30 +9,10 @@
 %       实心圆点 + 连线；每组再叠一条**虚线 sigmoid 拟合线**（对逐鼠逐会话命中率做最小二乘拟合）。
 % 配色：与 bar 图一致 TransferLearning.ColorNaive / Color12h / Color7d。
 % 尺寸：排版 45×40 mm、6 pt → 导出 90×80 mm、12 pt。
-clear variables; close all;
-cd('d:\git\Transfer-Learning');
-%包 +TransferLearning 只在工程根目录（current folder）解析，run() 会临时切 cwd，所以显式加 path
-if ~any(strcmpi(strsplit(path, pathsep), 'd:\git\Transfer-Learning'))
-	addpath('d:\git\Transfer-Learning');
-end
-if ~exist('UniExp.DataSet', 'class')
-	matlab.project.loadProject('d:\git\Transfer-Learning\Transferlearning.prj');
-end
 
 groupOrder = ["Naive", "Transfer", "7dayTransfer"];
 groupLabel = ["Naive", "12 h", "7 d"];
-%配色与 bar 图完全一致；useCurveColor = true 则换成曲线版（主色压黑 35%，更墨）
-useCurveColor = false;
-%试色：7 d 组改用 learned 组的颜色（ColorLearned），便于与 12 h 组区分；false 则回到 Color7d
-tryLearnedFor7d = true;
-if useCurveColor
-	groupColor = [TransferLearning.CurveNaive(); TransferLearning.Curve12h(); TransferLearning.Curve7d()] / 255;
-else
-	groupColor = [TransferLearning.ColorNaive; TransferLearning.Color12h; TransferLearning.Color7d] / 255;
-end
-if tryLearnedFor7d
-	groupColor(3, :) = TransferLearning.ColorLearned / 255;
-end
+groupColor = [TransferLearning.ColorNaive; TransferLearning.Color12h; TransferLearning.Color7d] / 255;
 %描边/误差棒颜色：与填充同色为纯实心点；想让点更清楚可改成 groupColor*0.8（会有一圈深描边）
 nG = numel(groupOrder);
 edgeColor = zeros(nG, 3);
@@ -98,14 +78,10 @@ for k = 1:3
 end
 
 %% 画图
-figScale = 2;          %导出倍率：90×80 mm、12 pt → 排版缩 1/2 得 45×40 mm、6 pt
-figWmm = 45;           %排版宽度（mm），用于把点/误差棒尺寸固定成物理尺寸
-figHmm = 40;
 f = figure('Color', 'w', 'Name', 'Fig1 three cohorts learning curve');
 f.Units = 'centimeters';
-f.Position(3:4) = [figWmm, figHmm] / 10 * figScale;
-ax = axes(f, 'Position', [0.18 0.19 0.79 0.75]);
-hold(ax, 'on');
+f.Position(3:4) = [9,8];
+hold on;
 
 %点大小：样式会把所有 LineWidth 设为 1 pt（导出 12 pt 体系下 2 pt），
 %而 marker 的描边宽度也走 LineWidth，所以点要开得比线宽大一截才不会被描边吃掉
@@ -122,31 +98,23 @@ hPt = gobjects(nG, 1);
 xFit = linspace(1, maxBlock, 200).';
 for g = 1:nG
 	%绘制顺序：阴影带在最下、虚线拟合、均值连线、实心点在最上
-	plot(ax, xFit, iSigmoidFromParams(FIT{g}.ParamRaw, xFit), '--', ...
+	plot( xFit, iSigmoidFromParams(FIT{g}.ParamRaw, xFit), '--', ...
 		'Color', groupColor(g, :) * 0.65, 'LineWidth', 1, 'Tag', 'fitLine');
-	plot(ax, X{g}, MU{g}, '-', 'Color', groupColor(g, :), 'LineWidth', 1, 'Tag', 'connLine');
-	hPt(g) = plot(ax, X{g}, MU{g}, 'o', 'LineStyle', 'none', 'Tag', 'dataPt', ...
+	plot(X{g}, MU{g}, '-', 'Color', groupColor(g, :), 'LineWidth', 1, 'Tag', 'connLine');
+	hPt(g) = plot(X{g}, MU{g}, 'o', 'LineStyle', 'none', 'Tag', 'dataPt', ...
 		'MarkerSize', markerSize, 'MarkerFaceColor', groupColor(g, :), ...
 		'MarkerEdgeColor', 'none');
 end
+ax=gca;
+xlabel('Block');
+ylabel('Hit rate');
+box('off');
 
-%不画「工」字形显著性括号（组间 p 值见控制台 two-way ANOVA 输出）
-ax.XLim = [0.4, maxBlock + 0.5];
-ax.XTick = 1:maxBlock;   %每个 block 都标刻度（block 是整数序号）
-ax.YLim = [0, 1.05];   %顶部留余量，免得命中率 1.0 的点压在边框上
-xlabel(ax, 'Block');
-ylabel(ax, 'Hit rate');
-ax.FontSize = 6;
-ax.LineWidth = 0.5;
-box(ax, 'off');
-grid(ax, 'off');
-
-lg = legend(ax, hPt, cellstr(groupLabel), 'Location', 'southeast', 'NumColumns', 1);
+lg = legend(hPt, cellstr(groupLabel), 'Location', 'southeast', 'NumColumns', 1);
 lg.Box = 'off';
-
-iExactPaper(f, figWmm / 10 * figScale, figHmm / 10 * figScale);
+title('💡💧');
 %先上标准样式（所有线宽会被统一成 1 pt），再把虚线拟合线调细
-TransferLearning.ApplyStandardExportStyle(f, figScale);
+TransferLearning.ApplyStandardExportStyle(f, 2);
 set(findall(f, 'Type', 'line', '-regexp', 'Tag', '^fitLine'), 'LineWidth', 0.6 * figScale);
 svgPath = TransferLearning.StandardFigureSvgPath('English_Fig1B_ThreeCohorts_LearningCurve.svg');
 print(f, svgPath, '-dsvg');
@@ -161,7 +129,7 @@ sCells = cell(1, nLines);
 xCells = cell(1, nLines);
 for j = 1:nLines
 	y = meanCell{j}(:);
-s = semCell{j}(:);
+	s = semCell{j}(:);
 	last = find(isfinite(y) & isfinite(s), 1, 'last');
 	if isempty(last)
 		yCells{j} = nan(0, 1);
@@ -203,11 +171,4 @@ midpoint = p(2);
 z = -slope .* (double(x) - midpoint);
 z = max(min(z, 60), -60);
 y = 1 ./ (1 + exp(z));
-end
-
-function iExactPaper(f, wCm, hCm)
-f.PaperUnits = 'centimeters';
-f.PaperSize = [wCm hCm];
-f.PaperPosition = [0 0 wCm hCm];
-f.PaperPositionMode = 'manual';
 end
