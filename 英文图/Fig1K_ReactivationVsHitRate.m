@@ -30,10 +30,10 @@ if isempty(R)
 	error('Fig1K:Empty', 'No valid mice for Reactivation.');
 end
 
-% 合并2/3和5层数据：取各鼠每层的均值
+% 合并2/3和5层数据：按 learned-active 细胞数加权（= 两层细胞合并后重算 P(T|L)）
 x23 = R.Prob23;
 x5 = R.Prob5;
-x = nanmean([x23, x5], 2);
+x = iPooledProb(R.NLearnedActive23, x23, R.NLearnedActive5, x5);
 y = R.TransferHitRate;
 mask = isfinite(x) & isfinite(y);
 learnedActiveCells = R.NLearnedActive23 + R.NLearnedActive5;
@@ -117,3 +117,16 @@ fprintf('\n=== English Fig1K Reactivation vs Hit rate ===\n');
 fprintf('mice n = %d\n', nnz(mask));
 fprintf('participating learned-active cells n = %d\n', nCells);
 fprintf('Spearman rho = %.6g, p = %.6g\n', rho, p);
+
+function p = iPooledProb(n23, p23, n5, p5)
+%按 learned-active 细胞数加权合并 L2/3 与 L5 的 P(T|L)：
+%   (n23*p23 + n5*p5) / (n23 + n5)，等价于把两层细胞合并成一池后重算。
+%   缺失( NaN )的一层按 0 权重计；两层都缺失则返回 NaN。
+n23 = double(n23(:));  n5 = double(n5(:));
+n23(~isfinite(n23)) = 0;  n5(~isfinite(n5)) = 0;
+w23 = n23 .* double(p23(:));  w23(~isfinite(w23)) = 0;
+w5  = n5  .* double(p5(:));   w5(~isfinite(w5))  = 0;
+nT = n23 + n5;
+p = (w23 + w5) ./ nT;
+p(nT == 0) = NaN;
+end

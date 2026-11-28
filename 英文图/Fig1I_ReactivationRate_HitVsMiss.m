@@ -20,15 +20,14 @@ if isempty(R)
 	error('Fig1I:Empty', 'No valid mice for Reactivation Hit/Miss.');
 end
 
-% 合并2/3和5层数据：取各鼠每层的均值
+% 合并 2/3 与 5 层：按 learned-active 细胞数加权（= 两层细胞合并后重算 P(T|L)）
 hit23 = R.ProbHit23;
 miss23 = R.ProbMiss23;
 hit5 = R.ProbHit5;
 miss5 = R.ProbMiss5;
 
-% 对每只鼠取两层均值（忽略NaN）
-hit = nanmean([hit23, hit5], 2);
-miss = nanmean([miss23, miss5], 2);
+hit = iPooledProb(R.NLearnedActive23, hit23, R.NLearnedActive5, hit5);
+miss = iPooledProb(R.NLearnedActive23, miss23, R.NLearnedActive5, miss5);
 mask = isfinite(hit) & isfinite(miss);
 learnedActiveCells = R.NLearnedActive23 + R.NLearnedActive5;
 nCells = sum(learnedActiveCells(mask), 'omitnan');
@@ -36,7 +35,12 @@ nCells = sum(learnedActiveCells(mask), 'omitnan');
 
 f = figure('Color','w', 'Name','English Fig1I Reactivation Hit vs Miss');
 f.Units = 'centimeters';
-f.Position(3:4) = [4,8];   % 30 × 40 mm（与 Fig1K 一致）
+f.Position(3:4) = [3,4];   % 30 × 40 mm（与 Fig1J/1K 一致）
+f.PaperUnits = 'centimeters';
+f.PaperSize = [3,4];
+f.PaperPosition = [0 0 3 4];
+f.PaperPositionMode = 'manual';
+ax = gca;   % 显式取当前轴（旧版依赖工作区残留的 ax，单独运行会报错）
 hold on;
 
 p = NaN;
@@ -60,7 +64,7 @@ plot( 2*ones(nnz(mask),1), miss(mask), 'o', 'MarkerSize', 3.6, ...
 % 轴样式：L 形、朝外刻度、无上/右框（与 Fig1K 一致）
 box off;
 ylabel(ax, 'Reactivation');
-ttl = title( '💡💧');
+ttl = title( '');
 
 % p-value line with asterisk (paired signrank) via MATLAB.Graphics.PLine
 if isfinite(p)
@@ -86,4 +90,16 @@ xticks(1:2);
 xlim([0,3]);
 xticklabels({'Hit','Miss'});
 % 统一样式（散点/配对线宽自己控制，不被覆盖），再重设轴位与范围
-svgPath = TransferLearning.ExportStandardFigure(f,2,svgName);
+svgPath = TransferLearning.ExportStandardFigure(f,1,svgName);
+function p = iPooledProb(n23, p23, n5, p5)
+%按 learned-active 细胞数加权合并 L2/3 与 L5 的 P(T|L)：
+%   (n23*p23 + n5*p5) / (n23 + n5)，等价于把两层细胞合并成一池后重算。
+%   缺失( NaN )的一层按 0 权重计；两层都缺失则返回 NaN。
+n23 = double(n23(:));  n5 = double(n5(:));
+n23(~isfinite(n23)) = 0;  n5(~isfinite(n5)) = 0;
+w23 = n23 .* double(p23(:));  w23(~isfinite(w23)) = 0;
+w5  = n5  .* double(p5(:));   w5(~isfinite(w5))  = 0;
+nT = n23 + n5;
+p = (w23 + w5) ./ nT;
+p(nT == 0) = NaN;
+end

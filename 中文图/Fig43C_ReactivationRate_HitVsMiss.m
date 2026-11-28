@@ -20,9 +20,9 @@ miss23 = R.ProbMiss23;
 hit5 = R.ProbHit5;
 miss5 = R.ProbMiss5;
 
-% 对每只鼠取两层均值（忽略NaN）
-hit = nanmean([hit23, hit5], 2);
-miss = nanmean([miss23, miss5], 2);
+% 对每只鼠按 learned-active 细胞数加权合并两层（等价于两层细胞合并后重算 P(T|L)）
+hit = iPooledProb(R.NLearnedActive23, hit23, R.NLearnedActive5, hit5);
+miss = iPooledProb(R.NLearnedActive23, miss23, R.NLearnedActive5, miss5);
 mask = isfinite(hit) & isfinite(miss);
 learnedActiveCells = R.NLearnedActive23 + R.NLearnedActive5;
 nCells = sum(learnedActiveCells(mask), 'omitnan');
@@ -45,16 +45,16 @@ if nnz(mask) >= 4
 end
 
 Y = [hit(mask), miss(mask)];
-hitColor = TransferLearning.TransferColor;
-missColor = TransferLearning.ColorB;
+hitColor = TransferLearning.ColorHit / 255;   % 原 TransferColor 已删除，改用现行 Hit 配色
+missColor = TransferLearning.ColorMiss / 255; % 原 ColorB 已删除，改用现行 Miss 配色
 plot(ax, Y', '-', 'Color', [0, 0, 0]);
 scatter(ax, ones(nnz(mask),1), hit(mask), 15, hitColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', hitColor);
 scatter(ax, 2*ones(nnz(mask),1), miss(mask), 15, missColor, 'filled', 'LineWidth', 0.2, 'MarkerEdgeColor', missColor);
 set(ax, 'XTick',[1 2], 'XTickLabel',{'Hit','Miss'});
 grid(ax,'off');
 box(ax,'off');
-ylabel(ax, '🔊 learned cells reactivation');
-xlabel(ax, '💡💧');
+ylabel(ax, ' learned cells reactivation');
+xlabel(ax, '');
 
 yl = ylim(ax); yrange = yl(2) - yl(1);
 yPLine = max(max(hit(mask)), max(miss(mask))) + 0.08 * yrange;
@@ -72,3 +72,16 @@ fprintf('paired mice n = %d\n', nnz(mask));
 fprintf('participating learned-active cells n = %d\n', nCells);
 fprintf('ranksum p = %.6g\n', p);
 fprintf('Figure caption (4.3C) P = %s\n', TransferLearning.Style.iFormatPText(p));
+
+function p = iPooledProb(n23, p23, n5, p5)
+%按 learned-active 细胞数加权合并 L2/3 与 L5 的 P(T|L)：
+%   (n23*p23 + n5*p5) / (n23 + n5)，等价于把两层细胞合并成一池后重算。
+%   缺失( NaN )的一层按 0 权重计；两层都缺失则返回 NaN。
+n23 = double(n23(:));  n5 = double(n5(:));
+n23(~isfinite(n23)) = 0;  n5(~isfinite(n5)) = 0;
+w23 = n23 .* double(p23(:));  w23(~isfinite(w23)) = 0;
+w5  = n5  .* double(p5(:));   w5(~isfinite(w5))  = 0;
+nT = n23 + n5;
+p = (w23 + w5) ./ nT;
+p(nT == 0) = NaN;
+end
