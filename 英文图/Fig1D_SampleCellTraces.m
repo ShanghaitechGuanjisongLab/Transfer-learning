@@ -11,19 +11,6 @@
 %   cell a：z_learned > z_transfer > z_naiveAudioWater，且这些细胞里 z_transfer 最大
 %   cell b：z_learned − z_transfer 最大
 
-if ~exist('UniExp.DataSet', 'class')
-	thisDir = fileparts(mfilename('fullpath'));
-	prjFile = fullfile(thisDir, 'Transferlearning.prj');
-	if ~exist(prjFile, 'file')
-		prjFile = fullfile(thisDir, '..', 'Transferlearning.prj');
-	end
-	if exist(prjFile, 'file'), matlab.project.loadProject(prjFile); end
-end
-if ~any(strcmpi(strsplit(path, pathsep), 'd:\git\Transfer-Learning'))
-	addpath('d:\git\Transfer-Learning');
-end
-warning('off', 'UniExp:Exception:Block_must_warn');
-
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 xsSec = xsSec(:);
@@ -82,10 +69,6 @@ figHCm = 4.0;
 f = figure('Color', 'w', 'Name', 'Fig2 sample cells');
 f.Units = 'centimeters';
 f.Position(3:4) = [figWCm, figHCm];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, figWCm, figHCm];
-f.PaperSize = [figWCm, figHCm];
 
 condNames = {'naive (audio only)', 'naive (audio-water)', 'learned (audio-water)', 'transfer (light-water)'};
 % 顶部图例：两行显示全称（AO/AW 不用缩写）

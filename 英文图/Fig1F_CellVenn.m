@@ -1,12 +1,13 @@
-% Fig1F：Venn/欧拉图 —— 全细胞 vs Learned 声水活跃 vs Transfer 光水活跃（12 h 队列）
-% 7 d 对照版见 Fig1F_CellVenn_7day.m
+% Fig1F：Venn/欧拉图 —— 全细胞 vs Learned 声水活跃 vs Transfer 光水活跃，1×2 tiledlayout。
+% 左 tile = 12 h 队列（AudioLightBaseline），右 tile = 7 d 队列（Vacation7，等待 7 天后迁移）。
+% 两 tile 同一套几何与判定（原 Fig1F_CellVenn_7day.m 已合并到本脚本）。
 %
 % 外圈(最大圆) = 该队列全部被成像细胞（Learned 与 Transfer 数据集的细胞并集）
 % 内圈 1(A, 蓝) = Learned 阶段对声水(AudioWater)活跃的细胞（active 判据：cue +1 s 处 z > 基线均值 + 3σ）
 % 内圈 2(B, 橙) = Transfer 首个光水(LightWater)训练单元中活跃的细胞
 % A∩B = 复用细胞（Learned 活跃且在 Transfer 首块重新激活）
 %
-% 几何：外圈(全部细胞)半径固定 = 1，两版图（12 h / 7 d）外圈大小完全一致。
+% 几何：外圈(全部细胞)半径固定 = 1，两版（12 h / 7 d）外圈大小完全一致。
 % 内圆半径用 **n^(1/4) 压缩映射**（r = (n/nAll)^(1/4)）而不是严格面积比例：
 %   严格面积比例下小集合会退化成几乎不可见的小点（7 d 组 B 只有 0.22 R，写不进文字），
 %   1/4 次方既保持「多则大、少则小」的单调关系，又能让小集合可见可标注。
@@ -18,7 +19,6 @@ if ~exist('UniExp.DataSet', 'class')
 	if exist(prjFile, 'file'), matlab.project.loadProject(prjFile); end
 end
 
-DS = TransferLearning.AudioLightBaseline();
 xs = TransferLearning.Xs;
 if isduration(xs), xsSec = seconds(xs); else, xsSec = double(xs); end
 baseMask = (xsSec >= -3) & (xsSec < 0);
@@ -26,14 +26,53 @@ baseMask = (xsSec >= -3) & (xsSec < 0);
 if ~ok1s, error('Fig1F:No1s', 'Cannot find sample close to 1s.'); end
 kSigma = 3;
 
-%% --- A: Learned AudioWater active ---
+%% --- 计数与几何：两个队列 ---
+DatasetList = {TransferLearning.AudioLightBaseline(), TransferLearning.Vacation7()};
+CohortLabels = ["12 h", "7 d"];
+VennData = cell(2, 1);
+SummaryRows = cell(2, 1);
+for CohortIndex = 1:2
+	VennData{CohortIndex} = iVennCompute(DatasetList{CohortIndex}, CohortLabels(CohortIndex), idx1s, baseMask, kSigma);
+	S = VennData{CohortIndex};
+	SummaryRows{CohortIndex} = table(CohortLabels(CohortIndex), S.nAll, S.nA, S.nB, S.nAB, S.nAonly, S.nBonly, S.nNone, ...
+		'VariableNames', {'Cohort', 'AllCells', 'LearnedActive', 'TransferActive', 'Reused', 'LearnedOnly', 'TransferOnly', 'Neither'});
+end
+
+%% --- draw：1×2 tiledlayout ---
+figWCm = 6.0;
+figHCm = 4.0;
+f = figure('Color', 'w', 'Name', 'Fig1F Cell Venn (12 h vs 7 d)');
+f.Units = 'centimeters';
+f.Position(3:4) = [figWCm, figHCm];
+
+Layout = tiledlayout(f, 1, 2, TileSpacing='tight', Padding='tight');
+Axes = gobjects(1, 2);
+for CohortIndex = 1:2
+	Ax = nexttile(Layout, CohortIndex);
+	hold(Ax, 'on');
+	Ax.Visible = 'off';
+	Ax.DataAspectRatio = [1 1 1];
+	iVennDraw(Ax, VennData{CohortIndex});
+	% Visible=off 的坐标区不显示 title，用显式文本作标题：队列 + all cells 合并成一行
+	text(Ax, 0.125, 1.20, sprintf('%s · all cells', CohortLabels(CohortIndex)), 'FontSize', 6, ...
+		'Color', [0.2 0.2 0.2], 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
+	Axes(CohortIndex) = Ax;
+end
+MATLAB.Graphics.UnifyAxesLims(Axes(:), @xlim, @ylim);
+
+svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig1F_CellVenn.svg');
+
+%% ========== Local helpers ==========
+
+function V = iVennCompute(DS, cohortLabel, idx1s, baseMask, kSigma)
+% --- A: Learned AudioWater active ---
 qLearnedAudio = struct('Phase', 'Learned', 'Stimulus', 'AudioWater');
 GLearned = DS.QueryNTATS(qLearnedAudio, UniExp.Flags.ZScore, 1:24, UniExp.Flags.Median);
 learnedTable = iBuildActiveCellTable(GLearned, idx1s, baseMask, kSigma, 'Fig1F:BadNTATS');
 learnedAllIDs = unique(uint64(learnedTable.CellUID));
 learnedActiveIDs = unique(uint64(learnedTable.CellUID(logical(learnedTable.IsActive))));
 
-%% --- B: Transfer first LightWater block active ---
+% --- B: Transfer first LightWater block active ---
 firstTransfer = iPerMouseFirstTransferLightWaterDateTime(DS);
 transferTables = cell(height(firstTransfer), 1);
 for iMouse = 1:height(firstTransfer)
@@ -49,7 +88,7 @@ end
 transferAllIDs = unique(uint64(transferTable.CellUID));
 transferActiveIDs = unique(uint64(transferTable.CellUID(logical(transferTable.IsActive))));
 
-%% --- counts ---
+% --- counts ---
 allIDs = union(learnedAllIDs, transferAllIDs);
 nAll = numel(allIDs);
 nA = numel(learnedActiveIDs);
@@ -59,7 +98,7 @@ nAonly = nA - nAB;
 nBonly = nB - nAB;
 nNone = nAll - nA - nB + nAB;
 
-fprintf('=== Fig1F Venn (12 h) ===\n');
+fprintf('=== Fig1F Venn (%s) ===\n', cohortLabel);
 fprintf('All cells        = %d\n', nAll);
 fprintf('A  learned AW active = %d (%.2f%% of all)\n', nA, 100 * nA / nAll);
 fprintf('B  transfer LW active= %d (%.2f%% of all)\n', nB, 100 * nB / nAll);
@@ -67,7 +106,7 @@ fprintf('A n B (reused)   = %d (%.2f%% of all, %.1f%% of A, %.1f%% of B)\n', ...
 	nAB, 100 * nAB / nAll, 100 * nAB / nA, 100 * nAB / nB);
 fprintf('A only = %d | B only = %d | neither = %d\n', nAonly, nBonly, nNone);
 
-%% --- geometry ---
+% --- geometry ---
 rA0 = (nA / nAll)^0.25;
 rB0 = (nB / nAll)^0.25;
 targetLens0 = (nAB / nB) * pi * rB0^2;
@@ -88,21 +127,12 @@ cB = [d / 2, 0] + cShift;
 fprintf('geometry: rA=%.3f rB=%.3f d=%.3f (rA:rB=%.3f, expect %.3f) scale=%.3f\n', ...
 	rA, rB, d, rA / rB, (nA / nB)^0.25, s);
 
-%% --- draw ---
-figWCm = 4.5;
-figHCm = 4.0;
-f = figure('Color', 'w', 'Name', 'Fig1F Cell Venn (12 h)');
-f.Units = 'centimeters';
-f.Position(3:4) = [figWCm, figHCm];
-f.PaperUnits = 'centimeters';
-f.PaperPositionMode = 'manual';
-f.PaperPosition = [0, 0, figWCm, figHCm];
-f.PaperSize = [figWCm, figHCm];
+V = struct('nAll', nAll, 'nA', nA, 'nB', nB, 'nAB', nAB, ...
+	'nAonly', nAonly, 'nBonly', nBonly, 'nNone', nNone, ...
+	'rA', rA, 'rB', rB, 'cA', cA, 'cB', cB);
+end
 
-ax = axes(f, 'Units', 'normalized', 'Position', [0.05, 0.02, 0.90, 0.94]);hold(ax, 'on');
-ax.Visible = 'off';
-ax.DataAspectRatio = [1 1 1];
-
+function iVennDraw(ax, V)
 colA = [0.16 0.52 0.85];
 colB = [0.96 0.64 0.09];
 colAB = [0.42 0.24 0.55];
@@ -116,52 +146,48 @@ th = linspace(0, 2 * pi, 400);
 plot(ax, cos(th), sin(th), '-', 'Color', edgeAll, 'LineWidth', 1);
 
 % A / B
-patch(ax, cA(1) + rA * cos(th), cA(2) + rA * sin(th), fillA, ...
+patch(ax, V.cA(1) + V.rA * cos(th), V.cA(2) + V.rA * sin(th), fillA, ...
 	'EdgeColor', colA, 'LineWidth', 0.75);
-patch(ax, cB(1) + rB * cos(th), cB(2) + rB * sin(th), fillB, ...
+patch(ax, V.cB(1) + V.rB * cos(th), V.cB(2) + V.rB * sin(th), fillB, ...
 	'EdgeColor', colB, 'LineWidth', 0.75);
 
 % 交集（lens）
-[Xl, Yl] = iLensPolygon(cA, rA, cB, rB);
+[Xl, Yl] = iLensPolygon(V.cA, V.rA, V.cB, V.rB);
 patch(ax, Xl, Yl, colAB, 'EdgeColor', colAB, 'LineWidth', 0.75);
 
 % ---- 文字标注 ----
 fs = 6;
-% 外圈总数：放在圈外，不写 100%
-text(ax, 0, 1.20, 'all cells', 'FontSize', fs, 'Color', [0.25 0.25 0.25], ...
-	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
-
 % 各区域水平中心：取标注最宽行（底行 `active`，y ≈ -0.24）处月牙区的中点，
 % 使文字左右留白均匀、不被圆边切到
 yRef = -0.24;
-hA = sqrt(max(rA^2 - yRef^2, 0));
-hB = sqrt(max(rB^2 - yRef^2, 0));
-xAonly = 0.5 * ((cA(1) - hA) + (cB(1) - hB));
-xBonly = 0.5 * ((cA(1) + hA) + (cB(1) + hB));
-xLensL = max(cA(1) - rA, cB(1) - rB);
-xLensR = min(cA(1) + rA, cB(1) + rB);
+hA = sqrt(max(V.rA^2 - yRef^2, 0));
+hB = sqrt(max(V.rB^2 - yRef^2, 0));
+xAonly = 0.5 * ((V.cA(1) - hA) + (V.cB(1) - hB));
+xBonly = 0.5 * ((V.cA(1) + hA) + (V.cB(1) + hB));
+xLensL = max(V.cA(1) - V.rA, V.cB(1) - V.rB);
+xLensR = min(V.cA(1) + V.rA, V.cB(1) + V.rB);
 xLens = 0.5 * (xLensL + xLensR);
 
 % A only / B only：直接写在内圆形的月牙区里（半径够大时）
-iZoneLabel(ax, xAonly, sprintf('%.1f%%', 100 * nAonly / nAll), {'speaker', 'drop'}, colA);
-if rB >= 0.30
-	iZoneLabel(ax, xBonly, sprintf('%.1f%%', 100 * nBonly / nAll), {'bulb', 'drop'}, colB);
+iZoneLabel(ax, xAonly, sprintf('%.1f%%', 100 * V.nAonly / V.nAll), {'speaker', 'drop'}, colA);
+if V.rB >= 0.30
+	iZoneLabel(ax, xBonly, sprintf('%.1f%%', 100 * V.nBonly / V.nAll), {'bulb', 'drop'}, colB);
 else
-	text(ax, cB(1), cB(2) + rB + 0.06, sprintf('%.1f%%', 100 * nBonly / nAll), 'FontSize', fs, ...
+	text(ax, V.cB(1), V.cB(2) + V.rB + 0.06, sprintf('%.1f%%', 100 * V.nBonly / V.nAll), 'FontSize', fs, ...
 		'Color', colB, 'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
-	text(ax, cB(1), cB(2) + rB + 0.02, 'active', 'FontSize', fs, 'Color', colB, ...
+	text(ax, V.cB(1), V.cB(2) + V.rB + 0.02, 'active', 'FontSize', fs, 'Color', colB, ...
 		'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
 end
 
 % 交集标注：透镜够宽就直接写在里面（白字），否则用 0.5 pt 引线引到内圆之外的空白处
 lensW = xLensR - xLensL;
-txtLens = sprintf('%.1f%%', 100 * nAB / nAll);
+txtLens = sprintf('%.1f%%', 100 * V.nAB / V.nAll);
 if lensW >= 0.42
 	text(ax, xLens, 0, txtLens, 'FontSize', fs, 'Color', [1 1 1], 'FontWeight', 'bold', ...
 		'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 else
-	yTopA = iCircleTopY(cA, rA, xLens);
-	yTopB = iCircleTopY(cB, rB, xLens);
+	yTopA = iCircleTopY(V.cA, V.rA, xLens);
+	yTopB = iCircleTopY(V.cB, V.rB, xLens);
 	yLensTop = min(yTopA, yTopB);
 	yLab = min(max(yTopA, yTopB) + 0.16, 0.92);
 	plot(ax, [xLens, xLens], [yLensTop + 0.01, yLab], '-', 'Color', colAB, 'LineWidth', 0.5);
@@ -170,28 +196,8 @@ else
 end
 
 % neither
-text(ax, 0, -0.72, sprintf('%.1f%%', 100 * nNone / nAll), 'FontSize', fs, 'Color', [0.45 0.45 0.45], ...
+text(ax, 0, -0.72, sprintf('%.1f%%', 100 * V.nNone / V.nAll), 'FontSize', fs, 'Color', [0.45 0.45 0.45], ...
 	'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
-
-if isprop(ax, 'Toolbar') && ~isempty(ax.Toolbar)
-	ax.Toolbar.Visible = 'off';
-end
-
-xlim(ax, [-1.05, 1.05]);
-ylim(ax, [-1.05, 1.05]);
-
-svgPath = TransferLearning.ExportStandardFigure(f, 1, 'English_Fig1F_CellVenn.svg');
-fprintf('Wrote: %s\n', svgPath);
-
-summary = table(nAll, nA, nB, nAB, nAonly, nBonly, nNone, ...
-	'VariableNames', {'AllCells', 'LearnedActive', 'TransferActive', 'Reused', 'LearnedOnly', 'TransferOnly', 'Neither'});
-assignin('base', 'Fig1F_VennSummary', summary);
-
-%% ========== Local helpers ==========
-
-function iLeader(ax, x0, y0, x1, y1)
-% 从区域中心引一条 0.5 pt 细线到标注位置
-plot(ax, [x0 x1], [y0 y1], '-', 'Color', [0.35 0.35 0.35], 'LineWidth', 0.5);
 end
 
 function y = iCircleTopY(c, r, x)

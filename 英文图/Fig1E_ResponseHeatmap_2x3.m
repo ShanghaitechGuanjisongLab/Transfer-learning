@@ -15,15 +15,6 @@
 %   直接画 z 值（不再逐行二次 z-score），幅度可比；六面板共用对称色标。
 %
 % 尺寸：排版 90×68 mm、6 pt → 导出 180×136 mm、12 pt（Scale 2）。
-clear variables; close all;
-cd('d:\git\Transfer-Learning');
-if ~any(strcmpi(strsplit(path, pathsep), 'd:\git\Transfer-Learning'))
-	addpath('d:\git\Transfer-Learning');
-end
-if ~exist('UniExp.DataSet', 'class')
-	matlab.project.loadProject('d:\git\Transfer-Learning\Transferlearning.prj');
-end
-
 %% 参数
 kSigma = 3;        %活跃阈值：baseline mean + kSigma * baseline SD
 %色标上限在数据算完后设为 sqrt(max|z|)（见下方 cMax）
@@ -138,14 +129,13 @@ figW = 9.0; figH = 9.0; figScale = 2;   % 成品 90 × 90 mm（画布 ×figScale
 f = figure('Color', 'w', 'Name', 'Fig1 learned-active response heatmap 2x3');
 f.Units = 'centimeters';
 f.Position(3:4) = [figW figH] * figScale;
-t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'loose');
+t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'tight');
 
-		for r = 1:2
+for r = 1:2
 	for c = 1:3
 		ax = nexttile(t, (r - 1) * 3 + c);
 		imagesc(ax, xsShow, 1:size(M{r, c}, 1), M{r, c});
 		hold(ax, 'on');                 % 否则后面的 plot/text 会替换掉热图
-		axis(ax, 'xy');
 		nCellC = size(M{r, c}, 1);
 		%两条参考虚线：0 s（线索开始）用点线，1 s 用短线（只跨数据行，不进 emoji 带）
 		plot(ax, [0 0], [0.5, nCellC + 0.5], ':', 'Color', [0 0 0], 'LineWidth', 0.5, ...
@@ -154,13 +144,7 @@ t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'loose');
 			'HandleVisibility', 'off');
 		clim(ax, [-cMax cMax]);
 		colormap(ax, blueWhiteRed);
-		ax.XLim = [xsShow(1) xsShow(end)];
 		if r == 2
-			if c == 2                     % 三列共用同一个 Time (s)，只保留中间一条
-				xlabel(ax, 'Time (s)');
-				ylX = ylim(ax);
-				ax.XLabel.Position(2) = ylX(1) - 0.23 * (ylX(2) - ylX(1));   % 把轴标题压低，给 emoji 让位
-			end
 		else
 			ax.XTickLabel = [];
 		end
@@ -169,9 +153,7 @@ t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'loose');
 		else
 			ax.YTickLabel = [];
 		end
-		title(ax, titCol((r - 1) * 3 + c), 'FontWeight', 'normal');
-		ax.XTick = [-1 0 1 2];
-		ax.XTickLabelRotation = 0;
+		title(ax, titCol((r - 1) * 3 + c));
 		box(ax, 'off');
 
 		% 下排：emoji 放在刻度数字与 'Time (s)' 之间（轴外，Clipping off）
@@ -179,26 +161,20 @@ t = tiledlayout(f, 2, 3, 'TileSpacing', 'compact', 'Padding', 'loose');
 			yl = ylim(ax);
 			yEmo = yl(1) - 0.15 * (yl(2) - yl(1));
 			cueEmoji = ["🔊", "🔊", "💡"];      % 列 1/2 = 声线索，列 3 = 光线索
-			text(ax, 0, yEmo, cueEmoji(c), 'FontName', 'Segoe UI Emoji', 'FontSize', 6, ...
-				'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Clipping', 'off');
+			text(ax, 0, yEmo, cueEmoji(c), ...
+				'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 			if c > 1                            % 列 1 是 audio only，没有水
-				text(ax, 1, yEmo, "💧", 'FontName', 'Segoe UI Emoji', 'FontSize', 6, ...
-					'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Clipping', 'off');
+				text(ax, 1, yEmo, "💧", ...
+					'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 			end
 		end
 
 		axForCb = ax;
 	end
 end
+xlabel(t, 'Time (s)');
 
 cb = colorbar(axForCb);
 cb.Layout.Tile = 'east';
 cb.Label.String = 'z-score';
-cb.Label.FontSize = 6;
-
-f.PaperUnits = 'centimeters';
-f.PaperSize = [figW figH] * figScale;
-f.PaperPosition = [0 0 figW figH] * figScale;
-f.PaperPositionMode = 'manual';
 p = TransferLearning.ExportStandardFigure(f, figScale, 'English_Fig1E_ResponseHeatmap_2x3.svg');
-fprintf('\nWrote: %s\n', p);
