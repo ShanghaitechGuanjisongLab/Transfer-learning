@@ -72,7 +72,8 @@ for iL = 1:numel(layers)
 		pLabel = 'p = NaN';
 	elseif p < 0.001
 		pLabel = 'p < 0.001';
-	elseif p < 0.01
+	elseif p < 0.05
+		% 0.001–0.05 用三位小数，避免临界值被 %.2f 抹成 0.05
 		pLabel = sprintf('p = %.3f', p);
 	else
 		pLabel = sprintf('p = %.2f', p);
@@ -95,7 +96,8 @@ for iL = 1:numel(layers)
 		plot(ax, xFitLine, polyval(fitP, xFitLine), '-', 'Color', colorFit);
 	end
 	title(ax, layerLabel);
-	text(ax, 0.97, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+	% 标注放左上角（同 Fig4D）：右 panel 的 axes 右边缘几乎贴到画布，右上角标注会越界被裁
+	text(ax, 0.03, 0.97, pLabel, 'Units', 'normalized', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 	axAll(iL) = ax;
 
 	fprintf('\n=== Fig3E %s ===\n', layerLabel);
