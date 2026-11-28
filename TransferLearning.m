@@ -135,6 +135,122 @@ classdef(Abstract)TransferLearning
 				h.HitTest = 'off';
 			end
 		end
+		function c = DarkenColor(Color, VScale)
+			% 同色系派生色：只按 VScale 缩放 HSV 明度，保持色相与饱和度。
+			% Color 可传 0–255 或 0–1，返回 0–1。
+			% 约定（与 Fig1C 一致）：散点填充 0.80、散点描边 0.55、误差棒 0.50。
+			arguments
+				Color (1,3) double
+				VScale (1,1) double {mustBePositive} = 0.8
+			end
+			if any(Color > 1)
+				Color = Color / 255;
+			end
+			h = rgb2hsv(Color);
+			h(3) = min(h(3) * VScale, 1);
+			c = hsv2rgb(h);
+		end
+		function h = MouseScatter(Ax, X, V, Color, Options)
+			% 逐鼠散点：实心圆，填充=Color 降明度 0.80、描边=0.55，水平抖动。
+			% 同色系但更深，落在不透明实色柱内仍可见（对比：空心同色描边几乎看不见）。
+			arguments
+				Ax (1,1)
+				X (1,1) double
+				V double
+				Color (1,3) double
+				Options.Jitter (1,1) double = 0.20
+				Options.Size (1,1) double = 3.8
+				Options.FillScale (1,1) double = 0.80
+				Options.EdgeScale (1,1) double = 0.55
+				Options.EdgeWidth (1,1) double = 0.15
+			end
+			v = V(:);
+			v = v(isfinite(v));
+			if isempty(v)
+				h = gobjects(0,1);
+				return;
+			end
+			jit = (rand(numel(v),1) - 0.5) * Options.Jitter;
+			h = scatter(Ax, X + jit, v, Options.Size, 'o', 'filled', ...
+				'MarkerFaceColor', TransferLearning.DarkenColor(Color, Options.FillScale), ...
+				'MarkerEdgeColor', TransferLearning.DarkenColor(Color, Options.EdgeScale), ...
+				'LineWidth', Options.EdgeWidth, 'HandleVisibility', 'off');
+		end
+		function h = OneWaySEM(Ax, X, V, Color, Options)
+			% 单向（向上）SEM：mean → mean+SEM 的竖线 + 顶帽，颜色=Color 降明度 0.50。
+			% 与 Fig1C 一致：只画上半段，压在散点之上，无白色光晕。
+			arguments
+				Ax (1,1)
+				X (1,1) double
+				V double
+				Color (1,3) double
+				Options.VScale (1,1) double = 0.50
+				Options.LineWidth (1,1) double = 0.6
+				Options.CapHalfWidth (1,1) double = 0.07
+				Options.Mean (1,1) double = NaN
+			end
+			v = V(:);
+			v = v(isfinite(v));
+			if numel(v) < 2
+				h = gobjects(1,0);
+				return;
+			end
+			mu = Options.Mean;
+			if ~isfinite(mu)
+				mu = mean(v);
+			end
+			se = std(v) / sqrt(numel(v));
+			c = TransferLearning.DarkenColor(Color, Options.VScale);
+			h = [plot(Ax, [X X], [mu, mu + se], '-', 'Color', c, ...
+				'LineWidth', Options.LineWidth, 'HandleVisibility', 'off'), ...
+				plot(Ax, [X - Options.CapHalfWidth, X + Options.CapHalfWidth], ...
+				[mu + se, mu + se], '-', 'Color', c, ...
+				'LineWidth', Options.LineWidth, 'HandleVisibility', 'off')];
+		end
+		function H = MouseBarScatter(Ax, X, V, Color, Options)
+			% 一步画完：柱（无边框）+ 逐鼠散点 + 单向 SEM（压在散点之上）。
+			% 与 Fig1C 的 iMetricBar 完全同口径；Color 可直接传常用色（0–255 或 0–1）。
+			% 用法：
+			%   TransferLearning.MouseBarScatter(ax, 1, v, TransferLearning.Color12h);
+			%   TransferLearning.MouseBarScatter(ax, 1, v, c, 'BarWidth', 0.5, 'FaceAlpha', 0.35);
+			%   TransferLearning.MouseBarScatter(ax, 1, v, c, 'ShowBar', false);  % 只画散点+SEM
+			arguments
+				Ax (1,1)
+				X (1,1) double
+				V double
+				Color (1,3) double
+				Options.BarWidth (1,1) double = 0.50
+				Options.Jitter (1,1) double = 0.20
+				Options.Size (1,1) double = 3.8
+				Options.ShowBar (1,1) logical = true
+				Options.ShowError (1,1) logical = true
+				Options.FaceAlpha (1,1) double = 1
+				Options.EdgeColor = 'none'
+			end
+			v = V(:);
+			v = v(isfinite(v));
+			H = struct('bar', gobjects(0,1), 'scatter', gobjects(0,1), 'error', gobjects(1,0));
+			if isempty(v)
+				return;
+			end
+			c = Color;
+			if any(c > 1)
+				c = c / 255;
+			end
+			mu = mean(v);
+			if Options.ShowBar
+				H.bar = bar(Ax, X, mu, Options.BarWidth, 'FaceColor', c, ...
+					'EdgeColor', Options.EdgeColor, 'HandleVisibility', 'off');
+				if Options.FaceAlpha < 1
+					H.bar.FaceAlpha = Options.FaceAlpha;
+				end
+			end
+			H.scatter = TransferLearning.MouseScatter(Ax, X, v, c, ...
+				'Jitter', Options.Jitter, 'Size', Options.Size);
+			if Options.ShowError
+				H.error = TransferLearning.OneWaySEM(Ax, X, v, c, 'Mean', mu);
+			end
+		end
 	end
 end
 
